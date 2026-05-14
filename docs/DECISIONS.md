@@ -112,3 +112,27 @@ Reason: Future camera obstruction and interaction checks need a query shape. A s
 Decision: Do not add slopes, ramps, moving colliders, swept collision, rigid bodies, or a physics dependency.
 
 Reason: The goal is a small world/collision prototype. The current horizontal push-out is enough to stop walking through basic debug walls and boxes while keeping future work understandable.
+
+## v0.4 Interaction System in Game Layer
+
+Decision: Add `InteractionSystem` under `src/game` instead of promoting it to a broad engine module.
+
+Reason: v0.4 is proving gameplay plumbing, not a reusable gameplay framework. Keeping it in the prototype layer makes it easy to change as future doors, pickups, vehicles, dialogue, and mission triggers clarify the real requirements.
+
+## v0.4 Pressed-Edge Input
+
+Decision: Track `E` as both `interactHeld` and `interactPressed` in the Win32 input snapshot.
+
+Reason: Interactions should trigger once per key press, while future systems may still need held-state information. This keeps direct Win32 key checks out of gameplay code.
+
+## v0.4 Deferred Gameplay Systems
+
+Decision: Do not add scripting, inventory, dialogue trees, mission state, a UI framework, or physics-driven doors.
+
+Reason: The milestone only needs focus detection, action execution, debug visibility, and testable behavior. Larger systems would hide whether the basic interaction contract is stable.
+
+## v0.4 Dependencies
+
+Decision: Add no new third-party dependencies.
+
+Reason: Standard C++ and the existing debug renderer are enough for interaction data, tests, logging, and marker visualization.

@@ -2,6 +2,7 @@
 #include "engine/core/Config.h"
 #include "engine/core/FileSystem.h"
 #include "engine/math/Math.h"
+#include "game/InteractionSystem.h"
 #include "game/PlayerController.h"
 #include "game/TestWorld.h"
 #include "game/ThirdPersonCamera.h"
@@ -335,6 +336,189 @@ void TestWorldRaycastFindsNearestCollider()
         "Raycast distance should land on the near box front face.");
 }
 
+void TestInteractionFocusSelectsNearestFacingCandidate()
+{
+    InteractionSystem interactions;
+
+    Interactable nearPickup;
+    nearPickup.name = "Near Pickup";
+    nearPickup.prompt = "Pick up Near Pickup";
+    nearPickup.position = {0.0f, 0.5f, 1.25f};
+    nearPickup.radius = 2.0f;
+    nearPickup.type = InteractableType::Pickup;
+    const int nearId = interactions.addInteractable(nearPickup);
+
+    Interactable farInfo;
+    farInfo.name = "Far Info";
+    farInfo.prompt = "Read Far Info";
+    farInfo.position = {0.0f, 0.5f, 3.0f};
+    farInfo.radius = 4.0f;
+    farInfo.type = InteractableType::Info;
+    interactions.addInteractable(farInfo);
+
+    const InteractionFocus focus = interactions.updateFocus({0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f});
+    Expect(focus.hasFocus,
+        "TestInteractionFocusSelectsNearestFacingCandidate",
+        "A nearby interactable in front of the player should receive focus.");
+    Expect(focus.interactableId == nearId,
+        "TestInteractionFocusSelectsNearestFacingCandidate",
+        "Nearest facing interactable should win focus.");
+    Expect(focus.prompt == nearPickup.prompt,
+        "TestInteractionFocusSelectsNearestFacingCandidate",
+        "Focus should expose prompt text for debug display.");
+}
+
+void TestInteractionFocusIgnoresDisabledAndConsumedInteractables()
+{
+    InteractionSystem interactions;
+
+    Interactable disabled;
+    disabled.name = "Disabled Pickup";
+    disabled.prompt = "Pick up Disabled Pickup";
+    disabled.position = {0.0f, 0.5f, 0.75f};
+    disabled.radius = 2.0f;
+    disabled.type = InteractableType::Pickup;
+    disabled.enabled = false;
+    interactions.addInteractable(disabled);
+
+    Interactable consumed;
+    consumed.name = "Consumed Pickup";
+    consumed.prompt = "Pick up Consumed Pickup";
+    consumed.position = {0.0f, 0.5f, 1.0f};
+    consumed.radius = 2.0f;
+    consumed.type = InteractableType::Pickup;
+    consumed.oneShot = true;
+    consumed.consumed = true;
+    interactions.addInteractable(consumed);
+
+    Interactable active;
+    active.name = "Active Info";
+    active.prompt = "Read Active Info";
+    active.position = {0.0f, 0.5f, 1.25f};
+    active.radius = 2.0f;
+    active.type = InteractableType::Info;
+    const int activeId = interactions.addInteractable(active);
+
+    const InteractionFocus focus = interactions.updateFocus({0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f});
+    Expect(focus.hasFocus,
+        "TestInteractionFocusIgnoresDisabledAndConsumedInteractables",
+        "An active interactable should still receive focus.");
+    Expect(focus.interactableId == activeId,
+        "TestInteractionFocusIgnoresDisabledAndConsumedInteractables",
+        "Disabled and consumed interactables should not win focus.");
+}
+
+void TestInteractPressedTriggersExactlyOnceWhenHeld()
+{
+    InteractionSystem interactions;
+
+    Interactable toggle;
+    toggle.name = "Test Button";
+    toggle.prompt = "Toggle Test Button";
+    toggle.position = {0.0f, 0.5f, 1.0f};
+    toggle.radius = 2.0f;
+    toggle.type = InteractableType::Toggle;
+    const int toggleId = interactions.addInteractable(toggle);
+    interactions.updateFocus({0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f});
+
+    engine::InputState input;
+    input.interactHeld = true;
+    input.interactPressed = true;
+    const InteractionResult first = interactions.interact(input);
+    Expect(first.triggered,
+        "TestInteractPressedTriggersExactlyOnceWhenHeld",
+        "Pressed edge should trigger the focused interactable.");
+
+    input.interactPressed = false;
+    const InteractionResult held = interactions.interact(input);
+    Expect(!held.triggered,
+        "TestInteractPressedTriggersExactlyOnceWhenHeld",
+        "Holding interact without a new pressed edge should not trigger again.");
+
+    const Interactable* state = interactions.interactableById(toggleId);
+    Expect(state != nullptr && state->toggled,
+        "TestInteractPressedTriggersExactlyOnceWhenHeld",
+        "The toggle should remain in the first triggered state.");
+}
+
+void TestOneShotPickupConsumesAndDoesNotTriggerAgain()
+{
+    InteractionSystem interactions;
+
+    Interactable pickup;
+    pickup.name = "One Shot Pickup";
+    pickup.prompt = "Pick up One Shot Pickup";
+    pickup.position = {0.0f, 0.5f, 1.0f};
+    pickup.radius = 2.0f;
+    pickup.type = InteractableType::Pickup;
+    pickup.oneShot = true;
+    const int pickupId = interactions.addInteractable(pickup);
+    interactions.updateFocus({0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f});
+
+    engine::InputState input;
+    input.interactPressed = true;
+    const InteractionResult first = interactions.interact(input);
+    const Interactable* state = interactions.interactableById(pickupId);
+    Expect(first.triggered && state != nullptr && state->consumed && !state->enabled,
+        "TestOneShotPickupConsumesAndDoesNotTriggerAgain",
+        "A one-shot pickup should be consumed and disabled after the first interaction.");
+
+    const InteractionFocus focusAfterPickup = interactions.updateFocus({0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f});
+    const InteractionResult second = interactions.interact(input);
+    Expect(!focusAfterPickup.hasFocus && !second.triggered,
+        "TestOneShotPickupConsumesAndDoesNotTriggerAgain",
+        "A consumed pickup should not regain focus or trigger again.");
+}
+
+void TestToggleInteractableChangesStateOnEachPress()
+{
+    InteractionSystem interactions;
+
+    Interactable toggle;
+    toggle.name = "Door Button";
+    toggle.prompt = "Toggle Door Button";
+    toggle.position = {0.0f, 0.5f, 1.0f};
+    toggle.radius = 2.0f;
+    toggle.type = InteractableType::Toggle;
+    const int toggleId = interactions.addInteractable(toggle);
+    interactions.updateFocus({0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f});
+
+    engine::InputState input;
+    input.interactPressed = true;
+    const InteractionResult opened = interactions.interact(input);
+    const Interactable* state = interactions.interactableById(toggleId);
+    Expect(opened.triggered && state != nullptr && state->toggled,
+        "TestToggleInteractableChangesStateOnEachPress",
+        "First press should toggle the interactable on.");
+
+    const InteractionResult closed = interactions.interact(input);
+    state = interactions.interactableById(toggleId);
+    Expect(closed.triggered && state != nullptr && !state->toggled,
+        "TestToggleInteractableChangesStateOnEachPress",
+        "A later pressed edge should toggle the interactable off.");
+}
+
+void TestNoFocusedInteractableMeansNoAction()
+{
+    InteractionSystem interactions;
+
+    Interactable info;
+    info.name = "Distant Info";
+    info.prompt = "Read Distant Info";
+    info.position = {0.0f, 0.5f, 10.0f};
+    info.radius = 1.0f;
+    info.type = InteractableType::Info;
+    interactions.addInteractable(info);
+    interactions.updateFocus({0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f});
+
+    engine::InputState input;
+    input.interactPressed = true;
+    const InteractionResult result = interactions.interact(input);
+    Expect(!result.triggered,
+        "TestNoFocusedInteractableMeansNoAction",
+        "Interact should no-op when there is no focused candidate.");
+}
+
 } // namespace
 
 int main()
@@ -355,6 +539,12 @@ int main()
     TestPlayerMovementUsesWorldCollisionForWall();
     TestDiagonalMovementIntoObstacleDoesNotTunnel();
     TestWorldRaycastFindsNearestCollider();
+    TestInteractionFocusSelectsNearestFacingCandidate();
+    TestInteractionFocusIgnoresDisabledAndConsumedInteractables();
+    TestInteractPressedTriggersExactlyOnceWhenHeld();
+    TestOneShotPickupConsumesAndDoesNotTriggerAgain();
+    TestToggleInteractableChangesStateOnEachPress();
+    TestNoFocusedInteractableMeansNoAction();
 
     if (!failures.empty()) {
         std::cerr << failures.size() << " test failure(s):\n";

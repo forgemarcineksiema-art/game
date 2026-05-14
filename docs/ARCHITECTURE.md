@@ -16,16 +16,17 @@ On Windows, `src/engine/platform/Win32Window.cpp` provides a small Win32 window 
 
 ## Input
 
-`src/engine/input/Input.h` defines `InputState` for v0.2:
+`src/engine/input/Input.h` defines `InputState` for the current prototype:
 
 - movement axes,
 - sprint,
 - jump,
+- interact held/pressed edge,
 - camera yaw/pitch deltas,
 - mouse deltas,
 - quit.
 
-The Win32 layer maps `W/A/S/D`, `Shift`, `Space`, `Esc`, mouse movement, and arrow-key camera fallback into this state. Mouse movement is safe window-hover delta, not captured or locked.
+The Win32 layer maps `W/A/S/D`, `Shift`, `Space`, `E`, `Esc`, mouse movement, and arrow-key camera fallback into this state. `E` is tracked as both held and pressed-edge state so gameplay code can trigger one interaction per key press. Mouse movement is safe window-hover delta, not captured or locked.
 
 ## Math
 
@@ -79,7 +80,11 @@ v0.2 adds debug primitive drawing to the renderer interface: debug camera, lines
 
 `src/game/TestWorld.*` is the v0.3 static world/collision boundary. It owns named static AABB colliders, a floor height, player proxy resolution, overlap checks, ground checks, and a simple raycast query for future camera obstruction or interaction work.
 
-`src/game/TestScene.*` defines the tiny neutral debug scene and asks `TestWorld` to build the collision test layout: floor, wall, narrow passage, corner case, low step-like blocker, and crate.
+`src/game/InteractionSystem.*` is the v0.4 gameplay interaction boundary. It owns lightweight interactable data, selects the best focus candidate from player position/facing/range, and executes simple built-in actions: pickup, toggle, and info. It deliberately has no scripting, inventory, dialogue tree, mission state, or UI framework.
+
+`src/game/TestScene.*` defines the tiny neutral debug scene. It asks `TestWorld` to build the collision test layout: floor, wall, narrow passage, corner case, low step-like blocker, and crate. It also owns three debug interactables: a one-shot pickup, a repeatable toggle/button, and a repeatable info marker.
+
+`src/game/SandboxLayer.*` integrates player/camera/world/interaction update order. It updates the player first, updates interaction focus from the player position/facing, executes `E` interactions, updates the camera, then renders world collision and interaction debug markers.
 
 Collision support is intentionally primitive:
 
@@ -90,6 +95,15 @@ Collision support is intentionally primitive:
 - simple raycast against AABBs.
 
 No physics engine, rigid bodies, slopes, ramps, moving platforms, or terrain streaming are present.
+
+Interaction support is intentionally primitive:
+
+- point/radius focus volumes,
+- nearest candidate with a simple facing preference,
+- built-in pickup/toggle/info actions,
+- debug text/log prompts instead of a UI layer.
+
+No scripting, inventory, doors with collision changes, dialogue, mission triggers, or save state are present.
 
 ## Tools and Scripts
 

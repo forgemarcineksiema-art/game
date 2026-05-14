@@ -367,3 +367,117 @@ Results:
 ## v0.3 Next Honest Step
 
 Use the v0.3 foundation for the next goal: v0.4 Interaction System. Keep it focused on interactable objects, focus detection, action commands, and debug prompts.
+
+## v0.4 Baseline - 2026-05-14
+
+Required docs read before coding:
+
+- `AGENTS.md`
+- `docs/STATUS.md`
+- `docs/RUNBOOK.md`
+- `docs/ARCHITECTURE.md`
+- `docs/ROADMAP.md`
+- `docs/AI_WORKFLOW.md`
+- `docs/DECISIONS.md`
+
+Baseline command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+```
+
+Baseline result:
+
+- Passed.
+- Doctor found expected project files and scripts.
+- Doctor warnings remain: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg` are not visible in the plain PATH.
+- CMake configured with `windows-vs2022-debug`.
+- Build produced `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- CTest passed 2/2 tests.
+- Headless smoke run passed with the null renderer and v0.3 world/collision debug log.
+
+## v0.4 Short Implementation Plan
+
+1. Add tests first for interaction behavior: nearest/facing focus selection, disabled/consumed filtering, pressed-edge execution, one-shot pickup consumption, repeatable toggle state, and no-focus no-op.
+2. Extend `InputState` and Win32 input tracking with `E` interaction held/pressed edge while preserving existing movement, sprint, jump, mouse, arrow, and quit controls.
+3. Add `src/game/InteractionSystem.h/.cpp` with focused interactable data, focus detection, action execution, prompt/result state, and no scripting/UI/inventory dependencies.
+4. Extend `TestScene` with three debug interactables: pickup, toggle/button, and info marker.
+5. Integrate `InteractionSystem` in `SandboxLayer`: update focus from player position/facing, execute on `interactPressed`, draw debug markers/highlight/range, and include prompt/result state in debug text/logs.
+6. Update docs for controls, interaction boundary, limitations, and deferred systems.
+7. Run the full validation matrix: doctor, configure, build, CTest, verify, smoke wrapper, short GDI run, and short DX11 run.
+
+## v0.4 Changes Made
+
+- Updated project version to `0.4.0`.
+- Extended `engine::InputState` with `interactHeld` and `interactPressed`.
+- Updated the Win32 input path so `E` produces a pressed-edge interaction action while preserving movement, sprint, jump, mouse, arrow camera fallback, and `Esc` quit.
+- Added `src/game/InteractionSystem.h` and `src/game/InteractionSystem.cpp`.
+- Added interaction data for:
+  - id/name/prompt,
+  - position and focus radius,
+  - pickup/toggle/info type,
+  - one-shot, enabled, consumed, and toggled state,
+  - message/result text.
+- Added focus detection using player position, facing direction, range, and nearest-candidate scoring.
+- Added interaction execution for:
+  - one-shot pickup consumption,
+  - repeatable toggle state changes,
+  - repeatable info/message markers.
+- Updated `TestScene` with three debug interactables: `Test Pickup`, `Wall Button`, and `Info Marker`.
+- Updated `SandboxLayer` to update focus, execute interactions, log results, draw interactable markers/ranges/highlights, and include prompt/result state in debug text.
+- Added lightweight interaction tests for focus selection, disabled/consumed filtering, pressed-edge no-repeat while held, one-shot pickup consumption, toggle state changes, and no-focus no-op.
+
+## v0.4 Commands Run So Far
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+ctest --preset windows-vs2022-debug --output-on-failure
+```
+
+## v0.4 Intermediate Results
+
+- Initial TDD build failed as expected because `game/InteractionSystem.h` did not exist yet:
+  - `error C1083: Cannot open include file: 'game/InteractionSystem.h': No such file or directory`
+- Build passed after adding the interaction system, input edge state, scene integration, and CMake wiring.
+- CTest passed after implementation: 2/2 tests.
+
+## v0.4 Final Validation - 2026-05-14
+
+Commands:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/doctor.ps1
+powershell -ExecutionPolicy Bypass -File scripts/configure.ps1
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+ctest --preset windows-vs2022-debug --output-on-failure
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+powershell -ExecutionPolicy Bypass -File scripts/run.ps1 -Args @('--smoke-test','--frames','3')
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --frames 90
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 90
+```
+
+Results:
+
+- `scripts/doctor.ps1`: passed. Warnings remain for tools not visible in the plain PATH: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- `scripts/configure.ps1`: passed using `windows-vs2022-debug`.
+- `scripts/build.ps1`: passed and produced `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 2/2 tests.
+- `scripts/verify.ps1`: passed; ran doctor, configure, build, CTest, and null-renderer smoke run.
+- `scripts/run.ps1 -Args @('--smoke-test','--frames','3')`: passed with the null renderer.
+- `EngineApp.exe --renderer gdi --frames 90`: passed; created a Win32 window and initialized the GDI fallback renderer.
+- `EngineApp.exe --renderer dx11 --frames 90`: passed; created a Win32 window and initialized DirectX 11 through WARP after hardware/debug device creation failed.
+- Final `scripts/verify.ps1` after documentation updates: passed.
+
+## v0.4 Known Issues / Limitations
+
+- Interaction focus is point/radius based with a facing preference, not a physics overlap volume or full camera ray system.
+- The toggle object changes interaction state only; it does not yet open a collision door or alter world geometry.
+- The pickup is debug state only. There is no inventory, save data, UI framework, item database, or audio feedback.
+- Info markers log/debug text only. There are no dialogue trees, scripting, mission triggers, or localization.
+- GDI shows debug text; DX11 currently renders line/box markers but has no text overlay.
+- DX11 hardware/debug device creation still fails in this environment, but WARP initializes and bounded DX11 runs exit cleanly.
+
+## v0.4 Next Honest Step
+
+Use the v0.4 foundation for the next goal: v0.5 Vehicle or Traversal Prototype Decision + first narrow prototype. Start by choosing exactly one narrow direction rather than adding both systems at once.

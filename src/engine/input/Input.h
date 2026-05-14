@@ -8,6 +8,8 @@ struct InputState {
     float moveForward = 0.0f;
     bool sprintHeld = false;
     bool jumpPressed = false;
+    bool interactHeld = false;
+    bool interactPressed = false;
     float cameraYawDelta = 0.0f;
     float cameraPitchDelta = 0.0f;
     float mouseDeltaX = 0.0f;

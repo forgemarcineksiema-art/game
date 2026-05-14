@@ -36,6 +36,8 @@ Status: implemented in this branch as a static AABB world with floor query, play
 - Add command/action abstraction.
 - Add simple prompts in debug UI or logs.
 
+Status: implemented in this branch as a focused prototype with three debug interactables, `E` pressed-edge input, range/facing focus detection, pickup/toggle/info actions, debug prompts, marker visualization, logs, and lightweight tests.
+
 ## v0.5 - Vehicle or Traversal Prototype
 
 - Choose one narrow prototype: simple vehicle handling or advanced traversal.
@@ -56,4 +58,4 @@ Status: implemented in this branch as a static AABB world with floor query, play
 
 ## Recommended Next Goal
 
-Build v0.4 Interaction System.
+Build v0.5 Vehicle or Traversal Prototype Decision + first narrow prototype.

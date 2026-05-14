@@ -53,6 +53,7 @@ Prototype controls:
 - `W/A/S/D`: camera-relative movement
 - `Shift`: sprint
 - `Space`: jump
+- `E`: interact with the focused debug object
 - Mouse movement over the window: orbit camera
 - Arrow keys: camera fallback controls
 - `Esc`: quit
@@ -114,3 +115,4 @@ Prints git status, important file presence, build output presence, and the openi
 - If all windowed rendering fails, keep `--renderer null --headless` working while the renderer issue is fixed.
 - If mouse-look feels risky in a VM or remote session, use arrow keys for camera orbit. Mouse is not captured/locked in v0.2.
 - v0.3 collision is debug-only static AABB collision. If a collider layout feels odd, inspect `src/game/TestWorld.cpp` and rerun `scripts/verify.ps1` after edits.
+- v0.4 interaction focus is debug-only point/radius selection with a facing preference. If an object does not focus, move closer and face the marker, then press `E`.

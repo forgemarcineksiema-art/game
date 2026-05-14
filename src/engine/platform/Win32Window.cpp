@@ -91,6 +91,7 @@ public:
         m_input.cameraYawDelta = 0.0f;
         m_input.cameraPitchDelta = 0.0f;
         m_input.jumpPressed = false;
+        m_input.interactPressed = false;
 
         MSG message {};
         while (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE)) {
@@ -101,8 +102,14 @@ public:
         m_input.moveForward = AxisFromKeys('W', 'S');
         m_input.moveRight = AxisFromKeys('D', 'A');
         m_input.sprintHeld = KeyDown(VK_SHIFT);
-        m_input.jumpPressed = KeyDown(VK_SPACE);
+        const bool jumpDown = KeyDown(VK_SPACE);
+        const bool interactDown = KeyDown('E');
+        m_input.jumpPressed = jumpDown && !m_previousJumpDown;
+        m_input.interactHeld = interactDown;
+        m_input.interactPressed = interactDown && !m_previousInteractDown;
         m_input.quitRequested = m_shouldClose || KeyDown(VK_ESCAPE);
+        m_previousJumpDown = jumpDown;
+        m_previousInteractDown = interactDown;
 
         const float arrowYaw = AxisFromKeys(VK_RIGHT, VK_LEFT) * 12.0f;
         const float arrowPitch = AxisFromKeys(VK_UP, VK_DOWN) * 12.0f;
@@ -193,6 +200,8 @@ private:
     bool m_hasMousePosition = false;
     int m_lastMouseX = 0;
     int m_lastMouseY = 0;
+    bool m_previousJumpDown = false;
+    bool m_previousInteractDown = false;
 };
 
 std::unique_ptr<IWindow> CreatePlatformWindow()
