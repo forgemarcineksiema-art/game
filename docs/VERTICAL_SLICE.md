@@ -46,9 +46,17 @@ The player arrives at a closed ferry office on Veyra Reach. The main office door
 - Camera orbit and follow with no normal-movement jitter.
 - Static collision that handles walls, corners, and narrow paths.
 - Interaction focus with predictable prompt behavior.
-- A small world-state model for remembered local flags.
+- A small world-state model for remembered local flags. v0.6 provides the first runtime-only version with `powerRestored`, `manifestCollected`, `serviceRouteUsed`, `maintenanceBoxInspected`, and `routeOpened`.
 - Simple traversal, recommended as the next v0.5 direction.
 - Debug text that can show slice state without a full UI framework.
+
+## v0.6 Prototype State Hooks
+
+- Completing the Service Barrier Vault records `serviceRouteUsed=true`.
+- Inspecting the Maintenance Box records `maintenanceBoxInspected=true` and `powerRestored=true`.
+- Collecting the Ferry Manifest records `manifestCollected=true`.
+- Toggling the Wall Button records `routeOpened=true` or `routeOpened=false`.
+- GDI debug text/logs show current flags, event count, last event, and whether the current action changed remembered state.
 
 ## Systems Explicitly Deferred
 
@@ -79,4 +87,3 @@ Reason: the slice depends on on-foot access gating, readable obstacles, and rout
 - The camera remains stable in narrow spaces.
 - Collision prevents walking through walls and allows the intended path.
 - The slice can be validated in a bounded run plus a manual checklist.
-

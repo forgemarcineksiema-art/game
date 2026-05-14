@@ -47,8 +47,16 @@ This file lists known foundation issues before v0.5. It is not a mandate to fix 
 - Interactables are hardcoded in `TestScene`.
 - Focus uses point/radius volumes with a facing preference and close proximity fallback.
 - Toggle objects only change interaction state; they do not alter collision or world geometry.
-- Pickup state is local runtime state only; there is no inventory or save data.
+- Pickup/world state is local runtime state only; there is no inventory, persistence, or save data.
 - No UI framework exists, so prompts are debug text/logs only.
+
+## World State
+
+- `WorldState` is an in-memory local event ledger, not a save/load system.
+- Flag mappings are hardcoded in `TestScene`.
+- Repeated same-value flag writes are ignored, which is correct for v0.6 but may need richer event semantics later.
+- Debug summary text can become long as more flags are added.
+- There is no mission graph, quest scripting, dialogue integration, global event bus, or persistence layer.
 
 ## Traversal
 
@@ -65,10 +73,10 @@ This file lists known foundation issues before v0.5. It is not a mandate to fix 
 - `InteractionSystem` belongs in `src/game` for now. Promote it to `src/engine` only after multiple gameplay contexts prove a stable boundary.
 - There is no scene serialization, asset registry, or editor.
 
-## Recommended Debt Before Or During v0.5
+## Recommended Debt Before Or During v0.7
 
-1. Document and preserve input edge/held semantics while adding any new traversal action.
-2. Keep traversal state in `src/game` until the prototype proves the right boundary.
-3. Add tests for any new traversal state transitions.
-4. Avoid adding a physics dependency for the first traversal prototype.
-5. Consider renaming `TestWorld` / `TestScene` only when v0.5 starts shaping the vertical slice scene.
+1. Keep `WorldState` runtime-only unless v0.7 explicitly needs persistence.
+2. Keep state-to-action mapping in the scene layer until the slice proves a broader boundary.
+3. Consider renaming `TestWorld` / `TestScene` to `PrototypeWorld` / `PrototypeScene` only as part of a focused vertical-slice cleanup.
+4. Keep debug text readable if more remembered flags are added.
+5. Avoid adding a mission scripting system before the micro-slice proves its minimal state flow.

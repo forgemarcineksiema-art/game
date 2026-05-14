@@ -52,7 +52,7 @@ build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 120
 
 ## Interactions
 
-- [ ] At spawn, the pickup focus prompt appears: `Press E: Pick up Test Item`.
+- [ ] At spawn, the manifest focus prompt appears: `Press E: Collect Ferry Manifest`.
 - [ ] Pressing `E` once on the pickup logs/records the pickup result.
 - [ ] Holding `E` does not repeatedly trigger the pickup.
 - [ ] After pickup consumption, the pickup no longer regains focus.
@@ -61,6 +61,16 @@ build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 120
 - [ ] Moving near and facing the info marker shows the info prompt.
 - [ ] Pressing `E` on the info marker logs/records the info message.
 - [ ] If an object does not focus, moving closer and facing it resolves the issue.
+
+## World State
+
+- [ ] Initial debug text shows `powerRestored=false`, `manifestCollected=false`, `serviceRouteUsed=false`, `maintenanceBoxInspected=false`, and `routeOpened=false`.
+- [ ] Collecting the Ferry Manifest changes `manifestCollected=true` and increments `eventCount`.
+- [ ] Toggling the Wall Button changes `routeOpened` and changes the debug gate marker color.
+- [ ] Completing the service barrier traversal changes `serviceRouteUsed=true`.
+- [ ] Inspecting the Maintenance Box changes `maintenanceBoxInspected=true` and `powerRestored=true`.
+- [ ] After power is restored, the Maintenance Box marker changes to the restored-power debug color.
+- [ ] Repeating a completed one-shot action does not add another remembered event.
 
 ## Traversal
 

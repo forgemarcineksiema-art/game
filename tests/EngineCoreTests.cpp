@@ -4,9 +4,11 @@
 #include "engine/math/Math.h"
 #include "game/InteractionSystem.h"
 #include "game/PlayerController.h"
+#include "game/TestScene.h"
 #include "game/TestWorld.h"
 #include "game/ThirdPersonCamera.h"
 #include "game/TraversalSystem.h"
+#include "game/WorldState.h"
 #include "engine/renderer/NullRenderer.h"
 
 #include <filesystem>
@@ -520,6 +522,171 @@ void TestNoFocusedInteractableMeansNoAction()
         "Interact should no-op when there is no focused candidate.");
 }
 
+void TestWorldStateSetsAndReadsFlags()
+{
+    WorldState state;
+    Expect(!state.isFlagSet(WorldFlag::PowerRestored),
+        "TestWorldStateSetsAndReadsFlags",
+        "Power should start unrestored.");
+
+    const bool changed = state.setFlag(WorldFlag::PowerRestored, true, "Maintenance Box");
+    Expect(changed,
+        "TestWorldStateSetsAndReadsFlags",
+        "Setting a changed flag should report a change.");
+    Expect(state.isFlagSet(WorldFlag::PowerRestored),
+        "TestWorldStateSetsAndReadsFlags",
+        "Power restored flag should be readable after setting it.");
+    Expect(state.eventCount() == 1,
+        "TestWorldStateSetsAndReadsFlags",
+        "A changed flag should record one event.");
+    Expect(state.lastEvent() != nullptr && state.lastEvent()->id == 1,
+        "TestWorldStateSetsAndReadsFlags",
+        "First world event should have id 1.");
+    Expect(state.debugSummary().find("powerRestored=true") != std::string::npos,
+        "TestWorldStateSetsAndReadsFlags",
+        "Debug summary should include the power flag.");
+}
+
+void TestWorldStateRecordsEventsInOrder()
+{
+    WorldState state;
+    state.setFlag(WorldFlag::ManifestCollected, true, "Ferry Manifest");
+    state.setFlag(WorldFlag::RouteOpened, true, "Wall Button");
+
+    const std::vector<WorldEvent>& events = state.events();
+    Expect(events.size() == 2,
+        "TestWorldStateRecordsEventsInOrder",
+        "Two changed flags should record two events.");
+    Expect(events.size() >= 2 && events[0].id == 1 && events[1].id == 2,
+        "TestWorldStateRecordsEventsInOrder",
+        "Event ids should be assigned in deterministic order.");
+    Expect(events.size() >= 2 && events[0].flag == WorldFlag::ManifestCollected && events[1].flag == WorldFlag::RouteOpened,
+        "TestWorldStateRecordsEventsInOrder",
+        "Event records should preserve flag order.");
+    Expect(state.lastEventText().find("routeOpened=true") != std::string::npos,
+        "TestWorldStateRecordsEventsInOrder",
+        "Last event text should describe the latest changed flag.");
+}
+
+void TestWorldStateIgnoresRepeatedSameFlagValue()
+{
+    WorldState state;
+    const bool first = state.setFlag(WorldFlag::ServiceRouteUsed, true, "Service Barrier Vault");
+    const bool repeated = state.setFlag(WorldFlag::ServiceRouteUsed, true, "Service Barrier Vault");
+    const bool reset = state.setFlag(WorldFlag::ServiceRouteUsed, false, "Debug Reset");
+
+    Expect(first,
+        "TestWorldStateIgnoresRepeatedSameFlagValue",
+        "First flag change should be recorded.");
+    Expect(!repeated,
+        "TestWorldStateIgnoresRepeatedSameFlagValue",
+        "Setting the same value twice should not record another remembered event.");
+    Expect(reset,
+        "TestWorldStateIgnoresRepeatedSameFlagValue",
+        "Changing a flag back should be recorded.");
+    Expect(state.eventCount() == 2,
+        "TestWorldStateIgnoresRepeatedSameFlagValue",
+        "Only actual value changes should create events.");
+}
+
+void TestOneShotManifestPickupUpdatesWorldStateOnce()
+{
+    TestScene scene;
+    scene.interactions().updateFocus({0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f});
+
+    engine::InputState input;
+    input.interactPressed = true;
+    const InteractionResult first = scene.interactions().interact(input);
+    const bool firstChangedState = scene.applyInteractionResult(first);
+    const std::size_t eventCountAfterFirst = scene.worldState().eventCount();
+
+    scene.interactions().updateFocus({0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f});
+    const InteractionResult second = scene.interactions().interact(input);
+    const bool secondChangedState = scene.applyInteractionResult(second);
+
+    Expect(first.triggered && firstChangedState,
+        "TestOneShotManifestPickupUpdatesWorldStateOnce",
+        "Manifest pickup should trigger and update remembered state.");
+    Expect(scene.worldState().isFlagSet(WorldFlag::ManifestCollected),
+        "TestOneShotManifestPickupUpdatesWorldStateOnce",
+        "Manifest pickup should set manifestCollected.");
+    Expect(!second.triggered && !secondChangedState,
+        "TestOneShotManifestPickupUpdatesWorldStateOnce",
+        "Consumed one-shot pickup should not update remembered state again.");
+    Expect(scene.worldState().eventCount() == eventCountAfterFirst,
+        "TestOneShotManifestPickupUpdatesWorldStateOnce",
+        "One-shot pickup should only record one world event.");
+}
+
+void TestMaintenanceInteractionRestoresPower()
+{
+    TestScene scene;
+    InteractionResult result;
+    result.triggered = true;
+    result.name = "Maintenance Box";
+    result.type = InteractableType::Info;
+
+    const bool changedState = scene.applyInteractionResult(result);
+    Expect(changedState,
+        "TestMaintenanceInteractionRestoresPower",
+        "Maintenance box interaction should update remembered state.");
+    Expect(scene.worldState().isFlagSet(WorldFlag::MaintenanceBoxInspected),
+        "TestMaintenanceInteractionRestoresPower",
+        "Maintenance box interaction should record inspection.");
+    Expect(scene.worldState().isFlagSet(WorldFlag::PowerRestored),
+        "TestMaintenanceInteractionRestoresPower",
+        "Maintenance box interaction should restore power.");
+    Expect(scene.worldState().eventCount() == 2,
+        "TestMaintenanceInteractionRestoresPower",
+        "Maintenance interaction should record inspection and power events.");
+}
+
+void TestToggleInteractionUpdatesRouteOpenedFlag()
+{
+    TestScene scene;
+    InteractionResult opened;
+    opened.triggered = true;
+    opened.name = "Wall Button";
+    opened.type = InteractableType::Toggle;
+    opened.toggled = true;
+
+    InteractionResult closed = opened;
+    closed.toggled = false;
+
+    const bool openedChanged = scene.applyInteractionResult(opened);
+    const bool closedChanged = scene.applyInteractionResult(closed);
+
+    Expect(openedChanged && closedChanged,
+        "TestToggleInteractionUpdatesRouteOpenedFlag",
+        "Route toggle should record both opened and closed state changes.");
+    Expect(!scene.worldState().isFlagSet(WorldFlag::RouteOpened),
+        "TestToggleInteractionUpdatesRouteOpenedFlag",
+        "Second toggle should close the remembered route flag.");
+    Expect(scene.worldState().eventCount() == 2,
+        "TestToggleInteractionUpdatesRouteOpenedFlag",
+        "Route toggle state changes should record deterministic events.");
+}
+
+void TestTraversalCompletionRecordsServiceRouteUsed()
+{
+    TestScene scene;
+    const bool first = scene.recordServiceRouteUsed();
+    const bool repeated = scene.recordServiceRouteUsed();
+
+    Expect(first,
+        "TestTraversalCompletionRecordsServiceRouteUsed",
+        "First traversal completion should update remembered state.");
+    Expect(scene.worldState().isFlagSet(WorldFlag::ServiceRouteUsed),
+        "TestTraversalCompletionRecordsServiceRouteUsed",
+        "Traversal completion should set serviceRouteUsed.");
+    Expect(!repeated,
+        "TestTraversalCompletionRecordsServiceRouteUsed",
+        "Repeated traversal completion should not duplicate the remembered event.");
+    Expect(scene.worldState().eventCount() == 1,
+        "TestTraversalCompletionRecordsServiceRouteUsed",
+        "Repeated traversal completion should keep one service route event.");
+}
+
 TraversalAffordance MakeTestTraversalAffordance()
 {
     TraversalAffordance affordance;
@@ -815,6 +982,13 @@ int main()
     TestOneShotPickupConsumesAndDoesNotTriggerAgain();
     TestToggleInteractableChangesStateOnEachPress();
     TestNoFocusedInteractableMeansNoAction();
+    TestWorldStateSetsAndReadsFlags();
+    TestWorldStateRecordsEventsInOrder();
+    TestWorldStateIgnoresRepeatedSameFlagValue();
+    TestOneShotManifestPickupUpdatesWorldStateOnce();
+    TestMaintenanceInteractionRestoresPower();
+    TestToggleInteractionUpdatesRouteOpenedFlag();
+    TestTraversalCompletionRecordsServiceRouteUsed();
     TestTraversalFocusSelectsAvailableAffordance();
     TestTraversalFocusIgnoresDisabledAffordance();
     TestTraversalTriggerTakesPriorityOverJumpWhenFocused();

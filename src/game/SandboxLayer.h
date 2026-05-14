@@ -19,13 +19,17 @@ private:
     void updateDebugText();
     void drawInteractionDebug(engine::IRenderer& renderer);
     void drawTraversalDebug(engine::IRenderer& renderer);
+    void drawWorldStateDebug(engine::IRenderer& renderer);
+    void recordWorldStateChange(bool changed);
 
     TestScene m_scene;
     PlayerController m_player;
     ThirdPersonCamera m_camera;
     std::string m_debugText;
     std::string m_lastInteractionText = "none";
+    std::string m_lastWorldEventText = "none";
     bool m_interactPressedThisFrame = false;
     bool m_traversalPressedThisFrame = false;
+    bool m_worldStateChangedThisFrame = false;
     unsigned long long m_frameIndex = 0;
 };

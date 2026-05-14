@@ -190,3 +190,15 @@ Reason: The player may press `Space` from anywhere inside the focus radius. Star
 Decision: Resolve the traversal target through `TestWorld::resolvePlayer` before returning the player to normal movement.
 
 Reason: The collision system already owns floor/box correction. Reusing it at traversal completion keeps landing grounded, clears velocity, exposes collision debug state, and avoids adding a physics library or new traversal collision solver.
+
+## v0.6 World State in Game Layer
+
+Decision: Add `WorldState` under `src/game` as a local, runtime-only remembered-state/event ledger.
+
+Reason: v0.6 needs to prove that The Ferry Office can remember meaningful actions, but it does not need save/load, missions, inventory, scripting, or a global quest system. Keeping this in the game layer makes the contract easy to test and easy to reshape as the micro-slice becomes clearer.
+
+## v0.6 Scene-Level State Mapping
+
+Decision: Map existing prototype actions to remembered flags in `TestScene` instead of teaching `InteractionSystem` or `TraversalSystem` about Tidebreak-specific world flags.
+
+Reason: Interaction and traversal should stay generic. The scene owns the meaning of actions: Ferry Manifest means `manifestCollected`, Wall Button means `routeOpened`, Maintenance Box means `maintenanceBoxInspected` and `powerRestored`, and Service Barrier Vault completion means `serviceRouteUsed`.

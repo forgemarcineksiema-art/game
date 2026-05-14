@@ -5,13 +5,13 @@ TestScene::TestScene()
     m_world.buildDefaultCollisionTestLayout();
 
     Interactable pickup;
-    pickup.name = "Test Pickup";
-    pickup.prompt = "Pick up Test Item";
+    pickup.name = "Ferry Manifest";
+    pickup.prompt = "Collect Ferry Manifest";
     pickup.position = {0.0f, 0.45f, 1.35f};
     pickup.radius = 1.8f;
     pickup.type = InteractableType::Pickup;
     pickup.oneShot = true;
-    pickup.message = "Picked up Test Item.";
+    pickup.message = "Collected Ferry Manifest.";
     m_interactions.addInteractable(pickup);
 
     Interactable toggle;
@@ -37,7 +37,7 @@ TestScene::TestScene()
     maintenanceBox.position = {2.8f, 0.65f, 0.25f};
     maintenanceBox.radius = 1.6f;
     maintenanceBox.type = InteractableType::Info;
-    maintenanceBox.message = "Maintenance box placeholder: reachable after traversal.";
+    maintenanceBox.message = "Maintenance box inspected: local power restored.";
     m_interactions.addInteractable(maintenanceBox);
 
     TraversalAffordance serviceVault;
@@ -81,4 +81,38 @@ TraversalSystem& TestScene::traversal()
 const TraversalSystem& TestScene::traversal() const
 {
     return m_traversal;
+}
+
+WorldState& TestScene::worldState()
+{
+    return m_worldState;
+}
+
+const WorldState& TestScene::worldState() const
+{
+    return m_worldState;
+}
+
+bool TestScene::applyInteractionResult(const InteractionResult& result)
+{
+    if (!result.triggered) {
+        return false;
+    }
+
+    bool changed = false;
+    if (result.name == "Ferry Manifest" || result.name == "Test Pickup") {
+        changed |= m_worldState.setFlag(WorldFlag::ManifestCollected, true, result.name);
+    } else if (result.name == "Maintenance Box") {
+        changed |= m_worldState.setFlag(WorldFlag::MaintenanceBoxInspected, true, result.name);
+        changed |= m_worldState.setFlag(WorldFlag::PowerRestored, true, result.name);
+    } else if (result.name == "Wall Button") {
+        changed |= m_worldState.setFlag(WorldFlag::RouteOpened, result.toggled, result.name);
+    }
+
+    return changed;
+}
+
+bool TestScene::recordServiceRouteUsed()
+{
+    return m_worldState.setFlag(WorldFlag::ServiceRouteUsed, true, "Service Barrier Vault");
 }

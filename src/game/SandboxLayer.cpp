@@ -16,6 +16,7 @@ void SandboxLayer::onAttach()
 void SandboxLayer::onUpdate(double deltaSeconds, const engine::InputState& input)
 {
     ++m_frameIndex;
+    m_worldStateChangedThisFrame = false;
     const float dt = static_cast<float>(deltaSeconds);
     const engine::Vec3 traversalFacing = engine::ForwardFromYaw(m_player.state().facingYawRadians);
     m_scene.traversal().updateFocus(m_player.state().position, traversalFacing);
@@ -23,6 +24,9 @@ void SandboxLayer::onUpdate(double deltaSeconds, const engine::InputState& input
     m_traversalPressedThisFrame = input.jumpPressed && m_scene.traversal().focus().hasFocus;
 
     m_player.update(dt, input, m_camera.state().yawRadians, &traversalActivation);
+    if (m_player.state().traversalLandedThisFrame) {
+        recordWorldStateChange(m_scene.recordServiceRouteUsed());
+    }
 
     const engine::Vec3 playerFacing = engine::ForwardFromYaw(m_player.state().facingYawRadians);
     m_scene.interactions().updateFocus(m_player.state().position, playerFacing);
@@ -31,6 +35,7 @@ void SandboxLayer::onUpdate(double deltaSeconds, const engine::InputState& input
     if (interaction.triggered) {
         m_lastInteractionText = interaction.message;
         engine::Logger::info("Interaction: " + interaction.message);
+        recordWorldStateChange(m_scene.applyInteractionResult(interaction));
     }
 
     CameraTarget target;
@@ -55,6 +60,7 @@ void SandboxLayer::onRender(engine::IRenderer& renderer)
     for (const StaticCollider& collider : m_scene.world().colliders()) {
         renderer.drawDebugBox(collider.bounds.center, collider.bounds.halfExtents, {0.9f, 0.72f, 0.28f, 1.0f});
     }
+    drawWorldStateDebug(renderer);
 
     const PlayerState& player = m_player.state();
     renderer.drawDebugBox(player.position + engine::Vec3 {0.0f, m_player.settings().height * 0.5f, 0.0f},
@@ -103,6 +109,7 @@ void SandboxLayer::updateDebugText()
            << "colliders=" << m_scene.world().colliders().size() << " "
            << "interactables=" << m_scene.interactions().interactableCount() << " "
            << "interactPressed=" << (m_interactPressedThisFrame ? "yes" : "no") << " "
+           << "worldChanged=" << (m_worldStateChangedThisFrame ? "yes" : "no") << " "
            << "traversal=" << (player.traversalMode == PlayerTraversalMode::Traversing ? "active" : "normal") << " "
            << "travProgress=" << player.traversalProgress << " "
            << "travStart=" << (player.traversalUsesCurrentPlayerPositionStart ? "current" : "fixed") << " "
@@ -121,6 +128,8 @@ void SandboxLayer::updateDebugText()
         output << "prompt=\"Press E: " << focus.prompt << "\" ";
     }
     output << "lastInteraction=\"" << m_lastInteractionText << "\" "
+           << "lastWorldEvent=\"" << m_lastWorldEventText << "\" "
+           << "worldState={" << m_scene.worldState().debugSummary() << "} "
            << "camera yaw=" << engine::Degrees(camera.yawRadians)
            << " pitch=" << engine::Degrees(camera.pitchRadians)
            << " dist=" << camera.distance;
@@ -140,6 +149,9 @@ void SandboxLayer::drawInteractionDebug(engine::IRenderer& renderer)
                 ? engine::Color {1.0f, 0.82f, 0.25f, 1.0f}
                 : engine::Color {1.0f, 0.55f, 0.25f, 1.0f};
         }
+        if (interactable.name == "Maintenance Box" && m_scene.worldState().isFlagSet(WorldFlag::PowerRestored)) {
+            color = {0.25f, 1.0f, 0.85f, 1.0f};
+        }
 
         if (!interactable.enabled || interactable.consumed) {
             color = {0.35f, 0.35f, 0.35f, 1.0f};
@@ -158,6 +170,21 @@ void SandboxLayer::drawInteractionDebug(engine::IRenderer& renderer)
             interactable.position + engine::Vec3 {0.0f, isFocused ? 1.2f : 0.75f, 0.0f},
             color);
     }
+}
+
+void SandboxLayer::drawWorldStateDebug(engine::IRenderer& renderer)
+{
+    const bool routeOpened = m_scene.worldState().isFlagSet(WorldFlag::RouteOpened);
+    const engine::Color gateColor = routeOpened
+        ? engine::Color {0.25f, 1.0f, 0.35f, 1.0f}
+        : engine::Color {1.0f, 0.25f, 0.2f, 1.0f};
+    renderer.drawDebugBox({-0.05f, m_scene.world().floorHeight() + 0.55f, 2.15f}, {0.12f, 0.55f, 0.8f}, gateColor);
+
+    const bool powerRestored = m_scene.worldState().isFlagSet(WorldFlag::PowerRestored);
+    const engine::Color powerColor = powerRestored
+        ? engine::Color {0.25f, 1.0f, 0.85f, 1.0f}
+        : engine::Color {0.45f, 0.45f, 0.55f, 1.0f};
+    renderer.drawDebugBox({2.8f, m_scene.world().floorHeight() + 0.75f, 0.25f}, {0.24f, 0.24f, 0.24f}, powerColor);
 }
 
 void SandboxLayer::drawTraversalDebug(engine::IRenderer& renderer)
@@ -195,4 +222,15 @@ void SandboxLayer::drawTraversalDebug(engine::IRenderer& renderer)
         renderer.drawDebugLine(activeStart, player.position + engine::Vec3 {0.0f, 0.55f, 0.0f}, {1.0f, 0.2f, 1.0f, 1.0f});
         renderer.drawDebugLine(player.position + engine::Vec3 {0.0f, 0.55f, 0.0f}, activeEnd, {0.2f, 1.0f, 1.0f, 1.0f});
     }
+}
+
+void SandboxLayer::recordWorldStateChange(bool changed)
+{
+    if (!changed) {
+        return;
+    }
+
+    m_worldStateChangedThisFrame = true;
+    m_lastWorldEventText = m_scene.worldState().lastEventText();
+    engine::Logger::info("World event: " + m_lastWorldEventText);
 }

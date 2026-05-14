@@ -810,3 +810,128 @@ Results:
 ## v0.5.1 Next Honest Step
 
 Use the stable traversal foundation for the next goal: v0.6 World Event / Remembered State Prototype. Keep it focused on local remembered state and simple scene events for The Ferry Office rather than NPC AI, missions, inventory, or save/load.
+
+## v0.6 Baseline - 2026-05-14
+
+Goal: add a small remembered-state/event layer for The Ferry Office prototype loop. This goal must not add NPC AI, vehicles, combat, inventory, save/load, mission scripting, dialogue trees, physics libraries, new traversal types, final art, or asset pipelines.
+
+Required context read before coding:
+
+- `AGENTS.md`
+- `docs/GAME_DIRECTION.md`
+- `docs/VERTICAL_SLICE.md`
+- `docs/TECH_DEBT.md`
+- `docs/MANUAL_TEST_CHECKLIST.md`
+- `docs/STATUS.md`
+- `docs/ROADMAP.md`
+- `docs/ARCHITECTURE.md`
+- `docs/DECISIONS.md`
+- `docs/RUNBOOK.md`
+- `src/game/InteractionSystem.*`
+- `src/game/TestScene.*`
+- `src/game/SandboxLayer.*`
+- `tests/EngineCoreTests.cpp`
+
+Baseline command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+```
+
+Baseline result:
+
+- Passed.
+- Doctor found all expected project docs and structure.
+- Doctor warnings remain for tools not visible in the plain PATH: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- CMake configured with `windows-vs2022-debug`.
+- Build produced `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- CTest passed 2/2 tests.
+- Headless smoke run passed with the null renderer and engine `v0.5.1`.
+
+## v0.6 Short Implementation Plan
+
+1. Add failing tests first for a focused `WorldState` game-layer module: flag reads/writes, event id/order/count, repeated flag handling, interaction-to-state mapping, and traversal completion state.
+2. Add `src/game/WorldState.h/.cpp` with boolean local flags, deterministic event records, last-event access, and debug summary text.
+3. Keep state mapping in `TestScene` so `InteractionSystem` stays generic: manifest pickup, wall button/route toggle, maintenance box power restore, and service-route traversal completion.
+4. Integrate `WorldState` in `SandboxLayer` by applying interaction results and traversal landing events after existing gameplay updates.
+5. Add debug text/log output for current flags, event count, last event, and whether an action changed remembered state.
+6. Add one visible debug feedback change using existing debug markers/gate color; do not add UI, assets, scripting, save/load, or mission logic.
+7. Update docs and run the full validation matrix.
+
+## v0.6 Changes Made
+
+- Updated project version to `0.6.0`.
+- Added `src/game/WorldState.h` and `src/game/WorldState.cpp`.
+- Added local remembered flags:
+  - `powerRestored`,
+  - `manifestCollected`,
+  - `serviceRouteUsed`,
+  - `maintenanceBoxInspected`,
+  - `routeOpened`.
+- Added deterministic `WorldEvent` records with id, name, flag, value, source, event count, last event text, and debug summary text.
+- Kept repeated same-value flag writes from duplicating remembered events.
+- Updated `TestScene` to own world state and map existing prototype actions:
+  - Ferry Manifest pickup -> `manifestCollected=true`,
+  - Wall Button toggle -> `routeOpened=true/false`,
+  - Maintenance Box interaction -> `maintenanceBoxInspected=true` and `powerRestored=true`,
+  - Service Barrier Vault completion -> `serviceRouteUsed=true`.
+- Renamed the spawn pickup from `Test Pickup` to `Ferry Manifest` for the Ferry Office loop.
+- Updated `SandboxLayer` to apply remembered state after interaction results and traversal landing, log world events, show world flags/event summary in debug text, and draw route/power debug markers with state-dependent colors.
+- Added lightweight tests for world flags, event order/count, repeated flag writes, one-shot manifest state, maintenance power restore, route toggle state, and traversal service-route state.
+- Updated docs for architecture, roadmap, decisions, vertical slice, tech debt, manual checklist, and this status file.
+
+## v0.6 Intermediate Results
+
+Commands:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; ctest --preset windows-vs2022-debug --output-on-failure
+```
+
+Results:
+
+- Initial TDD build failed as expected after adding world-state tests because `game/WorldState.h` did not exist yet:
+  - `error C1083: Cannot open include file: 'game/WorldState.h': No such file or directory`
+- First implementation build then exposed a missing test include for `game/TestScene.h`; the test harness was corrected.
+- Build + CTest passed after adding `WorldState`, scene mappings, sandbox debug/log integration, and CMake wiring: 2/2 tests.
+
+## v0.6 Final Validation - 2026-05-14
+
+Commands:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/doctor.ps1
+powershell -ExecutionPolicy Bypass -File scripts/configure.ps1
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+ctest --preset windows-vs2022-debug --output-on-failure
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --frames 180
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 180
+python tools/status_report.py
+```
+
+Results:
+
+- `scripts/doctor.ps1`: passed. Warnings remain for tools not visible in the plain PATH: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- `scripts/configure.ps1`: passed using `windows-vs2022-debug`.
+- `scripts/build.ps1`: passed and produced `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 2/2 tests.
+- `scripts/verify.ps1`: passed; ran doctor, configure, build, CTest, and null-renderer smoke run. Smoke logs show engine `v0.6.0`, the Ferry Manifest focus prompt, and world-state debug summary with all initial flags false.
+- `EngineApp.exe --renderer gdi --frames 180`: passed; created a Win32 window, initialized the GDI fallback renderer, showed the Ferry Manifest focus prompt and world-state debug summary, and exited cleanly.
+- `EngineApp.exe --renderer dx11 --frames 180`: passed; created a Win32 window and initialized DirectX 11 through WARP after hardware DX11 device creation failed.
+- `python tools/status_report.py`: passed and reported the v0.6 working tree changes plus expected docs/scripts.
+
+## v0.6 Known Issues / Limitations
+
+- `WorldState` is runtime-only. There is no save/load, persistence, mission scripting, inventory, dialogue, or global event bus.
+- State mapping is hardcoded in `TestScene` and should stay there until the Ferry Office micro-slice proves a broader boundary.
+- Repeated same-value flag writes are ignored; this prevents duplicate remembered events for one-shot actions but may need richer event semantics later.
+- Debug summary text is useful but long; a future UI/debug overlay pass should improve readability.
+- The route-open debug gate changes color, but it does not yet alter collision geometry.
+- Manual checklist was updated, but a full hand-played traversal/interactions/state pass was not performed in this run. Bounded GDI and DX11 launches passed.
+- DX11 hardware device creation still falls back to WARP in this environment.
+
+## v0.6 Next Honest Step
+
+Use the remembered-state foundation for the next goal: v0.7 The Ferry Office Micro-Slice. Keep it focused on one playable prototype loop using existing movement, camera, collision, interaction, traversal, and world-state systems without adding NPC AI, vehicles, combat, inventory, save/load, final art, asset pipelines, or full mission scripting.

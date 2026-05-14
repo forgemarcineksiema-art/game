@@ -75,12 +75,15 @@ Status: implemented as a traversal stability pass. Traversal now starts from the
 - Avoid NPC AI, complex planners, mission scripting, inventory, save/load, or large content systems.
 - Keep scope small enough for deterministic tests.
 
-## v0.7 - Mission Slice
+Status: implemented as a local remembered-state prototype with boolean flags, deterministic event records, debug summary text/logs, scene-level mappings from existing interactions/traversal, and lightweight tests.
+
+## v0.7 - The Ferry Office Micro-Slice
 
 - Build one original micro-scenario using project-owned placeholder assets.
-- Exercise player, camera, world, interaction, and event systems.
+- Exercise player, camera, world, interaction, traversal, and remembered-state systems.
 - Keep the slice small enough to validate in one run.
+- Do not add full mission scripting, NPC AI, inventory, save/load, vehicles, combat, final art, or asset pipelines.
 
 ## Recommended Next Goal
 
-Build v0.6 World Event / Remembered State Prototype.
+Build v0.7 The Ferry Office Micro-Slice.

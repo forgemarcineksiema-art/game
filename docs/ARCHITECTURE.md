@@ -84,9 +84,13 @@ v0.2 adds debug primitive drawing to the renderer interface: debug camera, lines
 
 `src/game/TraversalSystem.*` is the v0.5 traversal affordance boundary. It owns narrow, game-layer traversal affordances with start/end positions, focus radius, facing requirement, prompt, enabled flag, and duration. It produces an activation request when `Space` is pressed while an affordance is focused.
 
-`src/game/TestScene.*` defines the tiny neutral debug scene. It asks `TestWorld` to build the collision test layout: floor, wall, narrow passage, corner case, low step-like blocker, and crate. It also owns three debug interactables: a one-shot pickup, a repeatable toggle/button, and a repeatable info marker.
+`src/game/WorldState.*` is the v0.6 local remembered-state boundary for the prototype scene. It owns boolean flags, deterministic event records, event ids, last-event text, and compact debug summary text. It is runtime-only and does not implement save/load, mission scripting, inventory, dialogue, or persistence.
+
+`src/game/TestScene.*` defines the tiny neutral debug scene. It asks `TestWorld` to build the collision test layout: floor, wall, narrow passage, corner case, low step-like blocker, and crate. It also owns four debug interactables: a one-shot Ferry Manifest pickup, a repeatable wall button/toggle, a repeatable info marker, and a maintenance box.
 
 `src/game/TestScene.*` also owns the first v0.5 traversal affordance: a service-barrier vault path used as access-gating groundwork for The Ferry Office.
+
+`src/game/TestScene.*` maps prototype gameplay results to remembered state: Ferry Manifest sets `manifestCollected`, Wall Button sets `routeOpened`, Maintenance Box sets `maintenanceBoxInspected` and `powerRestored`, and Service Barrier Vault completion sets `serviceRouteUsed`. This mapping stays in the scene layer so `InteractionSystem` and `TraversalSystem` remain generic.
 
 `src/game/SandboxLayer.*` integrates player/camera/world/traversal/interaction update order. It updates traversal focus first from the current player position/facing, gives a focused traversal activation to the player, updates interaction focus from the corrected player position/facing, executes `E` interactions, updates the camera, then renders world collision, traversal, and interaction debug markers.
 
@@ -111,7 +115,17 @@ Interaction support is intentionally primitive:
 - built-in pickup/toggle/info actions,
 - debug text/log prompts instead of a UI layer.
 
-No scripting, inventory, doors with collision changes, dialogue, mission triggers, or save state are present.
+No scripting, inventory, doors with collision changes, dialogue, mission triggers, save/load, or persistent save data are present.
+
+World state support is intentionally primitive:
+
+- boolean local flags only,
+- deterministic in-memory event records,
+- event id/order/count,
+- debug summary text and logs,
+- scene-level mapping from known prototype actions to flags.
+
+No save/load, mission scripting, dialogue trees, global quest graph, inventory, or persistence exists.
 
 Traversal support is intentionally primitive:
 
