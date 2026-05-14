@@ -88,3 +88,27 @@ Reason: The goal is player/camera feel. A mesh pipeline, material system, or UI 
 Decision: Add no new third-party dependencies.
 
 Reason: Standard C++ and the existing Windows SDK path are enough for the prototype.
+
+## v0.3 Static AABB World
+
+Decision: Add `src/game/TestWorld.*` under the game prototype layer instead of creating a broad engine physics module.
+
+Reason: v0.3 needs a stable collision playground, not a general-purpose physics engine. Keeping it in `src/game` leaves room to promote the boundary later after the API proves itself.
+
+## v0.3 Player Collision Boundary
+
+Decision: `PlayerController` calculates movement and vertical intent, then asks `TestWorld` to resolve the player proxy against static colliders and floor height.
+
+Reason: This removes raw obstacle ownership from the controller while keeping the code simple and deterministic. It also makes the world collision path testable without creating a full ECS or scene system.
+
+## v0.3 Raycast Scope
+
+Decision: Add a simple AABB raycast query for static colliders only.
+
+Reason: Future camera obstruction and interaction checks need a query shape. A single static raycast is useful groundwork without adding camera collision, interaction systems, or physics dependencies in v0.3.
+
+## v0.3 Collision Limitations
+
+Decision: Do not add slopes, ramps, moving colliders, swept collision, rigid bodies, or a physics dependency.
+
+Reason: The goal is a small world/collision prototype. The current horizontal push-out is enough to stop walking through basic debug walls and boxes while keeping future work understandable.

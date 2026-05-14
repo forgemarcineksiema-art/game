@@ -1,15 +1,13 @@
 #pragma once
 
-#include "game/PlayerController.h"
-
-#include <vector>
+#include "game/TestWorld.h"
 
 class TestScene {
 public:
     TestScene();
 
-    const std::vector<PlayerObstacle>& obstacles() const;
+    const TestWorld& world() const;
 
 private:
-    std::vector<PlayerObstacle> m_obstacles;
+    TestWorld m_world;
 };

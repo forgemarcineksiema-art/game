@@ -28,6 +28,8 @@ Status: implemented in this branch as a focused prototype with debug primitives,
 - Add debug collision visualization.
 - Keep asset loading simple and original.
 
+Status: implemented in this branch as a static AABB world with floor query, player proxy resolution, simple raycast, debug collision visualization, and lightweight tests.
+
 ## v0.4 - Interaction System
 
 - Add interactable objects and focus detection.
@@ -54,4 +56,4 @@ Status: implemented in this branch as a focused prototype with debug primitives,
 
 ## Recommended Next Goal
 
-Build v0.3 World / Collision Prototype.
+Build v0.4 Interaction System.

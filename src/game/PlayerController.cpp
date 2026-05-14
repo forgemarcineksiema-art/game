@@ -1,7 +1,6 @@
 #include "game/PlayerController.h"
 
-#include <algorithm>
-#include <cmath>
+#include "game/TestWorld.h"
 
 void PlayerController::setSettings(const PlayerControllerSettings& settings)
 {
@@ -18,14 +17,15 @@ void PlayerController::setPosition(engine::Vec3 position)
     }
 }
 
-void PlayerController::setObstacles(std::vector<PlayerObstacle> obstacles)
+void PlayerController::setWorld(const TestWorld* world)
 {
-    m_obstacles = std::move(obstacles);
+    m_world = world;
 }
 
 void PlayerController::update(float deltaSeconds, const engine::InputState& input, float cameraYawRadians)
 {
     const float dt = engine::Clamp(deltaSeconds, 0.0f, 0.1f);
+    const engine::Vec3 previousPosition = m_state.position;
     const engine::Vec2 inputAxis = engine::Normalize(engine::Vec2 {input.moveRight, input.moveForward});
     const engine::Vec3 forward = engine::ForwardFromYaw(cameraYawRadians);
     const engine::Vec3 right = engine::RightFromYaw(cameraYawRadians);
@@ -54,13 +54,29 @@ void PlayerController::update(float deltaSeconds, const engine::InputState& inpu
 
     m_state.position += m_state.velocity * dt;
 
-    if (m_state.position.y <= 0.0f) {
+    if (m_world) {
+        PlayerCollisionProxy proxy;
+        proxy.previousPosition = previousPosition;
+        proxy.position = m_state.position;
+        proxy.velocity = m_state.velocity;
+        proxy.radius = m_settings.radius;
+        proxy.height = m_settings.height;
+
+        const CollisionResult collision = m_world->resolvePlayer(proxy);
+        m_state.position = collision.position;
+        m_state.velocity = collision.velocity;
+        m_state.grounded = collision.grounded;
+        m_state.lastCollisionPush = collision.lastPush;
+        m_state.lastCollisionNormal = collision.lastNormal;
+        m_state.lastCollisionHitCount = collision.hitCount;
+    } else if (m_state.position.y <= 0.0f) {
         m_state.position.y = 0.0f;
         m_state.velocity.y = 0.0f;
         m_state.grounded = true;
+        m_state.lastCollisionPush = {};
+        m_state.lastCollisionNormal = {};
+        m_state.lastCollisionHitCount = 0;
     }
-
-    resolveObstacleCollisions();
 }
 
 const PlayerState& PlayerController::state() const
@@ -71,39 +87,4 @@ const PlayerState& PlayerController::state() const
 const PlayerControllerSettings& PlayerController::settings() const
 {
     return m_settings;
-}
-
-void PlayerController::resolveObstacleCollisions()
-{
-    for (const PlayerObstacle& obstacle : m_obstacles) {
-        const float minX = obstacle.center.x - obstacle.halfExtents.x - m_settings.radius;
-        const float maxX = obstacle.center.x + obstacle.halfExtents.x + m_settings.radius;
-        const float minZ = obstacle.center.z - obstacle.halfExtents.z - m_settings.radius;
-        const float maxZ = obstacle.center.z + obstacle.halfExtents.z + m_settings.radius;
-        const float top = obstacle.center.y + obstacle.halfExtents.y;
-
-        if (m_state.position.y > top + 0.1f) {
-            continue;
-        }
-
-        if (m_state.position.x < minX || m_state.position.x > maxX || m_state.position.z < minZ || m_state.position.z > maxZ) {
-            continue;
-        }
-
-        const float pushLeft = std::abs(m_state.position.x - minX);
-        const float pushRight = std::abs(maxX - m_state.position.x);
-        const float pushBack = std::abs(m_state.position.z - minZ);
-        const float pushForward = std::abs(maxZ - m_state.position.z);
-        const float minPush = std::min({pushLeft, pushRight, pushBack, pushForward});
-
-        if (minPush == pushLeft) {
-            m_state.position.x = minX;
-        } else if (minPush == pushRight) {
-            m_state.position.x = maxX;
-        } else if (minPush == pushBack) {
-            m_state.position.z = minZ;
-        } else {
-            m_state.position.z = maxZ;
-        }
-    }
 }

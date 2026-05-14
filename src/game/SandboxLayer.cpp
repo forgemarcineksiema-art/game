@@ -9,7 +9,7 @@
 void SandboxLayer::onAttach()
 {
     engine::Logger::info("Sandbox layer attached.");
-    m_player.setObstacles(m_scene.obstacles());
+    m_player.setWorld(&m_scene.world());
     updateDebugText();
 }
 
@@ -34,8 +34,12 @@ void SandboxLayer::onRender(engine::IRenderer& renderer)
 {
     renderer.setDebugCamera(m_camera.debugCamera());
     renderer.drawDebugGridAndAxes();
-    for (const PlayerObstacle& obstacle : m_scene.obstacles()) {
-        renderer.drawDebugBox(obstacle.center, obstacle.halfExtents, {0.9f, 0.72f, 0.28f, 1.0f});
+    renderer.drawDebugLine({-12.0f, m_scene.world().floorHeight(), -12.0f}, {12.0f, m_scene.world().floorHeight(), -12.0f}, {0.35f, 0.9f, 0.55f, 1.0f});
+    renderer.drawDebugLine({12.0f, m_scene.world().floorHeight(), -12.0f}, {12.0f, m_scene.world().floorHeight(), 12.0f}, {0.35f, 0.9f, 0.55f, 1.0f});
+    renderer.drawDebugLine({12.0f, m_scene.world().floorHeight(), 12.0f}, {-12.0f, m_scene.world().floorHeight(), 12.0f}, {0.35f, 0.9f, 0.55f, 1.0f});
+    renderer.drawDebugLine({-12.0f, m_scene.world().floorHeight(), 12.0f}, {-12.0f, m_scene.world().floorHeight(), -12.0f}, {0.35f, 0.9f, 0.55f, 1.0f});
+    for (const StaticCollider& collider : m_scene.world().colliders()) {
+        renderer.drawDebugBox(collider.bounds.center, collider.bounds.halfExtents, {0.9f, 0.72f, 0.28f, 1.0f});
     }
 
     const PlayerState& player = m_player.state();
@@ -47,6 +51,11 @@ void SandboxLayer::onRender(engine::IRenderer& renderer)
     renderer.drawDebugLine(player.position + engine::Vec3 {0.0f, 1.0f, 0.0f},
         player.position + engine::Vec3 {0.0f, 1.0f, 0.0f} + facing * 1.25f,
         {1.0f, 1.0f, 1.0f, 1.0f});
+    if (engine::Length(player.lastCollisionPush) > 0.0f) {
+        renderer.drawDebugLine(player.position + engine::Vec3 {0.0f, 0.25f, 0.0f},
+            player.position + engine::Vec3 {0.0f, 0.25f, 0.0f} + player.lastCollisionNormal,
+            {1.0f, 0.2f, 0.2f, 1.0f});
+    }
     renderer.drawDebugBox(m_camera.state().target, {0.08f, 0.08f, 0.08f}, {1.0f, 0.25f, 0.7f, 1.0f});
     renderer.drawDebugText(m_debugText);
 }
@@ -72,6 +81,8 @@ void SandboxLayer::updateDebugText()
            << "speed=" << player.horizontalSpeed << " "
            << (player.sprinting ? "sprint" : "walk") << " "
            << (player.grounded ? "grounded" : "air") << " "
+           << "hits=" << player.lastCollisionHitCount << " "
+           << "colliders=" << m_scene.world().colliders().size() << " "
            << "camera yaw=" << engine::Degrees(camera.yawRadians)
            << " pitch=" << engine::Degrees(camera.pitchRadians)
            << " dist=" << camera.distance;

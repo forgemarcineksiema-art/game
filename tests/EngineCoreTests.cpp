@@ -3,6 +3,7 @@
 #include "engine/core/FileSystem.h"
 #include "engine/math/Math.h"
 #include "game/PlayerController.h"
+#include "game/TestWorld.h"
 #include "game/ThirdPersonCamera.h"
 #include "engine/renderer/NullRenderer.h"
 
@@ -200,6 +201,140 @@ void TestThirdPersonCameraClampsPitchAndSmooths()
         "Camera should have a follow position offset from the target.");
 }
 
+void TestAabbOverlapAndClosestPoint()
+{
+    StaticCollider collider;
+    collider.bounds.center = {0.0f, 1.0f, 0.0f};
+    collider.bounds.halfExtents = {1.0f, 1.0f, 1.0f};
+
+    Expect(collider.bounds.overlaps({0.5f, 1.0f, 0.5f}, {0.25f, 0.25f, 0.25f}),
+        "TestAabbOverlapAndClosestPoint",
+        "AABB should overlap a small box inside it.");
+    Expect(!collider.bounds.overlaps({3.0f, 1.0f, 0.0f}, {0.25f, 0.25f, 0.25f}),
+        "TestAabbOverlapAndClosestPoint",
+        "AABB should not overlap a distant box.");
+
+    const engine::Vec3 closest = collider.bounds.closestPoint({3.0f, 5.0f, -3.0f});
+    ExpectNear(closest.x, 1.0f, 0.001f, "TestAabbOverlapAndClosestPoint", "Closest point should clamp X.");
+    ExpectNear(closest.y, 2.0f, 0.001f, "TestAabbOverlapAndClosestPoint", "Closest point should clamp Y.");
+    ExpectNear(closest.z, -1.0f, 0.001f, "TestAabbOverlapAndClosestPoint", "Closest point should clamp Z.");
+}
+
+void TestWorldGroundClampAndGroundedState()
+{
+    TestWorld world;
+    world.setFloorHeight(0.0f);
+
+    PlayerCollisionProxy proxy;
+    proxy.position = {0.0f, -0.5f, 0.0f};
+    proxy.velocity = {0.0f, -2.0f, 0.0f};
+    proxy.radius = 0.35f;
+    proxy.height = 1.8f;
+
+    const CollisionResult result = world.resolvePlayer(proxy);
+    ExpectNear(result.position.y, 0.0f, 0.001f,
+        "TestWorldGroundClampAndGroundedState",
+        "World collision should clamp player to the floor height.");
+    Expect(result.grounded,
+        "TestWorldGroundClampAndGroundedState",
+        "Player should be grounded after floor clamp.");
+    ExpectNear(result.velocity.y, 0.0f, 0.001f,
+        "TestWorldGroundClampAndGroundedState",
+        "Downward velocity should be removed by floor collision.");
+}
+
+void TestWorldPushesPlayerOutOfBox()
+{
+    TestWorld world;
+    world.addBox("center-box", {0.0f, 0.5f, 0.0f}, {1.0f, 0.5f, 1.0f});
+
+    PlayerCollisionProxy proxy;
+    proxy.previousPosition = {-2.0f, 0.0f, 0.0f};
+    proxy.position = {0.0f, 0.0f, 0.0f};
+    proxy.velocity = {5.0f, 0.0f, 0.0f};
+    proxy.radius = 0.35f;
+    proxy.height = 1.8f;
+
+    const CollisionResult result = world.resolvePlayer(proxy);
+    Expect(result.hitCount > 0,
+        "TestWorldPushesPlayerOutOfBox",
+        "Player should report a collider hit.");
+    Expect(result.position.x <= -1.34f || result.position.x >= 1.34f,
+        "TestWorldPushesPlayerOutOfBox",
+        "Player should be pushed outside the expanded box.");
+    Expect(engine::Length(result.lastPush) > 0.0f,
+        "TestWorldPushesPlayerOutOfBox",
+        "Collision result should expose the push vector for debug drawing.");
+}
+
+void TestPlayerMovementUsesWorldCollisionForWall()
+{
+    TestWorld world;
+    world.addBox("wall", {0.0f, 0.5f, 1.2f}, {3.0f, 0.5f, 0.2f});
+
+    PlayerController player;
+    player.setWorld(&world);
+    player.setPosition({0.0f, 0.0f, 0.0f});
+
+    engine::InputState input;
+    input.moveForward = 1.0f;
+    for (int i = 0; i < 20; ++i) {
+        player.update(0.05f, input, 0.0f);
+    }
+
+    Expect(player.state().position.z <= 0.66f,
+        "TestPlayerMovementUsesWorldCollisionForWall",
+        "Player should not move through a simple wall collider.");
+    Expect(player.state().lastCollisionHitCount > 0,
+        "TestPlayerMovementUsesWorldCollisionForWall",
+        "Player should record collision hits from the world.");
+}
+
+void TestDiagonalMovementIntoObstacleDoesNotTunnel()
+{
+    TestWorld world;
+    world.addBox("corner", {1.0f, 0.5f, 1.0f}, {0.5f, 0.5f, 0.5f});
+
+    PlayerController player;
+    player.setWorld(&world);
+    player.setPosition({0.0f, 0.0f, 0.0f});
+
+    engine::InputState input;
+    input.moveForward = 1.0f;
+    input.moveRight = 1.0f;
+    for (int i = 0; i < 30; ++i) {
+        player.update(0.033f, input, 0.0f);
+    }
+
+    const StaticCollider* collider = world.colliderByName("corner");
+    Expect(collider != nullptr,
+        "TestDiagonalMovementIntoObstacleDoesNotTunnel",
+        "Corner collider should exist.");
+    if (collider) {
+        Expect(!world.playerOverlapsCollider(player.state().position, player.settings().radius, player.settings().height, *collider),
+            "TestDiagonalMovementIntoObstacleDoesNotTunnel",
+            "Player proxy should not remain inside the corner collider after resolution.");
+    }
+}
+
+void TestWorldRaycastFindsNearestCollider()
+{
+    TestWorld world;
+    world.addBox("near", {0.0f, 0.5f, 2.0f}, {0.5f, 0.5f, 0.5f});
+    world.addBox("far", {0.0f, 0.5f, 5.0f}, {0.5f, 0.5f, 0.5f});
+
+    const RaycastHit hit = world.raycast({0.0f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, 10.0f);
+    Expect(hit.hit,
+        "TestWorldRaycastFindsNearestCollider",
+        "Raycast should hit a collider.");
+    Expect(hit.colliderName == "near",
+        "TestWorldRaycastFindsNearestCollider",
+        "Raycast should return the nearest collider.");
+    ExpectNear(hit.distance, 1.5f, 0.01f,
+        "TestWorldRaycastFindsNearestCollider",
+        "Raycast distance should land on the near box front face.");
+}
+
 } // namespace
 
 int main()
@@ -214,6 +349,12 @@ int main()
     TestPlayerMovementIsCameraRelativeAndNormalized();
     TestPlayerSprintAndJumpRemainGroundedDeterministically();
     TestThirdPersonCameraClampsPitchAndSmooths();
+    TestAabbOverlapAndClosestPoint();
+    TestWorldGroundClampAndGroundedState();
+    TestWorldPushesPlayerOutOfBox();
+    TestPlayerMovementUsesWorldCollisionForWall();
+    TestDiagonalMovementIntoObstacleDoesNotTunnel();
+    TestWorldRaycastFindsNearestCollider();
 
     if (!failures.empty()) {
         std::cerr << failures.size() << " test failure(s):\n";

@@ -48,7 +48,7 @@ Windowed runtime, using the last configured preset:
 scripts/run.ps1
 ```
 
-v0.2 controls:
+Prototype controls:
 
 - `W/A/S/D`: camera-relative movement
 - `Shift`: sprint
@@ -113,3 +113,4 @@ Prints git status, important file presence, build output presence, and the openi
 - If DirectX 11 fails, try `scripts/run.ps1 -Args @("--renderer", "gdi", "--frames", "120")`.
 - If all windowed rendering fails, keep `--renderer null --headless` working while the renderer issue is fixed.
 - If mouse-look feels risky in a VM or remote session, use arrow keys for camera orbit. Mouse is not captured/locked in v0.2.
+- v0.3 collision is debug-only static AABB collision. If a collider layout feels odd, inspect `src/game/TestWorld.cpp` and rerun `scripts/verify.ps1` after edits.

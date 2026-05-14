@@ -2,7 +2,7 @@
 
 Custom C++ action/adventure engine foundation.
 
-This repository is intentionally starting small: CMake, a minimal engine loop, validation scripts, AI-facing docs, tiny renderer backends for DirectX 11, GDI fallback, and headless smoke tests, plus a v0.2 third-person player/camera prototype. It is not a clone of any commercial game and must not include copyrighted assets, names, maps, characters, logos, or mission designs.
+This repository is intentionally starting small: CMake, a minimal engine loop, validation scripts, AI-facing docs, tiny renderer backends for DirectX 11, GDI fallback, and headless smoke tests, plus third-person player/camera and static world collision prototypes. It is not a clone of any commercial game and must not include copyrighted assets, names, maps, characters, logos, or mission designs.
 
 ## Quick Start
 
@@ -21,7 +21,7 @@ scripts/run.ps1 -Args @("--smoke-test", "--frames", "3")
 
 Read `AGENTS.md` and `docs/RUNBOOK.md` before making engine changes.
 
-## v0.2 Prototype Controls
+## Prototype Controls
 
 - `W/A/S/D`: camera-relative movement
 - `Shift`: sprint

@@ -6,7 +6,7 @@ The project is a small custom C++20 runtime with explicit boundaries between app
 
 `src/engine/application/Application.*` owns the runtime loop. It initializes engine systems, creates a platform window when requested, creates a renderer backend, gathers input, calls the game layer, updates debug window text, handles frame limits, and shuts everything down in order.
 
-`src/engine/application/Engine.*` is the root engine object for foundational systems. In v0.1 it owns the clock and startup/shutdown lifecycle.
+`src/engine/application/Engine.*` is the root engine object for foundational systems. It owns the clock and startup/shutdown lifecycle.
 
 ## Platform / Window
 
@@ -71,13 +71,25 @@ v0.2 adds debug primitive drawing to the renderer interface: debug camera, lines
 
 ## Game Layer
 
-`src/game/SandboxLayer.*` is the first game-facing layer. It owns the v0.2 prototype scene, player controller, and third-person camera.
+`src/game/SandboxLayer.*` is the first game-facing layer. It owns the prototype scene, player controller, and third-person camera.
 
-`src/game/PlayerController.*` implements deterministic camera-relative movement, sprint, jump, gravity, grounded state, facing yaw, and simple obstacle push-out.
+`src/game/PlayerController.*` implements deterministic camera-relative movement, sprint, jump, gravity, grounded state, facing yaw, and world-collision integration. It no longer owns static obstacle lists directly.
 
 `src/game/ThirdPersonCamera.*` implements yaw/pitch orbit, distance, height offset, pitch clamp, and exponential follow smoothing. The update order is player first, camera second, render third to avoid frame-order jitter.
 
-`src/game/TestScene.*` defines the tiny neutral debug scene with floor/grid and a few obstacle boxes.
+`src/game/TestWorld.*` is the v0.3 static world/collision boundary. It owns named static AABB colliders, a floor height, player proxy resolution, overlap checks, ground checks, and a simple raycast query for future camera obstruction or interaction work.
+
+`src/game/TestScene.*` defines the tiny neutral debug scene and asks `TestWorld` to build the collision test layout: floor, wall, narrow passage, corner case, low step-like blocker, and crate.
+
+Collision support is intentionally primitive:
+
+- static axis-aligned boxes,
+- floor height query,
+- vertical player cylinder/capsule approximation represented by radius and height,
+- horizontal push-out,
+- simple raycast against AABBs.
+
+No physics engine, rigid bodies, slopes, ramps, moving platforms, or terrain streaming are present.
 
 ## Tools and Scripts
 
