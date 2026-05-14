@@ -481,3 +481,113 @@ Results:
 ## v0.4 Next Honest Step
 
 Use the v0.4 foundation for the next goal: v0.5 Vehicle or Traversal Prototype Decision + first narrow prototype. Start by choosing exactly one narrow direction rather than adding both systems at once.
+
+## v0.4.1 Baseline - 2026-05-14
+
+Goal: foundation review plus game direction lock. No vehicles, traversal, NPC AI, combat, physics libraries, missions, inventory, or asset pipelines are being added in this goal.
+
+Inspected before editing:
+
+- `AGENTS.md`
+- `docs/STATUS.md`
+- `docs/RUNBOOK.md`
+- `docs/ARCHITECTURE.md`
+- `docs/ROADMAP.md`
+- `docs/AI_WORKFLOW.md`
+- `docs/DECISIONS.md`
+- `src/engine/input/Input.h`
+- `src/engine/platform/Win32Window.cpp`
+- `src/game/PlayerController.cpp`
+- `src/game/InteractionSystem.cpp`
+- `src/game/SandboxLayer.cpp`
+- `src/game/TestScene.cpp`
+- `src/game/TestWorld.cpp`
+- `tests/EngineCoreTests.cpp`
+
+Baseline command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+```
+
+Baseline result:
+
+- Passed.
+- Doctor warnings remain for tools not visible in the plain PATH: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- CMake configured with `windows-vs2022-debug`.
+- Build produced `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- CTest passed 2/2 tests.
+- Headless smoke run passed with the null renderer and v0.4 interaction debug text.
+
+## v0.4.1 Short Implementation Plan
+
+1. Keep code changes minimal: bump the project version to `0.4.1`, but do not add new gameplay systems.
+2. Add `docs/GAME_DIRECTION.md` to lock the working title, genre, core fantasy, world, player role, loop, pillars, non-goals, first 10-minute slice, and engine priorities.
+3. Add `docs/VERTICAL_SLICE.md` to define the first playable micro-scenario and what systems it should prove.
+4. Add `docs/TECH_DEBT.md` to capture known engine issues before v0.5, including input, camera, collision, renderer, and naming debt.
+5. Add a manual test checklist for player/camera/collision/interactions so future windowed validation has an exact script.
+6. Update architecture/runbook/roadmap/decisions/status with review findings, interaction focus design notes, TestWorld/TestScene rename guidance, and a clear v0.5 recommendation.
+7. Run the required validation matrix and record exact results here.
+
+## v0.4.1 Review Findings
+
+- Input edge/held behavior: `E` now has both held and pressed-edge state. `Space` was also changed to pressed-edge behavior in v0.4, which is correct for jump but should be explicitly documented because earlier v0.2 notes described jump more loosely.
+- Player movement and jump: movement remains camera-relative and tests cover diagonal normalization. Jump still uses `jumpPressed`; holding Space should not repeatedly re-jump after the v0.4 edge change.
+- Camera feel: camera follows after player update, which avoids obvious update-order jitter. Mouse remains hover-delta only, with arrow fallback.
+- Interaction focus: current implementation uses player-facing plus proximity fallback for very close interactables. This is acceptable for v0.4 but needs a documented design choice before adding richer interactable layouts.
+- Collision and interaction marker placement: the current debug scene places the pickup directly ahead of the starting position and places toggle/info markers near the collision layout. Markers are debug-only and do not alter collision.
+- Interaction boundary: `InteractionSystem` is still correctly in `src/game`. It should not be promoted into `src/engine` until future gameplay proves a stable API.
+- Naming: `TestWorld` and `TestScene` were fine for v0.3/v0.4, but should later become `PrototypeWorld` and `PrototypeScene` once the slice stops being only a collision testbed.
+- v0.5 direction: traversal is the better next milestone than vehicles because the first vertical slice needs readable on-foot exploration and access gating before it needs driving.
+
+## v0.4.1 Changes Made
+
+- Updated project version to `0.4.1`.
+- Added `docs/GAME_DIRECTION.md` with the locked original direction: `Tidebreak`, a small third-person cinematic systemic sandbox/adventure set in the fictional island region of Veyra Reach.
+- Added `docs/VERTICAL_SLICE.md` defining the first 10-minute micro-scenario: `The Ferry Office`.
+- Added `docs/TECH_DEBT.md` with known build, renderer, input, player/camera, collision, interaction, and naming debt before v0.5.
+- Added `docs/MANUAL_TEST_CHECKLIST.md` for player, camera, collision, interaction, and shutdown checks.
+- Updated `docs/ARCHITECTURE.md` with interaction focus design notes and TestWorld/TestScene rename guidance.
+- Updated `docs/RUNBOOK.md` to point to the manual checklist.
+- Updated `docs/ROADMAP.md` to add v0.4.1 and choose `v0.5 - Traversal Prototype`.
+- Updated `docs/DECISIONS.md` with game direction, focus policy, naming direction, and v0.5 traversal decision.
+- Updated `docs/AI_WORKFLOW.md`, `AGENTS.md`, `README.md`, `scripts/doctor.ps1`, and `tools/status_report.py` so future AI runs and validation tools know about the new direction/checklist docs.
+- No vehicles, traversal implementation, NPC AI, combat, physics libraries, missions, inventory, or asset pipelines were added.
+
+## v0.4.1 Final Validation - 2026-05-14
+
+Commands:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/doctor.ps1
+powershell -ExecutionPolicy Bypass -File scripts/configure.ps1
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+ctest --preset windows-vs2022-debug --output-on-failure
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --frames 90
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 90
+python tools/status_report.py
+```
+
+Results:
+
+- `scripts/doctor.ps1`: passed and now checks the v0.4.1 direction/checklist docs. Warnings remain for tools not visible in the plain PATH: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- `scripts/configure.ps1`: passed using `windows-vs2022-debug`.
+- `scripts/build.ps1`: passed and produced `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 2/2 tests.
+- `scripts/verify.ps1`: passed; ran doctor, configure, build, CTest, and null-renderer smoke run. Smoke logs show engine `v0.4.1`.
+- `EngineApp.exe --renderer gdi --frames 90`: passed; created a Win32 window and initialized the GDI fallback renderer.
+- `EngineApp.exe --renderer dx11 --frames 90`: passed; created a Win32 window and initialized DirectX 11 through WARP after hardware/debug device creation failed.
+- `python tools/status_report.py`: passed and reports the new v0.4.1 docs as present.
+- Final `scripts/verify.ps1` after status documentation updates: passed.
+
+## v0.4.1 Known Issues / Limitations
+
+- This goal intentionally added no new gameplay systems.
+- DX11 hardware/debug device creation still falls back to WARP in this environment.
+- Manual checklist was authored but not fully hand-played with human input in this run; bounded GDI and DX11 launches did pass.
+- Traversal is only a recommendation and design target for v0.5; it is not implemented in v0.4.1.
+
+## v0.4.1 Next Honest Step
+
+Use the v0.4.1 foundation for the next goal: v0.5 Traversal Prototype. Prefer a single narrow traversal mechanic such as mantle, climb-up, vault, or ledge step, with no vehicles in the same goal.

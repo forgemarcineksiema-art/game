@@ -18,6 +18,8 @@ Read:
 - `docs/ROADMAP.md`
 - `docs/ARCHITECTURE.md`
 - `docs/DECISIONS.md`
+- `docs/GAME_DIRECTION.md`
+- `docs/TECH_DEBT.md`
 
 ## 2. Pick One Safe Milestone
 
@@ -67,4 +69,3 @@ When stopping, leave the next AI run with:
 - known blockers,
 - recommended next command,
 - recommended next goal.
-

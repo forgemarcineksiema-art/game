@@ -105,6 +105,25 @@ Interaction support is intentionally primitive:
 
 No scripting, inventory, doors with collision changes, dialogue, mission triggers, or save state are present.
 
+## Interaction Focus Design Notes
+
+Current v0.4.1 behavior uses player-facing plus a close proximity fallback:
+
+- Player-facing is stable for a third-person avatar because focus follows where the character is meaningfully oriented.
+- Camera-facing can feel better when inspecting objects without moving, but it can also focus objects behind or beside the avatar unless carefully filtered.
+- Proximity fallback keeps very close objects usable even when the facing vector is imperfect.
+
+For the first vertical slice, keep player-facing as the default and add camera-facing only if manual tests show repeated frustration. A good future design is likely:
+
+1. close proximity always allowed,
+2. player-facing preferred for action objects,
+3. camera-facing or raycast assist for inspect/read objects,
+4. collision raycast used only when occlusion becomes a real problem.
+
+## Naming Direction
+
+`TestWorld` and `TestScene` should remain unchanged in v0.4.1 because they still represent a test layout. When v0.5 or the vertical slice turns this into a reusable prototype scene, rename them to `PrototypeWorld` and `PrototypeScene` in one focused refactor with tests and docs updated together.
+
 ## Tools and Scripts
 
 - `scripts/doctor.ps1`: environment and structure check.

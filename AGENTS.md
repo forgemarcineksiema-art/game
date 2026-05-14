@@ -21,6 +21,13 @@ scripts/verify.ps1
 
 Run `scripts/verify.ps1` before claiming that a change builds, tests, or works. If a command fails, record the exact command and failure in `docs/STATUS.md`.
 
+Before choosing a gameplay milestone, read:
+
+- `docs/GAME_DIRECTION.md`
+- `docs/VERTICAL_SLICE.md`
+- `docs/TECH_DEBT.md`
+- `docs/ROADMAP.md`
+
 ## Run Commands
 
 ```powershell
@@ -78,4 +85,3 @@ A change is done only when:
 - `docs/STATUS.md` records what changed and what commands ran.
 - `scripts/verify.ps1` ran, or the exact blocker is documented.
 - The final response says what passed, what failed, and what remains.
-

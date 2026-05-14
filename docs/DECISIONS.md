@@ -136,3 +136,27 @@ Reason: The milestone only needs focus detection, action execution, debug visibi
 Decision: Add no new third-party dependencies.
 
 Reason: Standard C++ and the existing debug renderer are enough for interaction data, tests, logging, and marker visualization.
+
+## v0.4.1 Game Direction
+
+Decision: Lock the project direction as a small third-person cinematic systemic sandbox/adventure set in the fictional isolated island region of Veyra Reach, with the player as an outsider/fixer and the world remembering meaningful actions.
+
+Reason: The engine needs a concrete target before v0.5. A compact, remembered-action adventure gives clear priorities for movement, camera, collision, interaction, world state, and debug tooling without promising a huge open world.
+
+## v0.4.1 Focus Policy
+
+Decision: Keep interaction focus player-facing first, with close proximity fallback, and document camera-facing as a future assist rather than changing behavior in v0.4.1.
+
+Reason: Player-facing focus is stable for action objects and matches the current avatar-oriented prototype. Camera-facing focus may be useful for inspection/read interactions, but it should be introduced only when manual tests prove the need.
+
+## v0.4.1 Naming Direction
+
+Decision: Keep `TestWorld` and `TestScene` for now, but plan to rename them to `PrototypeWorld` and `PrototypeScene` when the vertical slice replaces the pure test layout.
+
+Reason: Renaming today would create churn without behavior value. A later focused rename makes sense once the scene is no longer only a testbed.
+
+## v0.5 Direction
+
+Decision: Choose traversal before vehicles for v0.5.
+
+Reason: The first vertical slice needs on-foot access gating, readable routes, and stable camera/collision in tight spaces. Vehicles would force larger environments and more physics/control complexity before the core player-scale loop is strong.

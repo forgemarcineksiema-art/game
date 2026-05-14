@@ -57,6 +57,10 @@ foreach ($Path in @(
     "docs\STATUS.md",
     "docs\DECISIONS.md",
     "docs\AI_WORKFLOW.md",
+    "docs\GAME_DIRECTION.md",
+    "docs\VERTICAL_SLICE.md",
+    "docs\TECH_DEBT.md",
+    "docs\MANUAL_TEST_CHECKLIST.md",
     "src\engine",
     "src\game",
     "tests",
@@ -100,4 +104,3 @@ if ($Failures.Count -gt 0) {
 Write-Host ""
 Write-Host "Doctor completed."
 exit 0
-

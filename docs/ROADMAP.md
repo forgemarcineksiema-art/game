@@ -38,11 +38,23 @@ Status: implemented in this branch as a static AABB world with floor query, play
 
 Status: implemented in this branch as a focused prototype with three debug interactables, `E` pressed-edge input, range/facing focus detection, pickup/toggle/info actions, debug prompts, marker visualization, logs, and lightweight tests.
 
-## v0.5 - Vehicle or Traversal Prototype
+## v0.4.1 - Foundation Review + Game Direction Lock
 
-- Choose one narrow prototype: simple vehicle handling or advanced traversal.
-- Do not build both in the same milestone.
-- Keep physics lightweight and explicit.
+- Review input, player, camera, collision, and interaction boundaries.
+- Lock the original game direction in `docs/GAME_DIRECTION.md`.
+- Define the first 10-minute micro-scenario in `docs/VERTICAL_SLICE.md`.
+- Record technical debt before v0.5 in `docs/TECH_DEBT.md`.
+- Add a manual checklist for player/camera/collision/interactions.
+- Choose the v0.5 direction.
+
+Status: implemented as a documentation and review milestone. No major gameplay system was added.
+
+## v0.5 - Traversal Prototype
+
+- Build one narrow on-foot traversal prototype.
+- Start with a simple access-gating move such as mantle, climb-up, vault, or ledge step.
+- Do not add vehicles in the same milestone.
+- Keep physics lightweight and explicit; do not add a physics library yet.
 
 ## v0.6 - NPC / Event Prototype
 
@@ -58,4 +70,4 @@ Status: implemented in this branch as a focused prototype with three debug inter
 
 ## Recommended Next Goal
 
-Build v0.5 Vehicle or Traversal Prototype Decision + first narrow prototype.
+Build v0.5 Traversal Prototype.

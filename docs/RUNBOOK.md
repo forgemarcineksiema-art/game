@@ -106,6 +106,20 @@ python tools/status_report.py
 
 Prints git status, important file presence, build output presence, and the opening section of `docs/STATUS.md`.
 
+## Manual Windowed Checklist
+
+After changes that affect runtime feel, run the checklist in:
+
+```powershell
+docs/MANUAL_TEST_CHECKLIST.md
+```
+
+Use GDI first when debug text matters:
+
+```powershell
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi
+```
+
 ## Troubleshooting
 
 - If CMake cannot find Visual Studio, install Visual Studio Build Tools with the C++ desktop workload, then rerun `scripts/configure.ps1`.

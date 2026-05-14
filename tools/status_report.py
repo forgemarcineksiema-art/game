@@ -47,6 +47,10 @@ def main() -> int:
         "docs/STATUS.md",
         "docs/DECISIONS.md",
         "docs/AI_WORKFLOW.md",
+        "docs/GAME_DIRECTION.md",
+        "docs/VERTICAL_SLICE.md",
+        "docs/TECH_DEBT.md",
+        "docs/MANUAL_TEST_CHECKLIST.md",
         "scripts/doctor.ps1",
         "scripts/configure.ps1",
         "scripts/build.ps1",
@@ -76,4 +80,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-

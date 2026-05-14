@@ -21,6 +21,13 @@ scripts/run.ps1 -Args @("--smoke-test", "--frames", "3")
 
 Read `AGENTS.md` and `docs/RUNBOOK.md` before making engine changes.
 
+Direction docs:
+
+- `docs/GAME_DIRECTION.md`
+- `docs/VERTICAL_SLICE.md`
+- `docs/TECH_DEBT.md`
+- `docs/MANUAL_TEST_CHECKLIST.md`
+
 ## Prototype Controls
 
 - `W/A/S/D`: camera-relative movement
