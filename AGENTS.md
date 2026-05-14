@@ -84,4 +84,5 @@ A change is done only when:
 - The intended code/docs/scripts are updated.
 - `docs/STATUS.md` records what changed and what commands ran.
 - `scripts/verify.ps1` ran, or the exact blocker is documented.
+- For every completed `/goal`, commit the finished work and push it to the current git remote/branch after validation passes. Do not commit/push if validation fails, the worktree contains unrelated user changes, or the user explicitly says not to.
 - The final response says what passed, what failed, and what remains.
