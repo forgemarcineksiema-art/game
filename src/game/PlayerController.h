@@ -4,7 +4,7 @@
 #include "engine/math/Math.h"
 #include "game/TraversalSystem.h"
 
-class TestWorld;
+class PrototypeWorld;
 
 struct PlayerControllerSettings {
     float walkSpeed = 4.0f;
@@ -43,7 +43,7 @@ class PlayerController {
 public:
     void setSettings(const PlayerControllerSettings& settings);
     void setPosition(engine::Vec3 position);
-    void setWorld(const TestWorld* world);
+    void setWorld(const PrototypeWorld* world);
     void update(float deltaSeconds, const engine::InputState& input, float cameraYawRadians, const TraversalActivation* traversalActivation = nullptr);
 
     const PlayerState& state() const;
@@ -52,7 +52,7 @@ public:
 private:
     PlayerControllerSettings m_settings;
     PlayerState m_state;
-    const TestWorld* m_world = nullptr;
+    const PrototypeWorld* m_world = nullptr;
     TraversalActivation m_activeTraversal;
     float m_traversalElapsedSeconds = 0.0f;
 };

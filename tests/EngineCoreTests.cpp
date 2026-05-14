@@ -4,9 +4,10 @@
 #include "engine/math/Math.h"
 #include "game/InteractionSystem.h"
 #include "game/PlayerController.h"
+#include "game/FerryOfficeData.h"
+#include "game/PrototypeScene.h"
+#include "game/PrototypeWorld.h"
 #include "game/SandboxLayer.h"
-#include "game/TestScene.h"
-#include "game/TestWorld.h"
 #include "game/ThirdPersonCamera.h"
 #include "game/TraversalSystem.h"
 #include "game/WorldState.h"
@@ -226,9 +227,9 @@ void TestAabbOverlapAndClosestPoint()
     ExpectNear(closest.z, -1.0f, 0.001f, "TestAabbOverlapAndClosestPoint", "Closest point should clamp Z.");
 }
 
-void TestWorldGroundClampAndGroundedState()
+void TestPrototypeWorldGroundClampAndGroundedState()
 {
-    TestWorld world;
+    PrototypeWorld world;
     world.setFloorHeight(0.0f);
 
     PlayerCollisionProxy proxy;
@@ -239,19 +240,19 @@ void TestWorldGroundClampAndGroundedState()
 
     const CollisionResult result = world.resolvePlayer(proxy);
     ExpectNear(result.position.y, 0.0f, 0.001f,
-        "TestWorldGroundClampAndGroundedState",
+        "TestPrototypeWorldGroundClampAndGroundedState",
         "World collision should clamp player to the floor height.");
     Expect(result.grounded,
-        "TestWorldGroundClampAndGroundedState",
+        "TestPrototypeWorldGroundClampAndGroundedState",
         "Player should be grounded after floor clamp.");
     ExpectNear(result.velocity.y, 0.0f, 0.001f,
-        "TestWorldGroundClampAndGroundedState",
+        "TestPrototypeWorldGroundClampAndGroundedState",
         "Downward velocity should be removed by floor collision.");
 }
 
-void TestWorldPushesPlayerOutOfBox()
+void TestPrototypeWorldPushesPlayerOutOfBox()
 {
-    TestWorld world;
+    PrototypeWorld world;
     world.addBox("center-box", {0.0f, 0.5f, 0.0f}, {1.0f, 0.5f, 1.0f});
 
     PlayerCollisionProxy proxy;
@@ -263,19 +264,19 @@ void TestWorldPushesPlayerOutOfBox()
 
     const CollisionResult result = world.resolvePlayer(proxy);
     Expect(result.hitCount > 0,
-        "TestWorldPushesPlayerOutOfBox",
+        "TestPrototypeWorldPushesPlayerOutOfBox",
         "Player should report a collider hit.");
     Expect(result.position.x <= -1.34f || result.position.x >= 1.34f,
-        "TestWorldPushesPlayerOutOfBox",
+        "TestPrototypeWorldPushesPlayerOutOfBox",
         "Player should be pushed outside the expanded box.");
     Expect(engine::Length(result.lastPush) > 0.0f,
-        "TestWorldPushesPlayerOutOfBox",
+        "TestPrototypeWorldPushesPlayerOutOfBox",
         "Collision result should expose the push vector for debug drawing.");
 }
 
 void TestPlayerMovementUsesWorldCollisionForWall()
 {
-    TestWorld world;
+    PrototypeWorld world;
     world.addBox("wall", {0.0f, 0.5f, 1.2f}, {3.0f, 0.5f, 0.2f});
 
     PlayerController player;
@@ -298,7 +299,7 @@ void TestPlayerMovementUsesWorldCollisionForWall()
 
 void TestDiagonalMovementIntoObstacleDoesNotTunnel()
 {
-    TestWorld world;
+    PrototypeWorld world;
     world.addBox("corner", {1.0f, 0.5f, 1.0f}, {0.5f, 0.5f, 0.5f});
 
     PlayerController player;
@@ -323,21 +324,21 @@ void TestDiagonalMovementIntoObstacleDoesNotTunnel()
     }
 }
 
-void TestWorldRaycastFindsNearestCollider()
+void TestPrototypeWorldRaycastFindsNearestCollider()
 {
-    TestWorld world;
+    PrototypeWorld world;
     world.addBox("near", {0.0f, 0.5f, 2.0f}, {0.5f, 0.5f, 0.5f});
     world.addBox("far", {0.0f, 0.5f, 5.0f}, {0.5f, 0.5f, 0.5f});
 
     const RaycastHit hit = world.raycast({0.0f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, 10.0f);
     Expect(hit.hit,
-        "TestWorldRaycastFindsNearestCollider",
+        "TestPrototypeWorldRaycastFindsNearestCollider",
         "Raycast should hit a collider.");
     Expect(hit.colliderName == "near",
-        "TestWorldRaycastFindsNearestCollider",
+        "TestPrototypeWorldRaycastFindsNearestCollider",
         "Raycast should return the nearest collider.");
     ExpectNear(hit.distance, 1.5f, 0.01f,
-        "TestWorldRaycastFindsNearestCollider",
+        "TestPrototypeWorldRaycastFindsNearestCollider",
         "Raycast distance should land on the near box front face.");
 }
 
@@ -524,6 +525,22 @@ void TestNoFocusedInteractableMeansNoAction()
         "Interact should no-op when there is no focused candidate.");
 }
 
+void TestFerryOfficeDataDefinesStableNamesAndPositions()
+{
+    Expect(FerryOffice::Names::FerryManifest == "Ferry Manifest",
+        "TestFerryOfficeDataDefinesStableNamesAndPositions",
+        "Ferry Manifest name should be centralized for scene mappings and tests.");
+    Expect(FerryOffice::Names::ServiceGateCollider == "service-gate",
+        "TestFerryOfficeDataDefinesStableNamesAndPositions",
+        "Service gate collider name should be centralized for collision state mapping.");
+    Expect(FerryOffice::Positions::ServiceVaultStart.x == 2.8f && FerryOffice::Positions::ServiceVaultStart.z == -0.35f,
+        "TestFerryOfficeDataDefinesStableNamesAndPositions",
+        "Service vault start should preserve the v0.7.1 accessible-side placement.");
+    Expect(FerryOffice::Positions::MaintenanceBox.z == 1.9f,
+        "TestFerryOfficeDataDefinesStableNamesAndPositions",
+        "Maintenance box position should preserve the v0.7.1 post-vault placement.");
+}
+
 void TestWorldStateSetsAndReadsFlags()
 {
     WorldState state;
@@ -593,7 +610,7 @@ void TestWorldStateIgnoresRepeatedSameFlagValue()
 
 void TestOneShotManifestPickupUpdatesWorldStateOnce()
 {
-    TestScene scene;
+    PrototypeScene scene;
     scene.interactions().updateFocus({0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f});
 
     engine::InputState input;
@@ -622,10 +639,10 @@ void TestOneShotManifestPickupUpdatesWorldStateOnce()
 
 void TestMaintenanceInteractionRestoresPower()
 {
-    TestScene scene;
+    PrototypeScene scene;
     InteractionResult result;
     result.triggered = true;
-    result.name = "Maintenance Box";
+    result.name = FerryOffice::Names::MaintenanceBox;
     result.type = InteractableType::Info;
 
     const bool changedState = scene.applyInteractionResult(result);
@@ -645,10 +662,10 @@ void TestMaintenanceInteractionRestoresPower()
 
 void TestWallButtonOpensRouteWithoutClosingItAgain()
 {
-    TestScene scene;
+    PrototypeScene scene;
     InteractionResult opened;
     opened.triggered = true;
-    opened.name = "Wall Button";
+    opened.name = FerryOffice::Names::WallButton;
     opened.type = InteractableType::Toggle;
     opened.toggled = true;
 
@@ -674,7 +691,7 @@ void TestWallButtonOpensRouteWithoutClosingItAgain()
 
 void TestTraversalCompletionRecordsServiceRouteUsed()
 {
-    TestScene scene;
+    PrototypeScene scene;
     const bool first = scene.recordServiceRouteUsed();
     const bool repeated = scene.recordServiceRouteUsed();
 
@@ -704,7 +721,7 @@ InteractionResult MakeSceneInteraction(std::string name, InteractableType type, 
 
 void TestFerryOfficeSliceStartsIncomplete()
 {
-    TestScene scene;
+    PrototypeScene scene;
 
     Expect(!scene.isSliceReadyForExit(),
         "TestFerryOfficeSliceStartsIncomplete",
@@ -722,17 +739,17 @@ void TestFerryOfficeSliceStartsIncomplete()
 
 void TestFerryOfficeCompletionRequiresRememberedLoop()
 {
-    TestScene scene;
+    PrototypeScene scene;
 
     const bool earlyExit = scene.recordExitReached();
     Expect(!earlyExit && !scene.worldState().isFlagSet(WorldFlag::ExitReached),
         "TestFerryOfficeCompletionRequiresRememberedLoop",
         "The exit marker should not complete the slice before required remembered flags are set.");
 
-    scene.applyInteractionResult(MakeSceneInteraction("Ferry Manifest", InteractableType::Pickup));
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::FerryManifest), InteractableType::Pickup));
     scene.recordServiceRouteUsed();
-    scene.applyInteractionResult(MakeSceneInteraction("Maintenance Box", InteractableType::Info));
-    scene.applyInteractionResult(MakeSceneInteraction("Wall Button", InteractableType::Toggle, true));
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::MaintenanceBox), InteractableType::Info));
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::WallButton), InteractableType::Toggle, true));
 
     Expect(scene.isSliceReadyForExit(),
         "TestFerryOfficeCompletionRequiresRememberedLoop",
@@ -755,8 +772,8 @@ void TestFerryOfficeCompletionRequiresRememberedLoop()
 
 void TestFerryOfficeExitMarkerRequiresReadyState()
 {
-    TestScene scene;
-    const bool blocked = scene.applyInteractionResult(MakeSceneInteraction("Exit Summary Marker", InteractableType::Info));
+    PrototypeScene scene;
+    const bool blocked = scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::ExitMarker), InteractableType::Info));
 
     Expect(!blocked,
         "TestFerryOfficeExitMarkerRequiresReadyState",
@@ -765,11 +782,11 @@ void TestFerryOfficeExitMarkerRequiresReadyState()
         "TestFerryOfficeExitMarkerRequiresReadyState",
         "Exit reached should remain false before the required loop is complete.");
 
-    scene.applyInteractionResult(MakeSceneInteraction("Ferry Manifest", InteractableType::Pickup));
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::FerryManifest), InteractableType::Pickup));
     scene.recordServiceRouteUsed();
-    scene.applyInteractionResult(MakeSceneInteraction("Maintenance Box", InteractableType::Info));
-    scene.applyInteractionResult(MakeSceneInteraction("Wall Button", InteractableType::Toggle, true));
-    const bool completed = scene.applyInteractionResult(MakeSceneInteraction("Exit Summary Marker", InteractableType::Info));
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::MaintenanceBox), InteractableType::Info));
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::WallButton), InteractableType::Toggle, true));
+    const bool completed = scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::ExitMarker), InteractableType::Info));
 
     Expect(completed,
         "TestFerryOfficeExitMarkerRequiresReadyState",
@@ -781,18 +798,18 @@ void TestFerryOfficeExitMarkerRequiresReadyState()
 
 void TestWallButtonOpenLatchesServiceGateColliderState()
 {
-    TestScene scene;
+    PrototypeScene scene;
 
     Expect(scene.isServiceGateBlocking(),
         "TestWallButtonOpenLatchesServiceGateColliderState",
         "The service gate collider should block the route before the route is opened.");
 
-    scene.applyInteractionResult(MakeSceneInteraction("Wall Button", InteractableType::Toggle, true));
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::WallButton), InteractableType::Toggle, true));
     Expect(!scene.isServiceGateBlocking(),
         "TestWallButtonOpenLatchesServiceGateColliderState",
         "Opening the route should disable the service gate blocking collider.");
 
-    scene.applyInteractionResult(MakeSceneInteraction("Wall Button", InteractableType::Toggle, false));
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::WallButton), InteractableType::Toggle, false));
     Expect(!scene.isServiceGateBlocking(),
         "TestWallButtonOpenLatchesServiceGateColliderState",
         "Repeated wall button interactions should leave the service gate open.");
@@ -800,35 +817,35 @@ void TestWallButtonOpenLatchesServiceGateColliderState()
 
 void TestFerryOfficeServiceVaultFocusesFromAccessibleSide()
 {
-    TestScene scene;
+    PrototypeScene scene;
 
     const TraversalFocus focus = scene.traversal().updateFocus({2.8f, 0.0f, -0.35f}, {0.0f, 0.0f, 1.0f});
     Expect(focus.hasFocus,
         "TestFerryOfficeServiceVaultFocusesFromAccessibleSide",
         "The service vault should focus from the player-accessible side of the barrier.");
-    Expect(focus.name == "Service Barrier Vault",
+    Expect(focus.name == FerryOffice::Names::ServiceVault,
         "TestFerryOfficeServiceVaultFocusesFromAccessibleSide",
         "The focused traversal affordance should be the Service Barrier Vault.");
 }
 
 void TestMaintenanceBoxIsNotFocusedBeforeServiceVault()
 {
-    TestScene scene;
+    PrototypeScene scene;
 
     const InteractionFocus focus = scene.interactions().updateFocus({2.8f, 0.0f, -0.35f}, {0.0f, 0.0f, 1.0f});
-    Expect(!focus.hasFocus || focus.name != "Maintenance Box",
+    Expect(!focus.hasFocus || focus.name != FerryOffice::Names::MaintenanceBox,
         "TestMaintenanceBoxIsNotFocusedBeforeServiceVault",
         "Maintenance Box should not be the focused action before the service vault is crossed.");
 }
 
 void TestFerryOfficeLoopCanCompleteThroughSceneSystems()
 {
-    TestScene scene;
+    PrototypeScene scene;
     PlayerController player;
     player.setWorld(&scene.world());
     player.setPosition({2.8f, 0.0f, -0.35f});
 
-    scene.applyInteractionResult(MakeSceneInteraction("Ferry Manifest", InteractableType::Pickup));
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::FerryManifest), InteractableType::Pickup));
 
     scene.traversal().updateFocus(player.state().position, {0.0f, 0.0f, 1.0f});
     engine::InputState traversalInput;
@@ -846,8 +863,8 @@ void TestFerryOfficeLoopCanCompleteThroughSceneSystems()
         }
     }
 
-    scene.applyInteractionResult(MakeSceneInteraction("Maintenance Box", InteractableType::Info));
-    scene.applyInteractionResult(MakeSceneInteraction("Wall Button", InteractableType::Info));
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::MaintenanceBox), InteractableType::Info));
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::WallButton), InteractableType::Info));
 
     Expect(recordedServiceRoute,
         "TestFerryOfficeLoopCanCompleteThroughSceneSystems",
@@ -856,7 +873,7 @@ void TestFerryOfficeLoopCanCompleteThroughSceneSystems()
         "TestFerryOfficeLoopCanCompleteThroughSceneSystems",
         "The scene systems should make the Ferry Office slice ready for exit after manifest, vault, maintenance, and gate actions.");
 
-    scene.applyInteractionResult(MakeSceneInteraction("Exit Summary Marker", InteractableType::Info));
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::ExitMarker), InteractableType::Info));
     Expect(scene.isSliceComplete(),
         "TestFerryOfficeLoopCanCompleteThroughSceneSystems",
         "The Ferry Office slice should complete after the exit marker records the ready state.");
@@ -879,7 +896,7 @@ void TestSandboxDebugTextUsesReadableSections()
 
 void TestFerryOfficeOneShotManifestDoesNotDuplicateEvents()
 {
-    TestScene scene;
+    PrototypeScene scene;
     scene.interactions().updateFocus({0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f});
 
     engine::InputState input;
@@ -1032,7 +1049,7 @@ void TestTraversalLandingRunsWorldResolveAndClearsVelocity()
     traversal.addAffordance(MakeTestTraversalAffordance());
     traversal.updateFocus({0.0f, 0.0f, 0.1f}, {0.0f, 0.0f, 1.0f});
 
-    TestWorld world;
+    PrototypeWorld world;
     world.setFloorHeight(0.0f);
     world.addBox("landing-blocker", {0.0f, 0.5f, 2.25f}, {0.2f, 0.5f, 0.2f});
 
@@ -1184,17 +1201,18 @@ int main()
     TestPlayerSprintAndJumpRemainGroundedDeterministically();
     TestThirdPersonCameraClampsPitchAndSmooths();
     TestAabbOverlapAndClosestPoint();
-    TestWorldGroundClampAndGroundedState();
-    TestWorldPushesPlayerOutOfBox();
+    TestPrototypeWorldGroundClampAndGroundedState();
+    TestPrototypeWorldPushesPlayerOutOfBox();
     TestPlayerMovementUsesWorldCollisionForWall();
     TestDiagonalMovementIntoObstacleDoesNotTunnel();
-    TestWorldRaycastFindsNearestCollider();
+    TestPrototypeWorldRaycastFindsNearestCollider();
     TestInteractionFocusSelectsNearestFacingCandidate();
     TestInteractionFocusIgnoresDisabledAndConsumedInteractables();
     TestInteractPressedTriggersExactlyOnceWhenHeld();
     TestOneShotPickupConsumesAndDoesNotTriggerAgain();
     TestToggleInteractableChangesStateOnEachPress();
     TestNoFocusedInteractableMeansNoAction();
+    TestFerryOfficeDataDefinesStableNamesAndPositions();
     TestWorldStateSetsAndReadsFlags();
     TestWorldStateRecordsEventsInOrder();
     TestWorldStateIgnoresRepeatedSameFlagValue();

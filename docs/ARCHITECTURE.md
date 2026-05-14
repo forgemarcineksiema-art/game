@@ -78,7 +78,7 @@ v0.2 adds debug primitive drawing to the renderer interface: debug camera, lines
 
 `src/game/ThirdPersonCamera.*` implements yaw/pitch orbit, distance, height offset, pitch clamp, and exponential follow smoothing. The update order is player first, camera second, render third to avoid frame-order jitter.
 
-`src/game/TestWorld.*` is the v0.3 static world/collision boundary. It owns named static AABB colliders, a floor height, player proxy resolution, overlap checks, ground checks, and a simple raycast query for future camera obstruction or interaction work. v0.7 adds a Ferry Office prototype layout builder and lets the scene toggle whether a named collider blocks the player.
+`src/game/PrototypeWorld.*` is the v0.3 static world/collision boundary. It owns named static AABB colliders, a floor height, player proxy resolution, overlap checks, ground checks, and a simple raycast query for future camera obstruction or interaction work. v0.7 adds a Ferry Office prototype layout builder and lets the scene toggle whether a named collider blocks the player.
 
 `src/game/InteractionSystem.*` is the v0.4 gameplay interaction boundary. It owns lightweight interactable data, selects the best focus candidate from player position/facing/range, and executes simple built-in actions: pickup, toggle, and info. It deliberately has no scripting, inventory, dialogue tree, mission state, or UI framework.
 
@@ -86,19 +86,21 @@ v0.2 adds debug primitive drawing to the renderer interface: debug camera, lines
 
 `src/game/WorldState.*` is the v0.6 local remembered-state boundary for the prototype scene. It owns boolean flags, deterministic event records, event ids, last-event text, and compact debug summary text. It is runtime-only and does not implement save/load, mission scripting, inventory, dialogue, or persistence.
 
-`src/game/TestScene.*` defines the Ferry Office debug micro-slice. It asks `TestWorld` to build a dock/ferry-office prototype layout with a closed service gate, a service barrier, office walls, dock rails, and maintenance-side blockers. It owns five debug interactables: a one-shot Ferry Manifest pickup, a repeatable Wall Button service-gate opener, a repeatable Ferry Office Notice, a Maintenance Box, and an Exit Summary Marker.
+`src/game/PrototypeScene.*` defines the Ferry Office debug micro-slice. It asks `PrototypeWorld` to build a dock/ferry-office prototype layout with a closed service gate, a service barrier, office walls, dock rails, and maintenance-side blockers. It owns five debug interactables: a one-shot Ferry Manifest pickup, a repeatable Wall Button service-gate opener, a repeatable Ferry Office Notice, a Maintenance Box, and an Exit Summary Marker.
 
-`src/game/TestScene.*` also owns the first v0.5 traversal affordance: a service-barrier vault path used as access-gating groundwork for The Ferry Office.
+`src/game/PrototypeScene.*` also owns the first v0.5 traversal affordance: a service-barrier vault path used as access-gating groundwork for The Ferry Office.
 
-`src/game/TestScene.*` maps prototype gameplay results to remembered state: Ferry Manifest sets `manifestCollected`, Wall Button sets `routeOpened=true`, Maintenance Box sets `maintenanceBoxInspected` and `powerRestored`, Service Barrier Vault completion sets `serviceRouteUsed`, and the Exit Summary Marker can set `exitReached` only after the required loop is ready. This mapping stays in the scene layer so `InteractionSystem` and `TraversalSystem` remain generic.
+`src/game/FerryOfficeData.*` centralizes the Ferry Office prototype's stable debug names, prompts, messages, important marker positions, radii, and traversal tuning constants. It is not a content pipeline; it is a small data cleanup so scene setup, state mapping, debug rendering, and tests do not repeat string ids and coordinates.
 
-`src/game/TestScene.*` also exposes slice guidance helpers: current objective text, ready-for-exit status, completion status, completion summary text, and service-gate blocking state. `routeOpened` is synchronized to the named `service-gate` collider so the gate is not only visual in the prototype. v0.7.1 makes the Wall Button latch the route open instead of closing it again, which avoids trapping the player in the gate volume.
+`src/game/PrototypeScene.*` maps prototype gameplay results to remembered state: Ferry Manifest sets `manifestCollected`, Wall Button sets `routeOpened=true`, Maintenance Box sets `maintenanceBoxInspected` and `powerRestored`, Service Barrier Vault completion sets `serviceRouteUsed`, and the Exit Summary Marker can set `exitReached` only after the required loop is ready. This mapping stays in the scene layer so `InteractionSystem` and `TraversalSystem` remain generic.
+
+`src/game/PrototypeScene.*` also exposes slice guidance helpers: current objective text, ready-for-exit status, completion status, completion summary text, and service-gate blocking state. `routeOpened` is synchronized to the named `service-gate` collider so the gate is not only visual in the prototype. v0.7.1 makes the Wall Button latch the route open instead of closing it again, which avoids trapping the player in the gate volume.
 
 `src/game/SandboxLayer.*` integrates player/camera/world/traversal/interaction update order. It updates traversal focus first from the current player position/facing, gives a focused traversal activation to the player, updates interaction focus from the corrected player position/facing, executes `E` interactions, updates the camera, then renders world collision, traversal, interaction, world-state, and Ferry Office slice debug markers.
 
 In v0.5.1, traversal activation uses the player's current position as the runtime traversal start while keeping the authored affordance target fixed. This avoids a visible snap to the start marker when the player presses `Space` inside the focus radius. The authored start marker remains a focus/debug marker, not a mandatory teleport point.
 
-Traversal completion now resolves the authored target through `TestWorld::resolvePlayer` before returning the controller to normal movement. This keeps landing grounded, clears velocity, and lets the existing static collision path correct a blocked target instead of leaving the player inside a collider.
+Traversal completion now resolves the authored target through `PrototypeWorld::resolvePlayer` before returning the controller to normal movement. This keeps landing grounded, clears velocity, and lets the existing static collision path correct a blocked target instead of leaving the player inside a collider.
 
 Collision support is intentionally primitive:
 
@@ -158,7 +160,7 @@ For the first vertical slice, keep player-facing as the default and add camera-f
 
 ## Naming Direction
 
-`TestWorld` and `TestScene` still keep their names in v0.7 to avoid broad rename churn during the micro-slice. They now behave like prototype boundaries. Rename them to `PrototypeWorld` and `PrototypeScene` in a focused cleanup only if v0.7.1 or a later milestone needs clearer naming enough to justify touching many files.
+v0.8 renamed the stale `TestWorld` / `TestScene` boundaries to `PrototypeWorld` / `PrototypeScene`. The names now match their role: they are still hardcoded prototype-game scaffolding, but they are no longer described as temporary unit-test-only objects.
 
 ## Tools and Scripts
 

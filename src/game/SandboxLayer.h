@@ -2,7 +2,7 @@
 
 #include "engine/application/Application.h"
 #include "game/PlayerController.h"
-#include "game/TestScene.h"
+#include "game/PrototypeScene.h"
 #include "game/ThirdPersonCamera.h"
 
 #include <string>
@@ -23,7 +23,7 @@ private:
     void drawSliceDebug(engine::IRenderer& renderer);
     void recordWorldStateChange(bool changed);
 
-    TestScene m_scene;
+    PrototypeScene m_scene;
     PlayerController m_player;
     ThirdPersonCamera m_camera;
     std::string m_debugText;

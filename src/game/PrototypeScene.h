@@ -1,18 +1,19 @@
 #pragma once
 
+#include "game/FerryOfficeData.h"
 #include "game/InteractionSystem.h"
-#include "game/TestWorld.h"
+#include "game/PrototypeWorld.h"
 #include "game/TraversalSystem.h"
 #include "game/WorldState.h"
 
 #include <string>
 
-class TestScene {
+class PrototypeScene {
 public:
-    TestScene();
+    PrototypeScene();
 
-    TestWorld& world();
-    const TestWorld& world() const;
+    PrototypeWorld& world();
+    const PrototypeWorld& world() const;
     InteractionSystem& interactions();
     const InteractionSystem& interactions() const;
     TraversalSystem& traversal();
@@ -33,7 +34,7 @@ public:
 private:
     void syncRouteGateCollider();
 
-    TestWorld m_world;
+    PrototypeWorld m_world;
     InteractionSystem m_interactions;
     TraversalSystem m_traversal;
     WorldState m_worldState;

@@ -1192,3 +1192,107 @@ Results:
 ## v0.7.1 Next Honest Step
 
 Use the polished micro-slice foundation for a narrow cleanup goal: v0.8 Prototype Scene Naming + Data Cleanup. Keep it focused on naming/data organization for the existing prototype scene, not a new gameplay system.
+
+## v0.8 Baseline - 2026-05-14
+
+Goal: rename `TestWorld` / `TestScene` to `PrototypeWorld` / `PrototypeScene` if safe, reduce Ferry Office string-name coupling where practical, organize Ferry Office constants/data, preserve existing micro-slice behavior, and keep validation passing. This goal must not add new gameplay systems.
+
+Required context read before coding:
+
+- `AGENTS.md`
+- `docs/STATUS.md`
+- `docs/ARCHITECTURE.md`
+- `docs/DECISIONS.md`
+- `docs/ROADMAP.md`
+- `docs/TECH_DEBT.md`
+
+Baseline command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+```
+
+Baseline result:
+
+- Passed.
+- Doctor found all expected project docs and structure.
+- Doctor warnings remain for tools not visible in the plain PATH: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- CMake configured with `windows-vs2022-debug`.
+- Build produced `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- CTest passed 2/2 tests.
+- Headless smoke run passed with the null renderer and engine `v0.7.1`.
+- Smoke logs showed the existing Ferry Office start state, multi-line debug text, and `sliceComplete=no`.
+
+## v0.8 Short Implementation Plan
+
+1. Add guard tests first for the public prototype-scene naming boundary and Ferry Office behavior preservation.
+2. Rename `TestWorld.*` to `PrototypeWorld.*` and `TestScene.*` to `PrototypeScene.*`, updating CMake, includes, type names, docs, and tests.
+3. Add a small Ferry Office data header/source in `src/game` for stable ids/names/positions/prompts used by scene setup and state mapping.
+4. Replace direct string-name coupling in scene state mapping and rendering with centralized Ferry Office ids/names where practical.
+5. Keep all existing player, traversal, interaction, collision, renderer, and world-state behavior unchanged.
+6. Run build/CTest after the refactor, then the full validation matrix, record exact results, commit, and push.
+
+## v0.8 Changes Made
+
+- Updated project version to `0.8.0`.
+- Renamed active prototype boundaries:
+  - `src/game/TestWorld.*` -> `src/game/PrototypeWorld.*`
+  - `src/game/TestScene.*` -> `src/game/PrototypeScene.*`
+- Updated `PlayerController`, `SandboxLayer`, tests, includes, and CMake to use `PrototypeWorld` / `PrototypeScene`.
+- Added `src/game/FerryOfficeData.*` to centralize Ferry Office debug names, prompts, messages, important positions, interaction radii, and Service Barrier Vault tuning constants.
+- Replaced direct Ferry Office string/position coupling in scene setup, service-gate collider lookup, state mapping, debug rendering, and focused regression tests where practical.
+- Preserved the existing Ferry Office micro-slice behavior; no new gameplay system was added.
+- Updated architecture, roadmap, decisions, and technical debt docs for the new naming/data boundary.
+
+## v0.8 Intermediate Results
+
+Commands:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+ctest --preset windows-vs2022-debug --output-on-failure
+```
+
+Results:
+
+- Initial TDD build failed as expected after adding the Ferry Office data guard test before implementation:
+  - `fatal error C1083: Cannot open include file: 'game/FerryOfficeData.h': No such file or directory`
+- After adding `FerryOfficeData`, renaming the classes/files, and updating CMake/includes, `scripts/build.ps1` passed.
+- `ctest --preset windows-vs2022-debug --output-on-failure` passed, 2/2 tests.
+
+## v0.8 Final Validation - 2026-05-14
+
+Commands:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/doctor.ps1
+powershell -ExecutionPolicy Bypass -File scripts/configure.ps1
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+ctest --preset windows-vs2022-debug --output-on-failure
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --frames 240
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 240
+python tools/status_report.py
+```
+
+Results:
+
+- `scripts/doctor.ps1`: passed. Warnings remain for tools not visible in the plain PATH: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- `scripts/configure.ps1`: passed using `windows-vs2022-debug`.
+- `scripts/build.ps1`: passed and produced `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 2/2 tests.
+- `scripts/verify.ps1`: passed; ran doctor, configure, build, CTest, and null-renderer smoke run. Smoke logs show engine `v0.8.0`, five interactables, the initial Ferry Manifest prompt, all Ferry Office flags false, and `sliceComplete=no`.
+- `EngineApp.exe --renderer gdi --frames 240`: passed; created a Win32 window, initialized the GDI fallback renderer, showed the existing Ferry Office debug text, and exited cleanly.
+- `EngineApp.exe --renderer dx11 --frames 240`: passed; created a Win32 window and initialized DirectX 11 through WARP after hardware DX11 device creation failed.
+- `python tools/status_report.py`: passed and reported the expected v0.8 working tree changes before commit.
+
+## v0.8 Known Issues / Limitations
+
+- This was a naming/data cleanup only; no new gameplay systems, UI framework, scene serialization, content pipeline, NPC AI, vehicles, combat, inventory, save/load, or physics library were added.
+- Historical docs/status entries still mention `TestWorld` / `TestScene` where they describe earlier milestones. Active code and current architecture docs now use `PrototypeWorld` / `PrototypeScene`.
+- `FerryOfficeData` is still C++-authored prototype data, not a runtime scene format.
+- DX11 hardware device creation still falls back to WARP in this environment.
+
+## v0.8 Next Honest Step
+
+Run a focused follow-up goal: v0.8.1 Ferry Office Manual Playtest Notes + Follow-up Fixes. Keep it manual-playtest driven and fix only clarity/completion issues that survive the cleanup.

@@ -1,6 +1,6 @@
 #include "game/PlayerController.h"
 
-#include "game/TestWorld.h"
+#include "game/PrototypeWorld.h"
 
 #include <cmath>
 
@@ -30,7 +30,7 @@ void PlayerController::setPosition(engine::Vec3 position)
     }
 }
 
-void PlayerController::setWorld(const TestWorld* world)
+void PlayerController::setWorld(const PrototypeWorld* world)
 {
     m_world = world;
 }

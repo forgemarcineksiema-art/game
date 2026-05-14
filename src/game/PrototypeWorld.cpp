@@ -1,4 +1,6 @@
-#include "game/TestWorld.h"
+#include "game/PrototypeWorld.h"
+
+#include "game/FerryOfficeData.h"
 
 #include <algorithm>
 #include <cmath>
@@ -37,18 +39,18 @@ engine::Vec3 Aabb::closestPoint(engine::Vec3 point) const
     };
 }
 
-void TestWorld::clear()
+void PrototypeWorld::clear()
 {
     m_colliders.clear();
     m_nextColliderId = 1;
 }
 
-void TestWorld::setFloorHeight(float floorHeight)
+void PrototypeWorld::setFloorHeight(float floorHeight)
 {
     m_floorHeight = floorHeight;
 }
 
-int TestWorld::addBox(std::string name, engine::Vec3 center, engine::Vec3 halfExtents)
+int PrototypeWorld::addBox(std::string name, engine::Vec3 center, engine::Vec3 halfExtents)
 {
     StaticCollider collider;
     collider.id = m_nextColliderId++;
@@ -59,7 +61,7 @@ int TestWorld::addBox(std::string name, engine::Vec3 center, engine::Vec3 halfEx
     return m_colliders.back().id;
 }
 
-void TestWorld::buildDefaultCollisionTestLayout()
+void PrototypeWorld::buildDefaultCollisionTestLayout()
 {
     clear();
     setFloorHeight(0.0f);
@@ -72,7 +74,7 @@ void TestWorld::buildDefaultCollisionTestLayout()
     addBox("test-crate", {3.5f, 0.5f, 2.0f}, {0.6f, 0.5f, 0.6f});
 }
 
-void TestWorld::buildFerryOfficePrototypeLayout()
+void PrototypeWorld::buildFerryOfficePrototypeLayout()
 {
     clear();
     setFloorHeight(0.0f);
@@ -80,15 +82,15 @@ void TestWorld::buildFerryOfficePrototypeLayout()
     addBox("ferry-office-back-wall", {0.0f, 0.75f, 5.4f}, {2.8f, 0.75f, 0.25f});
     addBox("ferry-office-left-wall", {-2.8f, 0.75f, 3.75f}, {0.25f, 0.75f, 1.9f});
     addBox("ferry-office-right-wall", {2.8f, 0.75f, 3.75f}, {0.25f, 0.75f, 1.9f});
-    addBox("service-gate", {0.0f, 0.75f, 2.35f}, {2.45f, 0.75f, 0.16f});
-    addBox("service-barrier", {2.8f, 0.25f, 0.55f}, {1.0f, 0.25f, 0.45f});
+    addBox(std::string(FerryOffice::Names::ServiceGateCollider), FerryOffice::Positions::ServiceGateCenter, FerryOffice::Positions::ServiceGateHalfExtents);
+    addBox("service-barrier", FerryOffice::Positions::ServiceBarrierCenter, FerryOffice::Positions::ServiceBarrierHalfExtents);
     addBox("dock-rail-left", {-4.2f, 0.45f, -0.5f}, {0.2f, 0.45f, 3.0f});
     addBox("dock-rail-right", {4.2f, 0.45f, -0.5f}, {0.2f, 0.45f, 3.0f});
     addBox("office-counter", {-1.35f, 0.45f, 1.45f}, {0.7f, 0.45f, 0.3f});
     addBox("maintenance-crate", {3.6f, 0.45f, 0.55f}, {0.45f, 0.45f, 0.45f});
 }
 
-bool TestWorld::setColliderBlocksPlayer(std::string_view name, bool blocksPlayer)
+bool PrototypeWorld::setColliderBlocksPlayer(std::string_view name, bool blocksPlayer)
 {
     for (StaticCollider& collider : m_colliders) {
         if (collider.name == name) {
@@ -100,7 +102,7 @@ bool TestWorld::setColliderBlocksPlayer(std::string_view name, bool blocksPlayer
     return false;
 }
 
-CollisionResult TestWorld::resolvePlayer(const PlayerCollisionProxy& proxy) const
+CollisionResult PrototypeWorld::resolvePlayer(const PlayerCollisionProxy& proxy) const
 {
     CollisionResult result;
     result.position = proxy.position;
@@ -136,19 +138,19 @@ CollisionResult TestWorld::resolvePlayer(const PlayerCollisionProxy& proxy) cons
     return result;
 }
 
-bool TestWorld::playerOverlapsCollider(engine::Vec3 position, float radius, float height, const StaticCollider& collider) const
+bool PrototypeWorld::playerOverlapsCollider(engine::Vec3 position, float radius, float height, const StaticCollider& collider) const
 {
     const engine::Vec3 halfExtents {radius, std::max(height * 0.5f, 0.01f), radius};
     const engine::Vec3 center = position + engine::Vec3 {0.0f, halfExtents.y, 0.0f};
     return collider.bounds.overlaps(center, halfExtents);
 }
 
-bool TestWorld::isGrounded(engine::Vec3 position, float probeDistance) const
+bool PrototypeWorld::isGrounded(engine::Vec3 position, float probeDistance) const
 {
     return position.y <= m_floorHeight + probeDistance;
 }
 
-RaycastHit TestWorld::raycast(engine::Vec3 origin, engine::Vec3 direction, float maxDistance) const
+RaycastHit PrototypeWorld::raycast(engine::Vec3 origin, engine::Vec3 direction, float maxDistance) const
 {
     RaycastHit bestHit;
     float bestDistance = maxDistance;
@@ -205,12 +207,12 @@ RaycastHit TestWorld::raycast(engine::Vec3 origin, engine::Vec3 direction, float
     return bestHit;
 }
 
-const std::vector<StaticCollider>& TestWorld::colliders() const
+const std::vector<StaticCollider>& PrototypeWorld::colliders() const
 {
     return m_colliders;
 }
 
-const StaticCollider* TestWorld::colliderByName(std::string_view name) const
+const StaticCollider* PrototypeWorld::colliderByName(std::string_view name) const
 {
     for (const StaticCollider& collider : m_colliders) {
         if (collider.name == name) {
@@ -221,12 +223,12 @@ const StaticCollider* TestWorld::colliderByName(std::string_view name) const
     return nullptr;
 }
 
-float TestWorld::floorHeight() const
+float PrototypeWorld::floorHeight() const
 {
     return m_floorHeight;
 }
 
-engine::Vec3 TestWorld::resolveCollider(const PlayerCollisionProxy& proxy, const StaticCollider& collider, CollisionResult& result) const
+engine::Vec3 PrototypeWorld::resolveCollider(const PlayerCollisionProxy& proxy, const StaticCollider& collider, CollisionResult& result) const
 {
     engine::Vec3 position = proxy.position;
     const float top = collider.bounds.center.y + collider.bounds.halfExtents.y;

@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-14
 
-This file lists known foundation issues after v0.7. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
+This file lists known foundation issues after v0.8. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
 
 ## Build / Toolchain
 
@@ -40,12 +40,12 @@ This file lists known foundation issues after v0.7. It is not a mandate to fix e
 - Ground is a flat floor-height query.
 - No slopes, ramps, stairs, moving platforms, or step-up behavior.
 - Raycast only checks static AABB colliders.
-- Collision layouts are hardcoded in `TestWorld::buildDefaultCollisionTestLayout` and `TestWorld::buildFerryOfficePrototypeLayout`.
+- Collision layouts are hardcoded in `PrototypeWorld::buildDefaultCollisionTestLayout` and `PrototypeWorld::buildFerryOfficePrototypeLayout`.
 - The `service-gate` collider can be latched open by scene state, but there is no general dynamic-collider or door system.
 
 ## Interaction
 
-- Interactables are hardcoded in `TestScene`.
+- Interactables are still authored in `PrototypeScene`, though v0.8 centralizes Ferry Office names, prompts, positions, radii, and traversal constants in `FerryOfficeData`.
 - Focus uses point/radius volumes with a facing preference and close proximity fallback.
 - Toggle objects normally only change interaction state. The Ferry Office Wall Button is now a one-way opener that latches `routeOpened=true` to avoid closing the gate on the player.
 - Pickup/world state is local runtime state only; there is no inventory, persistence, or save data.
@@ -54,7 +54,7 @@ This file lists known foundation issues after v0.7. It is not a mandate to fix e
 ## World State
 
 - `WorldState` is an in-memory local event ledger, not a save/load system.
-- Flag mappings are hardcoded in `TestScene`.
+- Flag mappings are hardcoded in `PrototypeScene`; v0.8 reduced string-id repetition by using centralized Ferry Office names.
 - Repeated same-value flag writes are ignored, which is correct for v0.6 but may need richer event semantics later.
 - Debug summary text became longer in v0.7 because it now includes objective, completion, and `exitReached`. v0.7.1 splits the GDI/debug string into sections, but there is still no real UI overlay.
 - There is no mission graph, quest scripting, dialogue integration, global event bus, or persistence layer.
@@ -62,7 +62,7 @@ This file lists known foundation issues after v0.7. It is not a mandate to fix e
 
 ## Traversal
 
-- Traversal affordances are hardcoded in `TestScene`.
+- Traversal affordances are hardcoded in `PrototypeScene`; v0.8 moved the service-vault positions/tuning constants into `FerryOfficeData`.
 - Only one affordance type exists: `Vault`.
 - Traversal starts from the player's current position and resolves collision after landing, but it still skips continuous collision checks during the controlled motion.
 - There is no animation, IK, ledge hang, full climb, wall climb, or physics-driven vault.
@@ -71,15 +71,15 @@ This file lists known foundation issues after v0.7. It is not a mandate to fix e
 
 ## Naming / Architecture
 
-- `TestWorld` and `TestScene` now contain the Ferry Office micro-slice, so their names are increasingly stale. Rename them to `PrototypeWorld` and `PrototypeScene` in a focused cleanup if v0.7.1 confirms the slice direction.
+- `TestWorld` and `TestScene` were renamed to `PrototypeWorld` and `PrototypeScene` in v0.8. Some historical documentation/status entries still mention the old names, but the active code boundary is renamed.
 - `InteractionSystem` belongs in `src/game` for now. Promote it to `src/engine` only after multiple gameplay contexts prove a stable boundary.
 - There is no scene serialization, asset registry, or editor.
 
-## Recommended Debt Before Or During v0.7.1
+## Recommended Debt After v0.8
 
 1. Run a full human keyboard/mouse playthrough of the Ferry Office loop.
 2. Tighten prompt/marker placement if human input still feels awkward.
 3. Keep `WorldState` runtime-only unless a later goal explicitly asks for persistence.
-4. Consider renaming `TestWorld` / `TestScene` to `PrototypeWorld` / `PrototypeScene` only as part of a focused cleanup.
-5. Keep debug text readable before adding any richer objective or UI layer.
-6. Avoid adding a mission scripting system before the micro-slice proves its minimal state flow.
+4. Keep debug text readable before adding any richer objective or UI layer.
+5. Avoid adding a mission scripting system before the micro-slice proves its minimal state flow.
+6. Consider a small scene-data loading format only after one more hand-authored slice exposes repeated authoring pain.

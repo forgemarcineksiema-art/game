@@ -49,7 +49,7 @@ struct RaycastHit {
     std::string colliderName;
 };
 
-class TestWorld {
+class PrototypeWorld {
 public:
     void clear();
     void setFloorHeight(float floorHeight);

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.24)
 
 project(GameEngineFoundation
-    VERSION 0.7.1
+    VERSION 0.8.0
     DESCRIPTION "AI-native C++ action/adventure engine foundation"
     LANGUAGES CXX
 )
@@ -65,10 +65,11 @@ endif()
 
 add_library(GamePrototype STATIC
     src/game/InteractionSystem.cpp
+    src/game/FerryOfficeData.cpp
     src/game/PlayerController.cpp
     src/game/SandboxLayer.cpp
-    src/game/TestScene.cpp
-    src/game/TestWorld.cpp
+    src/game/PrototypeScene.cpp
+    src/game/PrototypeWorld.cpp
     src/game/ThirdPersonCamera.cpp
     src/game/TraversalSystem.cpp
     src/game/WorldState.cpp

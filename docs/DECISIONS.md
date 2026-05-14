@@ -187,7 +187,7 @@ Reason: The player may press `Space` from anywhere inside the focus radius. Star
 
 ## v0.5.1 Traversal Landing Handoff
 
-Decision: Resolve the traversal target through `TestWorld::resolvePlayer` before returning the player to normal movement.
+Decision: Resolve the traversal target through `PrototypeWorld::resolvePlayer` before returning the player to normal movement.
 
 Reason: The collision system already owns floor/box correction. Reusing it at traversal completion keeps landing grounded, clears velocity, exposes collision debug state, and avoids adding a physics library or new traversal collision solver.
 
@@ -250,3 +250,15 @@ Reason: The v0.7 debug string was too long for readable playtesting. Multi-line 
 Decision: Keep `TestWorld` and `TestScene` names during v0.7.1.
 
 Reason: The polish work found behavior clarity issues that were more important than rename churn. A focused PrototypeWorld/PrototypeScene cleanup can be a later goal if the next milestone needs clearer scene naming.
+
+## v0.8 Prototype Scene Naming
+
+Decision: Rename `TestWorld` / `TestScene` to `PrototypeWorld` / `PrototypeScene`.
+
+Reason: After v0.7.1, these classes are no longer unit-test-like experiments; they are the active prototype world and micro-slice scene boundaries. A focused cleanup goal can absorb the rename churn while tests prove the Ferry Office behavior is unchanged.
+
+## v0.8 Ferry Office Data
+
+Decision: Add `FerryOfficeData` under `src/game` for stable prototype names, prompts, messages, positions, radii, and traversal constants instead of introducing a scene file format.
+
+Reason: v0.8 is cleanup, not a content pipeline milestone. A small C++ data boundary removes repeated strings and coordinates while keeping the current prototype easy to compile, test, and refactor later.
