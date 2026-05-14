@@ -1,0 +1,59 @@
+param(
+    [string]$Preset = "auto",
+    [switch]$SkipSmokeRun
+)
+
+$ErrorActionPreference = "Stop"
+$Root = Resolve-Path (Join-Path $PSScriptRoot "..")
+$LastPresetPath = Join-Path $Root "build\.last_preset"
+
+& (Join-Path $PSScriptRoot "doctor.ps1")
+if ($LASTEXITCODE -ne 0) {
+    exit $LASTEXITCODE
+}
+
+& (Join-Path $PSScriptRoot "configure.ps1") -Preset $Preset
+if ($LASTEXITCODE -ne 0) {
+    exit $LASTEXITCODE
+}
+
+if ($Preset -eq "auto") {
+    $Preset = (Get-Content $LastPresetPath -Raw).Trim()
+}
+
+& (Join-Path $PSScriptRoot "build.ps1") -Preset $Preset
+if ($LASTEXITCODE -ne 0) {
+    exit $LASTEXITCODE
+}
+
+Push-Location $Root
+try {
+    ctest --preset $Preset
+    if ($LASTEXITCODE -ne 0) {
+        exit $LASTEXITCODE
+    }
+
+    if (!$SkipSmokeRun) {
+        $Candidates = @(
+            "build\$Preset\Debug\EngineApp.exe",
+            "build\$Preset\EngineApp.exe"
+        )
+        $Exe = $Candidates | Where-Object { Test-Path (Join-Path $Root $_) } | Select-Object -First 1
+        if ($null -eq $Exe) {
+            Write-Host "EngineApp executable was not found after build."
+            exit 1
+        }
+
+        $ExePath = Join-Path $Root $Exe
+        & $ExePath --smoke-test --frames 3
+        if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+        }
+    }
+} finally {
+    Pop-Location
+}
+
+Write-Host "Verification completed."
+exit 0
+
