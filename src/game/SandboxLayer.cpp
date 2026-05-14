@@ -25,7 +25,7 @@ engine::Color ColliderSolidColor(const StaticCollider& collider, bool routeOpene
     if (collider.name == FerryOffice::Names::ServiceGateCollider) {
         return routeOpened
             ? engine::Color {0.12f, 0.30f, 0.18f, 1.0f}
-            : engine::Color {0.52f, 0.16f, 0.10f, 1.0f};
+            : engine::Color {0.36f, 0.11f, 0.08f, 1.0f};
     }
     if (NameContains(collider, "ferry-office")) {
         return {0.34f, 0.30f, 0.21f, 1.0f};
@@ -69,6 +69,9 @@ void DrawFerryOfficeMoodBase(engine::IRenderer& renderer, float floor)
     renderer.drawDebugSolidBox({-4.85f, floor - 0.07f, -0.7f}, {0.35f, 0.07f, 3.25f}, {0.07f, 0.18f, 0.24f, 1.0f});
     renderer.drawDebugSolidBox({4.85f, floor - 0.07f, -0.7f}, {0.35f, 0.07f, 3.25f}, {0.07f, 0.18f, 0.24f, 1.0f});
     renderer.drawDebugSolidBox({0.0f, floor + 1.68f, 5.18f}, {2.95f, 0.12f, 0.55f}, {0.40f, 0.22f, 0.13f, 1.0f});
+    renderer.drawDebugSolidBox({-0.55f, floor + 0.32f, -1.35f}, {0.07f, 0.32f, 0.07f}, {0.43f, 0.34f, 0.16f, 1.0f});
+    renderer.drawDebugSolidBox({0.55f, floor + 0.32f, -1.35f}, {0.07f, 0.32f, 0.07f}, {0.43f, 0.34f, 0.16f, 1.0f});
+    renderer.drawDebugSolidBox({2.85f, floor + 0.65f, 1.85f}, {0.10f, 0.65f, 0.10f}, {0.10f, 0.42f, 0.38f, 1.0f});
 }
 
 } // namespace
@@ -175,6 +178,17 @@ void SandboxLayer::updateDebugText()
 
     std::ostringstream output;
     output << std::fixed << std::setprecision(2)
+           << "objective=\"" << m_scene.currentObjectiveText() << "\" "
+           << "readyForExit=" << (m_scene.isSliceReadyForExit() ? "yes" : "no") << " "
+           << "sliceComplete=" << (m_scene.isSliceComplete() ? "yes" : "no") << "\n"
+           << "focus=" << (focus.hasFocus ? focus.name : "none") << " ";
+    if (focus.hasFocus) {
+        output << "prompt=\"Press E: " << focus.prompt << "\" ";
+    }
+    if (traversalFocus.hasFocus && player.traversalMode == PlayerTraversalMode::Normal) {
+        output << "travPrompt=\"" << traversalFocus.prompt << "\" ";
+    }
+    output << "travFocus=" << (traversalFocus.hasFocus ? traversalFocus.name : "none") << "\n"
            << "player=(" << player.position.x << "," << player.position.y << "," << player.position.z << ") "
            << "speed=" << player.horizontalSpeed << " "
            << (player.sprinting ? "sprint" : "walk") << " "
@@ -185,27 +199,16 @@ void SandboxLayer::updateDebugText()
            << "camera yaw=" << engine::Degrees(camera.yawRadians)
            << " pitch=" << engine::Degrees(camera.pitchRadians)
            << " dist=" << camera.distance << "\n"
-           << "objective=\"" << m_scene.currentObjectiveText() << "\" "
-           << "readyForExit=" << (m_scene.isSliceReadyForExit() ? "yes" : "no") << " "
-           << "sliceComplete=" << (m_scene.isSliceComplete() ? "yes" : "no") << "\n"
            << "interactPressed=" << (m_interactPressedThisFrame ? "yes" : "no") << " "
            << "worldChanged=" << (m_worldStateChangedThisFrame ? "yes" : "no") << " "
            << "traversal=" << (player.traversalMode == PlayerTraversalMode::Traversing ? "active" : "normal") << " "
            << "travProgress=" << player.traversalProgress << " "
            << "travStart=" << (player.traversalUsesCurrentPlayerPositionStart ? "current" : "fixed") << " "
            << "travLanded=" << (player.traversalLandedThisFrame ? "yes" : "no") << " "
-           << "travFocus=" << (traversalFocus.hasFocus ? traversalFocus.name : "none") << " "
-           << "travPressed=" << (m_traversalPressedThisFrame ? "yes" : "no") << " "
-           << "focus=" << (focus.hasFocus ? focus.name : "none") << " ";
+           << "travPressed=" << (m_traversalPressedThisFrame ? "yes" : "no") << " ";
     if (player.traversalMode == PlayerTraversalMode::Traversing) {
         output << "travFrom=(" << player.traversalStartPosition.x << "," << player.traversalStartPosition.z << ") "
                << "travTo=(" << player.traversalTargetPosition.x << "," << player.traversalTargetPosition.z << ") ";
-    }
-    if (traversalFocus.hasFocus && player.traversalMode == PlayerTraversalMode::Normal) {
-        output << "travPrompt=\"" << traversalFocus.prompt << "\" ";
-    }
-    if (focus.hasFocus) {
-        output << "prompt=\"Press E: " << focus.prompt << "\" ";
     }
     output << "\nlastInteraction=\"" << m_lastInteractionText << "\" "
            << "lastWorldEvent=\"" << m_lastWorldEventText << "\"\n"
@@ -220,12 +223,18 @@ void SandboxLayer::drawInteractionDebug(engine::IRenderer& renderer)
     for (const Interactable& interactable : m_scene.interactions().interactables()) {
         const bool isFocused = focus.hasFocus && focus.interactableId == interactable.id;
         engine::Color color {0.35f, 0.75f, 1.0f, 1.0f};
+        float markerSize = 0.16f;
+        float beaconHeight = 0.75f;
         if (interactable.type == InteractableType::Pickup) {
             color = {0.35f, 1.0f, 0.45f, 1.0f};
+            markerSize = 0.20f;
         } else if (interactable.type == InteractableType::Toggle) {
             color = interactable.toggled
                 ? engine::Color {1.0f, 0.82f, 0.25f, 1.0f}
                 : engine::Color {1.0f, 0.55f, 0.25f, 1.0f};
+        }
+        if (interactable.name == FerryOffice::Names::FerryOfficeNotice) {
+            color = {0.45f, 0.70f, 1.0f, 1.0f};
         }
         if (interactable.name == FerryOffice::Names::WallButton && m_scene.worldState().isFlagSet(WorldFlag::RouteOpened)) {
             color = {0.25f, 1.0f, 0.35f, 1.0f};
@@ -233,15 +242,36 @@ void SandboxLayer::drawInteractionDebug(engine::IRenderer& renderer)
         if (interactable.name == FerryOffice::Names::MaintenanceBox && m_scene.worldState().isFlagSet(WorldFlag::PowerRestored)) {
             color = {0.25f, 1.0f, 0.85f, 1.0f};
         }
+        if (interactable.name == FerryOffice::Names::MaintenanceBox) {
+            markerSize = 0.22f;
+            beaconHeight = 1.15f;
+        }
+        if (interactable.name == FerryOffice::Names::WallButton) {
+            markerSize = 0.18f;
+            beaconHeight = 1.0f;
+        }
+        if (interactable.name == FerryOffice::Names::ExitMarker) {
+            if (m_scene.isSliceComplete()) {
+                color = {0.35f, 1.0f, 0.35f, 1.0f};
+            } else if (m_scene.isSliceReadyForExit()) {
+                color = {1.0f, 0.9f, 0.25f, 1.0f};
+            } else {
+                color = {0.45f, 0.45f, 0.55f, 1.0f};
+            }
+            markerSize = m_scene.isSliceReadyForExit() ? 0.34f : 0.24f;
+            beaconHeight = m_scene.isSliceReadyForExit() ? 1.65f : 0.9f;
+        }
 
         if (!interactable.enabled || interactable.consumed) {
             color = {0.35f, 0.35f, 0.35f, 1.0f};
+            markerSize = 0.14f;
         }
         if (isFocused) {
             color = {1.0f, 1.0f, 0.25f, 1.0f};
+            markerSize += 0.06f;
+            beaconHeight += 0.45f;
         }
 
-        const float markerSize = isFocused ? 0.22f : 0.16f;
         renderer.drawDebugSolidBox(interactable.position, {markerSize, markerSize, markerSize}, ScaleColor(color, isFocused ? 0.65f : 0.45f));
         renderer.drawDebugBox(interactable.position, {markerSize, markerSize, markerSize}, color);
         renderer.drawDebugBox(
@@ -249,7 +279,7 @@ void SandboxLayer::drawInteractionDebug(engine::IRenderer& renderer)
             {interactable.radius, 0.03f, interactable.radius},
             color);
         renderer.drawDebugLine(interactable.position,
-            interactable.position + engine::Vec3 {0.0f, isFocused ? 1.2f : 0.75f, 0.0f},
+            interactable.position + engine::Vec3 {0.0f, beaconHeight, 0.0f},
             color);
     }
 }
@@ -261,7 +291,7 @@ void SandboxLayer::drawWorldStateDebug(engine::IRenderer& renderer)
         ? engine::Color {0.25f, 1.0f, 0.35f, 1.0f}
         : engine::Color {1.0f, 0.25f, 0.2f, 1.0f};
     if (const StaticCollider* gate = m_scene.world().colliderByName(FerryOffice::Names::ServiceGateCollider)) {
-        renderer.drawDebugSolidBox(gate->bounds.center, gate->bounds.halfExtents + engine::Vec3 {0.03f, 0.03f, 0.03f}, ScaleColor(gateColor, 0.45f));
+        renderer.drawDebugSolidBox(gate->bounds.center, gate->bounds.halfExtents + engine::Vec3 {0.03f, 0.03f, 0.03f}, ScaleColor(gateColor, routeOpened ? 0.45f : 0.30f));
         renderer.drawDebugBox(gate->bounds.center, gate->bounds.halfExtents + engine::Vec3 {0.04f, 0.04f, 0.04f}, gateColor);
     }
 
@@ -308,9 +338,19 @@ void SandboxLayer::drawSliceDebug(engine::IRenderer& renderer)
     renderer.drawDebugLine(dockStart, dockStart + engine::Vec3 {0.0f, 1.0f, 0.0f}, dockColor);
     renderer.drawDebugSolidBox(officeMarker, {0.35f, 0.35f, 0.35f}, ScaleColor(officeColor, 0.45f));
     renderer.drawDebugBox(officeMarker, {0.35f, 0.35f, 0.35f}, officeColor);
-    renderer.drawDebugLine({FerryOffice::Positions::FerryManifest.x, floor + 0.06f, FerryOffice::Positions::FerryManifest.z},
-        {FerryOffice::Positions::ExitMarker.x, floor + 0.06f, FerryOffice::Positions::ExitMarker.z},
-        officeColor);
+    const engine::Color routeColor {0.70f, 0.92f, 1.0f, 1.0f};
+    renderer.drawDebugLine({FerryOffice::Positions::FerryManifest.x, floor + 0.08f, FerryOffice::Positions::FerryManifest.z},
+        {FerryOffice::Positions::ServiceVaultStart.x, floor + 0.08f, FerryOffice::Positions::ServiceVaultStart.z},
+        routeColor);
+    renderer.drawDebugLine({FerryOffice::Positions::ServiceVaultEnd.x, floor + 0.08f, FerryOffice::Positions::ServiceVaultEnd.z},
+        {FerryOffice::Positions::MaintenanceBox.x, floor + 0.08f, FerryOffice::Positions::MaintenanceBox.z},
+        routeColor);
+    renderer.drawDebugLine({FerryOffice::Positions::MaintenanceBox.x, floor + 0.08f, FerryOffice::Positions::MaintenanceBox.z},
+        {FerryOffice::Positions::WallButton.x, floor + 0.08f, FerryOffice::Positions::WallButton.z},
+        routeColor);
+    renderer.drawDebugLine({FerryOffice::Positions::WallButton.x, floor + 0.08f, FerryOffice::Positions::WallButton.z},
+        {FerryOffice::Positions::ExitMarker.x, floor + 0.08f, FerryOffice::Positions::ExitMarker.z},
+        routeColor);
     renderer.drawDebugSolidBox(exitMarker, {0.28f, 0.28f, 0.28f}, ScaleColor(exitColor, 0.45f));
     renderer.drawDebugBox(exitMarker, {0.28f, 0.28f, 0.28f}, exitColor);
     renderer.drawDebugBox({exitMarker.x, floor + 0.03f, exitMarker.z}, {FerryOffice::Radii::ExitMarker, 0.03f, FerryOffice::Radii::ExitMarker}, exitColor);

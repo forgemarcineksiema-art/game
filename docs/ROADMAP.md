@@ -123,6 +123,15 @@ Status: implemented as an input/camera comfort polish pass.
 
 Status: implemented as a visual-readability pass using solid debug boxes, a Tidebreak window title, a dock/service-yard color palette, and a committed GDI screenshot artifact for review.
 
+## v0.9.1 - Ferry Office Visual Playtest + Readability Polish
+
+- Review the v0.9 scene through GDI visual evidence and a limited input playtest attempt.
+- Make only small clarity changes: route signposting, marker hierarchy, objective wording, and debug text ordering.
+- Preserve movement, camera, collision, interactions, traversal, world state, cursor capture, and validation behavior.
+- Keep the prototype in debug-placeholder presentation; do not add asset loading or new gameplay systems.
+
+Status: implemented as a readability polish pass with a route polyline, stronger objective/focus debug text, clearer Ferry Office objective wording, tuned marker hierarchy, and an updated GDI screenshot reference.
+
 ## Recommended Next Goal
 
-Build v0.9.1 Ferry Office Visual Playtest + Readability Polish.
+Build v0.10 Vehicle Feel Spike.

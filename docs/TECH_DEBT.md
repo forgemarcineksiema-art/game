@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-15
 
-This file lists known foundation issues after v0.9. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
+This file lists known foundation issues after v0.9.1. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
 
 ## Build / Toolchain
 
@@ -80,14 +80,15 @@ This file lists known foundation issues after v0.9. It is not a mandate to fix e
 ## Visual Readability
 
 - v0.9 improves the Ferry Office read with solid placeholder color, but it is still a debug scene. It is not final art and should not be mistaken for the target commercial visual quality.
-- GDI debug text remains functional but visually heavy, especially at the top of the window.
+- v0.9.1 adds a route polyline, stronger marker hierarchy, and clearer objective wording, but the space still needs a real human playthrough on the target laptop.
+- GDI debug text is now ordered around objective/focus first, but it remains functional debug text rather than a polished UI.
 - DX11 has no debug text overlay, so visual playtesting still favors GDI until a real overlay or text path exists.
 - There is no authored composition pass for camera start angle, signposting, silhouettes, or route readability beyond simple colored volumes.
 
-## Recommended Debt After v0.9
+## Recommended Debt After v0.9.1
 
-1. Run a full human keyboard/mouse playthrough of the Ferry Office loop using the new solid placeholder presentation.
-2. Tighten prompt/marker placement, objective wording, and marker colors if the route still feels unclear.
+1. Run a full human keyboard/mouse playthrough of the Ferry Office loop on the target laptop.
+2. Tighten prompt/marker placement and route polyline color if human input still shows confusion.
 3. Validate captured cursor feel on the target laptop/touchpad and use `--free-cursor` if a remote session behaves badly.
 4. Keep `WorldState` runtime-only unless a later goal explicitly asks for persistence.
 5. Keep debug text readable before adding any richer objective or UI layer.

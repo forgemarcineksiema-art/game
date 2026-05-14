@@ -166,19 +166,19 @@ bool PrototypeScene::isServiceGateBlocking() const
 std::string PrototypeScene::currentObjectiveText() const
 {
     if (!m_worldState.isFlagSet(WorldFlag::ManifestCollected)) {
-        return "Collect the Ferry Manifest near the dock office.";
+        return "Collect the Ferry Manifest at the dock-side office approach.";
     }
     if (!m_worldState.isFlagSet(WorldFlag::ServiceRouteUsed)) {
-        return "Use the Service Barrier Vault to reach the maintenance side.";
+        return "Vault the right-side Service Barrier to reach the Maintenance Box.";
     }
     if (!m_worldState.isFlagSet(WorldFlag::MaintenanceBoxInspected) || !m_worldState.isFlagSet(WorldFlag::PowerRestored)) {
-        return "Inspect the Maintenance Box to restore local power.";
+        return "Inspect the Maintenance Box on the service side to restore power.";
     }
     if (!m_worldState.isFlagSet(WorldFlag::RouteOpened)) {
-        return "Use the Wall Button to open the service gate.";
+        return "Return to the office Wall Button and open the service gate.";
     }
     if (!m_worldState.isFlagSet(WorldFlag::ExitReached)) {
-        return "Reach the Exit Summary Marker.";
+        return "Pass the open service gate to the Exit Summary Marker.";
     }
 
     return "Ferry Office micro-slice complete.";

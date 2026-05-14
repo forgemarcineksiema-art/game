@@ -1542,3 +1542,163 @@ Known limitations after v0.9:
 Recommended next goal:
 
 Run v0.9.1 Ferry Office Visual Playtest + Readability Polish before starting vehicles, so the current location can be judged and tightened by actual play.
+
+## v0.9.1 Baseline - 2026-05-15
+
+Goal: manually/visually review the v0.9 Ferry Office presentation and make only small clarity/readability polish changes. This goal must not add vehicles, NPC AI, combat, inventory, save/load, mission scripting, online, asset pipeline, model loading, textures/materials, lighting/shadows/post-processing, UI framework, or new traversal types.
+
+Required context read before coding:
+
+- `AGENTS.md`
+- `docs/STATUS.md`
+- `docs/ROADMAP.md`
+- `docs/ARCHITECTURE.md`
+- `docs/GAME_DIRECTION.md`
+- `docs/VERTICAL_SLICE.md`
+- `docs/TECH_DEBT.md`
+- `docs/MANUAL_TEST_CHECKLIST.md`
+- `docs/DECISIONS.md`
+- `docs/images/v0.9-gdi-screenshot.png`
+
+Baseline command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+```
+
+Baseline result:
+
+- Passed.
+- Doctor found all expected project docs and structure.
+- Doctor warnings remain for tools not visible in the plain PATH: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- CMake configured with `windows-vs2022-debug`.
+- Build produced `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- CTest passed 2/2 tests.
+- Headless smoke run passed with the null renderer and engine `v0.9.0`.
+- Smoke logs showed the existing Ferry Office start state, initial Ferry Manifest focus prompt, all Ferry Office flags false, and `sliceComplete=no`.
+
+Initial v0.9 screenshot observations:
+
+- Solid geometry makes the scene read much more like a constructed place than the earlier pure wireframe.
+- The red service gate strongly dominates the first view and can read like the main object before the player understands the intended loop.
+- The interactable/focus volumes still look like abstract debug boxes, so manifest, wall button, maintenance box, and exit need clearer color/signpost hierarchy.
+- Debug text is useful but visually heavy and consumes the top of the screen.
+- The start view does not explicitly sell "dock / ferry office / maintenance side"; it relies on color and layout rather than labels/signposting.
+
+## v0.9.1 Short Implementation Plan
+
+1. Run a GDI visual/playtest pass and record what can and cannot be honestly verified from this environment.
+2. Inspect `SandboxLayer`, `FerryOfficeData`, and `PrototypeScene` for small polish points that improve route/objective clarity without new systems.
+3. Apply the smallest readable-scene changes:
+   - tune marker colors and sizes,
+   - improve objective wording if it can guide the player better,
+   - add simple original debug signpost forms using existing solid boxes/lines,
+   - reduce visual competition where the gate overwhelms early focus,
+   - preserve all existing gameplay behavior.
+4. Add or update lightweight tests only for changed behavior such as objective text or renderer accounting.
+5. Capture/update the GDI screenshot reference and record visual observations.
+6. Run the full validation matrix, then commit and push if green.
+
+## v0.9.1 Playtest / Visual Review Notes - 2026-05-15
+
+GDI input playtest attempt:
+
+```powershell
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --frames 720 --free-cursor
+```
+
+Result:
+
+- The app launched and accepted some OS-level injected keyboard input.
+- The run successfully collected the Ferry Manifest and recorded `manifestCollected=true`.
+- The scripted input did not reliably steer to the Service Barrier Vault; it drifted toward the Wall Button and opened the service gate before traversal.
+- Because the input injection is not a reliable human/manual controller in this environment, this is not counted as a complete manual playthrough.
+
+Observed clarity issues from the run and the v0.9 screenshot:
+
+- After the manifest, the intended route to the Service Barrier Vault was too easy to miss.
+- The old straight debug line from manifest to exit did not describe the actual intended loop.
+- Marker hierarchy was still too flat; several interactables looked equally important.
+- The debug text had all the right data but put player/camera stats before the objective and prompt.
+
+Changes made:
+
+- Updated project version to `0.9.1`.
+- Added `TestFerryOfficeObjectiveTextGuidesRouteSteps` to lock objective wording around the intended loop.
+- Reworded Ferry Office objectives so they name the next spatial target:
+  - dock-side Ferry Manifest,
+  - right-side Service Barrier / Maintenance Box,
+  - service-side Maintenance Box power restore,
+  - office Wall Button / service gate,
+  - open service gate / Exit Summary Marker.
+- Reordered sandbox debug text so objective and focus/prompt appear first.
+- Replaced the single manifest-to-exit debug line with a low route polyline through:
+  - Ferry Manifest,
+  - Service Barrier Vault start/end,
+  - Maintenance Box,
+  - Wall Button,
+  - Exit Summary Marker.
+- Tuned known Ferry Office marker sizes, colors, and beacon heights for clearer visual hierarchy.
+- Slightly reduced the closed gate's solid red dominance while keeping its wire/debug state visible.
+- Added small dock/maintenance signpost forms using existing solid debug boxes.
+- Captured updated visual evidence at `docs/images/v0.9.1-gdi-screenshot.png`.
+
+Focused test results:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+ctest --preset windows-vs2022-debug --output-on-failure
+```
+
+Result:
+
+- Initial CTest after adding the objective wording test failed as expected with 3 objective-guidance failures.
+- After implementation, build passed and CTest passed 2/2.
+
+Visual observation from the v0.9.1 GDI screenshot:
+
+- Objective and focus are now the first debug lines, which makes the current task easier to read.
+- The route polyline better explains the Ferry Office loop than the previous straight line.
+- Manifest, maintenance, wall button, and exit markers now have more distinct size/color/beacon treatment.
+- The scene is still debug-placeholder presentation and still far from final commercial art quality.
+
+## v0.9.1 Final Validation - 2026-05-15
+
+Commands run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/doctor.ps1
+powershell -ExecutionPolicy Bypass -File scripts/configure.ps1
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+ctest --preset windows-vs2022-debug --output-on-failure
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --frames 240
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 240
+python tools\status_report.py
+```
+
+Results:
+
+- `scripts/doctor.ps1`: completed. Existing warnings remain: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg` are not in the plain PowerShell PATH.
+- `scripts/configure.ps1`: passed with preset `windows-vs2022-debug`.
+- `scripts/build.ps1`: passed; built `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 2/2 tests green (`EngineCoreTests`, `EngineSmokeTest`).
+- `scripts/verify.ps1`: passed; repeated doctor/configure/build/test and null smoke. Smoke log reported engine `v0.9.1` and app `Tidebreak Prototype`.
+- GDI bounded run: passed; window created, `gdi-fallback` renderer ran for 240 frames, clean shutdown.
+- DX11 bounded run: passed; hardware DX11 device failed and fell back to WARP, `dx11` renderer ran for 240 frames, clean shutdown.
+- `python tools\status_report.py`: completed and showed the expected v0.9.1 modified files plus `docs/images/v0.9.1-gdi-screenshot.png` before commit.
+
+Visual evidence:
+
+- Captured GDI screenshot: `docs/images/v0.9.1-gdi-screenshot.png`.
+
+Known limitations after v0.9.1:
+
+- Full human keyboard/mouse completion still needs to be done by a person on the target laptop; OS-level input injection was not reliable enough to count.
+- GDI debug text is more useful but still a debug overlay, not a UI system.
+- DX11 still has no debug text overlay and used WARP in this environment.
+- The scene is more readable than v0.9, but it remains placeholder/debug presentation rather than commercial-quality art.
+
+Recommended next goal:
+
+Run v0.10 Vehicle Feel Spike only if the human playtest agrees that the Ferry Office readability is good enough to move on.

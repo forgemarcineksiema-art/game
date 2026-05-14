@@ -280,3 +280,15 @@ Reason: The prototype needed to read more like a place without jumping to a real
 Decision: Change the default window title from `AI-Native Engine Foundation` to `Tidebreak Prototype`.
 
 Reason: v0.4.1 locked the project direction as Tidebreak, and v0.9 focuses on playtest readability. The runtime should identify the playable prototype rather than only the engine foundation.
+
+## v0.9.1 Route Polyline and Marker Hierarchy
+
+Decision: Keep the Ferry Office readability polish inside `SandboxLayer` by drawing a low route polyline through the intended loop and giving known prototype markers slightly different sizes, colors, and beacon heights.
+
+Reason: The v0.9 scene read more like a place, but the action path was still visually ambiguous. The route polyline and marker hierarchy improve readability without adding UI, mission scripting, new entities, asset loading, or renderer architecture.
+
+## v0.9.1 Objective-First Debug Text
+
+Decision: Reorder the GDI debug text so objective and focused prompt appear before player/camera statistics.
+
+Reason: During visual review, the most important playtest question was "where do I go next?" Objective-first debug text answers that faster while preserving all existing state/debug details for validation.

@@ -773,6 +773,39 @@ void TestFerryOfficeSliceStartsIncomplete()
         "Initial objective should guide the player toward the Ferry Manifest.");
 }
 
+void TestFerryOfficeObjectiveTextGuidesRouteSteps()
+{
+    PrototypeScene scene;
+
+    Expect(scene.currentObjectiveText().find("Ferry Manifest") != std::string::npos,
+        "TestFerryOfficeObjectiveTextGuidesRouteSteps",
+        "The first objective should call out the Ferry Manifest.");
+
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::FerryManifest), InteractableType::Pickup));
+    Expect(scene.currentObjectiveText().find("right-side") != std::string::npos
+            && scene.currentObjectiveText().find("Maintenance Box") != std::string::npos,
+        "TestFerryOfficeObjectiveTextGuidesRouteSteps",
+        "After the manifest, the objective should spatially guide the player toward the right-side service vault and maintenance box.");
+
+    scene.recordServiceRouteUsed();
+    Expect(scene.currentObjectiveText().find("Maintenance Box") != std::string::npos
+            && scene.currentObjectiveText().find("restore power") != std::string::npos,
+        "TestFerryOfficeObjectiveTextGuidesRouteSteps",
+        "After traversal, the objective should guide the player to restore power at the Maintenance Box.");
+
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::MaintenanceBox), InteractableType::Info));
+    Expect(scene.currentObjectiveText().find("Wall Button") != std::string::npos
+            && scene.currentObjectiveText().find("service gate") != std::string::npos,
+        "TestFerryOfficeObjectiveTextGuidesRouteSteps",
+        "After maintenance, the objective should guide the player back to the wall button and service gate.");
+
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::WallButton), InteractableType::Info));
+    Expect(scene.currentObjectiveText().find("open service gate") != std::string::npos
+            && scene.currentObjectiveText().find("Exit Summary Marker") != std::string::npos,
+        "TestFerryOfficeObjectiveTextGuidesRouteSteps",
+        "After opening the route, the objective should guide the player through the gate to the exit marker.");
+}
+
 void TestFerryOfficeCompletionRequiresRememberedLoop()
 {
     PrototypeScene scene;
@@ -1258,6 +1291,7 @@ int main()
     TestWallButtonOpensRouteWithoutClosingItAgain();
     TestTraversalCompletionRecordsServiceRouteUsed();
     TestFerryOfficeSliceStartsIncomplete();
+    TestFerryOfficeObjectiveTextGuidesRouteSteps();
     TestFerryOfficeCompletionRequiresRememberedLoop();
     TestFerryOfficeExitMarkerRequiresReadyState();
     TestWallButtonOpenLatchesServiceGateColliderState();
