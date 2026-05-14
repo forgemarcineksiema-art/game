@@ -28,6 +28,16 @@ Specific preset:
 scripts/configure.ps1 -Preset windows-vs2022-debug
 ```
 
+Opt-in Jolt physics spike preset:
+
+```powershell
+cmake --preset windows-vs2022-debug-jolt
+cmake --build --preset windows-vs2022-debug-jolt
+ctest --preset windows-vs2022-debug-jolt --output-on-failure
+```
+
+The Jolt preset is intentionally not part of the automatic `scripts/configure.ps1` candidate list. Use it when validating physics dependency work, not for the everyday dependency-free path.
+
 ## Build
 
 ```powershell
@@ -92,6 +102,12 @@ ctest --preset windows-vs2022-debug
 
 The configured preset can be replaced with the preset recorded in `build/.last_preset`.
 
+Jolt backend test:
+
+```powershell
+ctest --preset windows-vs2022-debug-jolt --output-on-failure
+```
+
 ## Verify
 
 ```powershell
@@ -138,7 +154,8 @@ build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi
 - If DirectX 11 fails, try `scripts/run.ps1 -Args @("--renderer", "gdi", "--frames", "120")`.
 - If all windowed rendering fails, keep `--renderer null --headless` working while the renderer issue is fixed.
 - If captured mouse-look feels risky in a VM or remote session, run with `--free-cursor` and use arrow keys for camera orbit.
-- v0.3 collision is debug-only static AABB collision. If a collider layout feels odd, inspect `src/game/TestWorld.cpp` and rerun `scripts/verify.ps1` after edits.
+- If the Jolt preset fails while normal validation passes, keep using the default preset and inspect `docs/PHYSICS_DECISION.md`. The Jolt path is opt-in until the physics backend is promoted by a later goal.
+- v0.3+ collision is debug-only static AABB collision. If a collider layout feels odd, inspect `src/game/PrototypeWorld.cpp` and rerun `scripts/verify.ps1` after edits.
 - v0.4 interaction focus is debug-only point/radius selection with a facing preference. If an object does not focus, move closer and face the marker, then press `E`.
 - v0.5 traversal uses `Space` only when a traversal affordance is focused. If traversal does not trigger, move near the traversal start marker and face the path direction. If no traversal is focused, `Space` remains normal jump.
 - v0.5.1 traversal starts from the player's current position inside the focus radius and lands through the world collision resolver. In GDI debug text, check `travStart=current`, `travProgress`, and `travLanded`.

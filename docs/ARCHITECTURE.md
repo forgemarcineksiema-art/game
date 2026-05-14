@@ -59,6 +59,26 @@ The Win32 layer maps `W/A/S/D`, `Shift`, `Space`, `E`, `Esc`, mouse/touchpad mov
 
 `src/engine/core/FileSystem.*` contains small path helpers. Asset paths default to `assets`.
 
+## Physics
+
+`src/engine/physics/PhysicsWorld.*` defines the first engine-owned physics boundary. It exposes vendor-free types:
+
+- `PhysicsConfig`,
+- `BodyHandle`,
+- `BoxColliderDesc`,
+- `DynamicBoxDesc`,
+- `RaycastResult`,
+- `PhysicsDebugLine`,
+- `IPhysicsWorld`.
+
+The default backend is a tiny dependency-free `simple` world used by normal validation. It supports static boxes, trigger boxes, a dynamic box placeholder, fixed-step updates, raycasts, and debug box line extraction. It is not a production physics engine and should not grow into one.
+
+`src/engine/physics/JoltPhysicsWorld.cpp` is compiled only when `ENGINE_ENABLE_JOLT_PHYSICS=ON`. It keeps Jolt headers and `JPH::*` types private to `EngineCore`. Game code must not include Jolt headers or store Jolt handles directly.
+
+The opt-in preset `windows-vs2022-debug-jolt` proves that Jolt can initialize/shutdown, create static boxes, support raycasts through the engine interface, and build with the current Windows toolchain. The normal `windows-vs2022-debug` preset remains dependency-free for reliable everyday validation.
+
+`src/game/PrototypeWorld.*` remains the active Ferry Office authoring and collision owner for now. A later migration should mirror or move one tested behavior at a time into `engine::physics`; v0.9.2 deliberately does not rewrite player movement, traversal landing, or service-gate collision around Jolt.
+
 ## Renderer Interface
 
 `src/engine/renderer/Renderer.h` defines `IRenderer`.
@@ -114,6 +134,8 @@ Collision support is intentionally primitive:
 - simple raycast against AABBs.
 
 No physics engine, rigid bodies, slopes, ramps, moving platforms, or terrain streaming are present.
+
+v0.9.2 adds an engine physics boundary and an opt-in Jolt backend spike, but the Ferry Office runtime still uses the existing prototype collision path. Treat this as a dependency and architecture foundation, not as a completed gameplay physics migration.
 
 Interaction support is intentionally primitive:
 

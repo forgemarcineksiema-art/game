@@ -132,6 +132,16 @@ Status: implemented as a visual-readability pass using solid debug boxes, a Tide
 
 Status: implemented as a readability polish pass with a route polyline, stronger objective/focus debug text, clearer Ferry Office objective wording, tuned marker hierarchy, and an updated GDI screenshot reference.
 
+## v0.9.2 - Physics Foundation Decision + Jolt Integration Spike
+
+- Decide the long-term physics candidate before vehicle/player systems grow around custom collision.
+- Add `docs/PHYSICS_DECISION.md` comparing Jolt, PhysX, Bullet, and temporary custom collision.
+- Add a vendor-safe `src/engine/physics` boundary with engine-owned types and no Jolt exposure to `src/game`.
+- Keep normal validation dependency-free while adding an explicit opt-in Jolt preset.
+- Prove Jolt can configure, build, initialize, create a static box, raycast through the engine interface, and shut down.
+
+Status: implemented as an architecture/dependency spike. Jolt is the primary production candidate, PhysX remains backup, Bullet is not preferred, and existing Ferry Office gameplay remains on the tested prototype collision path until a later migration goal.
+
 ## Recommended Next Goal
 
-Build v0.10 Vehicle Feel Spike.
+Build v0.10 Vehicle Feel Spike on the physics foundation.

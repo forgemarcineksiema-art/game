@@ -1,13 +1,14 @@
 cmake_minimum_required(VERSION 3.24)
 
 project(GameEngineFoundation
-    VERSION 0.9.1
+    VERSION 0.9.2
     DESCRIPTION "AI-native C++ action/adventure engine foundation"
     LANGUAGES CXX
 )
 
 option(ENGINE_BUILD_TESTS "Build engine tests" ON)
 option(ENGINE_WARNINGS_AS_ERRORS "Treat warnings as errors" OFF)
+option(ENGINE_ENABLE_JOLT_PHYSICS "Enable the opt-in Jolt physics backend spike" OFF)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -22,6 +23,7 @@ add_library(EngineCore STATIC
     src/engine/core/Logger.cpp
     src/engine/input/Input.cpp
     src/engine/platform/Window.cpp
+    src/engine/physics/PhysicsWorld.cpp
     src/engine/renderer/NullRenderer.cpp
     src/engine/renderer/RendererFactory.cpp
 )
@@ -36,6 +38,7 @@ target_compile_features(EngineCore PUBLIC cxx_std_20)
 target_compile_definitions(EngineCore
     PUBLIC
         ENGINE_VERSION_STRING="${PROJECT_VERSION}"
+        ENGINE_WITH_JOLT=$<BOOL:${ENGINE_ENABLE_JOLT_PHYSICS}>
 )
 
 if(WIN32)
@@ -49,6 +52,45 @@ if(WIN32)
     target_link_libraries(EngineCore PUBLIC user32 gdi32 d3d11 dxgi d3dcompiler)
 else()
     target_compile_definitions(EngineCore PUBLIC ENGINE_PLATFORM_WINDOWS=0)
+endif()
+
+if(ENGINE_ENABLE_JOLT_PHYSICS)
+    include(FetchContent)
+
+    set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+    set(CPP_EXCEPTIONS_ENABLED OFF CACHE BOOL "" FORCE)
+    set(CPP_RTTI_ENABLED OFF CACHE BOOL "" FORCE)
+    set(DEBUG_RENDERER_IN_DEBUG_AND_RELEASE ON CACHE BOOL "" FORCE)
+    set(ENABLE_ALL_WARNINGS OFF CACHE BOOL "" FORCE)
+    set(ENABLE_INSTALL OFF CACHE BOOL "" FORCE)
+    set(GENERATE_DEBUG_SYMBOLS OFF CACHE BOOL "" FORCE)
+    set(INTERPROCEDURAL_OPTIMIZATION OFF CACHE BOOL "" FORCE)
+    set(OVERRIDE_CXX_FLAGS OFF CACHE BOOL "" FORCE)
+    set(USE_AVX OFF CACHE BOOL "" FORCE)
+    set(USE_AVX2 OFF CACHE BOOL "" FORCE)
+    set(USE_AVX512 OFF CACHE BOOL "" FORCE)
+    set(USE_F16C OFF CACHE BOOL "" FORCE)
+    set(USE_FMADD OFF CACHE BOOL "" FORCE)
+    set(USE_LZCNT OFF CACHE BOOL "" FORCE)
+    set(USE_SSE4_1 OFF CACHE BOOL "" FORCE)
+    set(USE_SSE4_2 OFF CACHE BOOL "" FORCE)
+    set(USE_STATIC_MSVC_RUNTIME_LIBRARY OFF CACHE BOOL "" FORCE)
+    set(USE_TZCNT OFF CACHE BOOL "" FORCE)
+
+    FetchContent_Declare(
+        JoltPhysics
+        GIT_REPOSITORY https://github.com/jrouwe/JoltPhysics.git
+        GIT_TAG v5.5.0
+        GIT_SHALLOW TRUE
+        SOURCE_SUBDIR Build
+    )
+    FetchContent_MakeAvailable(JoltPhysics)
+
+    target_sources(EngineCore
+        PRIVATE
+            src/engine/physics/JoltPhysicsWorld.cpp
+    )
+    target_link_libraries(EngineCore PRIVATE Jolt::Jolt)
 endif()
 
 if(MSVC)

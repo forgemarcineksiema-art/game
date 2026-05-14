@@ -1702,3 +1702,187 @@ Known limitations after v0.9.1:
 Recommended next goal:
 
 Run v0.10 Vehicle Feel Spike only if the human playtest agrees that the Ferry Office readability is good enough to move on.
+
+## v0.9.2 Baseline - 2026-05-15
+
+Goal: make an early, evidence-based physics foundation decision and add a narrow vendor-safe `src/engine/physics` boundary. Jolt is the default candidate for Tidebreak, with PhysX kept as backup and Bullet not preferred unless a future test changes the evidence. This goal must not add vehicles, NPC AI, combat, inventory, save/load, mission scripting, online/multiplayer, an asset pipeline, final art, a full physics-driven player rewrite, or large renderer changes.
+
+Required context read before coding:
+
+- `AGENTS.md`
+- `docs/STATUS.md`
+- `docs/ROADMAP.md`
+- `docs/ARCHITECTURE.md`
+- `docs/GAME_DIRECTION.md`
+- `docs/VERTICAL_SLICE.md`
+- `docs/TECH_DEBT.md`
+- `docs/MANUAL_TEST_CHECKLIST.md`
+- `docs/DECISIONS.md`
+- `docs/RUNBOOK.md`
+- `docs/AI_WORKFLOW.md`
+
+Baseline command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+```
+
+Baseline result:
+
+- Passed.
+- Doctor found all expected project docs and structure.
+- Doctor warnings remain for tools not visible in the plain PATH: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- CMake configured with `windows-vs2022-debug`.
+- Build produced `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- CTest passed 2/2 tests.
+- Headless smoke run passed with the null renderer and engine `v0.9.1`.
+- Smoke logs showed the existing Ferry Office start state, initial Ferry Manifest focus prompt, all Ferry Office flags false, and `sliceComplete=no`.
+
+## v0.9.2 Short Implementation Plan
+
+1. Inspect the current CMake/source/test structure and dependency assumptions, then keep any physics dependency optional enough that baseline builds stay reliable.
+2. Add tests first for vendor-free physics interface behavior: world creation/shutdown, static floor/box concepts, raycast hit/miss behavior, and debug line extraction.
+3. Add `src/engine/physics` with engine-owned types and an `IPhysicsWorld` boundary so `src/game` does not include vendor physics headers.
+4. Add a no-third-party fallback physics world that supports the spike queries deterministically and keeps validation green without vcpkg.
+5. Attempt Jolt integration only if it can be done cleanly and repeatably in this environment; otherwise document the exact blocker and leave the engine boundary ready.
+6. Create `docs/PHYSICS_DECISION.md` comparing Jolt, PhysX, Bullet, and temporary custom collision against Tidebreak needs.
+7. Update architecture, runbook, roadmap, decisions, technical debt, and this status file.
+8. Run the full validation matrix, then commit and push if validation passes.
+
+## v0.9.2 Implementation Notes - 2026-05-15
+
+Changed:
+
+- Updated project version to `0.9.2`.
+- Added `src/engine/physics/PhysicsWorld.h`.
+- Added `src/engine/physics/PhysicsWorld.cpp`.
+- Added `src/engine/physics/JoltPhysicsWorld.cpp`.
+- Added `ENGINE_ENABLE_JOLT_PHYSICS`, defaulting to `OFF`.
+- Added `windows-vs2022-debug-jolt` CMake configure/build/test presets.
+- Added `docs/PHYSICS_DECISION.md`.
+- Kept normal `scripts/configure.ps1` / `scripts/verify.ps1` on the dependency-free `windows-vs2022-debug` path.
+
+Engine physics boundary:
+
+- `IPhysicsWorld` exposes vendor-free engine types:
+  - `PhysicsConfig`,
+  - `BodyHandle`,
+  - `BoxColliderDesc`,
+  - `DynamicBoxDesc`,
+  - `RaycastResult`,
+  - `PhysicsDebugLine`.
+- Default `simple` backend supports init/shutdown, static boxes, trigger boxes, a dynamic-box placeholder, fixed-step update, raycast hit/miss, and debug box lines.
+- Jolt backend is private to `EngineCore`; `src/game` does not include Jolt headers or use `JPH::*` types.
+
+Test-first note:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+```
+
+Result before implementation: failed as expected after tests included `engine/physics/PhysicsWorld.h` before the module existed.
+
+Key error:
+
+```text
+tests\EngineCoreTests.cpp(5,10): error C1083: Cannot open include file: 'engine/physics/PhysicsWorld.h': No such file or directory
+```
+
+Focused default checks after fallback implementation:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+ctest --preset windows-vs2022-debug --output-on-failure
+```
+
+Result:
+
+- Build passed.
+- CTest passed 2/2 tests.
+- New physics tests pass on the dependency-free `simple` backend.
+
+Jolt spike checks:
+
+```powershell
+cmake --preset windows-vs2022-debug-jolt
+cmake --build --preset windows-vs2022-debug-jolt
+ctest --preset windows-vs2022-debug-jolt --output-on-failure
+```
+
+Result:
+
+- Initial `cmake --preset windows-vs2022-debug-jolt`: passed and fetched/configured Jolt `v5.5.0`.
+- First Jolt build: `Jolt.lib` built, then our adapter failed on Jolt raycast API details. Fixed by including `CastResult.h` and keeping hit normals deferred.
+- Second Jolt build: `Jolt.lib` built and our adapter compiled, then final link failed because Jolt defaulted to static MSVC runtime `/MTd` while this project uses dynamic `/MDd`.
+- Fixed by forcing `USE_STATIC_MSVC_RUNTIME_LIBRARY=OFF` for the opt-in Jolt preset.
+- Final Jolt configure/build: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 2/2 tests.
+
+Known limitations after implementation:
+
+- Jolt is integrated as an opt-in backend, not the default runtime physics backend.
+- Existing Ferry Office player/collision/traversal behavior still uses `PrototypeWorld` and was intentionally not rewritten.
+- Jolt debug draw is represented only by simple engine-owned box debug lines for now.
+- Jolt raycast hit normals are deferred in the adapter; hit state, distance, point, body handle, and body name are validated.
+- The Jolt dependency path uses pinned FetchContent, not vcpkg manifest mode.
+
+Vendor firewall check:
+
+```powershell
+rg "Jolt|JPH::|JPH/" src/game
+```
+
+Result:
+
+- No matches; game code does not directly reference Jolt.
+
+## v0.9.2 Final Validation - 2026-05-15
+
+Commands run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/doctor.ps1
+powershell -ExecutionPolicy Bypass -File scripts/configure.ps1
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+ctest --preset windows-vs2022-debug --output-on-failure
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --frames 240
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 240
+python tools/status_report.py
+```
+
+Results:
+
+- `scripts/doctor.ps1`: completed. It now checks `docs/PHYSICS_DECISION.md`. Existing warnings remain: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg` are not in the plain PowerShell PATH.
+- `scripts/configure.ps1`: passed with preset `windows-vs2022-debug`.
+- `scripts/build.ps1`: passed; built `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 2/2 tests green (`EngineCoreTests`, `EngineSmokeTest`).
+- `scripts/verify.ps1`: passed; repeated doctor/configure/build/test and null smoke. Smoke log reported engine `v0.9.2` and app `Tidebreak Prototype`.
+- GDI bounded run: passed; window created, `gdi-fallback` renderer ran for 240 frames, clean shutdown.
+- DX11 bounded run: passed; hardware DX11 device failed and fell back to WARP, `dx11` renderer ran for 240 frames, clean shutdown.
+- `python tools/status_report.py`: completed and showed the expected v0.9.2 modified/new files before commit.
+
+Additional opt-in Jolt validation:
+
+```powershell
+cmake --preset windows-vs2022-debug-jolt
+cmake --build --preset windows-vs2022-debug-jolt
+ctest --preset windows-vs2022-debug-jolt --output-on-failure
+```
+
+Results:
+
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed; built `Jolt.lib`, `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 2/2 tests green.
+
+Known limitations after v0.9.2:
+
+- Jolt is opt-in and not yet used by Ferry Office runtime gameplay.
+- The prototype collision path is still custom static AABB in `PrototypeWorld`.
+- No vehicles, NPC AI, combat, inventory, save/load, mission scripting, online/multiplayer, asset pipeline, final art, full physics-driven player rewrite, or large renderer changes were added.
+- vcpkg remains absent from PATH. This is not a blocker because the Jolt spike uses an explicit pinned FetchContent preset.
+
+Recommended next goal:
+
+Run v0.10 Vehicle Feel Spike on the physics foundation.

@@ -61,6 +61,7 @@ foreach ($Path in @(
     "docs\VERTICAL_SLICE.md",
     "docs\TECH_DEBT.md",
     "docs\MANUAL_TEST_CHECKLIST.md",
+    "docs\PHYSICS_DECISION.md",
     "src\engine",
     "src\game",
     "tests",

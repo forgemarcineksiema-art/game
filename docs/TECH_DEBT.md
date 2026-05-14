@@ -2,12 +2,12 @@
 
 Last updated: 2026-05-15
 
-This file lists known foundation issues after v0.9.1. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
+This file lists known foundation issues after v0.9.2. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
 
 ## Build / Toolchain
 
 - Plain PowerShell PATH still cannot find `cl`, `clang++`, `g++`, `msbuild`, `ninja`, or `vcpkg`, though CMake can build through the Visual Studio generator.
-- No vcpkg manifest exists because no third-party dependencies are currently needed.
+- No vcpkg manifest exists. Jolt is currently an opt-in CMake FetchContent spike, not part of the default validation path.
 - The version is stored only in CMake. There is no generated version header beyond the current compile definition.
 
 ## Renderer
@@ -44,6 +44,15 @@ This file lists known foundation issues after v0.9.1. It is not a mandate to fix
 - Raycast only checks static AABB colliders.
 - Collision layouts are hardcoded in `PrototypeWorld::buildDefaultCollisionTestLayout` and `PrototypeWorld::buildFerryOfficePrototypeLayout`.
 - The `service-gate` collider can be latched open by scene state, but there is no general dynamic-collider or door system.
+
+## Physics Backend
+
+- v0.9.2 adds `src/engine/physics` and an opt-in Jolt backend, but the live Ferry Office gameplay still uses `PrototypeWorld` collision.
+- The default `simple` physics backend is only a deterministic validation/fallback layer. It should not grow into a production physics engine.
+- The Jolt backend is validated through `windows-vs2022-debug-jolt`, not through `scripts/verify.ps1`.
+- Jolt integration currently uses pinned FetchContent, not vcpkg manifest mode. Revisit dependency management before making Jolt the default backend.
+- Jolt debug draw is exposed only as simple box debug lines for now. There is no full Jolt debug renderer bridge to `IRenderer`.
+- No player, traversal, service-gate, or vehicle behavior has been migrated to Jolt yet.
 
 ## Interaction
 
@@ -85,7 +94,7 @@ This file lists known foundation issues after v0.9.1. It is not a mandate to fix
 - DX11 has no debug text overlay, so visual playtesting still favors GDI until a real overlay or text path exists.
 - There is no authored composition pass for camera start angle, signposting, silhouettes, or route readability beyond simple colored volumes.
 
-## Recommended Debt After v0.9.1
+## Recommended Debt After v0.9.2
 
 1. Run a full human keyboard/mouse playthrough of the Ferry Office loop on the target laptop.
 2. Tighten prompt/marker placement and route polyline color if human input still shows confusion.
@@ -94,3 +103,4 @@ This file lists known foundation issues after v0.9.1. It is not a mandate to fix
 5. Keep debug text readable before adding any richer objective or UI layer.
 6. Avoid adding a mission scripting system before the micro-slice proves its minimal state flow.
 7. Consider a small scene-data loading format only after one more hand-authored slice exposes repeated authoring pain.
+8. Before migrating gameplay collision, decide whether the first Jolt promotion should be vehicle-only, world queries-only, or player collision-only.

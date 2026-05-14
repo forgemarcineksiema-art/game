@@ -51,6 +51,7 @@ def main() -> int:
         "docs/VERTICAL_SLICE.md",
         "docs/TECH_DEBT.md",
         "docs/MANUAL_TEST_CHECKLIST.md",
+        "docs/PHYSICS_DECISION.md",
         "scripts/doctor.ps1",
         "scripts/configure.ps1",
         "scripts/build.ps1",
@@ -62,6 +63,7 @@ def main() -> int:
     print("build outputs:")
     for path in [
         "build/windows-vs2022-debug",
+        "build/windows-vs2022-debug-jolt",
         "build/windows-vs2026-debug",
         "build/ninja-debug",
     ]:

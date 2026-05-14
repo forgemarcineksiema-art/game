@@ -28,6 +28,10 @@ Before choosing a gameplay milestone, read:
 - `docs/TECH_DEBT.md`
 - `docs/ROADMAP.md`
 
+Before physics, vehicles, player collision rewrites, or world-query work, also read:
+
+- `docs/PHYSICS_DECISION.md`
+
 ## Run Commands
 
 ```powershell

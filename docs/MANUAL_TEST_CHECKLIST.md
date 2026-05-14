@@ -31,6 +31,14 @@ Optional bounded DX11 run:
 build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 120
 ```
 
+Optional physics dependency spike:
+
+```powershell
+cmake --preset windows-vs2022-debug-jolt
+cmake --build --preset windows-vs2022-debug-jolt
+ctest --preset windows-vs2022-debug-jolt --output-on-failure
+```
+
 ## Player
 
 - [ ] `W/A/S/D` moves the player camera-relative.
@@ -59,6 +67,14 @@ build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 120
 - [ ] The player can slide or be pushed out of a corner without getting permanently stuck.
 - [ ] The service barrier remains a blocker except for the intended Service Barrier Vault traversal.
 - [ ] Grounded/air debug text changes as expected during jump.
+
+## Physics Foundation
+
+- [ ] Normal `scripts/verify.ps1` still passes without requiring Jolt.
+- [ ] `windows-vs2022-debug-jolt` configures and builds when intentionally testing physics dependency work.
+- [ ] Jolt tests pass through the engine-owned `IPhysicsWorld` API.
+- [ ] `src/game` has no direct `JPH::*` or Jolt header usage.
+- [ ] Ferry Office player/camera/collision behavior still feels unchanged after physics foundation work.
 
 ## Interactions
 

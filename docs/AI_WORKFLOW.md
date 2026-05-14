@@ -21,6 +21,10 @@ Read:
 - `docs/GAME_DIRECTION.md`
 - `docs/TECH_DEBT.md`
 
+For physics, vehicles, player collision, or world-query work, also read:
+
+- `docs/PHYSICS_DECISION.md`
+
 ## 2. Pick One Safe Milestone
 
 Choose one narrow roadmap step. Do not mix milestones unless the user explicitly asks. Prefer finishing build stability before adding gameplay.

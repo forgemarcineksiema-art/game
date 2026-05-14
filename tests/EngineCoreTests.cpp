@@ -2,6 +2,8 @@
 #include "engine/core/Config.h"
 #include "engine/core/FileSystem.h"
 #include "engine/math/Math.h"
+#include "engine/physics/PhysicsWorld.h"
+#include "engine/renderer/NullRenderer.h"
 #include "game/InteractionSystem.h"
 #include "game/PlayerController.h"
 #include "game/FerryOfficeData.h"
@@ -11,7 +13,6 @@
 #include "game/ThirdPersonCamera.h"
 #include "game/TraversalSystem.h"
 #include "game/WorldState.h"
-#include "engine/renderer/NullRenderer.h"
 
 #include <filesystem>
 #include <iostream>
@@ -140,6 +141,135 @@ void TestNullRendererRecordsFrameAndDebugDraw()
     Expect(renderer.frameCount() == 7, "TestNullRendererRecordsFrameAndDebugDraw", "Null renderer should record frame index.");
     Expect(renderer.debugDrawCount() == 2, "TestNullRendererRecordsFrameAndDebugDraw", "Null renderer should count grid and solid debug draw calls.");
     renderer.shutdown();
+}
+
+void TestPhysicsWorldCreatesAndShutsDownThroughVendorFreeInterface()
+{
+    auto world = engine::physics::CreatePhysicsWorld(engine::physics::PhysicsBackend::Simple);
+
+    Expect(world != nullptr,
+        "TestPhysicsWorldCreatesAndShutsDownThroughVendorFreeInterface",
+        "Simple physics world factory should return a world instance.");
+
+    engine::physics::PhysicsConfig config;
+    config.backend = engine::physics::PhysicsBackend::Simple;
+    config.fixedStepSeconds = 1.0f / 60.0f;
+
+    Expect(world->initialize(config),
+        "TestPhysicsWorldCreatesAndShutsDownThroughVendorFreeInterface",
+        "Simple physics world should initialize.");
+    Expect(world->isInitialized(),
+        "TestPhysicsWorldCreatesAndShutsDownThroughVendorFreeInterface",
+        "Physics world should report initialized state after initialize.");
+    Expect(world->backendName() == std::string("simple"),
+        "TestPhysicsWorldCreatesAndShutsDownThroughVendorFreeInterface",
+        "Default test backend should remain vendor-free.");
+
+    world->shutdown();
+    Expect(!world->isInitialized(),
+        "TestPhysicsWorldCreatesAndShutsDownThroughVendorFreeInterface",
+        "Physics world should report shutdown state after shutdown.");
+}
+
+void TestPhysicsWorldRaycastHitsStaticBox()
+{
+    auto world = engine::physics::CreatePhysicsWorld(engine::physics::PhysicsBackend::Simple);
+
+    engine::physics::PhysicsConfig config;
+    config.backend = engine::physics::PhysicsBackend::Simple;
+    Expect(world != nullptr && world->initialize(config),
+        "TestPhysicsWorldRaycastHitsStaticBox",
+        "Simple physics world should initialize for raycast tests.");
+
+    engine::physics::BoxColliderDesc box;
+    box.name = "physics-test-box";
+    box.center = {0.0f, 0.5f, 3.0f};
+    box.halfExtents = {0.5f, 0.5f, 0.5f};
+    const engine::physics::BodyHandle handle = world->addStaticBox(box);
+
+    Expect(handle.isValid(),
+        "TestPhysicsWorldRaycastHitsStaticBox",
+        "Adding a static box should return a valid opaque body handle.");
+
+    const engine::physics::RaycastResult hit = world->raycast({0.0f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, 10.0f);
+    Expect(hit.hit,
+        "TestPhysicsWorldRaycastHitsStaticBox",
+        "Physics raycast should hit the static box.");
+    Expect(hit.bodyName == "physics-test-box",
+        "TestPhysicsWorldRaycastHitsStaticBox",
+        "Physics raycast should preserve vendor-free body metadata.");
+    ExpectNear(hit.distance, 2.5f, 0.01f,
+        "TestPhysicsWorldRaycastHitsStaticBox",
+        "Physics raycast distance should land on the box front face.");
+
+    const engine::physics::RaycastResult miss = world->raycast({0.0f, 2.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, 1.0f);
+    Expect(!miss.hit,
+        "TestPhysicsWorldRaycastHitsStaticBox",
+        "Physics raycast should report a clean miss.");
+
+    world->shutdown();
+}
+
+void TestPhysicsWorldDebugLinesExposeStaticBoxes()
+{
+    auto world = engine::physics::CreatePhysicsWorld(engine::physics::PhysicsBackend::Simple);
+
+    engine::physics::PhysicsConfig config;
+    config.backend = engine::physics::PhysicsBackend::Simple;
+    Expect(world != nullptr && world->initialize(config),
+        "TestPhysicsWorldDebugLinesExposeStaticBoxes",
+        "Simple physics world should initialize for debug line tests.");
+
+    engine::physics::BoxColliderDesc box;
+    box.name = "debug-box";
+    box.center = {1.0f, 0.5f, 1.0f};
+    box.halfExtents = {0.25f, 0.5f, 0.75f};
+    world->addStaticBox(box);
+
+    const std::vector<engine::physics::PhysicsDebugLine> lines = world->debugLines();
+    Expect(lines.size() >= 12,
+        "TestPhysicsWorldDebugLinesExposeStaticBoxes",
+        "A static box should expose at least twelve debug line segments.");
+
+    world->shutdown();
+}
+
+void TestJoltBackendAvailabilityIsExplicit()
+{
+    const bool available = engine::physics::IsJoltPhysicsAvailable();
+
+#if ENGINE_WITH_JOLT
+    Expect(available,
+        "TestJoltBackendAvailabilityIsExplicit",
+        "ENGINE_WITH_JOLT builds should report Jolt availability.");
+
+    auto world = engine::physics::CreatePhysicsWorld(engine::physics::PhysicsBackend::Jolt);
+    engine::physics::PhysicsConfig config;
+    config.backend = engine::physics::PhysicsBackend::Jolt;
+    Expect(world != nullptr && world->initialize(config),
+        "TestJoltBackendAvailabilityIsExplicit",
+        "Jolt physics world should initialize when the backend is compiled in.");
+
+    engine::physics::BoxColliderDesc box;
+    box.name = "jolt-test-box";
+    box.center = {0.0f, 0.5f, 2.0f};
+    box.halfExtents = {0.5f, 0.5f, 0.5f};
+    world->addStaticBox(box);
+
+    const engine::physics::RaycastResult hit = world->raycast({0.0f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, 10.0f);
+    Expect(hit.hit && hit.bodyName == "jolt-test-box",
+        "TestJoltBackendAvailabilityIsExplicit",
+        "Jolt backend should support a static box raycast through the engine interface.");
+    world->shutdown();
+#else
+    Expect(!available,
+        "TestJoltBackendAvailabilityIsExplicit",
+        "Default builds should report Jolt as unavailable unless explicitly enabled.");
+    auto world = engine::physics::CreatePhysicsWorld(engine::physics::PhysicsBackend::Jolt);
+    Expect(world == nullptr,
+        "TestJoltBackendAvailabilityIsExplicit",
+        "Default builds should not create a Jolt world without the opt-in backend.");
+#endif
 }
 
 void TestVec3NormalizationKeepsDiagonalMovementAtUnitLength()
@@ -1266,6 +1396,10 @@ int main()
     TestNormalizePathKeepsAssetPathsInsideBase();
     TestClockStartsAtFrameZeroAndTicksForward();
     TestNullRendererRecordsFrameAndDebugDraw();
+    TestPhysicsWorldCreatesAndShutsDownThroughVendorFreeInterface();
+    TestPhysicsWorldRaycastHitsStaticBox();
+    TestPhysicsWorldDebugLinesExposeStaticBoxes();
+    TestJoltBackendAvailabilityIsExplicit();
     TestVec3NormalizationKeepsDiagonalMovementAtUnitLength();
     TestPlayerMovementIsCameraRelativeAndNormalized();
     TestPlayerSprintAndJumpRemainGroundedDeterministically();

@@ -292,3 +292,33 @@ Reason: The v0.9 scene read more like a place, but the action path was still vis
 Decision: Reorder the GDI debug text so objective and focused prompt appear before player/camera statistics.
 
 Reason: During visual review, the most important playtest question was "where do I go next?" Objective-first debug text answers that faster while preserving all existing state/debug details for validation.
+
+## v0.9.2 Physics Candidate
+
+Decision: Choose Jolt Physics as Tidebreak's default production physics candidate, keep PhysX as a backup candidate, and do not choose Bullet unless a later test gives a strong reason.
+
+Reason: Tidebreak needs game-focused rigid bodies, queries, triggers/sensors, character simulation, and future vehicles. Jolt is MIT licensed, modern C++, CMake-friendly, and aligned with custom engine work. PhysX is credible but heavier and more tied to the NVIDIA/Omniverse ecosystem. Bullet is permissive and proven but less compelling for a fresh C++20 game-engine foundation.
+
+## v0.9.2 Vendor-Safe Physics Boundary
+
+Decision: Add `src/engine/physics` with engine-owned types and keep Jolt private to `EngineCore`.
+
+Reason: Choosing Jolt early should not mean allowing `JPH::*` types to spread through `src/game`. The gameplay code should talk to Tidebreak's own `IPhysicsWorld`, `BodyHandle`, box descriptors, raycast results, and debug lines so future migration or backend testing remains possible.
+
+## v0.9.2 Jolt as Opt-In Backend
+
+Decision: Add `ENGINE_ENABLE_JOLT_PHYSICS` and `windows-vs2022-debug-jolt`, but keep everyday `scripts/verify.ps1` on the dependency-free default preset.
+
+Reason: vcpkg is not currently installed or required, and normal validation must stay reliable. The Jolt preset proves the backend can configure/build/test when explicitly requested without making every future smoke test depend on network/dependency setup.
+
+## v0.9.2 FetchContent for the Spike
+
+Decision: Use pinned CMake `FetchContent` tag `v5.5.0` for the Jolt spike instead of adding a vcpkg manifest immediately.
+
+Reason: vcpkg is not in PATH in the current environment. A pinned opt-in FetchContent path is enough to prove the dependency and adapter without changing the normal build contract. Revisit vcpkg manifest mode if/when Jolt becomes the default backend for production work.
+
+## v0.9.2 Laptop-Safe Jolt Compile Baseline
+
+Decision: Disable optional SSE4/AVX/FMA/LZCNT/TZCNT Jolt compile flags in the first spike preset and match the dynamic MSVC runtime.
+
+Reason: The user is targeting a weak laptop with integrated/dedicated GPU options. The first physics foundation should avoid unnecessary CPU-instruction assumptions. Matching the MSVC runtime also avoids `/MTd` versus `/MDd` link failures in the Visual Studio debug build.
