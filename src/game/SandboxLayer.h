@@ -20,6 +20,7 @@ private:
     void drawInteractionDebug(engine::IRenderer& renderer);
     void drawTraversalDebug(engine::IRenderer& renderer);
     void drawWorldStateDebug(engine::IRenderer& renderer);
+    void drawSliceDebug(engine::IRenderer& renderer);
     void recordWorldStateChange(bool changed);
 
     TestScene m_scene;

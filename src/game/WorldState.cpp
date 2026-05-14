@@ -16,6 +16,8 @@ std::string_view WorldFlagName(WorldFlag flag)
         return "maintenanceBoxInspected";
     case WorldFlag::RouteOpened:
         return "routeOpened";
+    case WorldFlag::ExitReached:
+        return "exitReached";
     case WorldFlag::Count:
     default:
         return "unknown";
@@ -88,6 +90,7 @@ std::string WorldState::debugSummary() const
            << " " << WorldFlagName(WorldFlag::ServiceRouteUsed) << "=" << (isFlagSet(WorldFlag::ServiceRouteUsed) ? "true" : "false")
            << " " << WorldFlagName(WorldFlag::MaintenanceBoxInspected) << "=" << (isFlagSet(WorldFlag::MaintenanceBoxInspected) ? "true" : "false")
            << " " << WorldFlagName(WorldFlag::RouteOpened) << "=" << (isFlagSet(WorldFlag::RouteOpened) ? "true" : "false")
+           << " " << WorldFlagName(WorldFlag::ExitReached) << "=" << (isFlagSet(WorldFlag::ExitReached) ? "true" : "false")
            << " eventCount=" << eventCount()
            << " lastEvent=\"" << lastEventText() << "\"";
     return output.str();

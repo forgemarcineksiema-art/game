@@ -10,7 +10,7 @@ Last updated: 2026-05-14
 
 Define the first playable micro-scenario for the project direction locked in `docs/GAME_DIRECTION.md`.
 
-This document is design scope only. It does not authorize adding missions, NPC AI, combat, vehicles, inventory, physics libraries, final art, or asset pipelines in v0.4.1.
+This document defines the micro-slice target and current v0.7 prototype state. It does not authorize adding missions, NPC AI, combat, vehicles, inventory, physics libraries, final art, or asset pipelines.
 
 ## Player Experience Target
 
@@ -25,19 +25,19 @@ In about 10 minutes, the player should understand:
 
 ## Scenario Summary
 
-The player arrives at a closed ferry office on Veyra Reach. The main office door is locked, the service gate is blocked, and the power box is reachable only through a small traversal route. The player restores power, returns to the office, collects a manifest marker, and leaves with a visible state change recorded.
+The player arrives at a closed ferry office on Veyra Reach. The service gate is blocked, the manifest marker is near the dock office, and the maintenance box is reachable through the Service Barrier Vault route. The player collects or inspects the manifest, uses traversal to reach maintenance, restores local power, opens the service route, and reaches an exit marker with a visible remembered-state summary.
 
 ## Required Prototype Beats
 
 1. Start at a dock-side spawn point.
 2. Walk to a visible ferry office landmark.
 3. Encounter a blocked direct route.
-4. Use simple traversal to reach a maintenance box.
-5. Interact with the maintenance box.
-6. Show a debug state change: `powerRestored=true`.
-7. Return through a newly readable route or opened debug gate.
-8. Interact with a pickup-like manifest marker.
-9. Show a debug state change: `manifestCollected=true`.
+4. Interact with a pickup-like manifest marker.
+5. Show a debug state change: `manifestCollected=true`.
+6. Use simple traversal to reach a maintenance box.
+7. Interact with the maintenance box.
+8. Show a debug state change: `powerRestored=true`.
+9. Open or visually change the debug service gate.
 10. End at an exit marker with the slice state summary visible.
 
 ## Systems Required Before This Slice Feels Real
@@ -46,17 +46,19 @@ The player arrives at a closed ferry office on Veyra Reach. The main office door
 - Camera orbit and follow with no normal-movement jitter.
 - Static collision that handles walls, corners, and narrow paths.
 - Interaction focus with predictable prompt behavior.
-- A small world-state model for remembered local flags. v0.6 provides the first runtime-only version with `powerRestored`, `manifestCollected`, `serviceRouteUsed`, `maintenanceBoxInspected`, and `routeOpened`.
-- Simple traversal, recommended as the next v0.5 direction.
+- A small world-state model for remembered local flags. v0.7 uses `powerRestored`, `manifestCollected`, `serviceRouteUsed`, `maintenanceBoxInspected`, `routeOpened`, and `exitReached`.
+- Simple traversal through the Service Barrier Vault.
 - Debug text that can show slice state without a full UI framework.
 
-## v0.6 Prototype State Hooks
+## v0.7 Prototype State Hooks
 
 - Completing the Service Barrier Vault records `serviceRouteUsed=true`.
 - Inspecting the Maintenance Box records `maintenanceBoxInspected=true` and `powerRestored=true`.
 - Collecting the Ferry Manifest records `manifestCollected=true`.
 - Toggling the Wall Button records `routeOpened=true` or `routeOpened=false`.
-- GDI debug text/logs show current flags, event count, last event, and whether the current action changed remembered state.
+- Reaching the Exit Summary Marker records `exitReached=true` only after the required loop is ready.
+- `routeOpened=true` disables the `service-gate` blocking collider; closing the route enables it again.
+- GDI debug text/logs show current objective, current flags, event count, last event, completion state, and whether the current action changed remembered state.
 
 ## Systems Explicitly Deferred
 
@@ -72,7 +74,7 @@ The player arrives at a closed ferry office on Veyra Reach. The main office door
 - Asset import pipeline.
 - Final art.
 
-## v0.5 Recommendation From Slice Needs
+## Historical v0.5 Direction From Slice Needs
 
 Choose traversal for v0.5.
 

@@ -202,3 +202,27 @@ Reason: v0.6 needs to prove that The Ferry Office can remember meaningful action
 Decision: Map existing prototype actions to remembered flags in `TestScene` instead of teaching `InteractionSystem` or `TraversalSystem` about Tidebreak-specific world flags.
 
 Reason: Interaction and traversal should stay generic. The scene owns the meaning of actions: Ferry Manifest means `manifestCollected`, Wall Button means `routeOpened`, Maintenance Box means `maintenanceBoxInspected` and `powerRestored`, and Service Barrier Vault completion means `serviceRouteUsed`.
+
+## v0.7 Micro-Slice Without Mission Scripting
+
+Decision: Build The Ferry Office loop inside `TestScene` with explicit objective/completion helpers instead of adding a mission scripting system.
+
+Reason: v0.7 needs one playable debug loop, not a general quest framework. Scene-owned helpers keep completion testable and keep the engine foundation small.
+
+## v0.7 Exit Reached Flag
+
+Decision: Add `exitReached` as a local `WorldState` flag.
+
+Reason: The slice needs a clear final state after the player reaches the Exit Summary Marker. A boolean flag matches the existing remembered-state model and avoids adding objectives, missions, or persistence.
+
+## v0.7 Route State Affects Collision
+
+Decision: Let `routeOpened` enable or disable the named `service-gate` collider through `TestScene`.
+
+Reason: The micro-slice should prove that remembered state can visibly and physically affect the prototype world. Keeping the toggle scene-owned avoids inventing a general dynamic door or entity system too early.
+
+## v0.7 Naming Cleanup Deferred
+
+Decision: Do not rename `TestWorld` and `TestScene` during v0.7.
+
+Reason: They are increasingly prototype-scene boundaries, but a rename would create broad file churn while the slice behavior is still being validated. Revisit in v0.7.1 after playtest polish.

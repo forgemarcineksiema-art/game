@@ -55,6 +55,8 @@ public:
     void setFloorHeight(float floorHeight);
     int addBox(std::string name, engine::Vec3 center, engine::Vec3 halfExtents);
     void buildDefaultCollisionTestLayout();
+    void buildFerryOfficePrototypeLayout();
+    bool setColliderBlocksPlayer(std::string_view name, bool blocksPlayer);
 
     CollisionResult resolvePlayer(const PlayerCollisionProxy& proxy) const;
     bool playerOverlapsCollider(engine::Vec3 position, float radius, float height, const StaticCollider& collider) const;

@@ -12,6 +12,7 @@ enum class WorldFlag {
     ServiceRouteUsed,
     MaintenanceBoxInspected,
     RouteOpened,
+    ExitReached,
     Count,
 };
 

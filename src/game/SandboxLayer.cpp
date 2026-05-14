@@ -58,9 +58,18 @@ void SandboxLayer::onRender(engine::IRenderer& renderer)
     renderer.drawDebugLine({12.0f, m_scene.world().floorHeight(), 12.0f}, {-12.0f, m_scene.world().floorHeight(), 12.0f}, {0.35f, 0.9f, 0.55f, 1.0f});
     renderer.drawDebugLine({-12.0f, m_scene.world().floorHeight(), 12.0f}, {-12.0f, m_scene.world().floorHeight(), -12.0f}, {0.35f, 0.9f, 0.55f, 1.0f});
     for (const StaticCollider& collider : m_scene.world().colliders()) {
-        renderer.drawDebugBox(collider.bounds.center, collider.bounds.halfExtents, {0.9f, 0.72f, 0.28f, 1.0f});
+        engine::Color colliderColor = collider.blocksPlayer
+            ? engine::Color {0.9f, 0.72f, 0.28f, 1.0f}
+            : engine::Color {0.25f, 1.0f, 0.35f, 1.0f};
+        if (collider.name == "service-gate") {
+            colliderColor = m_scene.worldState().isFlagSet(WorldFlag::RouteOpened)
+                ? engine::Color {0.25f, 1.0f, 0.35f, 1.0f}
+                : engine::Color {1.0f, 0.25f, 0.2f, 1.0f};
+        }
+        renderer.drawDebugBox(collider.bounds.center, collider.bounds.halfExtents, colliderColor);
     }
     drawWorldStateDebug(renderer);
+    drawSliceDebug(renderer);
 
     const PlayerState& player = m_player.state();
     renderer.drawDebugBox(player.position + engine::Vec3 {0.0f, m_player.settings().height * 0.5f, 0.0f},
@@ -108,6 +117,9 @@ void SandboxLayer::updateDebugText()
            << "hits=" << player.lastCollisionHitCount << " "
            << "colliders=" << m_scene.world().colliders().size() << " "
            << "interactables=" << m_scene.interactions().interactableCount() << " "
+           << "objective=\"" << m_scene.currentObjectiveText() << "\" "
+           << "readyForExit=" << (m_scene.isSliceReadyForExit() ? "yes" : "no") << " "
+           << "sliceComplete=" << (m_scene.isSliceComplete() ? "yes" : "no") << " "
            << "interactPressed=" << (m_interactPressedThisFrame ? "yes" : "no") << " "
            << "worldChanged=" << (m_worldStateChangedThisFrame ? "yes" : "no") << " "
            << "traversal=" << (player.traversalMode == PlayerTraversalMode::Traversing ? "active" : "normal") << " "
@@ -130,6 +142,7 @@ void SandboxLayer::updateDebugText()
     output << "lastInteraction=\"" << m_lastInteractionText << "\" "
            << "lastWorldEvent=\"" << m_lastWorldEventText << "\" "
            << "worldState={" << m_scene.worldState().debugSummary() << "} "
+           << "slice={" << m_scene.completionSummary() << "} "
            << "camera yaw=" << engine::Degrees(camera.yawRadians)
            << " pitch=" << engine::Degrees(camera.pitchRadians)
            << " dist=" << camera.distance;
@@ -178,13 +191,37 @@ void SandboxLayer::drawWorldStateDebug(engine::IRenderer& renderer)
     const engine::Color gateColor = routeOpened
         ? engine::Color {0.25f, 1.0f, 0.35f, 1.0f}
         : engine::Color {1.0f, 0.25f, 0.2f, 1.0f};
-    renderer.drawDebugBox({-0.05f, m_scene.world().floorHeight() + 0.55f, 2.15f}, {0.12f, 0.55f, 0.8f}, gateColor);
+    if (const StaticCollider* gate = m_scene.world().colliderByName("service-gate")) {
+        renderer.drawDebugBox(gate->bounds.center, gate->bounds.halfExtents + engine::Vec3 {0.04f, 0.04f, 0.04f}, gateColor);
+    }
 
     const bool powerRestored = m_scene.worldState().isFlagSet(WorldFlag::PowerRestored);
     const engine::Color powerColor = powerRestored
         ? engine::Color {0.25f, 1.0f, 0.85f, 1.0f}
         : engine::Color {0.45f, 0.45f, 0.55f, 1.0f};
     renderer.drawDebugBox({2.8f, m_scene.world().floorHeight() + 0.75f, 0.25f}, {0.24f, 0.24f, 0.24f}, powerColor);
+}
+
+void SandboxLayer::drawSliceDebug(engine::IRenderer& renderer)
+{
+    const float floor = m_scene.world().floorHeight();
+    const engine::Vec3 dockStart {0.0f, floor + 0.08f, -1.0f};
+    const engine::Vec3 officeMarker {0.0f, floor + 1.05f, 3.75f};
+    const engine::Vec3 exitMarker {0.0f, floor + 0.55f, 4.55f};
+    const engine::Color dockColor {0.25f, 0.65f, 1.0f, 1.0f};
+    const engine::Color officeColor {0.95f, 0.95f, 0.8f, 1.0f};
+    const engine::Color exitColor = m_scene.isSliceComplete()
+        ? engine::Color {0.35f, 1.0f, 0.35f, 1.0f}
+        : (m_scene.isSliceReadyForExit()
+                  ? engine::Color {1.0f, 0.9f, 0.25f, 1.0f}
+                  : engine::Color {0.45f, 0.45f, 0.55f, 1.0f});
+
+    renderer.drawDebugBox(dockStart, {0.22f, 0.08f, 0.22f}, dockColor);
+    renderer.drawDebugLine(dockStart, dockStart + engine::Vec3 {0.0f, 1.0f, 0.0f}, dockColor);
+    renderer.drawDebugBox(officeMarker, {0.35f, 0.35f, 0.35f}, officeColor);
+    renderer.drawDebugLine({0.0f, floor + 0.06f, 1.35f}, {0.0f, floor + 0.06f, 4.55f}, officeColor);
+    renderer.drawDebugBox(exitMarker, {0.28f, 0.28f, 0.28f}, exitColor);
+    renderer.drawDebugBox({exitMarker.x, floor + 0.03f, exitMarker.z}, {1.8f, 0.03f, 1.8f}, exitColor);
 }
 
 void SandboxLayer::drawTraversalDebug(engine::IRenderer& renderer)

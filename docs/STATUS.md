@@ -935,3 +935,124 @@ Results:
 ## v0.6 Next Honest Step
 
 Use the remembered-state foundation for the next goal: v0.7 The Ferry Office Micro-Slice. Keep it focused on one playable prototype loop using existing movement, camera, collision, interaction, traversal, and world-state systems without adding NPC AI, vehicles, combat, inventory, save/load, final art, asset pipelines, or full mission scripting.
+
+## v0.7 Baseline - 2026-05-14
+
+Goal: build the first playable debug micro-slice, "The Ferry Office", on top of existing movement, camera, collision, interaction, traversal, and world-state systems. This goal must not add NPC AI, vehicles, combat, weapons, inventory, save/load, full mission scripting, dialogue trees, physics libraries, new traversal types, final art, asset pipelines, or a UI framework.
+
+Required context read before coding:
+
+- `AGENTS.md`
+- `docs/GAME_DIRECTION.md`
+- `docs/VERTICAL_SLICE.md`
+- `docs/TECH_DEBT.md`
+- `docs/MANUAL_TEST_CHECKLIST.md`
+- `docs/STATUS.md`
+- `docs/ROADMAP.md`
+- `docs/ARCHITECTURE.md`
+- `docs/DECISIONS.md`
+- `src/game/WorldState.*`
+- `src/game/TestWorld.*`
+- `src/game/TestScene.*`
+- `src/game/SandboxLayer.*`
+- `tests/EngineCoreTests.cpp`
+
+Baseline command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+```
+
+Baseline result:
+
+- Passed.
+- Doctor found all expected project docs and structure.
+- Doctor warnings remain for tools not visible in the plain PATH: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- CMake configured with `windows-vs2022-debug`.
+- Build produced `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- CTest passed 2/2 tests.
+- Headless smoke run passed with the null renderer and engine `v0.6.0`.
+- Smoke logs showed the initial Ferry Manifest focus prompt and the world-state debug summary with all remembered flags false.
+
+## v0.7 Short Implementation Plan
+
+1. Add failing tests first for Ferry Office slice completion, required remembered flags, exit-marker behavior, one-shot event stability, and route-open scene state.
+2. Extend `WorldState` with the smallest local `exitReached` flag needed for a complete micro-slice summary.
+3. Keep the slice orchestration in `TestScene`: objective text, completion summary, exit readiness, and mapping existing interactions/traversal into remembered state.
+4. Evolve the debug layout into a Ferry Office prototype with dock/start, office, blocked service gate, Service Barrier Vault, Maintenance Box, manifest, and exit/summary marker.
+5. Make at least one remembered state visibly affect the scene by syncing `routeOpened` to the service-gate debug/collision state and keeping marker colors state-driven.
+6. Extend `SandboxLayer` debug text/rendering with current objective, completion state, exit marker, and slice summary without adding a UI framework.
+7. Update docs, run the full validation matrix, then commit and push because AGENTS.md now requires completed goals to be published.
+
+## v0.7 Changes Made
+
+- Updated project version to `0.7.0`.
+- Added `exitReached` to the local `WorldState` flags and debug summary.
+- Added Ferry Office slice helpers to `TestScene`:
+  - current objective text,
+  - ready-for-exit status,
+  - completion status,
+  - completion summary,
+  - exit marker recording,
+  - service-gate blocking query.
+- Replaced the default scene layout path with a Ferry Office prototype layout containing office walls, dock rails, a service gate, a service barrier, an office counter, and maintenance-side blockers.
+- Added an Exit Summary Marker interactable and renamed the info marker to Ferry Office Notice.
+- Synced `routeOpened` to the named `service-gate` collider so the route can physically open/close in the prototype.
+- Extended `SandboxLayer` debug text with objective, ready-for-exit, slice completion, world state, and slice summary.
+- Extended debug rendering with dock start, office marker, exit marker, route-gate state colors, and state-colored colliders.
+- Added lightweight tests for slice start state, required remembered flags, exit-marker gating, service-gate collider changes, and one-shot manifest event stability.
+- Updated architecture, roadmap, vertical slice, technical debt, manual checklist, decisions, and this status file.
+
+## v0.7 Intermediate Results
+
+Commands:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; ctest --preset windows-vs2022-debug --output-on-failure
+```
+
+Results:
+
+- Initial TDD build failed as expected after adding Ferry Office slice tests because `TestScene` did not yet expose `isSliceReadyForExit`, `isSliceComplete`, `currentObjectiveText`, `recordExitReached`, `completionSummary`, `isServiceGateBlocking`, and `WorldFlag::ExitReached`.
+- Build + CTest passed after adding `exitReached`, scene completion helpers, Ferry Office layout, service-gate collider sync, debug rendering/text updates, and tests: 2/2 tests.
+
+## v0.7 Final Validation - 2026-05-14
+
+Commands:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/doctor.ps1
+powershell -ExecutionPolicy Bypass -File scripts/configure.ps1
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+ctest --preset windows-vs2022-debug --output-on-failure
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --frames 240
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 240
+python tools/status_report.py
+```
+
+Results:
+
+- `scripts/doctor.ps1`: passed. Warnings remain for tools not visible in the plain PATH: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- `scripts/configure.ps1`: passed using `windows-vs2022-debug`.
+- `scripts/build.ps1`: passed and produced `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 2/2 tests.
+- `scripts/verify.ps1`: passed; ran doctor, configure, build, CTest, and null-renderer smoke run. Smoke logs show engine `v0.7.0`, five interactables, objective text, initial Ferry Manifest prompt, all Ferry Office flags false including `exitReached=false`, and `sliceComplete=no`.
+- `EngineApp.exe --renderer gdi --frames 240`: passed; created a Win32 window, initialized the GDI fallback renderer, showed the Ferry Office objective/debug state, and exited cleanly.
+- `EngineApp.exe --renderer dx11 --frames 240`: passed; created a Win32 window and initialized DirectX 11 through WARP after hardware DX11 device creation failed.
+- `python tools/status_report.py`: passed and reported the v0.7 working tree changes plus expected docs/scripts/build output.
+
+## v0.7 Known Issues / Limitations
+
+- The Ferry Office is a debug micro-slice only. It uses boxes, lines, text, and markers, not final art or a UI framework.
+- Slice completion is a scene helper, not mission scripting.
+- `WorldState` remains runtime-only; there is no save/load or persistence.
+- `routeOpened` affects the `service-gate` collider, but there is no general dynamic door/entity system.
+- `TestWorld` and `TestScene` names are now stale but were intentionally not renamed during v0.7 to avoid churn.
+- DX11 hardware device creation still falls back to WARP in this environment.
+- A full hands-on playthrough was not performed in this run. Bounded GDI and DX11 launches passed, and the manual checklist was updated for v0.7.1.
+
+## v0.7 Next Honest Step
+
+Use the completed micro-slice for the next goal: v0.7.1 Micro-Slice Playtest Polish. Keep it focused on hands-on loop feel, prompt placement, marker readability, objective ordering, and small camera/collision fixes exposed by playtesting. Do not start a new major system yet.

@@ -14,6 +14,7 @@
 #include <filesystem>
 #include <iostream>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace {
@@ -687,6 +688,135 @@ void TestTraversalCompletionRecordsServiceRouteUsed()
         "Repeated traversal completion should keep one service route event.");
 }
 
+InteractionResult MakeSceneInteraction(std::string name, InteractableType type, bool toggled = false)
+{
+    InteractionResult result;
+    result.triggered = true;
+    result.name = std::move(name);
+    result.type = type;
+    result.toggled = toggled;
+    return result;
+}
+
+void TestFerryOfficeSliceStartsIncomplete()
+{
+    TestScene scene;
+
+    Expect(!scene.isSliceReadyForExit(),
+        "TestFerryOfficeSliceStartsIncomplete",
+        "The Ferry Office slice should not start ready for the exit marker.");
+    Expect(!scene.isSliceComplete(),
+        "TestFerryOfficeSliceStartsIncomplete",
+        "The Ferry Office slice should start incomplete.");
+    Expect(!scene.worldState().isFlagSet(WorldFlag::ExitReached),
+        "TestFerryOfficeSliceStartsIncomplete",
+        "The exit marker should start unreached.");
+    Expect(scene.currentObjectiveText().find("Ferry Manifest") != std::string::npos,
+        "TestFerryOfficeSliceStartsIncomplete",
+        "Initial objective should guide the player toward the Ferry Manifest.");
+}
+
+void TestFerryOfficeCompletionRequiresRememberedLoop()
+{
+    TestScene scene;
+
+    const bool earlyExit = scene.recordExitReached();
+    Expect(!earlyExit && !scene.worldState().isFlagSet(WorldFlag::ExitReached),
+        "TestFerryOfficeCompletionRequiresRememberedLoop",
+        "The exit marker should not complete the slice before required remembered flags are set.");
+
+    scene.applyInteractionResult(MakeSceneInteraction("Ferry Manifest", InteractableType::Pickup));
+    scene.recordServiceRouteUsed();
+    scene.applyInteractionResult(MakeSceneInteraction("Maintenance Box", InteractableType::Info));
+    scene.applyInteractionResult(MakeSceneInteraction("Wall Button", InteractableType::Toggle, true));
+
+    Expect(scene.isSliceReadyForExit(),
+        "TestFerryOfficeCompletionRequiresRememberedLoop",
+        "Manifest, service route, maintenance, power, and route flags should make the slice ready for exit.");
+    Expect(!scene.isSliceComplete(),
+        "TestFerryOfficeCompletionRequiresRememberedLoop",
+        "The slice should still require the exit marker before completion.");
+
+    const bool exitChanged = scene.recordExitReached();
+    Expect(exitChanged,
+        "TestFerryOfficeCompletionRequiresRememberedLoop",
+        "Reaching the exit marker after required flags should record exitReached.");
+    Expect(scene.isSliceComplete(),
+        "TestFerryOfficeCompletionRequiresRememberedLoop",
+        "All required remembered flags plus exitReached should complete the slice.");
+    Expect(scene.completionSummary().find("complete=true") != std::string::npos,
+        "TestFerryOfficeCompletionRequiresRememberedLoop",
+        "Completion summary should expose the completed state for debug text.");
+}
+
+void TestFerryOfficeExitMarkerRequiresReadyState()
+{
+    TestScene scene;
+    const bool blocked = scene.applyInteractionResult(MakeSceneInteraction("Exit Summary Marker", InteractableType::Info));
+
+    Expect(!blocked,
+        "TestFerryOfficeExitMarkerRequiresReadyState",
+        "Exit marker interaction should not change remembered state before the loop is ready.");
+    Expect(!scene.worldState().isFlagSet(WorldFlag::ExitReached),
+        "TestFerryOfficeExitMarkerRequiresReadyState",
+        "Exit reached should remain false before the required loop is complete.");
+
+    scene.applyInteractionResult(MakeSceneInteraction("Ferry Manifest", InteractableType::Pickup));
+    scene.recordServiceRouteUsed();
+    scene.applyInteractionResult(MakeSceneInteraction("Maintenance Box", InteractableType::Info));
+    scene.applyInteractionResult(MakeSceneInteraction("Wall Button", InteractableType::Toggle, true));
+    const bool completed = scene.applyInteractionResult(MakeSceneInteraction("Exit Summary Marker", InteractableType::Info));
+
+    Expect(completed,
+        "TestFerryOfficeExitMarkerRequiresReadyState",
+        "Exit marker interaction should record exitReached once the required loop is ready.");
+    Expect(scene.worldState().isFlagSet(WorldFlag::ExitReached),
+        "TestFerryOfficeExitMarkerRequiresReadyState",
+        "Exit reached flag should be set after a valid exit marker interaction.");
+}
+
+void TestRouteOpenedChangesServiceGateColliderState()
+{
+    TestScene scene;
+
+    Expect(scene.isServiceGateBlocking(),
+        "TestRouteOpenedChangesServiceGateColliderState",
+        "The service gate collider should block the route before the route is opened.");
+
+    scene.applyInteractionResult(MakeSceneInteraction("Wall Button", InteractableType::Toggle, true));
+    Expect(!scene.isServiceGateBlocking(),
+        "TestRouteOpenedChangesServiceGateColliderState",
+        "Opening the route should disable the service gate blocking collider.");
+
+    scene.applyInteractionResult(MakeSceneInteraction("Wall Button", InteractableType::Toggle, false));
+    Expect(scene.isServiceGateBlocking(),
+        "TestRouteOpenedChangesServiceGateColliderState",
+        "Closing the route should restore the service gate blocking collider.");
+}
+
+void TestFerryOfficeOneShotManifestDoesNotDuplicateEvents()
+{
+    TestScene scene;
+    scene.interactions().updateFocus({0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f});
+
+    engine::InputState input;
+    input.interactPressed = true;
+    const InteractionResult first = scene.interactions().interact(input);
+    scene.applyInteractionResult(first);
+    const std::size_t eventCountAfterFirst = scene.worldState().eventCount();
+
+    scene.interactions().updateFocus({0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f});
+    const InteractionResult second = scene.interactions().interact(input);
+    scene.applyInteractionResult(second);
+
+    Expect(first.triggered && !second.triggered,
+        "TestFerryOfficeOneShotManifestDoesNotDuplicateEvents",
+        "Ferry Manifest should be a one-shot micro-slice action.");
+    Expect(scene.worldState().eventCount() == eventCountAfterFirst,
+        "TestFerryOfficeOneShotManifestDoesNotDuplicateEvents",
+        "Repeating the one-shot manifest action should not duplicate world events.");
+}
+
 TraversalAffordance MakeTestTraversalAffordance()
 {
     TraversalAffordance affordance;
@@ -989,6 +1119,11 @@ int main()
     TestMaintenanceInteractionRestoresPower();
     TestToggleInteractionUpdatesRouteOpenedFlag();
     TestTraversalCompletionRecordsServiceRouteUsed();
+    TestFerryOfficeSliceStartsIncomplete();
+    TestFerryOfficeCompletionRequiresRememberedLoop();
+    TestFerryOfficeExitMarkerRequiresReadyState();
+    TestRouteOpenedChangesServiceGateColliderState();
+    TestFerryOfficeOneShotManifestDoesNotDuplicateEvents();
     TestTraversalFocusSelectsAvailableAffordance();
     TestTraversalFocusIgnoresDisabledAffordance();
     TestTraversalTriggerTakesPriorityOverJumpWhenFocused();

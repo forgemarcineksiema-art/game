@@ -84,6 +84,15 @@ Status: implemented as a local remembered-state prototype with boolean flags, de
 - Keep the slice small enough to validate in one run.
 - Do not add full mission scripting, NPC AI, inventory, save/load, vehicles, combat, final art, or asset pipelines.
 
+Status: implemented as a debug micro-slice with a Ferry Office layout, manifest pickup, Service Barrier Vault, Maintenance Box power restore, service-gate route opening, Exit Summary Marker, objective/debug summary text, route-open collision state, and lightweight tests.
+
+## v0.7.1 - Micro-Slice Playtest Polish
+
+- Play the Ferry Office loop by hand and tighten prompt placement, marker readability, and objective ordering.
+- Improve camera/collision feel only where the micro-slice exposes friction.
+- Keep scope on polish and validation, not a new major system.
+- Decide whether `TestWorld` / `TestScene` should be renamed to `PrototypeWorld` / `PrototypeScene`.
+
 ## Recommended Next Goal
 
-Build v0.7 The Ferry Office Micro-Slice.
+Build v0.7.1 Micro-Slice Playtest Polish.

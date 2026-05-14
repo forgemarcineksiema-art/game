@@ -44,10 +44,11 @@ build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 120
 
 ## Collision
 
-- [ ] The player cannot walk through the wide wall.
-- [ ] The player cannot pass through the narrow passage posts.
+- [ ] The player cannot walk through the ferry office walls.
+- [ ] The player cannot pass through the closed service gate before `routeOpened=true`.
+- [ ] Opening the service gate disables the gate blocker and lets the player pass the route.
 - [ ] The player can slide or be pushed out of a corner without getting permanently stuck.
-- [ ] The low step-like blocker remains a blocker in v0.4.1.
+- [ ] The service barrier remains a blocker except for the intended Service Barrier Vault traversal.
 - [ ] Grounded/air debug text changes as expected during jump.
 
 ## Interactions
@@ -58,19 +59,34 @@ build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 120
 - [ ] After pickup consumption, the pickup no longer regains focus.
 - [ ] Moving near and facing the toggle marker shows the toggle prompt.
 - [ ] Pressing `E` on the toggle changes its state/color/debug result.
-- [ ] Moving near and facing the info marker shows the info prompt.
-- [ ] Pressing `E` on the info marker logs/records the info message.
+- [ ] Moving near and facing the Ferry Office Notice shows the info prompt.
+- [ ] Pressing `E` on the Ferry Office Notice logs/records the info message.
+- [ ] The Exit Summary Marker does not complete the slice before required remembered flags are set.
 - [ ] If an object does not focus, moving closer and facing it resolves the issue.
 
 ## World State
 
-- [ ] Initial debug text shows `powerRestored=false`, `manifestCollected=false`, `serviceRouteUsed=false`, `maintenanceBoxInspected=false`, and `routeOpened=false`.
+- [ ] Initial debug text shows `powerRestored=false`, `manifestCollected=false`, `serviceRouteUsed=false`, `maintenanceBoxInspected=false`, `routeOpened=false`, and `exitReached=false`.
 - [ ] Collecting the Ferry Manifest changes `manifestCollected=true` and increments `eventCount`.
-- [ ] Toggling the Wall Button changes `routeOpened` and changes the debug gate marker color.
+- [ ] Toggling the Wall Button changes `routeOpened`, changes the debug gate marker color, and changes the service-gate blocking state.
 - [ ] Completing the service barrier traversal changes `serviceRouteUsed=true`.
 - [ ] Inspecting the Maintenance Box changes `maintenanceBoxInspected=true` and `powerRestored=true`.
 - [ ] After power is restored, the Maintenance Box marker changes to the restored-power debug color.
+- [ ] Reaching the Exit Summary Marker after the required flags changes `exitReached=true`.
+- [ ] Debug text shows `sliceComplete=yes` only after the exit marker records completion.
 - [ ] Repeating a completed one-shot action does not add another remembered event.
+
+## Ferry Office Micro-Slice
+
+- [ ] Start near the dock-side marker and see an objective mentioning the Ferry Manifest.
+- [ ] Collect the Ferry Manifest near the office approach.
+- [ ] Move to the Service Barrier Vault and use `Space` to cross it.
+- [ ] Inspect the Maintenance Box after traversal and confirm power is restored.
+- [ ] Return to the Wall Button and open the service gate.
+- [ ] Pass through the opened service-gate route.
+- [ ] Reach the Exit Summary Marker and press `E`.
+- [ ] Debug text shows the current objective advancing through the loop.
+- [ ] Completion summary reports `complete=true` after all required flags are set.
 
 ## Traversal
 

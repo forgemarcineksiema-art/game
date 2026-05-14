@@ -72,6 +72,34 @@ void TestWorld::buildDefaultCollisionTestLayout()
     addBox("test-crate", {3.5f, 0.5f, 2.0f}, {0.6f, 0.5f, 0.6f});
 }
 
+void TestWorld::buildFerryOfficePrototypeLayout()
+{
+    clear();
+    setFloorHeight(0.0f);
+
+    addBox("ferry-office-back-wall", {0.0f, 0.75f, 5.4f}, {2.8f, 0.75f, 0.25f});
+    addBox("ferry-office-left-wall", {-2.8f, 0.75f, 3.75f}, {0.25f, 0.75f, 1.9f});
+    addBox("ferry-office-right-wall", {2.8f, 0.75f, 3.75f}, {0.25f, 0.75f, 1.9f});
+    addBox("service-gate", {0.0f, 0.75f, 2.35f}, {2.45f, 0.75f, 0.16f});
+    addBox("service-barrier", {2.8f, 0.25f, -1.5f}, {1.0f, 0.25f, 0.5f});
+    addBox("dock-rail-left", {-4.2f, 0.45f, -0.5f}, {0.2f, 0.45f, 3.0f});
+    addBox("dock-rail-right", {4.2f, 0.45f, -0.5f}, {0.2f, 0.45f, 3.0f});
+    addBox("office-counter", {-1.35f, 0.45f, 1.45f}, {0.7f, 0.45f, 0.3f});
+    addBox("maintenance-crate", {3.6f, 0.45f, 0.55f}, {0.45f, 0.45f, 0.45f});
+}
+
+bool TestWorld::setColliderBlocksPlayer(std::string_view name, bool blocksPlayer)
+{
+    for (StaticCollider& collider : m_colliders) {
+        if (collider.name == name) {
+            collider.blocksPlayer = blocksPlayer;
+            return true;
+        }
+    }
+
+    return false;
+}
+
 CollisionResult TestWorld::resolvePlayer(const PlayerCollisionProxy& proxy) const
 {
     CollisionResult result;

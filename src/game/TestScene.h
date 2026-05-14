@@ -5,6 +5,8 @@
 #include "game/TraversalSystem.h"
 #include "game/WorldState.h"
 
+#include <string>
+
 class TestScene {
 public:
     TestScene();
@@ -20,8 +22,17 @@ public:
 
     bool applyInteractionResult(const InteractionResult& result);
     bool recordServiceRouteUsed();
+    bool recordExitReached();
+
+    bool isSliceReadyForExit() const;
+    bool isSliceComplete() const;
+    bool isServiceGateBlocking() const;
+    std::string currentObjectiveText() const;
+    std::string completionSummary() const;
 
 private:
+    void syncRouteGateCollider();
+
     TestWorld m_world;
     InteractionSystem m_interactions;
     TraversalSystem m_traversal;
