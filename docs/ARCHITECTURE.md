@@ -95,11 +95,13 @@ v0.2 adds debug primitive drawing to the renderer interface: debug camera, lines
 
 ## Game Layer
 
-`src/game/SandboxLayer.*` is the first game-facing layer. It owns the prototype scene, player controller, and third-person camera.
+`src/game/SandboxLayer.*` is the first game-facing layer. It owns the prototype scene, player controller, third-person camera, and the current placeholder service-yard vehicle spike.
 
 `src/game/PlayerController.*` implements deterministic camera-relative movement, sprint, jump, gravity, grounded state, facing yaw, and world-collision integration. It no longer owns static obstacle lists directly.
 
 `src/game/ThirdPersonCamera.*` implements yaw/pitch orbit, distance, height offset, pitch clamp, and exponential follow smoothing. The update order is player first, camera second, render third to avoid frame-order jitter.
+
+`src/game/VehicleController.*` is the v0.10 narrow vehicle feel spike. It owns a deterministic arcade-style placeholder vehicle state: position, yaw, speed, velocity, throttle/brake/steer telemetry, occupied state, focus range, pressed-edge enter/exit, safe exit checks, and simple yard-bound clamping. It deliberately does not expose Jolt, vehicle constraints, wheels, suspension, damage, doors, seats, cargo, traffic, or tuning data files.
 
 `src/game/PrototypeWorld.*` is the v0.3 static world/collision boundary. It owns named static AABB colliders, a floor height, player proxy resolution, overlap checks, ground checks, and a simple raycast query for future camera obstruction or interaction work. v0.7 adds a Ferry Office prototype layout builder and lets the scene toggle whether a named collider blocks the player.
 
@@ -119,7 +121,9 @@ v0.2 adds debug primitive drawing to the renderer interface: debug camera, lines
 
 `src/game/PrototypeScene.*` also exposes slice guidance helpers: current objective text, ready-for-exit status, completion status, completion summary text, and service-gate blocking state. `routeOpened` is synchronized to the named `service-gate` collider so the gate is not only visual in the prototype. v0.7.1 makes the Wall Button latch the route open instead of closing it again, which avoids trapping the player in the gate volume.
 
-`src/game/SandboxLayer.*` integrates player/camera/world/traversal/interaction update order. It updates traversal focus first from the current player position/facing, gives a focused traversal activation to the player, updates interaction focus from the corrected player position/facing, executes `E` interactions, updates the camera, then renders world collision, traversal, interaction, world-state, and Ferry Office slice debug markers.
+`src/game/SandboxLayer.*` integrates player/camera/world/traversal/interaction update order. On foot, it updates traversal focus first from the current player position/facing, gives a focused traversal activation to the player, updates interaction focus from the corrected player position/facing, lets the vehicle take `E` only when no Ferry Office interactable is focused, executes normal `E` interactions, updates the camera, then renders world collision, traversal, interaction, world-state, vehicle, and Ferry Office slice debug markers.
+
+When the vehicle is occupied, `SandboxLayer` skips on-foot player movement, traversal activation, and Ferry Office interactions for that frame. `W/S/A/D` drive the vehicle, `E` exits only when the computed side exit position is clear, and the existing third-person camera follows the vehicle target with separate distance/height/smoothing settings. Exiting places the player beside the vehicle and returns the next frame to the normal on-foot flow.
 
 In v0.5.1, traversal activation uses the player's current position as the runtime traversal start while keeping the authored affordance target fixed. This avoids a visible snap to the start marker when the player presses `Space` inside the focus radius. The authored start marker remains a focus/debug marker, not a mandatory teleport point.
 
@@ -135,7 +139,7 @@ Collision support is intentionally primitive:
 
 No physics engine, rigid bodies, slopes, ramps, moving platforms, or terrain streaming are present.
 
-v0.9.2 adds an engine physics boundary and an opt-in Jolt backend spike, but the Ferry Office runtime still uses the existing prototype collision path. Treat this as a dependency and architecture foundation, not as a completed gameplay physics migration.
+v0.9.2 adds an engine physics boundary and an opt-in Jolt backend spike, but the Ferry Office runtime still uses the existing prototype collision path. v0.10 uses the engine-owned `engine::physics` API non-invasively for a simple service-yard validation/debug world while keeping the live vehicle controller deterministic. Treat this as a dependency and architecture foundation, not as a completed gameplay physics migration.
 
 Interaction support is intentionally primitive:
 
@@ -173,6 +177,8 @@ Traversal support is intentionally primitive:
 v0.9 adds a narrow solid debug drawing path, `IRenderer::drawDebugSolidBox`, implemented by the null, GDI, and DX11 renderers. It exists to make prototype scenes read as simple places before a real mesh/material pipeline exists.
 
 `SandboxLayer` now draws muted solid placeholder slabs and boxes for the Ferry Office dock, service yard, office walls, gate, traversal markers, interactables, and player proxy, then draws the existing wire/debug outlines on top. This keeps collision and state visibility intact while reducing the pure wireframe workbench feeling.
+
+v0.10 adds a service-yard driving pad, a placeholder vehicle body/cabin, vehicle heading line, enter radius, safe exit marker, yard bounds, and physics debug lines. These are debug primitives only; there is still no vehicle mesh, material system, tire model, or final road art.
 
 This is not an asset pipeline. There are still no textures, mesh loading, materials, lighting, shadows, post-processing, or scene serialization. Solid debug geometry should stay simple and disposable until a later art/asset milestone proves what the engine actually needs.
 

@@ -142,6 +142,16 @@ Status: implemented as a readability polish pass with a route polyline, stronger
 
 Status: implemented as an architecture/dependency spike. Jolt is the primary production candidate, PhysX remains backup, Bullet is not preferred, and existing Ferry Office gameplay remains on the tested prototype collision path until a later migration goal.
 
+## v0.10 - Vehicle Feel Spike on Physics Foundation
+
+- Add one placeholder service-yard vehicle.
+- Prove enter/exit, throttle, braking, reverse, steering, and a separate vehicle camera target.
+- Keep the controller narrow, deterministic, and game-layer scoped.
+- Use the engine-owned physics boundary non-invasively and keep Jolt private to `src/engine`.
+- Preserve the Ferry Office micro-slice and default dependency-free validation.
+
+Status: implemented as a first vehicle feel spike. The service-yard vehicle can be entered with `E` when no Ferry Office interactable is focused, driven with `W/S/A/D`, exited with `E` when the side exit marker is clear, and viewed through a vehicle camera mode. Jolt VehicleConstraint, wheels, suspension, traffic, cargo, and vehicle persistence are intentionally deferred.
+
 ## Recommended Next Goal
 
-Build v0.10 Vehicle Feel Spike on the physics foundation.
+Build v0.10.1 Vehicle Feel Tuning + Service Yard Road Test Polish.

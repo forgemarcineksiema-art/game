@@ -12,9 +12,11 @@
 #include "game/SandboxLayer.h"
 #include "game/ThirdPersonCamera.h"
 #include "game/TraversalSystem.h"
+#include "game/VehicleController.h"
 #include "game/WorldState.h"
 
 #include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <string>
 #include <utility>
@@ -269,6 +271,183 @@ void TestJoltBackendAvailabilityIsExplicit()
     Expect(world == nullptr,
         "TestJoltBackendAvailabilityIsExplicit",
         "Default builds should not create a Jolt world without the opt-in backend.");
+#endif
+}
+
+void TestVehicleControllerAcceleratesBrakesAndReversesDeterministically()
+{
+    VehicleController vehicle;
+    VehicleControllerSettings settings;
+    settings.maxForwardSpeed = 8.0f;
+    settings.maxReverseSpeed = 3.0f;
+    settings.acceleration = 8.0f;
+    settings.braking = 12.0f;
+    settings.drag = 0.5f;
+    vehicle.setSettings(settings);
+    vehicle.setPosition({0.0f, 0.0f, 0.0f});
+
+    vehicle.beginFrame();
+    vehicle.updateFocus({0.0f, 0.0f, -1.0f}, {0.0f, 0.0f, 1.0f});
+    engine::InputState input;
+    input.interactPressed = true;
+    Expect(vehicle.tryEnter(input),
+        "TestVehicleControllerAcceleratesBrakesAndReversesDeterministically",
+        "Pressed interact near the vehicle should enter the vehicle.");
+
+    input = {};
+    input.moveForward = 1.0f;
+    for (int i = 0; i < 10; ++i) {
+        vehicle.beginFrame();
+        vehicle.updateDriving(0.05f, input);
+    }
+
+    const float forwardSpeed = vehicle.state().speed;
+    Expect(forwardSpeed > 0.0f,
+        "TestVehicleControllerAcceleratesBrakesAndReversesDeterministically",
+        "Throttle should increase forward vehicle speed.");
+    Expect(forwardSpeed <= settings.maxForwardSpeed + 0.01f,
+        "TestVehicleControllerAcceleratesBrakesAndReversesDeterministically",
+        "Forward vehicle speed should remain clamped.");
+
+    input.moveForward = -1.0f;
+    for (int i = 0; i < 8; ++i) {
+        vehicle.beginFrame();
+        vehicle.updateDriving(0.05f, input);
+    }
+
+    Expect(vehicle.state().speed < forwardSpeed,
+        "TestVehicleControllerAcceleratesBrakesAndReversesDeterministically",
+        "Brake input should reduce forward speed.");
+
+    for (int i = 0; i < 30; ++i) {
+        vehicle.beginFrame();
+        vehicle.updateDriving(0.05f, input);
+    }
+
+    Expect(vehicle.state().speed < 0.0f,
+        "TestVehicleControllerAcceleratesBrakesAndReversesDeterministically",
+        "Holding reverse from a stopped/braked state should move the vehicle backward.");
+    Expect(vehicle.state().speed >= -settings.maxReverseSpeed - 0.01f,
+        "TestVehicleControllerAcceleratesBrakesAndReversesDeterministically",
+        "Reverse vehicle speed should remain clamped.");
+}
+
+void TestVehicleControllerSteeringChangesYawWhileMoving()
+{
+    VehicleController vehicle;
+    vehicle.setPosition({0.0f, 0.0f, 0.0f});
+    vehicle.setOccupiedForTesting(true);
+
+    engine::InputState input;
+    input.moveForward = 1.0f;
+    input.moveRight = 1.0f;
+
+    for (int i = 0; i < 12; ++i) {
+        vehicle.beginFrame();
+        vehicle.updateDriving(0.05f, input);
+    }
+
+    Expect(vehicle.state().yawRadians > 0.0f,
+        "TestVehicleControllerSteeringChangesYawWhileMoving",
+        "Steering right while moving should increase vehicle yaw.");
+    Expect(engine::Length(vehicle.state().velocity) > 0.0f,
+        "TestVehicleControllerSteeringChangesYawWhileMoving",
+        "Vehicle velocity should reflect the driven movement.");
+}
+
+void TestVehicleEnterExitUsesPressedEdgeAndSafeExit()
+{
+    VehicleController vehicle;
+    vehicle.setPosition({0.0f, 0.0f, 0.0f});
+
+    engine::InputState input;
+    input.interactPressed = true;
+    input.interactHeld = true;
+
+    vehicle.beginFrame();
+    vehicle.updateFocus({0.0f, 0.0f, -1.0f}, {0.0f, 0.0f, 1.0f});
+    Expect(vehicle.tryEnter(input),
+        "TestVehicleEnterExitUsesPressedEdgeAndSafeExit",
+        "Interact pressed should enter when the vehicle is focused.");
+    Expect(vehicle.state().occupied && vehicle.state().enteredThisFrame,
+        "TestVehicleEnterExitUsesPressedEdgeAndSafeExit",
+        "Vehicle should report occupied and entered for the pressed frame.");
+
+    input.interactPressed = false;
+    vehicle.beginFrame();
+    Expect(!vehicle.tryExit(input, true),
+        "TestVehicleEnterExitUsesPressedEdgeAndSafeExit",
+        "Held interact without pressed edge should not exit.");
+    Expect(vehicle.state().occupied,
+        "TestVehicleEnterExitUsesPressedEdgeAndSafeExit",
+        "Vehicle should stay occupied while interact is only held.");
+
+    input.interactPressed = true;
+    vehicle.beginFrame();
+    Expect(!vehicle.tryExit(input, false),
+        "TestVehicleEnterExitUsesPressedEdgeAndSafeExit",
+        "Blocked exit point should keep the player in the vehicle.");
+    Expect(vehicle.state().occupied && vehicle.state().exitBlockedThisFrame,
+        "TestVehicleEnterExitUsesPressedEdgeAndSafeExit",
+        "Vehicle should expose blocked exit state for debug text.");
+
+    vehicle.beginFrame();
+    Expect(vehicle.tryExit(input, true),
+        "TestVehicleEnterExitUsesPressedEdgeAndSafeExit",
+        "Pressed interact with a safe exit point should exit the vehicle.");
+    Expect(!vehicle.state().occupied && vehicle.state().exitedThisFrame,
+        "TestVehicleEnterExitUsesPressedEdgeAndSafeExit",
+        "Vehicle should become unoccupied after a safe exit.");
+}
+
+void TestVehicleCameraTargetFollowsVehicle()
+{
+    VehicleController vehicle;
+    vehicle.setPosition({2.0f, 0.0f, 3.0f});
+    vehicle.setYawRadians(engine::Radians(45.0f));
+
+    const CameraTarget target = vehicle.cameraTarget();
+
+    ExpectNear(target.position.x, 2.0f, 0.001f,
+        "TestVehicleCameraTargetFollowsVehicle",
+        "Vehicle camera target should use vehicle X position.");
+    ExpectNear(target.position.z, 3.0f, 0.001f,
+        "TestVehicleCameraTargetFollowsVehicle",
+        "Vehicle camera target should use vehicle Z position.");
+    ExpectNear(target.yawRadians, engine::Radians(45.0f), 0.001f,
+        "TestVehicleCameraTargetFollowsVehicle",
+        "Vehicle camera target should use vehicle yaw.");
+}
+
+void TestGameCodeDoesNotReferenceJoltVendorApi()
+{
+#ifdef ENGINE_SOURCE_ROOT
+    const std::filesystem::path gameRoot = std::filesystem::path(ENGINE_SOURCE_ROOT) / "src" / "game";
+    Expect(std::filesystem::exists(gameRoot),
+        "TestGameCodeDoesNotReferenceJoltVendorApi",
+        "Source root should expose src/game for vendor firewall checks.");
+
+    for (const std::filesystem::directory_entry& entry : std::filesystem::recursive_directory_iterator(gameRoot)) {
+        if (!entry.is_regular_file()) {
+            continue;
+        }
+
+        const std::filesystem::path path = entry.path();
+        if (path.extension() != ".h" && path.extension() != ".cpp") {
+            continue;
+        }
+
+        std::ifstream file(path);
+        const std::string contents((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+        const bool referencesJolt = contents.find("Jolt") != std::string::npos
+            || contents.find("JPH::") != std::string::npos
+            || contents.find("<Jolt/") != std::string::npos
+            || contents.find("JPH/") != std::string::npos;
+
+        Expect(!referencesJolt,
+            "TestGameCodeDoesNotReferenceJoltVendorApi",
+            "Game code should not reference Jolt vendor API: " + path.string());
+    }
 #endif
 }
 
@@ -1400,6 +1579,11 @@ int main()
     TestPhysicsWorldRaycastHitsStaticBox();
     TestPhysicsWorldDebugLinesExposeStaticBoxes();
     TestJoltBackendAvailabilityIsExplicit();
+    TestVehicleControllerAcceleratesBrakesAndReversesDeterministically();
+    TestVehicleControllerSteeringChangesYawWhileMoving();
+    TestVehicleEnterExitUsesPressedEdgeAndSafeExit();
+    TestVehicleCameraTargetFollowsVehicle();
+    TestGameCodeDoesNotReferenceJoltVendorApi();
     TestVec3NormalizationKeepsDiagonalMovementAtUnitLength();
     TestPlayerMovementIsCameraRelativeAndNormalized();
     TestPlayerSprintAndJumpRemainGroundedDeterministically();

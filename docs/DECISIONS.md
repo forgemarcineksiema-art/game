@@ -322,3 +322,21 @@ Reason: vcpkg is not in PATH in the current environment. A pinned opt-in FetchCo
 Decision: Disable optional SSE4/AVX/FMA/LZCNT/TZCNT Jolt compile flags in the first spike preset and match the dynamic MSVC runtime.
 
 Reason: The user is targeting a weak laptop with integrated/dedicated GPU options. The first physics foundation should avoid unnecessary CPU-instruction assumptions. Matching the MSVC runtime also avoids `/MTd` versus `/MDd` link failures in the Visual Studio debug build.
+
+## v0.10 Deterministic Vehicle Feel Spike
+
+Decision: Implement the first drivable vehicle as a narrow deterministic `src/game/VehicleController` instead of using Jolt VehicleConstraint immediately.
+
+Reason: v0.10 needs to prove enter/exit, steering, throttle/brake/reverse feel, camera follow, and service-yard readability without turning the milestone into a full vehicle framework. Jolt remains the production physics candidate, but wheel constraints, suspension, tire friction, and vehicle tuning are too broad for the first gameplay spike.
+
+## v0.10 Vehicle / Ferry Office Interaction Priority
+
+Decision: Let `E` enter the vehicle only when no Ferry Office interactable is currently focused.
+
+Reason: The Ferry Office micro-slice already depends on `E` for manifest, maintenance, wall button, notice, and exit marker actions. Keeping vehicle entry as a fallback prevents the service-yard spike from stealing core slice interactions.
+
+## v0.10 Physics Boundary Usage
+
+Decision: Use `engine::physics` from `SandboxLayer` for a small service-yard validation/debug world, but keep Jolt private to `src/engine` and keep live vehicle movement deterministic for now.
+
+Reason: The goal is to exercise the engine-owned physics boundary without coupling game code to `JPH::*` or rewriting the prototype collision path. Tests now scan `src/game` for accidental Jolt references.

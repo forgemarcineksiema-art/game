@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-15
 
-This file lists known foundation issues after v0.9.2. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
+This file lists known foundation issues after v0.10. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
 
 ## Build / Toolchain
 
@@ -52,7 +52,17 @@ This file lists known foundation issues after v0.9.2. It is not a mandate to fix
 - The Jolt backend is validated through `windows-vs2022-debug-jolt`, not through `scripts/verify.ps1`.
 - Jolt integration currently uses pinned FetchContent, not vcpkg manifest mode. Revisit dependency management before making Jolt the default backend.
 - Jolt debug draw is exposed only as simple box debug lines for now. There is no full Jolt debug renderer bridge to `IRenderer`.
-- No player, traversal, service-gate, or vehicle behavior has been migrated to Jolt yet.
+- No player, traversal, service-gate, or production vehicle behavior has been migrated to Jolt yet. v0.10 uses a deterministic vehicle controller and only uses `engine::physics` for a small service-yard validation/debug world.
+
+## Vehicle
+
+- v0.10 vehicle movement is arcade-style and deterministic: no wheel colliders, suspension, tire friction model, gearbox, engine curve, brake balance, or Jolt VehicleConstraint.
+- The vehicle is game-layer scoped in `VehicleController`; there is no vehicle entity/component system.
+- Vehicle collision is only safe yard-bound clamping plus a safe exit overlap check. It does not collide physically with all Ferry Office AABBs or dynamic bodies.
+- Enter/exit has no animation, doors, seats, mount offsets per vehicle, or obstruction sweeps.
+- Vehicle camera uses the existing third-person camera with alternate settings. There is no camera collision, chase-camera lag tuning, or reset-behind-vehicle command.
+- The service-yard road area is debug geometry only, not final art or a real road/terrain system.
+- Full Jolt vehicle integration is intentionally deferred until the placeholder feel is playtested.
 
 ## Interaction
 
@@ -94,13 +104,13 @@ This file lists known foundation issues after v0.9.2. It is not a mandate to fix
 - DX11 has no debug text overlay, so visual playtesting still favors GDI until a real overlay or text path exists.
 - There is no authored composition pass for camera start angle, signposting, silhouettes, or route readability beyond simple colored volumes.
 
-## Recommended Debt After v0.9.2
+## Recommended Debt After v0.10
 
-1. Run a full human keyboard/mouse playthrough of the Ferry Office loop on the target laptop.
-2. Tighten prompt/marker placement and route polyline color if human input still shows confusion.
+1. Run a full human keyboard/mouse playthrough of the Ferry Office loop and service-yard vehicle on the target laptop.
+2. Tune vehicle acceleration, braking, reverse speed, steering rate, and camera distance before adding more vehicle features.
 3. Validate captured cursor feel on the target laptop/touchpad and use `--free-cursor` if a remote session behaves badly.
-4. Keep `WorldState` runtime-only unless a later goal explicitly asks for persistence.
-5. Keep debug text readable before adding any richer objective or UI layer.
-6. Avoid adding a mission scripting system before the micro-slice proves its minimal state flow.
-7. Consider a small scene-data loading format only after one more hand-authored slice exposes repeated authoring pain.
-8. Before migrating gameplay collision, decide whether the first Jolt promotion should be vehicle-only, world queries-only, or player collision-only.
+4. Decide whether the first Jolt gameplay promotion should be vehicle-only, world queries-only, or player collision-only after the v0.10.1 tuning pass.
+5. Keep `WorldState` runtime-only unless a later goal explicitly asks for persistence.
+6. Keep debug text readable before adding any richer objective or UI layer.
+7. Avoid adding a mission scripting system before the micro-slice proves its minimal state flow.
+8. Consider a small scene-data loading format only after one more hand-authored slice exposes repeated authoring pain.

@@ -144,4 +144,11 @@ Important implementation choices:
 
 ## Next Recommendation
 
-Run v0.10 Vehicle Feel Spike on the physics foundation if the Jolt preset remains healthy. The spike should use `engine::physics` types and keep Jolt private to `EngineCore`.
+v0.10 used the physics foundation without promoting full Jolt vehicle constraints yet:
+
+- The live vehicle feel spike is deterministic and game-layer scoped in `VehicleController`.
+- `SandboxLayer` uses `engine::physics::IPhysicsWorld` with the dependency-free `simple` backend for a small service-yard validation/debug world.
+- Tests scan `src/game` to prevent accidental `Jolt` / `JPH::*` vendor references.
+- The opt-in `windows-vs2022-debug-jolt` preset remains the proof that the Jolt backend still configures, builds, and tests through the engine API.
+
+Next recommendation: run v0.10.1 Vehicle Feel Tuning + Service Yard Road Test Polish before deciding whether to promote any vehicle behavior to Jolt VehicleConstraint.

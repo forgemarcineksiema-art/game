@@ -1886,3 +1886,152 @@ Known limitations after v0.9.2:
 Recommended next goal:
 
 Run v0.10 Vehicle Feel Spike on the physics foundation.
+
+## v0.10 Baseline - 2026-05-15
+
+Goal: add the first narrow placeholder vehicle feel spike on top of the v0.9.2 physics foundation. The vehicle should prove enter/exit, basic acceleration/braking/reverse, steering, vehicle camera follow, debug visibility, and a tiny service-yard driving area while preserving the Ferry Office micro-slice. This goal must not add NPC AI, traffic, combat, police/chase systems, missions, cargo economy, inventory, save/load, online/multiplayer, an asset pipeline, final car art, complex damage, a full vehicle framework, physics engine rewrite, or renderer/material overhaul.
+
+Required context read before coding:
+
+- `AGENTS.md`
+- `docs/STATUS.md`
+- `docs/ROADMAP.md`
+- `docs/ARCHITECTURE.md`
+- `docs/GAME_DIRECTION.md`
+- `docs/VERTICAL_SLICE.md`
+- `docs/TECH_DEBT.md`
+- `docs/MANUAL_TEST_CHECKLIST.md`
+- `docs/DECISIONS.md`
+- `docs/PHYSICS_DECISION.md`
+
+Baseline commands:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+cmake --preset windows-vs2022-debug-jolt
+cmake --build --preset windows-vs2022-debug-jolt
+ctest --preset windows-vs2022-debug-jolt --output-on-failure
+```
+
+Baseline results:
+
+- `scripts/verify.ps1`: passed.
+- Doctor found all required docs and structure. Existing warnings remain for tools not visible in the plain PATH: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- Default configure/build/test path passed with preset `windows-vs2022-debug`.
+- Default CTest passed 2/2 tests.
+- Null smoke run passed and reported engine `v0.9.2`, app `Tidebreak Prototype`, initial Ferry Manifest focus, and all Ferry Office remembered-state flags false.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed; built `Jolt.lib`, `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 2/2 tests green.
+
+Implementation notes from code review:
+
+- Keep the vehicle as a small `src/game` controller for this spike, but do not expose Jolt or `JPH::*` to game code.
+- Use `SandboxLayer` as the low-risk mode switch for on-foot versus vehicle update/camera/debug flow.
+- Do not turn the vehicle into a Ferry Office `Interactable`; that would compete with existing micro-slice focus and world-state mappings.
+- Keep the current Ferry Office systems unchanged unless a small integration guard is required.
+
+## v0.10 Short Implementation Plan
+
+1. Add vehicle tests first for deterministic acceleration, braking, reverse, steering, pressed-edge enter/exit behavior, camera target selection, and Jolt vendor-firewall expectations.
+2. Add `src/game/VehicleController.h/.cpp` with simple arcade-style vehicle state, tuning, safe enter/exit, and optional yard bounds.
+3. Wire the vehicle into `SandboxLayer` as a separate driving mode: on foot keeps the existing player/traversal/interaction flow; in vehicle skips on-foot movement and follows the vehicle camera target.
+4. Add service-yard debug geometry, vehicle proxy rendering, forward direction, enter/exit prompt, and vehicle telemetry text.
+5. Use the engine-owned physics boundary non-invasively for a small vehicle/yard validation path while keeping Jolt private to `src/engine`.
+6. Update architecture, runbook, roadmap, decisions, technical debt, manual checklist, and this status file.
+7. Run default and Jolt validation, bounded GDI/DX11 runs, status report, then commit and push if validation passes.
+
+## v0.10 Implementation Notes - 2026-05-15
+
+Changed:
+
+- Updated project version to `0.10.0`.
+- Added `src/game/VehicleController.h`.
+- Added `src/game/VehicleController.cpp`.
+- Added deterministic vehicle tests for acceleration, braking, reverse, steering, enter/exit pressed-edge behavior, safe exit blocking, and vehicle camera target data.
+- Added an automated source firewall test that scans `src/game` and fails if game code references `Jolt`, `JPH::`, `<Jolt/`, or `JPH/`.
+- Integrated a service-yard vehicle in `SandboxLayer`.
+- Added a vehicle camera mode using the existing `ThirdPersonCamera` with separate distance/height/smoothing settings.
+- Added service-yard debug geometry, vehicle body/cabin proxy, heading line, enter radius, exit marker, yard bounds, telemetry debug text, and simple physics debug lines.
+- Used `engine::physics::IPhysicsWorld` through the dependency-free `simple` backend for a small service-yard validation/debug world. Jolt remains private to `src/engine`.
+
+Test-first note:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+```
+
+Result before implementation: failed as expected after tests included `game/VehicleController.h` before the module existed.
+
+Key error:
+
+```text
+tests\EngineCoreTests.cpp(15,10): error C1083: Nie można otworzyć pliku dołącz: 'game/VehicleController.h': No such file or directory
+```
+
+Focused checks after implementation:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+ctest --preset windows-vs2022-debug --output-on-failure
+```
+
+Result:
+
+- Build passed.
+- CTest passed 2/2 tests.
+
+Known limitations after implementation:
+
+- Vehicle movement is a deterministic arcade-style placeholder, not Jolt VehicleConstraint.
+- Vehicle collision is currently yard-bound clamping plus a safe exit overlap check, not rigid-body collision against the full world.
+- The service-yard road loop is debug geometry only.
+- There are no wheels, suspension, tire model, vehicle animation, doors, seats, cargo, traffic, damage, persistence, or final vehicle art.
+- Full manual driving feel still needs a human playtest on the target laptop.
+
+## v0.10 Final Validation - 2026-05-15
+
+Commands run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/doctor.ps1
+powershell -ExecutionPolicy Bypass -File scripts/configure.ps1
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+ctest --preset windows-vs2022-debug --output-on-failure
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+cmake --preset windows-vs2022-debug-jolt
+cmake --build --preset windows-vs2022-debug-jolt
+ctest --preset windows-vs2022-debug-jolt --output-on-failure
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --frames 300
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 300
+python tools\status_report.py
+rg "Jolt|JPH::|JPH/" src\game
+```
+
+Results:
+
+- `scripts/doctor.ps1`: completed. Existing warnings remain: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg` are not in the plain PowerShell PATH.
+- `scripts/configure.ps1`: passed with preset `windows-vs2022-debug`.
+- `scripts/build.ps1`: passed; built `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 2/2 tests green (`EngineCoreTests`, `EngineSmokeTest`).
+- `scripts/verify.ps1`: passed; repeated doctor/configure/build/test and null smoke. Smoke log reported engine `v0.10.0`, app `Tidebreak Prototype`, initial Ferry Manifest focus, vehicle state `empty`, `cameraMode=on-foot`, and vehicle physics backend `simple`.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed; built `Jolt.lib`, `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 2/2 tests green.
+- GDI bounded run: passed; window created, `gdi-fallback` renderer ran for 300 frames, clean shutdown. Debug text reported the new vehicle telemetry and `physics=simple`.
+- DX11 bounded run: passed; hardware DX11 device failed and fell back to WARP, `dx11` renderer ran for 300 frames, clean shutdown.
+- `python tools\status_report.py`: completed and showed the expected v0.10 modified/new files before commit.
+- `rg "Jolt|JPH::|JPH/" src\game`: no matches; game code does not directly reference Jolt.
+
+Known limitations after v0.10:
+
+- The vehicle is a feel spike, not a finished driving system.
+- Vehicle movement is deterministic placeholder logic. It does not use Jolt VehicleConstraint, wheels, suspension, tire friction, or a real drivetrain.
+- Vehicle world handling is limited to service-yard bounds and safe exit checks.
+- The service-yard is debug placeholder geometry and still needs human driving playtest on the target laptop.
+- DX11 still falls back to WARP in this environment.
+- No NPC AI, traffic, combat, missions, cargo economy, inventory, save/load, online/multiplayer, asset pipeline, final car art, complex damage, or full vehicle framework was added.
+
+Recommended next goal:
+
+Run v0.10.1 Vehicle Feel Tuning + Service Yard Road Test Polish.

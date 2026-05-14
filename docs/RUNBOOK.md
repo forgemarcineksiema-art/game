@@ -68,6 +68,16 @@ Prototype controls:
 - Arrow keys: camera fallback controls
 - `Esc`: quit and restore the cursor
 
+Vehicle spike controls:
+
+- Approach the service-yard vehicle while no Ferry Office interactable is focused.
+- `E`: enter the vehicle when the vehicle prompt is visible.
+- In vehicle, `W`: throttle / accelerate.
+- In vehicle, `S`: brake while moving forward, then reverse when stopped.
+- In vehicle, `A/D`: steer.
+- In vehicle, `E`: exit when the side exit marker is clear.
+- On-foot controls resume after exit.
+
 Headless smoke mode:
 
 ```powershell
@@ -159,3 +169,4 @@ build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi
 - v0.4 interaction focus is debug-only point/radius selection with a facing preference. If an object does not focus, move closer and face the marker, then press `E`.
 - v0.5 traversal uses `Space` only when a traversal affordance is focused. If traversal does not trigger, move near the traversal start marker and face the path direction. If no traversal is focused, `Space` remains normal jump.
 - v0.5.1 traversal starts from the player's current position inside the focus radius and lands through the world collision resolver. In GDI debug text, check `travStart=current`, `travProgress`, and `travLanded`.
+- v0.10 vehicle movement is a deterministic placeholder controller, not Jolt VehicleConstraint. If the vehicle does not enter, make sure no Ferry Office interaction prompt is currently focused. If exit is blocked, move/turn inside the service yard until the exit marker is clear.

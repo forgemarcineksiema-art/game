@@ -76,6 +76,22 @@ ctest --preset windows-vs2022-debug-jolt --output-on-failure
 - [ ] `src/game` has no direct `JPH::*` or Jolt header usage.
 - [ ] Ferry Office player/camera/collision behavior still feels unchanged after physics foundation work.
 
+## Vehicle Spike
+
+- [ ] The service-yard vehicle is visible near the dock/service-yard driving pad.
+- [ ] Moving near the vehicle with no Ferry Office interaction focused shows the enter prompt.
+- [ ] Pressing `E` enters the vehicle once.
+- [ ] Holding `E` does not rapidly enter/exit on repeated frames.
+- [ ] While driving, `W` accelerates forward.
+- [ ] While driving, `S` brakes when moving forward and reverses after stopping.
+- [ ] `A/D` steer the vehicle and the heading marker turns with it.
+- [ ] The vehicle camera follows the vehicle without obvious jitter.
+- [ ] The service-yard bounds prevent the vehicle from drifting far outside the test pad.
+- [ ] Pressing `E` exits only when the side exit marker is clear.
+- [ ] After exit, on-foot movement, camera, traversal, and Ferry Office interactions still work.
+- [ ] Debug text reports vehicle occupancy, speed, throttle/brake/steer, camera mode, and physics backend status.
+- [ ] The vehicle does not steal `E` from the Ferry Manifest, Maintenance Box, Wall Button, Ferry Office Notice, or Exit Summary Marker when those are focused.
+
 ## Interactions
 
 - [ ] At spawn, the manifest focus prompt appears: `Press E: Collect Ferry Manifest`.

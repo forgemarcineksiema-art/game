@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.24)
 
 project(GameEngineFoundation
-    VERSION 0.9.2
+    VERSION 0.10.0
     DESCRIPTION "AI-native C++ action/adventure engine foundation"
     LANGUAGES CXX
 )
@@ -114,6 +114,7 @@ add_library(GamePrototype STATIC
     src/game/PrototypeWorld.cpp
     src/game/ThirdPersonCamera.cpp
     src/game/TraversalSystem.cpp
+    src/game/VehicleController.cpp
     src/game/WorldState.cpp
 )
 
@@ -150,6 +151,10 @@ if(ENGINE_BUILD_TESTS)
     )
 
     target_link_libraries(EngineCoreTests PRIVATE EngineCore GamePrototype)
+    target_compile_definitions(EngineCoreTests
+        PRIVATE
+            ENGINE_SOURCE_ROOT="${CMAKE_CURRENT_SOURCE_DIR}"
+    )
 
     add_test(NAME EngineCoreTests COMMAND EngineCoreTests)
     add_test(NAME EngineSmokeTest COMMAND EngineApp --smoke-test --frames 3)
