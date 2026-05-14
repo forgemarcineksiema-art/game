@@ -47,6 +47,7 @@ build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 120
 - [ ] The player cannot walk through the ferry office walls.
 - [ ] The player cannot pass through the closed service gate before `routeOpened=true`.
 - [ ] Opening the service gate disables the gate blocker and lets the player pass the route.
+- [ ] Pressing the Wall Button again does not close the service gate on the player.
 - [ ] The player can slide or be pushed out of a corner without getting permanently stuck.
 - [ ] The service barrier remains a blocker except for the intended Service Barrier Vault traversal.
 - [ ] Grounded/air debug text changes as expected during jump.
@@ -57,8 +58,8 @@ build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 120
 - [ ] Pressing `E` once on the pickup logs/records the pickup result.
 - [ ] Holding `E` does not repeatedly trigger the pickup.
 - [ ] After pickup consumption, the pickup no longer regains focus.
-- [ ] Moving near and facing the toggle marker shows the toggle prompt.
-- [ ] Pressing `E` on the toggle changes its state/color/debug result.
+- [ ] Moving near and facing the Wall Button shows the service-gate prompt.
+- [ ] Pressing `E` on the Wall Button opens the service gate and changes its marker/debug result.
 - [ ] Moving near and facing the Ferry Office Notice shows the info prompt.
 - [ ] Pressing `E` on the Ferry Office Notice logs/records the info message.
 - [ ] The Exit Summary Marker does not complete the slice before required remembered flags are set.
@@ -68,7 +69,8 @@ build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 120
 
 - [ ] Initial debug text shows `powerRestored=false`, `manifestCollected=false`, `serviceRouteUsed=false`, `maintenanceBoxInspected=false`, `routeOpened=false`, and `exitReached=false`.
 - [ ] Collecting the Ferry Manifest changes `manifestCollected=true` and increments `eventCount`.
-- [ ] Toggling the Wall Button changes `routeOpened`, changes the debug gate marker color, and changes the service-gate blocking state.
+- [ ] Pressing the Wall Button changes `routeOpened=true`, changes the debug gate marker color, and changes the service-gate blocking state.
+- [ ] Repeating the Wall Button interaction leaves `routeOpened=true` and does not add another world event.
 - [ ] Completing the service barrier traversal changes `serviceRouteUsed=true`.
 - [ ] Inspecting the Maintenance Box changes `maintenanceBoxInspected=true` and `powerRestored=true`.
 - [ ] After power is restored, the Maintenance Box marker changes to the restored-power debug color.
@@ -81,11 +83,13 @@ build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 120
 - [ ] Start near the dock-side marker and see an objective mentioning the Ferry Manifest.
 - [ ] Collect the Ferry Manifest near the office approach.
 - [ ] Move to the Service Barrier Vault and use `Space` to cross it.
+- [ ] The Service Barrier Vault prompt appears from the player-accessible side of the barrier.
 - [ ] Inspect the Maintenance Box after traversal and confirm power is restored.
 - [ ] Return to the Wall Button and open the service gate.
 - [ ] Pass through the opened service-gate route.
 - [ ] Reach the Exit Summary Marker and press `E`.
 - [ ] Debug text shows the current objective advancing through the loop.
+- [ ] Debug text is split into readable sections instead of one very long line.
 - [ ] Completion summary reports `complete=true` after all required flags are set.
 
 ## Traversal

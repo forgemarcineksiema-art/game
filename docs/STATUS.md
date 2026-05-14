@@ -1056,3 +1056,139 @@ Results:
 ## v0.7 Next Honest Step
 
 Use the completed micro-slice for the next goal: v0.7.1 Micro-Slice Playtest Polish. Keep it focused on hands-on loop feel, prompt placement, marker readability, objective ordering, and small camera/collision fixes exposed by playtesting. Do not start a new major system yet.
+
+## v0.7.1 Baseline - 2026-05-14
+
+Goal: polish the existing Ferry Office debug micro-slice through manual-playtest-driven fixes only. This goal must not add NPC AI, vehicles, combat, inventory, save/load, mission scripting, physics libraries, final art, asset pipelines, new traversal types, or UI frameworks.
+
+Required context read before coding:
+
+- `AGENTS.md`
+- `docs/GAME_DIRECTION.md`
+- `docs/VERTICAL_SLICE.md`
+- `docs/TECH_DEBT.md`
+- `docs/MANUAL_TEST_CHECKLIST.md`
+- `docs/STATUS.md`
+- `docs/ROADMAP.md`
+- `docs/ARCHITECTURE.md`
+- `docs/DECISIONS.md`
+
+Baseline command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+```
+
+Baseline result:
+
+- Passed.
+- Doctor found all expected project docs and structure.
+- Doctor warnings remain for tools not visible in the plain PATH: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- CMake configured with `windows-vs2022-debug`.
+- Build produced `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- CTest passed 2/2 tests.
+- Headless smoke run passed with the null renderer and engine `v0.7.0`.
+- Smoke logs showed five interactables, initial Ferry Manifest focus, objective text, all Ferry Office flags false including `exitReached=false`, and `sliceComplete=no`.
+
+## v0.7.1 Short Implementation Plan
+
+1. Run a short GDI windowed playtest against `docs/MANUAL_TEST_CHECKLIST.md`, focusing on Ferry Office completion clarity, traversal focus, service-gate behavior, exit marker gating, and debug text readability.
+2. Fix only blockers or obvious clarity problems found during playtest; do not introduce new systems or rename `TestWorld` / `TestScene` unless the rename is truly low-risk and necessary.
+3. Add failing tests before any behavior change, especially for service-gate anti-trap behavior, objective ordering, exit readiness, or debug summary changes.
+4. Keep changes in existing game-layer boundaries: `TestScene`, `TestWorld`, `SandboxLayer`, tests, and docs.
+5. Re-run the required validation matrix, record exact results here, then commit and push after validation passes per `AGENTS.md`.
+
+## v0.7.1 Playtest Findings
+
+GDI playtest command:
+
+```powershell
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --frames 900
+```
+
+Result:
+
+- The GDI windowed run exited cleanly.
+- A scripted key-event pass using real Windows key events was not reliable enough to count as a full human playthrough; movement key holds were inconsistent in this environment.
+- The run still exposed a real slice clarity issue:
+  - `manifestCollected=true` and `routeOpened=true` could be recorded while `serviceRouteUsed=false`.
+  - The objective remained stuck on "Use the Service Barrier Vault..." after the Wall Button and Exit Summary Marker interactions.
+  - The Service Barrier Vault start marker was effectively on the wrong side of the barrier for the tested approach.
+  - The Maintenance Box could be reached/focused before the intended traversal state was recorded.
+  - Debug text was a single very long line and hard to read in GDI.
+- Because the automated key-event pass is not a substitute for a person at the controls, the final status remains honest: v0.7.1 improves the loop and validates it through tests/bounded runs, but a full human keyboard/mouse playthrough is still recommended.
+
+## v0.7.1 Changes Made
+
+- Updated project version to `0.7.1`.
+- Moved the Service Barrier Vault start to the player-accessible side of the barrier.
+- Moved the Service Barrier Vault target and Maintenance Box so maintenance focus follows traversal instead of stealing focus before it.
+- Changed the Wall Button from an open/close route toggle into a latch-open service-gate opener.
+- Kept `routeOpened=true` as the state that disables the `service-gate` blocking collider; repeated Wall Button interactions no longer close the gate or duplicate events.
+- Split sandbox debug text into readable sections and updated the GDI renderer to draw multi-line wrapped text.
+- Kept `TestWorld` and `TestScene` names; the rename is documented as deferred.
+- Added/updated lightweight tests for:
+  - Wall Button latch-open behavior,
+  - service-gate collider staying open,
+  - Service Barrier Vault focus from the accessible side,
+  - Maintenance Box not focusing before the vault,
+  - complete Ferry Office loop through scene/player/traversal/world-state systems,
+  - multi-line sandbox debug text.
+- Updated architecture, vertical slice, technical debt, manual checklist, roadmap, decisions, and this status file.
+
+## v0.7.1 Intermediate Results
+
+Commands:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; ctest --preset windows-vs2022-debug --output-on-failure
+```
+
+Results:
+
+- Initial TDD run failed as expected after adding polish tests:
+  - Wall Button still closed `routeOpened`.
+  - Service Barrier Vault did not focus from the accessible side.
+  - Maintenance Box could win focus before the vault.
+  - Sandbox debug text had no line breaks.
+- Build + CTest passed after moving the traversal/maintenance markers, making the Wall Button latch the gate open, and splitting debug text.
+- A full scene-system loop test initially failed because the test read `traversalLandedThisFrame` after its one-frame lifetime. The test was corrected to record `serviceRouteUsed` on the landing frame, matching runtime behavior, and CTest then passed.
+
+## v0.7.1 Final Validation - 2026-05-14
+
+Commands:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/doctor.ps1
+powershell -ExecutionPolicy Bypass -File scripts/configure.ps1
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+ctest --preset windows-vs2022-debug --output-on-failure
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --frames 240
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 240
+python tools/status_report.py
+```
+
+Results:
+
+- `scripts/doctor.ps1`: passed. Warnings remain for tools not visible in the plain PATH: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- `scripts/configure.ps1`: passed using `windows-vs2022-debug`.
+- `scripts/build.ps1`: passed and produced `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 2/2 tests.
+- `scripts/verify.ps1`: passed; ran doctor, configure, build, CTest, and null-renderer smoke run. Smoke logs show engine `v0.7.1`, five interactables, objective text, initial Ferry Manifest prompt, all Ferry Office flags false, `sliceComplete=no`, and multi-line debug output.
+- `EngineApp.exe --renderer gdi --frames 240`: passed; created a Win32 window, initialized the GDI fallback renderer, showed multi-line Ferry Office debug text, and exited cleanly.
+- `EngineApp.exe --renderer dx11 --frames 240`: passed; created a Win32 window and initialized DirectX 11 through WARP after hardware DX11 device creation failed.
+- `python tools/status_report.py`: passed and reported the v0.7.1 working tree changes plus expected docs/scripts/build output.
+
+## v0.7.1 Known Issues / Limitations
+
+- A true human keyboard/mouse playthrough was not completed by Codex in this environment. A GDI key-event pass was attempted, but OS-level injected movement was not reliable enough to count as a manual completion.
+- The complete Ferry Office loop is covered by a scene/player/traversal/world-state system test, and bounded GDI/DX11 launches pass.
+- The service gate is now latch-open rather than a general open/close door. This is intentional to avoid trapping the player without adding a door system.
+- `TestWorld` and `TestScene` names remain unchanged; rename cleanup is deferred.
+- DX11 hardware device creation still falls back to WARP in this environment.
+- There is still no UI framework, final art, save/load, mission scripting, physics library, NPC AI, vehicles, combat, or inventory.
+
+## v0.7.1 Next Honest Step
+
+Use the polished micro-slice foundation for a narrow cleanup goal: v0.8 Prototype Scene Naming + Data Cleanup. Keep it focused on naming/data organization for the existing prototype scene, not a new gameplay system.

@@ -81,7 +81,7 @@ void TestWorld::buildFerryOfficePrototypeLayout()
     addBox("ferry-office-left-wall", {-2.8f, 0.75f, 3.75f}, {0.25f, 0.75f, 1.9f});
     addBox("ferry-office-right-wall", {2.8f, 0.75f, 3.75f}, {0.25f, 0.75f, 1.9f});
     addBox("service-gate", {0.0f, 0.75f, 2.35f}, {2.45f, 0.75f, 0.16f});
-    addBox("service-barrier", {2.8f, 0.25f, -1.5f}, {1.0f, 0.25f, 0.5f});
+    addBox("service-barrier", {2.8f, 0.25f, 0.55f}, {1.0f, 0.25f, 0.45f});
     addBox("dock-rail-left", {-4.2f, 0.45f, -0.5f}, {0.2f, 0.45f, 3.0f});
     addBox("dock-rail-right", {4.2f, 0.45f, -0.5f}, {0.2f, 0.45f, 3.0f});
     addBox("office-counter", {-1.35f, 0.45f, 1.45f}, {0.7f, 0.45f, 0.3f});

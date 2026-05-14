@@ -41,13 +41,13 @@ This file lists known foundation issues after v0.7. It is not a mandate to fix e
 - No slopes, ramps, stairs, moving platforms, or step-up behavior.
 - Raycast only checks static AABB colliders.
 - Collision layouts are hardcoded in `TestWorld::buildDefaultCollisionTestLayout` and `TestWorld::buildFerryOfficePrototypeLayout`.
-- The v0.7 `service-gate` collider can be toggled by scene state, but there is no general dynamic-collider or door system.
+- The `service-gate` collider can be latched open by scene state, but there is no general dynamic-collider or door system.
 
 ## Interaction
 
 - Interactables are hardcoded in `TestScene`.
 - Focus uses point/radius volumes with a facing preference and close proximity fallback.
-- Toggle objects normally only change interaction state; v0.7 has one special scene mapping where the Wall Button opens/closes the `service-gate` collider.
+- Toggle objects normally only change interaction state. The Ferry Office Wall Button is now a one-way opener that latches `routeOpened=true` to avoid closing the gate on the player.
 - Pickup/world state is local runtime state only; there is no inventory, persistence, or save data.
 - No UI framework exists, so prompts are debug text/logs only.
 
@@ -56,7 +56,7 @@ This file lists known foundation issues after v0.7. It is not a mandate to fix e
 - `WorldState` is an in-memory local event ledger, not a save/load system.
 - Flag mappings are hardcoded in `TestScene`.
 - Repeated same-value flag writes are ignored, which is correct for v0.6 but may need richer event semantics later.
-- Debug summary text became longer in v0.7 because it now includes objective, completion, and `exitReached`.
+- Debug summary text became longer in v0.7 because it now includes objective, completion, and `exitReached`. v0.7.1 splits the GDI/debug string into sections, but there is still no real UI overlay.
 - There is no mission graph, quest scripting, dialogue integration, global event bus, or persistence layer.
 - Slice completion is a scene helper, not a mission/objective scripting system.
 
@@ -67,7 +67,7 @@ This file lists known foundation issues after v0.7. It is not a mandate to fix e
 - Traversal starts from the player's current position and resolves collision after landing, but it still skips continuous collision checks during the controlled motion.
 - There is no animation, IK, ledge hang, full climb, wall climb, or physics-driven vault.
 - Traversal prompt/debug visibility is functional but not polished.
-- The current traversal route is one access gate inside the Ferry Office slice. It has not had a full hands-on feel pass.
+- The current traversal route is one access gate inside the Ferry Office slice. v0.7.1 moved the affordance start to the player-accessible side, but it still needs a full human playtest feel pass.
 
 ## Naming / Architecture
 
@@ -77,8 +77,8 @@ This file lists known foundation issues after v0.7. It is not a mandate to fix e
 
 ## Recommended Debt Before Or During v0.7.1
 
-1. Do a manual playtest pass for the full Ferry Office loop.
-2. Tighten prompt/marker placement if focus feels awkward.
+1. Run a full human keyboard/mouse playthrough of the Ferry Office loop.
+2. Tighten prompt/marker placement if human input still feels awkward.
 3. Keep `WorldState` runtime-only unless a later goal explicitly asks for persistence.
 4. Consider renaming `TestWorld` / `TestScene` to `PrototypeWorld` / `PrototypeScene` only as part of a focused cleanup.
 5. Keep debug text readable before adding any richer objective or UI layer.

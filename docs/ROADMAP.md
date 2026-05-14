@@ -93,6 +93,8 @@ Status: implemented as a debug micro-slice with a Ferry Office layout, manifest 
 - Keep scope on polish and validation, not a new major system.
 - Decide whether `TestWorld` / `TestScene` should be renamed to `PrototypeWorld` / `PrototypeScene`.
 
+Status: implemented as a focused polish pass. The Service Barrier Vault start is now on the player-accessible side, the Maintenance Box no longer steals focus before traversal, the Wall Button latches the service gate open to avoid trapping, GDI debug text is split into readable sections, and scene-system tests cover the complete micro-slice loop. A full human keyboard/mouse playthrough is still recommended.
+
 ## Recommended Next Goal
 
-Build v0.7.1 Micro-Slice Playtest Polish.
+Build v0.8 Prototype Scene Naming + Data Cleanup.

@@ -86,13 +86,13 @@ v0.2 adds debug primitive drawing to the renderer interface: debug camera, lines
 
 `src/game/WorldState.*` is the v0.6 local remembered-state boundary for the prototype scene. It owns boolean flags, deterministic event records, event ids, last-event text, and compact debug summary text. It is runtime-only and does not implement save/load, mission scripting, inventory, dialogue, or persistence.
 
-`src/game/TestScene.*` defines the Ferry Office debug micro-slice. It asks `TestWorld` to build a dock/ferry-office prototype layout with a closed service gate, a service barrier, office walls, dock rails, and maintenance-side blockers. It owns five debug interactables: a one-shot Ferry Manifest pickup, a repeatable Wall Button service-gate toggle, a repeatable Ferry Office Notice, a Maintenance Box, and an Exit Summary Marker.
+`src/game/TestScene.*` defines the Ferry Office debug micro-slice. It asks `TestWorld` to build a dock/ferry-office prototype layout with a closed service gate, a service barrier, office walls, dock rails, and maintenance-side blockers. It owns five debug interactables: a one-shot Ferry Manifest pickup, a repeatable Wall Button service-gate opener, a repeatable Ferry Office Notice, a Maintenance Box, and an Exit Summary Marker.
 
 `src/game/TestScene.*` also owns the first v0.5 traversal affordance: a service-barrier vault path used as access-gating groundwork for The Ferry Office.
 
-`src/game/TestScene.*` maps prototype gameplay results to remembered state: Ferry Manifest sets `manifestCollected`, Wall Button sets `routeOpened`, Maintenance Box sets `maintenanceBoxInspected` and `powerRestored`, Service Barrier Vault completion sets `serviceRouteUsed`, and the Exit Summary Marker can set `exitReached` only after the required loop is ready. This mapping stays in the scene layer so `InteractionSystem` and `TraversalSystem` remain generic.
+`src/game/TestScene.*` maps prototype gameplay results to remembered state: Ferry Manifest sets `manifestCollected`, Wall Button sets `routeOpened=true`, Maintenance Box sets `maintenanceBoxInspected` and `powerRestored`, Service Barrier Vault completion sets `serviceRouteUsed`, and the Exit Summary Marker can set `exitReached` only after the required loop is ready. This mapping stays in the scene layer so `InteractionSystem` and `TraversalSystem` remain generic.
 
-`src/game/TestScene.*` also exposes v0.7 slice guidance helpers: current objective text, ready-for-exit status, completion status, completion summary text, and service-gate blocking state. `routeOpened` is synchronized to the named `service-gate` collider so the gate is not only visual in the prototype.
+`src/game/TestScene.*` also exposes slice guidance helpers: current objective text, ready-for-exit status, completion status, completion summary text, and service-gate blocking state. `routeOpened` is synchronized to the named `service-gate` collider so the gate is not only visual in the prototype. v0.7.1 makes the Wall Button latch the route open instead of closing it again, which avoids trapping the player in the gate volume.
 
 `src/game/SandboxLayer.*` integrates player/camera/world/traversal/interaction update order. It updates traversal focus first from the current player position/facing, gives a focused traversal activation to the player, updates interaction focus from the corrected player position/facing, executes `E` interactions, updates the camera, then renders world collision, traversal, interaction, world-state, and Ferry Office slice debug markers.
 
@@ -117,7 +117,7 @@ Interaction support is intentionally primitive:
 - built-in pickup/toggle/info actions,
 - debug text/log prompts instead of a UI layer.
 
-No scripting, inventory, general door framework, dialogue, mission triggers, save/load, or persistent save data are present. v0.7 has one scene-owned service-gate collider toggle to prove the route-open state can affect the world.
+No scripting, inventory, general door framework, dialogue, mission triggers, save/load, or persistent save data are present. The slice has one scene-owned service-gate collider latch to prove the route-open state can affect the world.
 
 World state support is intentionally primitive:
 

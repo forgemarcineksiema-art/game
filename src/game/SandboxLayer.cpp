@@ -117,9 +117,12 @@ void SandboxLayer::updateDebugText()
            << "hits=" << player.lastCollisionHitCount << " "
            << "colliders=" << m_scene.world().colliders().size() << " "
            << "interactables=" << m_scene.interactions().interactableCount() << " "
+           << "camera yaw=" << engine::Degrees(camera.yawRadians)
+           << " pitch=" << engine::Degrees(camera.pitchRadians)
+           << " dist=" << camera.distance << "\n"
            << "objective=\"" << m_scene.currentObjectiveText() << "\" "
            << "readyForExit=" << (m_scene.isSliceReadyForExit() ? "yes" : "no") << " "
-           << "sliceComplete=" << (m_scene.isSliceComplete() ? "yes" : "no") << " "
+           << "sliceComplete=" << (m_scene.isSliceComplete() ? "yes" : "no") << "\n"
            << "interactPressed=" << (m_interactPressedThisFrame ? "yes" : "no") << " "
            << "worldChanged=" << (m_worldStateChangedThisFrame ? "yes" : "no") << " "
            << "traversal=" << (player.traversalMode == PlayerTraversalMode::Traversing ? "active" : "normal") << " "
@@ -139,13 +142,10 @@ void SandboxLayer::updateDebugText()
     if (focus.hasFocus) {
         output << "prompt=\"Press E: " << focus.prompt << "\" ";
     }
-    output << "lastInteraction=\"" << m_lastInteractionText << "\" "
-           << "lastWorldEvent=\"" << m_lastWorldEventText << "\" "
-           << "worldState={" << m_scene.worldState().debugSummary() << "} "
-           << "slice={" << m_scene.completionSummary() << "} "
-           << "camera yaw=" << engine::Degrees(camera.yawRadians)
-           << " pitch=" << engine::Degrees(camera.pitchRadians)
-           << " dist=" << camera.distance;
+    output << "\nlastInteraction=\"" << m_lastInteractionText << "\" "
+           << "lastWorldEvent=\"" << m_lastWorldEventText << "\"\n"
+           << "worldState={" << m_scene.worldState().debugSummary() << "}\n"
+           << "slice={" << m_scene.completionSummary() << "}";
     m_debugText = output.str();
 }
 
@@ -161,6 +161,9 @@ void SandboxLayer::drawInteractionDebug(engine::IRenderer& renderer)
             color = interactable.toggled
                 ? engine::Color {1.0f, 0.82f, 0.25f, 1.0f}
                 : engine::Color {1.0f, 0.55f, 0.25f, 1.0f};
+        }
+        if (interactable.name == "Wall Button" && m_scene.worldState().isFlagSet(WorldFlag::RouteOpened)) {
+            color = {0.25f, 1.0f, 0.35f, 1.0f};
         }
         if (interactable.name == "Maintenance Box" && m_scene.worldState().isFlagSet(WorldFlag::PowerRestored)) {
             color = {0.25f, 1.0f, 0.85f, 1.0f};
@@ -199,7 +202,7 @@ void SandboxLayer::drawWorldStateDebug(engine::IRenderer& renderer)
     const engine::Color powerColor = powerRestored
         ? engine::Color {0.25f, 1.0f, 0.85f, 1.0f}
         : engine::Color {0.45f, 0.45f, 0.55f, 1.0f};
-    renderer.drawDebugBox({2.8f, m_scene.world().floorHeight() + 0.75f, 0.25f}, {0.24f, 0.24f, 0.24f}, powerColor);
+    renderer.drawDebugBox({2.8f, m_scene.world().floorHeight() + 0.75f, 1.9f}, {0.24f, 0.24f, 0.24f}, powerColor);
 }
 
 void SandboxLayer::drawSliceDebug(engine::IRenderer& renderer)

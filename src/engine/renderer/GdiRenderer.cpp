@@ -148,7 +148,8 @@ void GdiRenderer::drawDebugText(std::string_view text)
     GetClientRect(m_window, &rect);
     SetTextColor(m_deviceContext, RGB(230, 235, 245));
     std::string copy(text);
-    TextOutA(m_deviceContext, 16, 16, copy.c_str(), static_cast<int>(copy.size()));
+    RECT textRect {16, 16, rect.right - 16, rect.bottom - 16};
+    DrawTextA(m_deviceContext, copy.c_str(), static_cast<int>(copy.size()), &textRect, DT_LEFT | DT_TOP | DT_WORDBREAK | DT_NOCLIP);
 }
 
 void GdiRenderer::endFrame()

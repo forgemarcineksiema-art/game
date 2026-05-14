@@ -32,8 +32,8 @@ TestScene::TestScene()
     toggle.prompt = "Open Service Gate";
     toggle.position = {-0.9f, 0.7f, 2.15f};
     toggle.radius = 1.7f;
-    toggle.type = InteractableType::Toggle;
-    toggle.message = "Service gate toggled.";
+    toggle.type = InteractableType::Info;
+    toggle.message = "Service gate opened.";
     m_interactions.addInteractable(toggle);
 
     Interactable info;
@@ -48,8 +48,8 @@ TestScene::TestScene()
     Interactable maintenanceBox;
     maintenanceBox.name = MaintenanceBoxName;
     maintenanceBox.prompt = "Inspect Maintenance Box";
-    maintenanceBox.position = {2.8f, 0.65f, 0.25f};
-    maintenanceBox.radius = 1.6f;
+    maintenanceBox.position = {2.8f, 0.65f, 1.9f};
+    maintenanceBox.radius = 1.4f;
     maintenanceBox.type = InteractableType::Info;
     maintenanceBox.message = "Maintenance box inspected: local power restored.";
     m_interactions.addInteractable(maintenanceBox);
@@ -67,9 +67,9 @@ TestScene::TestScene()
     serviceVault.name = ServiceVaultName;
     serviceVault.prompt = "Press Space: Vault Service Barrier";
     serviceVault.type = TraversalType::Vault;
-    serviceVault.startPosition = {2.8f, 0.0f, -2.35f};
-    serviceVault.endPosition = {2.8f, 0.0f, -0.55f};
-    serviceVault.focusRadius = 1.45f;
+    serviceVault.startPosition = {2.8f, 0.0f, -0.35f};
+    serviceVault.endPosition = {2.8f, 0.0f, 1.45f};
+    serviceVault.focusRadius = 1.25f;
     serviceVault.requiredFacingDirection = {0.0f, 0.0f, 1.0f};
     serviceVault.requiredFacingDot = 0.15f;
     serviceVault.durationSeconds = 0.55f;
@@ -131,7 +131,7 @@ bool TestScene::applyInteractionResult(const InteractionResult& result)
         changed |= m_worldState.setFlag(WorldFlag::MaintenanceBoxInspected, true, result.name);
         changed |= m_worldState.setFlag(WorldFlag::PowerRestored, true, result.name);
     } else if (result.name == WallButtonName) {
-        changed |= m_worldState.setFlag(WorldFlag::RouteOpened, result.toggled, result.name);
+        changed |= m_worldState.setFlag(WorldFlag::RouteOpened, true, result.name);
         syncRouteGateCollider();
     } else if (result.name == ExitMarkerName) {
         changed |= recordExitReached();

@@ -226,3 +226,27 @@ Reason: The micro-slice should prove that remembered state can visibly and physi
 Decision: Do not rename `TestWorld` and `TestScene` during v0.7.
 
 Reason: They are increasingly prototype-scene boundaries, but a rename would create broad file churn while the slice behavior is still being validated. Revisit in v0.7.1 after playtest polish.
+
+## v0.7.1 Service Gate Latches Open
+
+Decision: Treat the Ferry Office Wall Button as a one-way service-gate opener that records `routeOpened=true` and leaves the gate open.
+
+Reason: The previous open/close toggle could create confusing debug state and risk closing a blocking collider on or near the player. A latch-open route is the smallest safe fix for the current micro-slice and avoids building a general dynamic door system.
+
+## v0.7.1 Traversal Marker Placement
+
+Decision: Move the Service Barrier Vault start to the player-accessible side of the barrier and keep the Maintenance Box out of focus until after the vault landing.
+
+Reason: The v0.7 layout allowed the player to reach or focus maintenance before proving `serviceRouteUsed`. The polish pass should make the intended loop readable without adding new traversal types or mission scripting.
+
+## v0.7.1 Debug Text Readability
+
+Decision: Split the sandbox debug text into multiple sections and render GDI debug text with `DrawTextA` instead of a single `TextOutA` line.
+
+Reason: The v0.7 debug string was too long for readable playtesting. Multi-line debug text preserves the no-UI-framework rule while making objective, focus, world state, and slice completion easier to read.
+
+## v0.7.1 Naming Cleanup Deferred
+
+Decision: Keep `TestWorld` and `TestScene` names during v0.7.1.
+
+Reason: The polish work found behavior clarity issues that were more important than rename churn. A focused PrototypeWorld/PrototypeScene cleanup can be a later goal if the next milestone needs clearer scene naming.

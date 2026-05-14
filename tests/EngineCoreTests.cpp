@@ -4,6 +4,7 @@
 #include "engine/math/Math.h"
 #include "game/InteractionSystem.h"
 #include "game/PlayerController.h"
+#include "game/SandboxLayer.h"
 #include "game/TestScene.h"
 #include "game/TestWorld.h"
 #include "game/ThirdPersonCamera.h"
@@ -642,7 +643,7 @@ void TestMaintenanceInteractionRestoresPower()
         "Maintenance interaction should record inspection and power events.");
 }
 
-void TestToggleInteractionUpdatesRouteOpenedFlag()
+void TestWallButtonOpensRouteWithoutClosingItAgain()
 {
     TestScene scene;
     InteractionResult opened;
@@ -657,15 +658,18 @@ void TestToggleInteractionUpdatesRouteOpenedFlag()
     const bool openedChanged = scene.applyInteractionResult(opened);
     const bool closedChanged = scene.applyInteractionResult(closed);
 
-    Expect(openedChanged && closedChanged,
-        "TestToggleInteractionUpdatesRouteOpenedFlag",
-        "Route toggle should record both opened and closed state changes.");
-    Expect(!scene.worldState().isFlagSet(WorldFlag::RouteOpened),
-        "TestToggleInteractionUpdatesRouteOpenedFlag",
-        "Second toggle should close the remembered route flag.");
-    Expect(scene.worldState().eventCount() == 2,
-        "TestToggleInteractionUpdatesRouteOpenedFlag",
-        "Route toggle state changes should record deterministic events.");
+    Expect(openedChanged,
+        "TestWallButtonOpensRouteWithoutClosingItAgain",
+        "First wall button interaction should open the remembered route.");
+    Expect(!closedChanged,
+        "TestWallButtonOpensRouteWithoutClosingItAgain",
+        "A later wall button interaction should not close the route and risk trapping the player.");
+    Expect(scene.worldState().isFlagSet(WorldFlag::RouteOpened),
+        "TestWallButtonOpensRouteWithoutClosingItAgain",
+        "The route should remain open after repeated wall button interactions.");
+    Expect(scene.worldState().eventCount() == 1,
+        "TestWallButtonOpensRouteWithoutClosingItAgain",
+        "Repeated wall button interactions should not duplicate route-open events.");
 }
 
 void TestTraversalCompletionRecordsServiceRouteUsed()
@@ -775,23 +779,102 @@ void TestFerryOfficeExitMarkerRequiresReadyState()
         "Exit reached flag should be set after a valid exit marker interaction.");
 }
 
-void TestRouteOpenedChangesServiceGateColliderState()
+void TestWallButtonOpenLatchesServiceGateColliderState()
 {
     TestScene scene;
 
     Expect(scene.isServiceGateBlocking(),
-        "TestRouteOpenedChangesServiceGateColliderState",
+        "TestWallButtonOpenLatchesServiceGateColliderState",
         "The service gate collider should block the route before the route is opened.");
 
     scene.applyInteractionResult(MakeSceneInteraction("Wall Button", InteractableType::Toggle, true));
     Expect(!scene.isServiceGateBlocking(),
-        "TestRouteOpenedChangesServiceGateColliderState",
+        "TestWallButtonOpenLatchesServiceGateColliderState",
         "Opening the route should disable the service gate blocking collider.");
 
     scene.applyInteractionResult(MakeSceneInteraction("Wall Button", InteractableType::Toggle, false));
-    Expect(scene.isServiceGateBlocking(),
-        "TestRouteOpenedChangesServiceGateColliderState",
-        "Closing the route should restore the service gate blocking collider.");
+    Expect(!scene.isServiceGateBlocking(),
+        "TestWallButtonOpenLatchesServiceGateColliderState",
+        "Repeated wall button interactions should leave the service gate open.");
+}
+
+void TestFerryOfficeServiceVaultFocusesFromAccessibleSide()
+{
+    TestScene scene;
+
+    const TraversalFocus focus = scene.traversal().updateFocus({2.8f, 0.0f, -0.35f}, {0.0f, 0.0f, 1.0f});
+    Expect(focus.hasFocus,
+        "TestFerryOfficeServiceVaultFocusesFromAccessibleSide",
+        "The service vault should focus from the player-accessible side of the barrier.");
+    Expect(focus.name == "Service Barrier Vault",
+        "TestFerryOfficeServiceVaultFocusesFromAccessibleSide",
+        "The focused traversal affordance should be the Service Barrier Vault.");
+}
+
+void TestMaintenanceBoxIsNotFocusedBeforeServiceVault()
+{
+    TestScene scene;
+
+    const InteractionFocus focus = scene.interactions().updateFocus({2.8f, 0.0f, -0.35f}, {0.0f, 0.0f, 1.0f});
+    Expect(!focus.hasFocus || focus.name != "Maintenance Box",
+        "TestMaintenanceBoxIsNotFocusedBeforeServiceVault",
+        "Maintenance Box should not be the focused action before the service vault is crossed.");
+}
+
+void TestFerryOfficeLoopCanCompleteThroughSceneSystems()
+{
+    TestScene scene;
+    PlayerController player;
+    player.setWorld(&scene.world());
+    player.setPosition({2.8f, 0.0f, -0.35f});
+
+    scene.applyInteractionResult(MakeSceneInteraction("Ferry Manifest", InteractableType::Pickup));
+
+    scene.traversal().updateFocus(player.state().position, {0.0f, 0.0f, 1.0f});
+    engine::InputState traversalInput;
+    traversalInput.jumpPressed = true;
+    TraversalActivation activation = scene.traversal().activationFromInput(traversalInput);
+    player.update(0.0f, traversalInput, 0.0f, &activation);
+
+    traversalInput.jumpPressed = false;
+    activation = {};
+    bool recordedServiceRoute = false;
+    for (int i = 0; i < 12; ++i) {
+        player.update(0.05f, traversalInput, 0.0f, &activation);
+        if (player.state().traversalLandedThisFrame) {
+            recordedServiceRoute = scene.recordServiceRouteUsed();
+        }
+    }
+
+    scene.applyInteractionResult(MakeSceneInteraction("Maintenance Box", InteractableType::Info));
+    scene.applyInteractionResult(MakeSceneInteraction("Wall Button", InteractableType::Info));
+
+    Expect(recordedServiceRoute,
+        "TestFerryOfficeLoopCanCompleteThroughSceneSystems",
+        "The scripted scene-system loop should record serviceRouteUsed when traversal lands.");
+    Expect(scene.isSliceReadyForExit(),
+        "TestFerryOfficeLoopCanCompleteThroughSceneSystems",
+        "The scene systems should make the Ferry Office slice ready for exit after manifest, vault, maintenance, and gate actions.");
+
+    scene.applyInteractionResult(MakeSceneInteraction("Exit Summary Marker", InteractableType::Info));
+    Expect(scene.isSliceComplete(),
+        "TestFerryOfficeLoopCanCompleteThroughSceneSystems",
+        "The Ferry Office slice should complete after the exit marker records the ready state.");
+}
+
+void TestSandboxDebugTextUsesReadableSections()
+{
+    SandboxLayer layer;
+    layer.onAttach();
+    const std::string text = layer.debugText();
+    layer.onDetach();
+
+    Expect(text.find('\n') != std::string::npos,
+        "TestSandboxDebugTextUsesReadableSections",
+        "Sandbox debug text should use multiple lines for GDI readability.");
+    Expect(text.find("objective=") != std::string::npos && text.find("worldState={") != std::string::npos,
+        "TestSandboxDebugTextUsesReadableSections",
+        "Sandbox debug text should keep objective and world-state sections visible.");
 }
 
 void TestFerryOfficeOneShotManifestDoesNotDuplicateEvents()
@@ -1117,12 +1200,16 @@ int main()
     TestWorldStateIgnoresRepeatedSameFlagValue();
     TestOneShotManifestPickupUpdatesWorldStateOnce();
     TestMaintenanceInteractionRestoresPower();
-    TestToggleInteractionUpdatesRouteOpenedFlag();
+    TestWallButtonOpensRouteWithoutClosingItAgain();
     TestTraversalCompletionRecordsServiceRouteUsed();
     TestFerryOfficeSliceStartsIncomplete();
     TestFerryOfficeCompletionRequiresRememberedLoop();
     TestFerryOfficeExitMarkerRequiresReadyState();
-    TestRouteOpenedChangesServiceGateColliderState();
+    TestWallButtonOpenLatchesServiceGateColliderState();
+    TestFerryOfficeServiceVaultFocusesFromAccessibleSide();
+    TestMaintenanceBoxIsNotFocusedBeforeServiceVault();
+    TestFerryOfficeLoopCanCompleteThroughSceneSystems();
+    TestSandboxDebugTextUsesReadableSections();
     TestFerryOfficeOneShotManifestDoesNotDuplicateEvents();
     TestTraversalFocusSelectsAvailableAffordance();
     TestTraversalFocusIgnoresDisabledAffordance();

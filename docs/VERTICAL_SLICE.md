@@ -55,9 +55,9 @@ The player arrives at a closed ferry office on Veyra Reach. The service gate is 
 - Completing the Service Barrier Vault records `serviceRouteUsed=true`.
 - Inspecting the Maintenance Box records `maintenanceBoxInspected=true` and `powerRestored=true`.
 - Collecting the Ferry Manifest records `manifestCollected=true`.
-- Toggling the Wall Button records `routeOpened=true` or `routeOpened=false`.
+- Pressing the Wall Button records `routeOpened=true`.
 - Reaching the Exit Summary Marker records `exitReached=true` only after the required loop is ready.
-- `routeOpened=true` disables the `service-gate` blocking collider; closing the route enables it again.
+- `routeOpened=true` disables the `service-gate` blocking collider. v0.7.1 keeps this as a latch-open route to avoid trapping the player.
 - GDI debug text/logs show current objective, current flags, event count, last event, completion state, and whether the current action changed remembered state.
 
 ## Systems Explicitly Deferred
