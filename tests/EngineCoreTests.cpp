@@ -134,10 +134,11 @@ void TestNullRendererRecordsFrameAndDebugDraw()
     Expect(renderer.initialize(config), "TestNullRendererRecordsFrameAndDebugDraw", "Null renderer should initialize.");
     renderer.beginFrame(7);
     renderer.drawDebugGridAndAxes();
+    renderer.drawDebugSolidBox({0.0f, 0.5f, 0.0f}, {1.0f, 0.5f, 1.0f}, {0.4f, 0.6f, 0.8f, 1.0f});
     renderer.endFrame();
 
     Expect(renderer.frameCount() == 7, "TestNullRendererRecordsFrameAndDebugDraw", "Null renderer should record frame index.");
-    Expect(renderer.debugDrawCount() == 1, "TestNullRendererRecordsFrameAndDebugDraw", "Null renderer should count debug draw calls.");
+    Expect(renderer.debugDrawCount() == 2, "TestNullRendererRecordsFrameAndDebugDraw", "Null renderer should count grid and solid debug draw calls.");
     renderer.shutdown();
 }
 

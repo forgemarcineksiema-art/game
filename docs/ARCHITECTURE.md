@@ -146,6 +146,14 @@ Traversal support is intentionally primitive:
 - world collision resolve at landing,
 - no animation system, IK, full parkour, ledge hanging, or physics engine.
 
+## Visual Debug Presentation
+
+v0.9 adds a narrow solid debug drawing path, `IRenderer::drawDebugSolidBox`, implemented by the null, GDI, and DX11 renderers. It exists to make prototype scenes read as simple places before a real mesh/material pipeline exists.
+
+`SandboxLayer` now draws muted solid placeholder slabs and boxes for the Ferry Office dock, service yard, office walls, gate, traversal markers, interactables, and player proxy, then draws the existing wire/debug outlines on top. This keeps collision and state visibility intact while reducing the pure wireframe workbench feeling.
+
+This is not an asset pipeline. There are still no textures, mesh loading, materials, lighting, shadows, post-processing, or scene serialization. Solid debug geometry should stay simple and disposable until a later art/asset milestone proves what the engine actually needs.
+
 ## Interaction Focus Design Notes
 
 Current v0.4.1 behavior uses player-facing plus a close proximity fallback:

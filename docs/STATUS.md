@@ -1409,3 +1409,136 @@ Results:
 ## v0.8.1 Next Honest Step
 
 Run a focused follow-up goal: v0.9 Atmospheric Ferry Office / Island Mood Prototype. Keep it focused on making the existing micro-slice read like a place with mood and solid placeholder presentation, not on adding new gameplay systems.
+
+## v0.9 Baseline - 2026-05-15
+
+Goal: make the Ferry Office prototype visually read as a small dock-side/island ferry office area instead of a pure debug wireframe scene, while preserving movement, camera, collision, interaction, traversal, world-state, cursor capture, validation, and debug usability. This goal must not add new gameplay systems or an asset pipeline.
+
+Required context read before coding:
+
+- `AGENTS.md`
+- `docs/STATUS.md`
+- `docs/RUNBOOK.md`
+- `docs/ARCHITECTURE.md`
+- `docs/GAME_DIRECTION.md`
+- `docs/VERTICAL_SLICE.md`
+- `docs/TECH_DEBT.md`
+- `docs/MANUAL_TEST_CHECKLIST.md`
+- `docs/DECISIONS.md`
+
+Baseline command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+```
+
+Baseline result:
+
+- Passed.
+- Doctor found all expected project docs and structure.
+- Doctor warnings remain for tools not visible in the plain PATH: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- CMake configured with `windows-vs2022-debug`.
+- Build produced `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- CTest passed 2/2 tests.
+- Headless smoke run passed with the null renderer and engine `v0.8.1`.
+- Smoke logs showed the existing Ferry Office start state, initial Ferry Manifest focus prompt, all Ferry Office flags false, and `sliceComplete=no`.
+
+## v0.9 Short Implementation Plan
+
+1. Inspect renderer/debug draw boundaries and scene rendering to pick the smallest safe solid placeholder path.
+2. Add focused tests first for any renderer debug command accounting or config changes.
+3. Extend debug rendering narrowly with solid placeholder geometry where practical while preserving wireframe/debug outlines.
+4. Update `SandboxLayer` scene drawing with a restrained dock/ferry-office palette, solid floor/dock/service-yard forms, readable gate/traversal/interactable/player markers, and an intentional background/clear color.
+5. Keep GDI and DX11 bounded runs working; document any renderer-specific visual limitations honestly.
+6. Update architecture, roadmap, technical debt, manual checklist, decisions, and this status file.
+7. Run the full validation matrix, capture or document visual evidence/observations, then commit and push.
+
+## v0.9 Implementation Notes - 2026-05-15
+
+Changed:
+
+- Added `IRenderer::drawDebugSolidBox` as a narrow solid debug primitive.
+- Implemented solid debug boxes in `NullRenderer`, `GdiRenderer`, and `Dx11Renderer`.
+- Updated `SandboxLayer` to draw muted solid Ferry Office placeholders before existing wire/debug outlines:
+  - dock/floor slabs,
+  - service-yard area,
+  - ferry office walls/roof cue,
+  - service gate,
+  - service barrier,
+  - interactables,
+  - traversal markers,
+  - player proxy.
+- Changed the default window title to `Tidebreak Prototype`.
+- Updated the null renderer debug draw accounting test.
+- Captured a GDI visual reference at `docs/images/v0.9-gdi-screenshot.png`.
+
+Test-first note:
+
+```text
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+```
+
+Result before implementation: failed as expected after the test called `drawDebugSolidBox` before the renderer API existed.
+
+Key error:
+
+```text
+tests\EngineCoreTests.cpp(137,14): error C2039: "drawDebugSolidBox": is not a member of "engine::NullRenderer"
+```
+
+Focused checks after implementation:
+
+```text
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+ctest --preset windows-vs2022-debug --output-on-failure
+```
+
+Result: build passed; `EngineCoreTests` and `EngineSmokeTest` passed.
+
+Visual observation from the GDI screenshot:
+
+- The scene now has solid dock/service-yard/office/gate massing instead of reading as wireframe only.
+- Existing wire outlines, prompts, objective/world-state text, player proxy, traversal markers, interactables, and exit marker remain visible.
+- GDI debug text is still large and functional rather than polished UI.
+- This is still placeholder/debug presentation, not final art.
+
+## v0.9 Validation Results - 2026-05-15
+
+Commands run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/doctor.ps1
+powershell -ExecutionPolicy Bypass -File scripts/configure.ps1
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+ctest --preset windows-vs2022-debug --output-on-failure
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --frames 240
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 240
+python tools\status_report.py
+```
+
+Results:
+
+- `scripts/doctor.ps1`: completed. Existing warnings remain: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg` are not in the plain PowerShell PATH.
+- `scripts/configure.ps1`: passed with preset `windows-vs2022-debug`.
+- `scripts/build.ps1`: passed; built `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 2/2 tests green (`EngineCoreTests`, `EngineSmokeTest`).
+- `scripts/verify.ps1`: passed; repeated doctor/configure/build/test and null smoke. Smoke log reported engine `v0.9.0` and app `Tidebreak Prototype`.
+- GDI bounded run: passed; window created, cursor captured, `gdi-fallback` renderer ran for 240 frames, cursor released, clean shutdown.
+- DX11 bounded run: passed; hardware DX11 device failed and fell back to WARP, `dx11` renderer ran for 240 frames, cursor released, clean shutdown.
+- `python tools\status_report.py`: completed and showed the expected v0.9 modified files plus the new `docs/images/` screenshot artifact before commit.
+
+Visual evidence:
+
+- Captured GDI screenshot: `docs/images/v0.9-gdi-screenshot.png`.
+
+Known limitations after v0.9:
+
+- Solid boxes are projected debug geometry with no depth buffer, sorting, lighting, transparency, textures, or real materials.
+- GDI debug text is readable but visually heavy.
+- DX11 still has no debug text overlay and used WARP in this environment.
+- The scene reads more like a dock/service-yard/office prototype, but it is still far from commercial art quality.
+
+Recommended next goal:
+
+Run v0.9.1 Ferry Office Visual Playtest + Readability Polish before starting vehicles, so the current location can be judged and tightened by actual play.

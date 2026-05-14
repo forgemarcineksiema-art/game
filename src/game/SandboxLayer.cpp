@@ -6,6 +6,72 @@
 
 #include <iomanip>
 #include <sstream>
+#include <string>
+
+namespace {
+
+engine::Color ScaleColor(engine::Color color, float scale)
+{
+    return {color.r * scale, color.g * scale, color.b * scale, color.a};
+}
+
+bool NameContains(const StaticCollider& collider, const char* token)
+{
+    return collider.name.find(token) != std::string::npos;
+}
+
+engine::Color ColliderSolidColor(const StaticCollider& collider, bool routeOpened)
+{
+    if (collider.name == FerryOffice::Names::ServiceGateCollider) {
+        return routeOpened
+            ? engine::Color {0.12f, 0.30f, 0.18f, 1.0f}
+            : engine::Color {0.52f, 0.16f, 0.10f, 1.0f};
+    }
+    if (NameContains(collider, "ferry-office")) {
+        return {0.34f, 0.30f, 0.21f, 1.0f};
+    }
+    if (NameContains(collider, "dock-rail")) {
+        return {0.48f, 0.38f, 0.14f, 1.0f};
+    }
+    if (NameContains(collider, "service-barrier")) {
+        return {0.46f, 0.25f, 0.12f, 1.0f};
+    }
+    if (NameContains(collider, "office-counter")) {
+        return {0.25f, 0.19f, 0.12f, 1.0f};
+    }
+    if (NameContains(collider, "maintenance")) {
+        return {0.13f, 0.32f, 0.29f, 1.0f};
+    }
+
+    return collider.blocksPlayer
+        ? engine::Color {0.30f, 0.27f, 0.20f, 1.0f}
+        : engine::Color {0.13f, 0.27f, 0.17f, 1.0f};
+}
+
+engine::Color ColliderWireColor(const StaticCollider& collider, bool routeOpened)
+{
+    if (collider.name == FerryOffice::Names::ServiceGateCollider) {
+        return routeOpened
+            ? engine::Color {0.25f, 1.0f, 0.35f, 1.0f}
+            : engine::Color {1.0f, 0.25f, 0.2f, 1.0f};
+    }
+
+    return collider.blocksPlayer
+        ? engine::Color {0.9f, 0.72f, 0.28f, 1.0f}
+        : engine::Color {0.25f, 1.0f, 0.35f, 1.0f};
+}
+
+void DrawFerryOfficeMoodBase(engine::IRenderer& renderer, float floor)
+{
+    renderer.drawDebugSolidBox({0.0f, floor - 0.055f, -1.25f}, {4.35f, 0.055f, 2.05f}, {0.33f, 0.30f, 0.22f, 1.0f});
+    renderer.drawDebugSolidBox({0.0f, floor - 0.06f, 3.25f}, {3.15f, 0.06f, 2.35f}, {0.20f, 0.24f, 0.20f, 1.0f});
+    renderer.drawDebugSolidBox({2.85f, floor - 0.05f, 1.35f}, {1.45f, 0.05f, 2.15f}, {0.18f, 0.23f, 0.22f, 1.0f});
+    renderer.drawDebugSolidBox({-4.85f, floor - 0.07f, -0.7f}, {0.35f, 0.07f, 3.25f}, {0.07f, 0.18f, 0.24f, 1.0f});
+    renderer.drawDebugSolidBox({4.85f, floor - 0.07f, -0.7f}, {0.35f, 0.07f, 3.25f}, {0.07f, 0.18f, 0.24f, 1.0f});
+    renderer.drawDebugSolidBox({0.0f, floor + 1.68f, 5.18f}, {2.95f, 0.12f, 0.55f}, {0.40f, 0.22f, 0.13f, 1.0f});
+}
+
+} // namespace
 
 void SandboxLayer::onAttach()
 {
@@ -54,25 +120,23 @@ void SandboxLayer::onRender(engine::IRenderer& renderer)
 {
     renderer.setDebugCamera(m_camera.debugCamera());
     renderer.drawDebugGridAndAxes();
+    DrawFerryOfficeMoodBase(renderer, m_scene.world().floorHeight());
     renderer.drawDebugLine({-12.0f, m_scene.world().floorHeight(), -12.0f}, {12.0f, m_scene.world().floorHeight(), -12.0f}, {0.35f, 0.9f, 0.55f, 1.0f});
     renderer.drawDebugLine({12.0f, m_scene.world().floorHeight(), -12.0f}, {12.0f, m_scene.world().floorHeight(), 12.0f}, {0.35f, 0.9f, 0.55f, 1.0f});
     renderer.drawDebugLine({12.0f, m_scene.world().floorHeight(), 12.0f}, {-12.0f, m_scene.world().floorHeight(), 12.0f}, {0.35f, 0.9f, 0.55f, 1.0f});
     renderer.drawDebugLine({-12.0f, m_scene.world().floorHeight(), 12.0f}, {-12.0f, m_scene.world().floorHeight(), -12.0f}, {0.35f, 0.9f, 0.55f, 1.0f});
+    const bool routeOpened = m_scene.worldState().isFlagSet(WorldFlag::RouteOpened);
     for (const StaticCollider& collider : m_scene.world().colliders()) {
-        engine::Color colliderColor = collider.blocksPlayer
-            ? engine::Color {0.9f, 0.72f, 0.28f, 1.0f}
-            : engine::Color {0.25f, 1.0f, 0.35f, 1.0f};
-        if (collider.name == FerryOffice::Names::ServiceGateCollider) {
-            colliderColor = m_scene.worldState().isFlagSet(WorldFlag::RouteOpened)
-                ? engine::Color {0.25f, 1.0f, 0.35f, 1.0f}
-                : engine::Color {1.0f, 0.25f, 0.2f, 1.0f};
-        }
-        renderer.drawDebugBox(collider.bounds.center, collider.bounds.halfExtents, colliderColor);
+        renderer.drawDebugSolidBox(collider.bounds.center, collider.bounds.halfExtents, ColliderSolidColor(collider, routeOpened));
+        renderer.drawDebugBox(collider.bounds.center, collider.bounds.halfExtents, ColliderWireColor(collider, routeOpened));
     }
     drawWorldStateDebug(renderer);
     drawSliceDebug(renderer);
 
     const PlayerState& player = m_player.state();
+    renderer.drawDebugSolidBox(player.position + engine::Vec3 {0.0f, m_player.settings().height * 0.5f, 0.0f},
+        {m_player.settings().radius, m_player.settings().height * 0.5f, m_player.settings().radius},
+        {0.10f, 0.28f, 0.65f, 1.0f});
     renderer.drawDebugBox(player.position + engine::Vec3 {0.0f, m_player.settings().height * 0.5f, 0.0f},
         {m_player.settings().radius, m_player.settings().height * 0.5f, m_player.settings().radius},
         {0.25f, 0.55f, 1.0f, 1.0f});
@@ -178,6 +242,7 @@ void SandboxLayer::drawInteractionDebug(engine::IRenderer& renderer)
         }
 
         const float markerSize = isFocused ? 0.22f : 0.16f;
+        renderer.drawDebugSolidBox(interactable.position, {markerSize, markerSize, markerSize}, ScaleColor(color, isFocused ? 0.65f : 0.45f));
         renderer.drawDebugBox(interactable.position, {markerSize, markerSize, markerSize}, color);
         renderer.drawDebugBox(
             {interactable.position.x, m_scene.world().floorHeight() + 0.03f, interactable.position.z},
@@ -196,6 +261,7 @@ void SandboxLayer::drawWorldStateDebug(engine::IRenderer& renderer)
         ? engine::Color {0.25f, 1.0f, 0.35f, 1.0f}
         : engine::Color {1.0f, 0.25f, 0.2f, 1.0f};
     if (const StaticCollider* gate = m_scene.world().colliderByName(FerryOffice::Names::ServiceGateCollider)) {
+        renderer.drawDebugSolidBox(gate->bounds.center, gate->bounds.halfExtents + engine::Vec3 {0.03f, 0.03f, 0.03f}, ScaleColor(gateColor, 0.45f));
         renderer.drawDebugBox(gate->bounds.center, gate->bounds.halfExtents + engine::Vec3 {0.04f, 0.04f, 0.04f}, gateColor);
     }
 
@@ -203,6 +269,9 @@ void SandboxLayer::drawWorldStateDebug(engine::IRenderer& renderer)
     const engine::Color powerColor = powerRestored
         ? engine::Color {0.25f, 1.0f, 0.85f, 1.0f}
         : engine::Color {0.45f, 0.45f, 0.55f, 1.0f};
+    renderer.drawDebugSolidBox({FerryOffice::Positions::MaintenanceBox.x, m_scene.world().floorHeight() + 0.75f, FerryOffice::Positions::MaintenanceBox.z},
+        {0.24f, 0.24f, 0.24f},
+        ScaleColor(powerColor, 0.5f));
     renderer.drawDebugBox({FerryOffice::Positions::MaintenanceBox.x, m_scene.world().floorHeight() + 0.75f, FerryOffice::Positions::MaintenanceBox.z},
         {0.24f, 0.24f, 0.24f},
         powerColor);
@@ -234,12 +303,15 @@ void SandboxLayer::drawSliceDebug(engine::IRenderer& renderer)
                   ? engine::Color {1.0f, 0.9f, 0.25f, 1.0f}
                   : engine::Color {0.45f, 0.45f, 0.55f, 1.0f});
 
+    renderer.drawDebugSolidBox(dockStart, {0.22f, 0.08f, 0.22f}, ScaleColor(dockColor, 0.45f));
     renderer.drawDebugBox(dockStart, {0.22f, 0.08f, 0.22f}, dockColor);
     renderer.drawDebugLine(dockStart, dockStart + engine::Vec3 {0.0f, 1.0f, 0.0f}, dockColor);
+    renderer.drawDebugSolidBox(officeMarker, {0.35f, 0.35f, 0.35f}, ScaleColor(officeColor, 0.45f));
     renderer.drawDebugBox(officeMarker, {0.35f, 0.35f, 0.35f}, officeColor);
     renderer.drawDebugLine({FerryOffice::Positions::FerryManifest.x, floor + 0.06f, FerryOffice::Positions::FerryManifest.z},
         {FerryOffice::Positions::ExitMarker.x, floor + 0.06f, FerryOffice::Positions::ExitMarker.z},
         officeColor);
+    renderer.drawDebugSolidBox(exitMarker, {0.28f, 0.28f, 0.28f}, ScaleColor(exitColor, 0.45f));
     renderer.drawDebugBox(exitMarker, {0.28f, 0.28f, 0.28f}, exitColor);
     renderer.drawDebugBox({exitMarker.x, floor + 0.03f, exitMarker.z}, {FerryOffice::Radii::ExitMarker, 0.03f, FerryOffice::Radii::ExitMarker}, exitColor);
 }
@@ -260,7 +332,9 @@ void SandboxLayer::drawTraversalDebug(engine::IRenderer& renderer)
             color = {1.0f, 1.0f, 0.25f, 1.0f};
         }
 
+        renderer.drawDebugSolidBox(affordance.startPosition + engine::Vec3 {0.0f, 0.2f, 0.0f}, {0.18f, 0.18f, 0.18f}, ScaleColor(color, 0.55f));
         renderer.drawDebugBox(affordance.startPosition + engine::Vec3 {0.0f, 0.2f, 0.0f}, {0.18f, 0.18f, 0.18f}, color);
+        renderer.drawDebugSolidBox(affordance.endPosition + engine::Vec3 {0.0f, 0.2f, 0.0f}, {0.18f, 0.18f, 0.18f}, {0.12f, 0.50f, 0.48f, 1.0f});
         renderer.drawDebugBox(affordance.endPosition + engine::Vec3 {0.0f, 0.2f, 0.0f}, {0.18f, 0.18f, 0.18f}, {0.25f, 1.0f, 0.95f, 1.0f});
         renderer.drawDebugLine(affordance.startPosition + engine::Vec3 {0.0f, 0.35f, 0.0f},
             affordance.endPosition + engine::Vec3 {0.0f, 0.35f, 0.0f},
@@ -274,7 +348,9 @@ void SandboxLayer::drawTraversalDebug(engine::IRenderer& renderer)
     if (player.traversalMode == PlayerTraversalMode::Traversing) {
         const engine::Vec3 activeStart = player.traversalStartPosition + engine::Vec3 {0.0f, 0.55f, 0.0f};
         const engine::Vec3 activeEnd = player.traversalTargetPosition + engine::Vec3 {0.0f, 0.55f, 0.0f};
+        renderer.drawDebugSolidBox(activeStart, {0.14f, 0.14f, 0.14f}, {0.55f, 0.10f, 0.55f, 1.0f});
         renderer.drawDebugBox(activeStart, {0.14f, 0.14f, 0.14f}, {1.0f, 0.2f, 1.0f, 1.0f});
+        renderer.drawDebugSolidBox(activeEnd, {0.14f, 0.14f, 0.14f}, {0.10f, 0.50f, 0.50f, 1.0f});
         renderer.drawDebugBox(activeEnd, {0.14f, 0.14f, 0.14f}, {0.2f, 1.0f, 1.0f, 1.0f});
         renderer.drawDebugLine(activeStart, player.position + engine::Vec3 {0.0f, 0.55f, 0.0f}, {1.0f, 0.2f, 1.0f, 1.0f});
         renderer.drawDebugLine(player.position + engine::Vec3 {0.0f, 0.55f, 0.0f}, activeEnd, {0.2f, 1.0f, 1.0f, 1.0f});

@@ -26,6 +26,11 @@ void NullRenderer::drawDebugLine(Vec3, Vec3, Color)
     ++m_debugDrawCount;
 }
 
+void NullRenderer::drawDebugSolidBox(Vec3, Vec3, Color)
+{
+    ++m_debugDrawCount;
+}
+
 void NullRenderer::drawDebugBox(Vec3, Vec3, Color)
 {
     ++m_debugDrawCount;

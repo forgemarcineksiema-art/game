@@ -268,3 +268,15 @@ Reason: v0.8 is cleanup, not a content pipeline milestone. A small C++ data boun
 Decision: Capture and hide the cursor by default during Win32 windowed play, using client-area confinement plus recentering for relative mouse/touchpad deltas. Add `--free-cursor` / `--show-cursor` for visible-cursor debugging and keep `Esc` as quit.
 
 Reason: The visible desktop cursor was distracting during play, especially on a laptop/touchpad. Keeping this in the Win32 window boundary improves camera comfort without touching gameplay systems, adding dependencies, or changing smoke/headless behavior.
+
+## v0.9 Solid Debug Presentation
+
+Decision: Add `IRenderer::drawDebugSolidBox` to the existing renderer abstraction and use it for the Ferry Office dock, service yard, office, gate, traversal, interaction, and player placeholders.
+
+Reason: The prototype needed to read more like a place without jumping to a real asset pipeline, materials, textures, model loading, lighting, or final art. A narrow solid debug primitive lets GDI and DX11 share the same scene intent while keeping wire/debug outlines visible and preserving all existing gameplay systems.
+
+## v0.9 Tidebreak Window Title
+
+Decision: Change the default window title from `AI-Native Engine Foundation` to `Tidebreak Prototype`.
+
+Reason: v0.4.1 locked the project direction as Tidebreak, and v0.9 focuses on playtest readability. The runtime should identify the playable prototype rather than only the engine foundation.

@@ -114,6 +114,68 @@ void GdiRenderer::drawDebugLine(Vec3 from, Vec3 to, Color color)
     DeleteObject(pen);
 }
 
+void GdiRenderer::drawDebugSolidBox(Vec3 center, Vec3 halfExtents, Color color)
+{
+    if (!m_deviceContext) {
+        return;
+    }
+
+    RECT rect {};
+    GetClientRect(m_window, &rect);
+    const int width = rect.right - rect.left;
+    const int height = rect.bottom - rect.top;
+    if (width <= 0 || height <= 0) {
+        return;
+    }
+
+    const Vec3 corners[] = {
+        center + Vec3 {-halfExtents.x, -halfExtents.y, -halfExtents.z},
+        center + Vec3 { halfExtents.x, -halfExtents.y, -halfExtents.z},
+        center + Vec3 { halfExtents.x, -halfExtents.y,  halfExtents.z},
+        center + Vec3 {-halfExtents.x, -halfExtents.y,  halfExtents.z},
+        center + Vec3 {-halfExtents.x,  halfExtents.y, -halfExtents.z},
+        center + Vec3 { halfExtents.x,  halfExtents.y, -halfExtents.z},
+        center + Vec3 { halfExtents.x,  halfExtents.y,  halfExtents.z},
+        center + Vec3 {-halfExtents.x,  halfExtents.y,  halfExtents.z},
+    };
+
+    POINT screenCorners[8] {};
+    for (int index = 0; index < 8; ++index) {
+        ProjectedPoint projected;
+        if (!ProjectWorldPoint(m_debugCamera, AspectRatio(m_config), corners[index], projected)) {
+            return;
+        }
+        screenCorners[index] = ToScreen(projected, width, height);
+    }
+
+    const int faces[][4] = {
+        {0, 1, 2, 3},
+        {4, 5, 6, 7},
+        {0, 1, 5, 4},
+        {1, 2, 6, 5},
+        {2, 3, 7, 6},
+        {3, 0, 4, 7},
+    };
+
+    HBRUSH brush = CreateSolidBrush(ToColorRef(color));
+    HPEN pen = CreatePen(PS_SOLID, 1, ToColorRef(color));
+    HGDIOBJ oldBrush = SelectObject(m_deviceContext, brush);
+    HGDIOBJ oldPen = SelectObject(m_deviceContext, pen);
+    for (const auto& face : faces) {
+        POINT points[] = {
+            screenCorners[face[0]],
+            screenCorners[face[1]],
+            screenCorners[face[2]],
+            screenCorners[face[3]],
+        };
+        Polygon(m_deviceContext, points, 4);
+    }
+    SelectObject(m_deviceContext, oldPen);
+    SelectObject(m_deviceContext, oldBrush);
+    DeleteObject(pen);
+    DeleteObject(brush);
+}
+
 void GdiRenderer::drawDebugBox(Vec3 center, Vec3 halfExtents, Color color)
 {
     const Vec3 corners[] = {

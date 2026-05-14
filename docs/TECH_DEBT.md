@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-15
 
-This file lists known foundation issues after v0.8.1. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
+This file lists known foundation issues after v0.9. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
 
 ## Build / Toolchain
 
@@ -14,7 +14,8 @@ This file lists known foundation issues after v0.8.1. It is not a mandate to fix
 
 - DX11 hardware/debug device creation fails in this environment and falls back to WARP.
 - DX11 debug text is currently a no-op; GDI shows debug text.
-- Debug boxes/lines are enough for prototypes but not a mesh/material pipeline.
+- Debug boxes/lines/solid boxes are enough for prototypes but not a mesh/material pipeline.
+- v0.9 solid debug boxes are projected placeholder geometry with no depth buffer, sorting, lighting, textures, materials, or transparency.
 - There is no resize handling, depth buffer, camera clip tuning, or resource lifetime stress testing.
 
 ## Input
@@ -76,10 +77,17 @@ This file lists known foundation issues after v0.8.1. It is not a mandate to fix
 - `InteractionSystem` belongs in `src/game` for now. Promote it to `src/engine` only after multiple gameplay contexts prove a stable boundary.
 - There is no scene serialization, asset registry, or editor.
 
-## Recommended Debt After v0.8.1
+## Visual Readability
 
-1. Run a full human keyboard/mouse playthrough of the Ferry Office loop.
-2. Tighten prompt/marker placement if human input still feels awkward.
+- v0.9 improves the Ferry Office read with solid placeholder color, but it is still a debug scene. It is not final art and should not be mistaken for the target commercial visual quality.
+- GDI debug text remains functional but visually heavy, especially at the top of the window.
+- DX11 has no debug text overlay, so visual playtesting still favors GDI until a real overlay or text path exists.
+- There is no authored composition pass for camera start angle, signposting, silhouettes, or route readability beyond simple colored volumes.
+
+## Recommended Debt After v0.9
+
+1. Run a full human keyboard/mouse playthrough of the Ferry Office loop using the new solid placeholder presentation.
+2. Tighten prompt/marker placement, objective wording, and marker colors if the route still feels unclear.
 3. Validate captured cursor feel on the target laptop/touchpad and use `--free-cursor` if a remote session behaves badly.
 4. Keep `WorldState` runtime-only unless a later goal explicitly asks for persistence.
 5. Keep debug text readable before adding any richer objective or UI layer.

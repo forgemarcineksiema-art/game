@@ -83,6 +83,29 @@ void AddProjectedLine(
     vertices.push_back({b.x, b.y, 0.0f, color.r, color.g, color.b, color.a});
 }
 
+void AddProjectedTriangle(
+    std::vector<Dx11Renderer::Vertex>& vertices,
+    const DebugCamera& camera,
+    float aspectRatio,
+    Vec3 a,
+    Vec3 b,
+    Vec3 c,
+    Color color)
+{
+    ProjectedPoint pa;
+    ProjectedPoint pb;
+    ProjectedPoint pc;
+    if (!ProjectWorldPoint(camera, aspectRatio, a, pa)
+        || !ProjectWorldPoint(camera, aspectRatio, b, pb)
+        || !ProjectWorldPoint(camera, aspectRatio, c, pc)) {
+        return;
+    }
+
+    vertices.push_back({pa.x, pa.y, 0.0f, color.r, color.g, color.b, color.a});
+    vertices.push_back({pb.x, pb.y, 0.0f, color.r, color.g, color.b, color.a});
+    vertices.push_back({pc.x, pc.y, 0.0f, color.r, color.g, color.b, color.a});
+}
+
 } // namespace
 
 bool Dx11Renderer::initialize(const RendererConfig& config)
@@ -354,6 +377,42 @@ void Dx11Renderer::drawDebugLine(Vec3 from, Vec3 to, Color color)
     drawLineVertices(vertices);
 }
 
+void Dx11Renderer::drawDebugSolidBox(Vec3 center, Vec3 halfExtents, Color color)
+{
+    const Vec3 corners[] = {
+        center + Vec3 {-halfExtents.x, -halfExtents.y, -halfExtents.z},
+        center + Vec3 { halfExtents.x, -halfExtents.y, -halfExtents.z},
+        center + Vec3 { halfExtents.x, -halfExtents.y,  halfExtents.z},
+        center + Vec3 {-halfExtents.x, -halfExtents.y,  halfExtents.z},
+        center + Vec3 {-halfExtents.x,  halfExtents.y, -halfExtents.z},
+        center + Vec3 { halfExtents.x,  halfExtents.y, -halfExtents.z},
+        center + Vec3 { halfExtents.x,  halfExtents.y,  halfExtents.z},
+        center + Vec3 {-halfExtents.x,  halfExtents.y,  halfExtents.z},
+    };
+
+    const int triangles[][3] = {
+        {0, 1, 2}, {0, 2, 3},
+        {4, 5, 6}, {4, 6, 7},
+        {0, 1, 5}, {0, 5, 4},
+        {1, 2, 6}, {1, 6, 5},
+        {2, 3, 7}, {2, 7, 6},
+        {3, 0, 4}, {3, 4, 7},
+    };
+
+    std::vector<Vertex> vertices;
+    const float aspectRatio = AspectRatio(m_config);
+    for (const auto& triangle : triangles) {
+        AddProjectedTriangle(vertices,
+            m_debugCamera,
+            aspectRatio,
+            corners[triangle[0]],
+            corners[triangle[1]],
+            corners[triangle[2]],
+            color);
+    }
+    drawTriangleVertices(vertices);
+}
+
 void Dx11Renderer::drawDebugBox(Vec3 center, Vec3 halfExtents, Color color)
 {
     const Vec3 corners[] = {
@@ -401,6 +460,28 @@ void Dx11Renderer::drawLineVertices(const std::vector<Vertex>& vertices)
     m_context->IASetInputLayout(m_inputLayout.Get());
     m_context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
     m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+    m_context->VSSetShader(m_vertexShader.Get(), nullptr, 0);
+    m_context->PSSetShader(m_pixelShader.Get(), nullptr, 0);
+    m_context->Draw(static_cast<UINT>(vertices.size()), 0);
+}
+
+void Dx11Renderer::drawTriangleVertices(const std::vector<Vertex>& vertices)
+{
+    if (vertices.empty()) {
+        return;
+    }
+
+    Microsoft::WRL::ComPtr<ID3D11Buffer> buffer;
+    if (!createBuffer(vertices.data(), static_cast<unsigned int>(vertices.size()), buffer)) {
+        return;
+    }
+
+    const UINT stride = sizeof(Vertex);
+    const UINT offset = 0;
+    ID3D11Buffer* vertexBuffer = buffer.Get();
+    m_context->IASetInputLayout(m_inputLayout.Get());
+    m_context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+    m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     m_context->VSSetShader(m_vertexShader.Get(), nullptr, 0);
     m_context->PSSetShader(m_pixelShader.Get(), nullptr, 0);
     m_context->Draw(static_cast<UINT>(vertices.size()), 0);

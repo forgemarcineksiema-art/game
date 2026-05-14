@@ -9,7 +9,7 @@
 namespace engine {
 
 struct AppConfig {
-    std::string appName = "AI-Native Engine Foundation";
+    std::string appName = "Tidebreak Prototype";
     int windowWidth = 1280;
     int windowHeight = 720;
     bool smokeTest = false;

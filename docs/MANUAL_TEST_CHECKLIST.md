@@ -89,6 +89,10 @@ build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 120
 ## Ferry Office Micro-Slice
 
 - [ ] Start near the dock-side marker and see an objective mentioning the Ferry Manifest.
+- [ ] The scene reads as a dock/service-yard/ferry-office layout instead of only a wireframe test.
+- [ ] Distinct colors separate the dock/floor, ferry office volume, service gate, traversal path, interactables, player, and exit marker.
+- [ ] Solid placeholder geometry does not hide the important wire/debug outlines.
+- [ ] The committed visual reference at `docs/images/v0.9-gdi-screenshot.png` roughly matches the current GDI presentation.
 - [ ] Collect the Ferry Manifest near the office approach.
 - [ ] Move to the Service Barrier Vault and use `Space` to cross it.
 - [ ] The Service Barrier Vault prompt appears from the player-accessible side of the barrier.

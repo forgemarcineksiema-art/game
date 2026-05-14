@@ -114,6 +114,15 @@ Status: implemented as a cleanup milestone with no new gameplay systems.
 
 Status: implemented as an input/camera comfort polish pass.
 
+## v0.9 - Atmospheric Ferry Office / Island Mood Prototype
+
+- Make the Ferry Office debug micro-slice read more like a dock-side island place.
+- Add simple solid placeholder presentation while preserving wire/debug visibility.
+- Keep movement, camera, collision, interaction, traversal, world state, and cursor behavior unchanged.
+- Do not add vehicles, NPC AI, missions, asset loading, materials, final art, or renderer complexity.
+
+Status: implemented as a visual-readability pass using solid debug boxes, a Tidebreak window title, a dock/service-yard color palette, and a committed GDI screenshot artifact for review.
+
 ## Recommended Next Goal
 
-Build v0.9 Atmospheric Ferry Office / Island Mood Prototype.
+Build v0.9.1 Ferry Office Visual Playtest + Readability Polish.

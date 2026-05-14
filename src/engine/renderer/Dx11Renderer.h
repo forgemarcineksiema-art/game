@@ -24,6 +24,7 @@ public:
     void setDebugCamera(const DebugCamera& camera) override;
     void drawDebugGridAndAxes() override;
     void drawDebugLine(Vec3 from, Vec3 to, Color color) override;
+    void drawDebugSolidBox(Vec3 center, Vec3 halfExtents, Color color) override;
     void drawDebugBox(Vec3 center, Vec3 halfExtents, Color color) override;
     void drawDebugText(std::string_view text) override;
     void endFrame() override;
@@ -47,6 +48,7 @@ private:
     bool createDebugGeometry();
     bool createBuffer(const Vertex* vertices, unsigned int vertexCount, Microsoft::WRL::ComPtr<ID3D11Buffer>& buffer);
     void drawLineVertices(const std::vector<Vertex>& vertices);
+    void drawTriangleVertices(const std::vector<Vertex>& vertices);
 
     RendererConfig m_config;
     DebugCamera m_debugCamera;
