@@ -178,3 +178,15 @@ Reason: The chosen mechanic is movement, not object interaction. Prioritizing tr
 Decision: Move the player deterministically from traversal start to target using interpolation and a small vertical arc, with no animation system or physics engine.
 
 Reason: v0.5 needs reliable repositioning and tests before animation, IK, or richer collision handling. Deterministic motion is easy to validate and keeps the prototype small.
+
+## v0.5.1 Traversal Start Handoff
+
+Decision: Treat the authored traversal start as a focus/debug marker, but use the player's current position as the runtime traversal start when `Space` activates the affordance.
+
+Reason: The player may press `Space` from anywhere inside the focus radius. Starting from the current position avoids a visible snap to the marker while preserving a fixed, authored landing target for the access gate.
+
+## v0.5.1 Traversal Landing Handoff
+
+Decision: Resolve the traversal target through `TestWorld::resolvePlayer` before returning the player to normal movement.
+
+Reason: The collision system already owns floor/box correction. Reusing it at traversal completion keeps landing grounded, clears velocity, exposes collision debug state, and avoids adding a physics library or new traversal collision solver.

@@ -699,3 +699,114 @@ Results:
 ## v0.5 Next Honest Step
 
 Use the v0.5 foundation for the next goal: v0.5.1 Traversal Feel + Camera / Collision Polish. Keep it focused on start/end tuning, camera stability during traversal, and collision handoff before adding more traversal types.
+
+## v0.5.1 Baseline - 2026-05-14
+
+Goal: polish the existing Service Barrier Vault traversal feel, camera stability, and collision handoff without adding new gameplay systems, traversal types, vehicles, NPC AI, combat, missions, inventory, save/load, physics libraries, animation systems, IK, or asset pipelines.
+
+Required docs read before coding:
+
+- `AGENTS.md`
+- `docs/GAME_DIRECTION.md`
+- `docs/VERTICAL_SLICE.md`
+- `docs/TECH_DEBT.md`
+- `docs/MANUAL_TEST_CHECKLIST.md`
+- `docs/STATUS.md`
+- `docs/ROADMAP.md`
+- `docs/ARCHITECTURE.md`
+- `docs/DECISIONS.md`
+
+Baseline command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+```
+
+Baseline result:
+
+- Passed.
+- Doctor found all expected v0.4.1/v0.5 docs and project structure.
+- Doctor warnings remain for tools not visible in the plain PATH: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- CMake configured with `windows-vs2022-debug`.
+- Build produced `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- CTest passed 2/2 tests.
+- Headless smoke run passed with the null renderer and engine `v0.5.0`.
+
+## v0.5.1 Short Implementation Plan
+
+1. Add focused tests first for traversal start handoff, landing/grounded state, collision resolve after traversal completion, and existing Space/E behavior.
+2. Keep the single Service Barrier Vault affordance and use the player's current position as the traversal start at activation time, while preserving the fixed target position.
+3. Add minimal player traversal debug state so the runtime can report whether the current-position start path is being used.
+4. Resolve the player against `TestWorld` after traversal completion so landing is grounded, velocity is clean, and overlap/pop risk is reduced.
+5. Review camera update order and debug output during traversal without adding cinematic camera behavior or camera collision.
+6. Update docs/manual checklist with the traversal start/end handoff behavior and known limitations.
+7. Run the full validation matrix and record exact results here.
+
+## v0.5.1 Changes Made
+
+- Updated project version to `0.5.1`.
+- Added traversal handoff tests for:
+  - current-position traversal start to avoid visible snap,
+  - grounded landing with clean velocity,
+  - world collision resolve after traversal completion,
+  - interaction still triggering after traversal returns to normal state.
+- Kept the single Service Barrier Vault affordance and no new traversal types.
+- Added `TraversalActivation::useCurrentPlayerPositionAsStart`, defaulting to current-position start behavior.
+- Extended `PlayerState` with traversal start/target/debug fields and a one-frame landing flag.
+- Updated `PlayerController` so traversal activation starts from the current player position while preserving the authored target.
+- Updated traversal completion so the target position is resolved through `TestWorld::resolvePlayer` before returning to normal movement.
+- Updated runtime debug text/rendering to show current-position traversal start, active traversal path, progress, and landing state.
+- Updated docs for architecture, runbook troubleshooting, roadmap, technical debt, decisions, and manual traversal checks.
+
+## v0.5.1 Intermediate Results
+
+Commands:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; ctest --preset windows-vs2022-debug --output-on-failure
+```
+
+Results:
+
+- Initial TDD run failed as expected after adding the current-position traversal start test:
+  - `TestTraversalStartsFromCurrentPlayerPositionToAvoidSnap` reported the player snapping to the authored start marker instead of preserving current X/Z.
+- Build + CTest passed after implementing current-position start, landing world resolve, and traversal debug state: 2/2 tests.
+
+## v0.5.1 Final Validation - 2026-05-14
+
+Commands:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/doctor.ps1
+powershell -ExecutionPolicy Bypass -File scripts/configure.ps1
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+ctest --preset windows-vs2022-debug --output-on-failure
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --frames 180
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 180
+python tools/status_report.py
+```
+
+Results:
+
+- `scripts/doctor.ps1`: passed. Warnings remain for tools not visible in the plain PATH: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- `scripts/configure.ps1`: passed using `windows-vs2022-debug`.
+- `scripts/build.ps1`: passed and produced `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 2/2 tests.
+- `scripts/verify.ps1`: passed; ran doctor, configure, build, CTest, and null-renderer smoke run. Smoke logs show engine `v0.5.1`.
+- `EngineApp.exe --renderer gdi --frames 180`: passed; created a Win32 window, initialized the GDI fallback renderer, and exited cleanly.
+- `EngineApp.exe --renderer dx11 --frames 180`: passed; created a Win32 window and initialized DirectX 11 through WARP after hardware DX11 device creation failed.
+- `python tools/status_report.py`: passed and reported the v0.5.1 working tree changes plus expected docs/scripts.
+
+## v0.5.1 Known Issues / Limitations
+
+- Traversal is still one contextual Service Barrier Vault. No new traversal type was added.
+- Collision is resolved at traversal landing, but not continuously during the controlled traversal arc.
+- Camera update order remains stable and simple; there is no traversal-specific cinematic camera or camera collision.
+- Debug text is readable in GDI. DX11 still has no text overlay, so DX11 relies on line/box markers and logs.
+- Manual checklist was updated, but the full human input playthrough was not performed in this run. Bounded GDI and DX11 launches passed.
+- DX11 hardware device creation still falls back to WARP in this environment.
+
+## v0.5.1 Next Honest Step
+
+Use the stable traversal foundation for the next goal: v0.6 World Event / Remembered State Prototype. Keep it focused on local remembered state and simple scene events for The Ferry Office rather than NPC AI, missions, inventory, or save/load.

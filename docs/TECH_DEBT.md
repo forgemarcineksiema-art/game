@@ -31,7 +31,7 @@ This file lists known foundation issues before v0.5. It is not a mandate to fix 
 - Jump uses simple vertical velocity and gravity.
 - Camera smoothing exists, but there is no camera obstruction, shoulder switching, collision, or indoor tuning.
 - Focus currently uses player-facing, which can feel different from camera-facing if the player rotates the camera without moving.
-- Traversal uses deterministic interpolation and does not yet tune camera behavior during the traversal arc.
+- Traversal uses deterministic interpolation and still needs hands-on camera feel tuning during the traversal arc.
 
 ## World / Collision
 
@@ -54,7 +54,7 @@ This file lists known foundation issues before v0.5. It is not a mandate to fix 
 
 - Traversal affordances are hardcoded in `TestScene`.
 - Only one affordance type exists: `Vault`.
-- Traversal skips richer collision resolution during the controlled motion and lands at the target position.
+- Traversal starts from the player's current position and resolves collision after landing, but it still skips continuous collision checks during the controlled motion.
 - There is no animation, IK, ledge hang, full climb, wall climb, or physics-driven vault.
 - Traversal prompt/debug visibility is functional but not polished.
 - The current traversal route is a prototype access gate, not the full Ferry Office slice.

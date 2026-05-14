@@ -65,11 +65,15 @@ Status: implemented as a first contextual service-barrier vault with debug affor
 - Review collision handoff before and after traversal.
 - Keep the scope on feel and stability, not additional traversal types.
 
-## v0.6 - NPC / Event Prototype
+Status: implemented as a traversal stability pass. Traversal now starts from the player's current position to avoid marker snap, resolves landing through world collision, exposes clearer debug state, and keeps jump/interactions validated.
+
+## v0.6 - World Event / Remembered State Prototype
 
 - Add a minimal event bus or scene event model.
-- Add simple NPC placeholders with deterministic behavior.
-- Avoid complex AI planners.
+- Add remembered local world state for the Ferry Office micro-scenario.
+- Let existing interactions/traversal trigger simple persistent prototype events.
+- Avoid NPC AI, complex planners, mission scripting, inventory, save/load, or large content systems.
+- Keep scope small enough for deterministic tests.
 
 ## v0.7 - Mission Slice
 
@@ -79,4 +83,4 @@ Status: implemented as a first contextual service-barrier vault with debug affor
 
 ## Recommended Next Goal
 
-Build v0.5.1 Traversal Feel + Camera / Collision Polish.
+Build v0.6 World Event / Remembered State Prototype.

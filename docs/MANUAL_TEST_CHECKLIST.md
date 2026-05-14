@@ -66,12 +66,16 @@ build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 120
 
 - [ ] Move to the service barrier traversal start marker near the low blocker.
 - [ ] Facing the traversal path shows the traversal prompt.
+- [ ] GDI debug text shows `travStart=current` when traversal begins.
 - [ ] Pressing `Space` while focused starts the vault/mantle motion.
+- [ ] The player starts from the current standing position inside the focus radius and does not visibly snap to the marker.
 - [ ] The player reaches the end marker on the far side of the blocker.
+- [ ] On landing, debug text returns to `traversal=normal`, `grounded`, and clean velocity/speed.
 - [ ] Holding `Space` does not retrigger traversal while traversal is already active.
 - [ ] Pressing `Space` away from traversal markers still performs normal jump.
 - [ ] Camera follow remains stable during and immediately after traversal.
 - [ ] The maintenance-box-like marker after the traversal route can be reached.
+- [ ] Pressing `E` on the maintenance-box-like marker still works after traversal.
 
 ## Exit
 

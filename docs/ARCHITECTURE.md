@@ -90,6 +90,10 @@ v0.2 adds debug primitive drawing to the renderer interface: debug camera, lines
 
 `src/game/SandboxLayer.*` integrates player/camera/world/traversal/interaction update order. It updates traversal focus first from the current player position/facing, gives a focused traversal activation to the player, updates interaction focus from the corrected player position/facing, executes `E` interactions, updates the camera, then renders world collision, traversal, and interaction debug markers.
 
+In v0.5.1, traversal activation uses the player's current position as the runtime traversal start while keeping the authored affordance target fixed. This avoids a visible snap to the start marker when the player presses `Space` inside the focus radius. The authored start marker remains a focus/debug marker, not a mandatory teleport point.
+
+Traversal completion now resolves the authored target through `TestWorld::resolvePlayer` before returning the controller to normal movement. This keeps landing grounded, clears velocity, and lets the existing static collision path correct a blocked target instead of leaving the player inside a collider.
+
 Collision support is intentionally primitive:
 
 - static axis-aligned boxes,
@@ -115,7 +119,8 @@ Traversal support is intentionally primitive:
 - point/radius focus around the traversal start,
 - player-facing requirement with close proximity tolerance,
 - `Space` trigger only when focused,
-- deterministic position interpolation with a small arc,
+- deterministic position interpolation from current player position to the target with a small arc,
+- world collision resolve at landing,
 - no animation system, IK, full parkour, ledge hanging, or physics engine.
 
 ## Interaction Focus Design Notes

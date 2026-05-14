@@ -45,6 +45,7 @@ struct TraversalActivation {
     engine::Vec3 startPosition;
     engine::Vec3 endPosition;
     float durationSeconds = 0.0f;
+    bool useCurrentPlayerPositionAsStart = true;
 };
 
 class TraversalSystem {

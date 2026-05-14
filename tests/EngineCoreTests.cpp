@@ -587,6 +587,31 @@ void TestTraversalTriggerTakesPriorityOverJumpWhenFocused()
         "Traversal should suppress the normal jump impulse for that press.");
 }
 
+void TestTraversalStartsFromCurrentPlayerPositionToAvoidSnap()
+{
+    TraversalSystem traversal;
+    traversal.addAffordance(MakeTestTraversalAffordance());
+    traversal.updateFocus({0.25f, 0.0f, 0.1f}, {0.0f, 0.0f, 1.0f});
+
+    engine::InputState input;
+    input.jumpPressed = true;
+    const TraversalActivation activation = traversal.activationFromInput(input);
+
+    PlayerController player;
+    player.setPosition({0.25f, 0.0f, 0.1f});
+    player.update(0.0f, input, 0.0f, &activation);
+
+    Expect(player.state().traversalMode == PlayerTraversalMode::Traversing,
+        "TestTraversalStartsFromCurrentPlayerPositionToAvoidSnap",
+        "Focused traversal should start immediately.");
+    ExpectNear(player.state().position.x, 0.25f, 0.001f,
+        "TestTraversalStartsFromCurrentPlayerPositionToAvoidSnap",
+        "Traversal should keep the current player X position at activation instead of snapping to the marker.");
+    ExpectNear(player.state().position.z, 0.1f, 0.001f,
+        "TestTraversalStartsFromCurrentPlayerPositionToAvoidSnap",
+        "Traversal should keep the current player Z position at activation instead of snapping to the marker.");
+}
+
 void TestTraversalCompletesAtTargetPosition()
 {
     TraversalSystem traversal;
@@ -619,6 +644,48 @@ void TestTraversalCompletesAtTargetPosition()
     ExpectNear(player.state().position.z, 2.25f, 0.001f,
         "TestTraversalCompletesAtTargetPosition",
         "Traversal should end at the target Z position.");
+}
+
+void TestTraversalLandingRunsWorldResolveAndClearsVelocity()
+{
+    TraversalSystem traversal;
+    traversal.addAffordance(MakeTestTraversalAffordance());
+    traversal.updateFocus({0.0f, 0.0f, 0.1f}, {0.0f, 0.0f, 1.0f});
+
+    TestWorld world;
+    world.setFloorHeight(0.0f);
+    world.addBox("landing-blocker", {0.0f, 0.5f, 2.25f}, {0.2f, 0.5f, 0.2f});
+
+    engine::InputState input;
+    input.jumpPressed = true;
+    TraversalActivation activation = traversal.activationFromInput(input);
+
+    PlayerController player;
+    player.setWorld(&world);
+    player.setPosition({0.0f, 0.0f, 0.1f});
+    player.update(0.0f, input, 0.0f, &activation);
+
+    input.jumpPressed = false;
+    activation = {};
+    for (int i = 0; i < 10; ++i) {
+        player.update(0.05f, input, 0.0f, &activation);
+    }
+
+    Expect(player.state().traversalMode == PlayerTraversalMode::Normal,
+        "TestTraversalLandingRunsWorldResolveAndClearsVelocity",
+        "Traversal should return to normal state after landing.");
+    Expect(player.state().grounded,
+        "TestTraversalLandingRunsWorldResolveAndClearsVelocity",
+        "Traversal landing should end grounded after world resolve.");
+    ExpectNear(engine::Length(player.state().velocity), 0.0f, 0.001f,
+        "TestTraversalLandingRunsWorldResolveAndClearsVelocity",
+        "Traversal landing should clear velocity.");
+    Expect(player.state().lastCollisionHitCount > 0,
+        "TestTraversalLandingRunsWorldResolveAndClearsVelocity",
+        "Traversal landing should run world collision resolve when the target overlaps a collider.");
+    Expect(player.state().position.z < 2.24f || std::abs(player.state().position.x) > 0.01f,
+        "TestTraversalLandingRunsWorldResolveAndClearsVelocity",
+        "Traversal landing should not leave the player exactly inside the blocked target position.");
 }
 
 void TestTraversalDoesNotRetriggerWhileActive()
@@ -682,6 +749,46 @@ void TestNormalJumpStillWorksWithoutTraversalFocus()
         "Player should be airborne after a normal jump.");
 }
 
+void TestInteractionCanTriggerAfterTraversalCompletes()
+{
+    TraversalSystem traversal;
+    traversal.addAffordance(MakeTestTraversalAffordance());
+    traversal.updateFocus({0.0f, 0.0f, 0.1f}, {0.0f, 0.0f, 1.0f});
+
+    engine::InputState input;
+    input.jumpPressed = true;
+    TraversalActivation activation = traversal.activationFromInput(input);
+
+    PlayerController player;
+    player.setPosition({0.0f, 0.0f, 0.1f});
+    player.update(0.0f, input, 0.0f, &activation);
+
+    input.jumpPressed = false;
+    activation = {};
+    for (int i = 0; i < 10; ++i) {
+        player.update(0.05f, input, 0.0f, &activation);
+    }
+
+    InteractionSystem interactions;
+    Interactable info;
+    info.name = "Post Traversal Marker";
+    info.prompt = "Read Post Traversal Marker";
+    info.position = player.state().position + engine::Vec3 {0.0f, 0.5f, 0.75f};
+    info.radius = 1.5f;
+    info.type = InteractableType::Info;
+    info.message = "Interaction after traversal works.";
+    interactions.addInteractable(info);
+
+    interactions.updateFocus(player.state().position, {0.0f, 0.0f, 1.0f});
+    engine::InputState interactInput;
+    interactInput.interactPressed = true;
+    const InteractionResult result = interactions.interact(interactInput);
+
+    Expect(result.triggered,
+        "TestInteractionCanTriggerAfterTraversalCompletes",
+        "Interaction input should still trigger after traversal returns to normal state.");
+}
+
 } // namespace
 
 int main()
@@ -711,9 +818,12 @@ int main()
     TestTraversalFocusSelectsAvailableAffordance();
     TestTraversalFocusIgnoresDisabledAffordance();
     TestTraversalTriggerTakesPriorityOverJumpWhenFocused();
+    TestTraversalStartsFromCurrentPlayerPositionToAvoidSnap();
     TestTraversalCompletesAtTargetPosition();
+    TestTraversalLandingRunsWorldResolveAndClearsVelocity();
     TestTraversalDoesNotRetriggerWhileActive();
     TestNormalJumpStillWorksWithoutTraversalFocus();
+    TestInteractionCanTriggerAfterTraversalCompletes();
 
     if (!failures.empty()) {
         std::cerr << failures.size() << " test failure(s):\n";

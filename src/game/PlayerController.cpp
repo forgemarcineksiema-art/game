@@ -38,8 +38,12 @@ void PlayerController::setWorld(const TestWorld* world)
 void PlayerController::update(float deltaSeconds, const engine::InputState& input, float cameraYawRadians, const TraversalActivation* traversalActivation)
 {
     const float dt = engine::Clamp(deltaSeconds, 0.0f, 0.1f);
+    m_state.traversalLandedThisFrame = false;
     if (m_state.traversalMode == PlayerTraversalMode::Normal && traversalActivation && traversalActivation->started) {
         m_activeTraversal = *traversalActivation;
+        if (m_activeTraversal.useCurrentPlayerPositionAsStart) {
+            m_activeTraversal.startPosition = m_state.position;
+        }
         if (m_activeTraversal.durationSeconds <= 0.0001f) {
             m_activeTraversal.durationSeconds = 0.0001f;
         }
@@ -47,6 +51,9 @@ void PlayerController::update(float deltaSeconds, const engine::InputState& inpu
         m_state.traversalMode = PlayerTraversalMode::Traversing;
         m_state.activeTraversalId = m_activeTraversal.affordanceId;
         m_state.traversalProgress = 0.0f;
+        m_state.traversalStartPosition = m_activeTraversal.startPosition;
+        m_state.traversalTargetPosition = m_activeTraversal.endPosition;
+        m_state.traversalUsesCurrentPlayerPositionStart = m_activeTraversal.useCurrentPlayerPositionAsStart;
         m_state.velocity = {};
         m_state.horizontalSpeed = 0.0f;
         m_state.sprinting = false;
@@ -70,11 +77,37 @@ void PlayerController::update(float deltaSeconds, const engine::InputState& inpu
         m_state.traversalProgress = rawProgress;
 
         if (rawProgress >= 1.0f) {
-            m_state.position = m_activeTraversal.endPosition;
-            m_state.grounded = true;
+            const engine::Vec3 landingPosition = m_activeTraversal.endPosition;
+            m_state.position = landingPosition;
+            m_state.velocity = {};
+            if (m_world) {
+                PlayerCollisionProxy proxy;
+                proxy.previousPosition = m_activeTraversal.startPosition;
+                proxy.position = landingPosition;
+                proxy.velocity = {};
+                proxy.radius = m_settings.radius;
+                proxy.height = m_settings.height;
+
+                const CollisionResult collision = m_world->resolvePlayer(proxy);
+                m_state.position = collision.position;
+                m_state.velocity = collision.velocity;
+                m_state.grounded = collision.grounded;
+                m_state.lastCollisionPush = collision.lastPush;
+                m_state.lastCollisionNormal = collision.lastNormal;
+                m_state.lastCollisionHitCount = collision.hitCount;
+            } else {
+                if (m_state.position.y <= 0.0f) {
+                    m_state.position.y = 0.0f;
+                }
+                m_state.grounded = true;
+                m_state.lastCollisionPush = {};
+                m_state.lastCollisionNormal = {};
+                m_state.lastCollisionHitCount = 0;
+            }
             m_state.traversalMode = PlayerTraversalMode::Normal;
             m_state.activeTraversalId = 0;
             m_state.traversalProgress = 1.0f;
+            m_state.traversalLandedThisFrame = true;
             m_activeTraversal = {};
             m_traversalElapsedSeconds = 0.0f;
         }
@@ -83,6 +116,7 @@ void PlayerController::update(float deltaSeconds, const engine::InputState& inpu
 
     m_state.traversalProgress = 0.0f;
     m_state.activeTraversalId = 0;
+    m_state.traversalUsesCurrentPlayerPositionStart = false;
     const engine::Vec3 previousPosition = m_state.position;
     const engine::Vec2 inputAxis = engine::Normalize(engine::Vec2 {input.moveRight, input.moveForward});
     const engine::Vec3 forward = engine::ForwardFromYaw(cameraYawRadians);

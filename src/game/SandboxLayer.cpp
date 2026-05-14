@@ -105,9 +105,15 @@ void SandboxLayer::updateDebugText()
            << "interactPressed=" << (m_interactPressedThisFrame ? "yes" : "no") << " "
            << "traversal=" << (player.traversalMode == PlayerTraversalMode::Traversing ? "active" : "normal") << " "
            << "travProgress=" << player.traversalProgress << " "
+           << "travStart=" << (player.traversalUsesCurrentPlayerPositionStart ? "current" : "fixed") << " "
+           << "travLanded=" << (player.traversalLandedThisFrame ? "yes" : "no") << " "
            << "travFocus=" << (traversalFocus.hasFocus ? traversalFocus.name : "none") << " "
            << "travPressed=" << (m_traversalPressedThisFrame ? "yes" : "no") << " "
            << "focus=" << (focus.hasFocus ? focus.name : "none") << " ";
+    if (player.traversalMode == PlayerTraversalMode::Traversing) {
+        output << "travFrom=(" << player.traversalStartPosition.x << "," << player.traversalStartPosition.z << ") "
+               << "travTo=(" << player.traversalTargetPosition.x << "," << player.traversalTargetPosition.z << ") ";
+    }
     if (traversalFocus.hasFocus && player.traversalMode == PlayerTraversalMode::Normal) {
         output << "travPrompt=\"" << traversalFocus.prompt << "\" ";
     }
@@ -179,5 +185,14 @@ void SandboxLayer::drawTraversalDebug(engine::IRenderer& renderer)
             {affordance.startPosition.x, m_scene.world().floorHeight() + 0.04f, affordance.startPosition.z},
             {affordance.focusRadius, 0.03f, affordance.focusRadius},
             color);
+    }
+
+    if (player.traversalMode == PlayerTraversalMode::Traversing) {
+        const engine::Vec3 activeStart = player.traversalStartPosition + engine::Vec3 {0.0f, 0.55f, 0.0f};
+        const engine::Vec3 activeEnd = player.traversalTargetPosition + engine::Vec3 {0.0f, 0.55f, 0.0f};
+        renderer.drawDebugBox(activeStart, {0.14f, 0.14f, 0.14f}, {1.0f, 0.2f, 1.0f, 1.0f});
+        renderer.drawDebugBox(activeEnd, {0.14f, 0.14f, 0.14f}, {0.2f, 1.0f, 1.0f, 1.0f});
+        renderer.drawDebugLine(activeStart, player.position + engine::Vec3 {0.0f, 0.55f, 0.0f}, {1.0f, 0.2f, 1.0f, 1.0f});
+        renderer.drawDebugLine(player.position + engine::Vec3 {0.0f, 0.55f, 0.0f}, activeEnd, {0.2f, 1.0f, 1.0f, 1.0f});
     }
 }

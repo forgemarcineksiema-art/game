@@ -33,6 +33,10 @@ struct PlayerState {
     PlayerTraversalMode traversalMode = PlayerTraversalMode::Normal;
     float traversalProgress = 0.0f;
     int activeTraversalId = 0;
+    engine::Vec3 traversalStartPosition;
+    engine::Vec3 traversalTargetPosition;
+    bool traversalUsesCurrentPlayerPositionStart = false;
+    bool traversalLandedThisFrame = false;
 };
 
 class PlayerController {
