@@ -17,7 +17,12 @@ void SandboxLayer::onUpdate(double deltaSeconds, const engine::InputState& input
 {
     ++m_frameIndex;
     const float dt = static_cast<float>(deltaSeconds);
-    m_player.update(dt, input, m_camera.state().yawRadians);
+    const engine::Vec3 traversalFacing = engine::ForwardFromYaw(m_player.state().facingYawRadians);
+    m_scene.traversal().updateFocus(m_player.state().position, traversalFacing);
+    const TraversalActivation traversalActivation = m_scene.traversal().activationFromInput(input);
+    m_traversalPressedThisFrame = input.jumpPressed && m_scene.traversal().focus().hasFocus;
+
+    m_player.update(dt, input, m_camera.state().yawRadians, &traversalActivation);
 
     const engine::Vec3 playerFacing = engine::ForwardFromYaw(m_player.state().facingYawRadians);
     m_scene.interactions().updateFocus(m_player.state().position, playerFacing);
@@ -65,6 +70,7 @@ void SandboxLayer::onRender(engine::IRenderer& renderer)
             player.position + engine::Vec3 {0.0f, 0.25f, 0.0f} + player.lastCollisionNormal,
             {1.0f, 0.2f, 0.2f, 1.0f});
     }
+    drawTraversalDebug(renderer);
     drawInteractionDebug(renderer);
     renderer.drawDebugBox(m_camera.state().target, {0.08f, 0.08f, 0.08f}, {1.0f, 0.25f, 0.7f, 1.0f});
     renderer.drawDebugText(m_debugText);
@@ -85,6 +91,7 @@ void SandboxLayer::updateDebugText()
     const PlayerState& player = m_player.state();
     const ThirdPersonCameraState& camera = m_camera.state();
     const InteractionFocus& focus = m_scene.interactions().focus();
+    const TraversalFocus& traversalFocus = m_scene.traversal().focus();
 
     std::ostringstream output;
     output << std::fixed << std::setprecision(2)
@@ -96,7 +103,14 @@ void SandboxLayer::updateDebugText()
            << "colliders=" << m_scene.world().colliders().size() << " "
            << "interactables=" << m_scene.interactions().interactableCount() << " "
            << "interactPressed=" << (m_interactPressedThisFrame ? "yes" : "no") << " "
+           << "traversal=" << (player.traversalMode == PlayerTraversalMode::Traversing ? "active" : "normal") << " "
+           << "travProgress=" << player.traversalProgress << " "
+           << "travFocus=" << (traversalFocus.hasFocus ? traversalFocus.name : "none") << " "
+           << "travPressed=" << (m_traversalPressedThisFrame ? "yes" : "no") << " "
            << "focus=" << (focus.hasFocus ? focus.name : "none") << " ";
+    if (traversalFocus.hasFocus && player.traversalMode == PlayerTraversalMode::Normal) {
+        output << "travPrompt=\"" << traversalFocus.prompt << "\" ";
+    }
     if (focus.hasFocus) {
         output << "prompt=\"Press E: " << focus.prompt << "\" ";
     }
@@ -136,6 +150,34 @@ void SandboxLayer::drawInteractionDebug(engine::IRenderer& renderer)
             color);
         renderer.drawDebugLine(interactable.position,
             interactable.position + engine::Vec3 {0.0f, isFocused ? 1.2f : 0.75f, 0.0f},
+            color);
+    }
+}
+
+void SandboxLayer::drawTraversalDebug(engine::IRenderer& renderer)
+{
+    const TraversalFocus& focus = m_scene.traversal().focus();
+    const PlayerState& player = m_player.state();
+    for (const TraversalAffordance& affordance : m_scene.traversal().affordances()) {
+        const bool isFocused = focus.hasFocus && focus.affordanceId == affordance.id;
+        const bool isActive = player.activeTraversalId == affordance.id;
+        engine::Color color {0.55f, 0.85f, 1.0f, 1.0f};
+        if (!affordance.enabled) {
+            color = {0.35f, 0.35f, 0.35f, 1.0f};
+        } else if (isActive) {
+            color = {1.0f, 0.35f, 1.0f, 1.0f};
+        } else if (isFocused) {
+            color = {1.0f, 1.0f, 0.25f, 1.0f};
+        }
+
+        renderer.drawDebugBox(affordance.startPosition + engine::Vec3 {0.0f, 0.2f, 0.0f}, {0.18f, 0.18f, 0.18f}, color);
+        renderer.drawDebugBox(affordance.endPosition + engine::Vec3 {0.0f, 0.2f, 0.0f}, {0.18f, 0.18f, 0.18f}, {0.25f, 1.0f, 0.95f, 1.0f});
+        renderer.drawDebugLine(affordance.startPosition + engine::Vec3 {0.0f, 0.35f, 0.0f},
+            affordance.endPosition + engine::Vec3 {0.0f, 0.35f, 0.0f},
+            color);
+        renderer.drawDebugBox(
+            {affordance.startPosition.x, m_scene.world().floorHeight() + 0.04f, affordance.startPosition.z},
+            {affordance.focusRadius, 0.03f, affordance.focusRadius},
             color);
     }
 }

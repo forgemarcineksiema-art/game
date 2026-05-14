@@ -31,6 +31,7 @@ This file lists known foundation issues before v0.5. It is not a mandate to fix 
 - Jump uses simple vertical velocity and gravity.
 - Camera smoothing exists, but there is no camera obstruction, shoulder switching, collision, or indoor tuning.
 - Focus currently uses player-facing, which can feel different from camera-facing if the player rotates the camera without moving.
+- Traversal uses deterministic interpolation and does not yet tune camera behavior during the traversal arc.
 
 ## World / Collision
 
@@ -49,6 +50,15 @@ This file lists known foundation issues before v0.5. It is not a mandate to fix 
 - Pickup state is local runtime state only; there is no inventory or save data.
 - No UI framework exists, so prompts are debug text/logs only.
 
+## Traversal
+
+- Traversal affordances are hardcoded in `TestScene`.
+- Only one affordance type exists: `Vault`.
+- Traversal skips richer collision resolution during the controlled motion and lands at the target position.
+- There is no animation, IK, ledge hang, full climb, wall climb, or physics-driven vault.
+- Traversal prompt/debug visibility is functional but not polished.
+- The current traversal route is a prototype access gate, not the full Ferry Office slice.
+
 ## Naming / Architecture
 
 - `TestWorld` and `TestScene` are still acceptable for v0.4.1, but they should be renamed to `PrototypeWorld` and `PrototypeScene` when the project moves from test layout to first vertical slice.
@@ -62,4 +72,3 @@ This file lists known foundation issues before v0.5. It is not a mandate to fix 
 3. Add tests for any new traversal state transitions.
 4. Avoid adding a physics dependency for the first traversal prototype.
 5. Consider renaming `TestWorld` / `TestScene` only when v0.5 starts shaping the vertical slice scene.
-

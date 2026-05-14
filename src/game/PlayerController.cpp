@@ -2,6 +2,19 @@
 
 #include "game/TestWorld.h"
 
+#include <cmath>
+
+namespace {
+
+constexpr float TraversalArcHeight = 0.55f;
+
+float SmoothStep(float value)
+{
+    return value * value * (3.0f - 2.0f * value);
+}
+
+} // namespace
+
 void PlayerController::setSettings(const PlayerControllerSettings& settings)
 {
     m_settings = settings;
@@ -22,9 +35,54 @@ void PlayerController::setWorld(const TestWorld* world)
     m_world = world;
 }
 
-void PlayerController::update(float deltaSeconds, const engine::InputState& input, float cameraYawRadians)
+void PlayerController::update(float deltaSeconds, const engine::InputState& input, float cameraYawRadians, const TraversalActivation* traversalActivation)
 {
     const float dt = engine::Clamp(deltaSeconds, 0.0f, 0.1f);
+    if (m_state.traversalMode == PlayerTraversalMode::Normal && traversalActivation && traversalActivation->started) {
+        m_activeTraversal = *traversalActivation;
+        if (m_activeTraversal.durationSeconds <= 0.0001f) {
+            m_activeTraversal.durationSeconds = 0.0001f;
+        }
+        m_traversalElapsedSeconds = 0.0f;
+        m_state.traversalMode = PlayerTraversalMode::Traversing;
+        m_state.activeTraversalId = m_activeTraversal.affordanceId;
+        m_state.traversalProgress = 0.0f;
+        m_state.velocity = {};
+        m_state.horizontalSpeed = 0.0f;
+        m_state.sprinting = false;
+        m_state.grounded = false;
+        m_state.lastCollisionPush = {};
+        m_state.lastCollisionNormal = {};
+        m_state.lastCollisionHitCount = 0;
+    }
+
+    if (m_state.traversalMode == PlayerTraversalMode::Traversing) {
+        m_traversalElapsedSeconds += dt;
+        const float rawProgress = engine::Clamp(m_traversalElapsedSeconds / m_activeTraversal.durationSeconds, 0.0f, 1.0f);
+        const float smoothedProgress = SmoothStep(rawProgress);
+        engine::Vec3 position = engine::Lerp(m_activeTraversal.startPosition, m_activeTraversal.endPosition, smoothedProgress);
+        position.y += std::sin(engine::Pi * rawProgress) * TraversalArcHeight;
+
+        m_state.position = position;
+        m_state.velocity = {};
+        m_state.horizontalSpeed = 0.0f;
+        m_state.sprinting = false;
+        m_state.traversalProgress = rawProgress;
+
+        if (rawProgress >= 1.0f) {
+            m_state.position = m_activeTraversal.endPosition;
+            m_state.grounded = true;
+            m_state.traversalMode = PlayerTraversalMode::Normal;
+            m_state.activeTraversalId = 0;
+            m_state.traversalProgress = 1.0f;
+            m_activeTraversal = {};
+            m_traversalElapsedSeconds = 0.0f;
+        }
+        return;
+    }
+
+    m_state.traversalProgress = 0.0f;
+    m_state.activeTraversalId = 0;
     const engine::Vec3 previousPosition = m_state.position;
     const engine::Vec2 inputAxis = engine::Normalize(engine::Vec2 {input.moveRight, input.moveForward});
     const engine::Vec3 forward = engine::ForwardFromYaw(cameraYawRadians);

@@ -56,6 +56,15 @@ Status: implemented as a documentation and review milestone. No major gameplay s
 - Do not add vehicles in the same milestone.
 - Keep physics lightweight and explicit; do not add a physics library yet.
 
+Status: implemented as a first contextual service-barrier vault with debug affordance markers, `Space` trigger priority over jump when focused, deterministic player repositioning, scene integration, and lightweight tests.
+
+## v0.5.1 - Traversal Feel + Camera / Collision Polish
+
+- Polish traversal start/end placement and prompt clarity.
+- Tune camera behavior during traversal.
+- Review collision handoff before and after traversal.
+- Keep the scope on feel and stability, not additional traversal types.
+
 ## v0.6 - NPC / Event Prototype
 
 - Add a minimal event bus or scene event model.
@@ -70,4 +79,4 @@ Status: implemented as a documentation and review milestone. No major gameplay s
 
 ## Recommended Next Goal
 
-Build v0.5 Traversal Prototype.
+Build v0.5.1 Traversal Feel + Camera / Collision Polish.

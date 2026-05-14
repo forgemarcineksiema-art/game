@@ -82,9 +82,13 @@ v0.2 adds debug primitive drawing to the renderer interface: debug camera, lines
 
 `src/game/InteractionSystem.*` is the v0.4 gameplay interaction boundary. It owns lightweight interactable data, selects the best focus candidate from player position/facing/range, and executes simple built-in actions: pickup, toggle, and info. It deliberately has no scripting, inventory, dialogue tree, mission state, or UI framework.
 
+`src/game/TraversalSystem.*` is the v0.5 traversal affordance boundary. It owns narrow, game-layer traversal affordances with start/end positions, focus radius, facing requirement, prompt, enabled flag, and duration. It produces an activation request when `Space` is pressed while an affordance is focused.
+
 `src/game/TestScene.*` defines the tiny neutral debug scene. It asks `TestWorld` to build the collision test layout: floor, wall, narrow passage, corner case, low step-like blocker, and crate. It also owns three debug interactables: a one-shot pickup, a repeatable toggle/button, and a repeatable info marker.
 
-`src/game/SandboxLayer.*` integrates player/camera/world/interaction update order. It updates the player first, updates interaction focus from the player position/facing, executes `E` interactions, updates the camera, then renders world collision and interaction debug markers.
+`src/game/TestScene.*` also owns the first v0.5 traversal affordance: a service-barrier vault path used as access-gating groundwork for The Ferry Office.
+
+`src/game/SandboxLayer.*` integrates player/camera/world/traversal/interaction update order. It updates traversal focus first from the current player position/facing, gives a focused traversal activation to the player, updates interaction focus from the corrected player position/facing, executes `E` interactions, updates the camera, then renders world collision, traversal, and interaction debug markers.
 
 Collision support is intentionally primitive:
 
@@ -104,6 +108,15 @@ Interaction support is intentionally primitive:
 - debug text/log prompts instead of a UI layer.
 
 No scripting, inventory, doors with collision changes, dialogue, mission triggers, or save state are present.
+
+Traversal support is intentionally primitive:
+
+- one affordance type, `Vault`,
+- point/radius focus around the traversal start,
+- player-facing requirement with close proximity tolerance,
+- `Space` trigger only when focused,
+- deterministic position interpolation with a small arc,
+- no animation system, IK, full parkour, ledge hanging, or physics engine.
 
 ## Interaction Focus Design Notes
 

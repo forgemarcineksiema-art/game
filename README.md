@@ -32,7 +32,7 @@ Direction docs:
 
 - `W/A/S/D`: camera-relative movement
 - `Shift`: sprint
-- `Space`: jump
+- `Space`: jump, or vault/mantle when a traversal affordance is focused
 - `E`: interact with the focused debug object
 - Mouse movement over the window: orbit camera
 - Arrow keys: camera fallback controls

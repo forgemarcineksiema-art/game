@@ -18,6 +18,7 @@ public:
 private:
     void updateDebugText();
     void drawInteractionDebug(engine::IRenderer& renderer);
+    void drawTraversalDebug(engine::IRenderer& renderer);
 
     TestScene m_scene;
     PlayerController m_player;
@@ -25,5 +26,6 @@ private:
     std::string m_debugText;
     std::string m_lastInteractionText = "none";
     bool m_interactPressedThisFrame = false;
+    bool m_traversalPressedThisFrame = false;
     unsigned long long m_frameIndex = 0;
 };

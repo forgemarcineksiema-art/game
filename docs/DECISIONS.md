@@ -160,3 +160,21 @@ Reason: Renaming today would create churn without behavior value. A later focuse
 Decision: Choose traversal before vehicles for v0.5.
 
 Reason: The first vertical slice needs on-foot access gating, readable routes, and stable camera/collision in tight spaces. Vehicles would force larger environments and more physics/control complexity before the core player-scale loop is strong.
+
+## v0.5 Traversal System Scope
+
+Decision: Add `TraversalSystem` under `src/game` with a single contextual `Vault` affordance type.
+
+Reason: The Ferry Office needs one access-gating traversal action, not a general parkour framework. Keeping it in the game layer preserves the ability to reshape the API as the slice gets clearer.
+
+## v0.5 Traversal Trigger
+
+Decision: Use `Space` as the traversal trigger when a traversal affordance is focused, otherwise keep `Space` as normal jump.
+
+Reason: The chosen mechanic is movement, not object interaction. Prioritizing traversal over jump only while focused gives a contextual movement action without breaking normal jump elsewhere.
+
+## v0.5 Traversal Motion
+
+Decision: Move the player deterministically from traversal start to target using interpolation and a small vertical arc, with no animation system or physics engine.
+
+Reason: v0.5 needs reliable repositioning and tests before animation, IK, or richer collision handling. Deterministic motion is easy to validate and keeps the prototype small.

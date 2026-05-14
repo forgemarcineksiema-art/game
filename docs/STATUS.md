@@ -591,3 +591,111 @@ Results:
 ## v0.4.1 Next Honest Step
 
 Use the v0.4.1 foundation for the next goal: v0.5 Traversal Prototype. Prefer a single narrow traversal mechanic such as mantle, climb-up, vault, or ledge step, with no vehicles in the same goal.
+
+## v0.5 Baseline - 2026-05-14
+
+Goal: add one narrow on-foot traversal prototype for the Tidebreak / The Ferry Office direction. This goal must not add vehicles, full parkour, ledge hanging, wall climbing, animation, IK, physics engine integration, NPC AI, combat, inventory, save/load, mission scripting, final art, or asset pipelines.
+
+Required docs read before coding:
+
+- `AGENTS.md`
+- `docs/GAME_DIRECTION.md`
+- `docs/VERTICAL_SLICE.md`
+- `docs/TECH_DEBT.md`
+- `docs/MANUAL_TEST_CHECKLIST.md`
+- `docs/STATUS.md`
+- `docs/ROADMAP.md`
+- `docs/ARCHITECTURE.md`
+- `docs/DECISIONS.md`
+
+Baseline command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+```
+
+Baseline result:
+
+- Passed.
+- Doctor found all expected v0.4.1 direction/checklist docs.
+- Doctor warnings remain for tools not visible in the plain PATH: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- CMake configured with `windows-vs2022-debug`.
+- Build produced `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- CTest passed 2/2 tests.
+- Headless smoke run passed with the null renderer and engine `v0.4.1`.
+
+## v0.5 Short Implementation Plan
+
+1. Add failing tests first for traversal affordance focus, disabled affordance filtering, Space-trigger priority over jump, traversal completion at target, and no retrigger while traversal is active.
+2. Add `src/game/TraversalSystem.h/.cpp` in the game layer with one narrow traversal affordance type: contextual vault/mantle over a low obstacle.
+3. Extend `PlayerController` with a minimal traversal state: normal/traversing, start, target, elapsed/progress, duration, and active affordance id.
+4. Use `Space` as the traversal trigger when a traversal affordance is focused; otherwise keep normal pressed-edge jump behavior.
+5. Update `TestScene` with a low service-route traversal affordance and a maintenance-box-like interactable after the traversal path.
+6. Update `SandboxLayer` to focus traversal before player update, pass traversal activation into the player, draw traversal markers/start/end/path, and show traversal state in debug text.
+7. Update docs for architecture, runbook controls, roadmap status, decision rationale, tech debt, and manual traversal checklist.
+8. Run the required validation matrix and record exact results here.
+
+## v0.5 Changes Made
+
+- Updated project version to `0.5.0`.
+- Added `src/game/TraversalSystem.h` and `src/game/TraversalSystem.cpp`.
+- Added one traversal affordance type: `Vault`.
+- Added traversal data for id/name, type, start/end positions, focus radius, required facing direction/dot, enabled flag, prompt, and duration.
+- Added traversal focus detection and `Space`-based activation from the current focused affordance.
+- Extended `PlayerController` with traversal state:
+  - `Normal`,
+  - `Traversing`,
+  - active traversal id,
+  - traversal progress,
+  - deterministic interpolation from start to target with a small arc.
+- Gave traversal priority over normal jump when a traversal affordance is focused. Normal jump still works when no traversal affordance is focused.
+- Updated `TestScene` with one service-barrier traversal affordance and one maintenance-box-like interactable reachable after the traversal route.
+- Updated `SandboxLayer` to update traversal focus, pass traversal activation into the player, draw traversal start/end/path/focus markers, and include traversal state in debug text.
+- Added lightweight traversal tests for focus, disabled filtering, jump priority, completion at target, no retrigger while active, and normal jump behavior without traversal focus.
+- Updated docs for architecture, controls, roadmap, decisions, technical debt, and manual traversal checks.
+
+## v0.5 Intermediate Results
+
+- Initial TDD build failed as expected because `game/TraversalSystem.h` did not exist yet:
+  - `error C1083: Cannot open include file: 'game/TraversalSystem.h': No such file or directory`
+- Build + CTest passed after adding `TraversalSystem`, player traversal state, and CMake wiring.
+- Build + CTest passed again after scene/debug integration.
+
+## v0.5 Final Validation - 2026-05-14
+
+Commands:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/doctor.ps1
+powershell -ExecutionPolicy Bypass -File scripts/configure.ps1
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+ctest --preset windows-vs2022-debug --output-on-failure
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --frames 120
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 120
+python tools/status_report.py
+```
+
+Results:
+
+- `scripts/doctor.ps1`: passed. Warnings remain for tools not visible in the plain PATH: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- `scripts/configure.ps1`: passed using `windows-vs2022-debug`.
+- `scripts/build.ps1`: passed and produced `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 2/2 tests.
+- `scripts/verify.ps1`: passed; ran doctor, configure, build, CTest, and null-renderer smoke run. Smoke logs show engine `v0.5.0`, 4 interactables, and traversal debug state.
+- `EngineApp.exe --renderer gdi --frames 120`: passed; created a Win32 window and initialized the GDI fallback renderer.
+- `EngineApp.exe --renderer dx11 --frames 120`: passed; created a Win32 window and initialized DirectX 11 through WARP after hardware/debug device creation failed.
+- `python tools/status_report.py`: passed and reported the v0.5 working tree changes and expected docs/scripts.
+
+## v0.5 Known Issues / Limitations
+
+- Traversal is a single contextual `Vault` affordance, not full parkour.
+- Traversal motion is deterministic interpolation with a small arc. There is no animation, IK, ledge hang, wall climb, or physics-engine integration.
+- Collision is skipped during the controlled traversal motion and resumes after landing at the target; this is acceptable for the prototype but needs polish.
+- The service barrier route and maintenance box are hardcoded in `TestScene`.
+- Manual checklist traversal playthrough was documented but not fully human-played in this run; bounded GDI/DX11 launches passed.
+- DX11 hardware/debug device creation still falls back to WARP in this environment.
+
+## v0.5 Next Honest Step
+
+Use the v0.5 foundation for the next goal: v0.5.1 Traversal Feel + Camera / Collision Polish. Keep it focused on start/end tuning, camera stability during traversal, and collision handoff before adding more traversal types.

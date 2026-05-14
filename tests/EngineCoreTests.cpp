@@ -6,6 +6,7 @@
 #include "game/PlayerController.h"
 #include "game/TestWorld.h"
 #include "game/ThirdPersonCamera.h"
+#include "game/TraversalSystem.h"
 #include "engine/renderer/NullRenderer.h"
 
 #include <filesystem>
@@ -519,6 +520,168 @@ void TestNoFocusedInteractableMeansNoAction()
         "Interact should no-op when there is no focused candidate.");
 }
 
+TraversalAffordance MakeTestTraversalAffordance()
+{
+    TraversalAffordance affordance;
+    affordance.name = "Test Vault";
+    affordance.prompt = "Press Space: Vault Test Blocker";
+    affordance.type = TraversalType::Vault;
+    affordance.startPosition = {0.0f, 0.0f, 1.0f};
+    affordance.endPosition = {0.0f, 0.0f, 2.25f};
+    affordance.focusRadius = 1.5f;
+    affordance.requiredFacingDirection = {0.0f, 0.0f, 1.0f};
+    affordance.requiredFacingDot = 0.25f;
+    affordance.durationSeconds = 0.25f;
+    return affordance;
+}
+
+void TestTraversalFocusSelectsAvailableAffordance()
+{
+    TraversalSystem traversal;
+    const int id = traversal.addAffordance(MakeTestTraversalAffordance());
+
+    const TraversalFocus focus = traversal.updateFocus({0.0f, 0.0f, 0.1f}, {0.0f, 0.0f, 1.0f});
+    Expect(focus.hasFocus,
+        "TestTraversalFocusSelectsAvailableAffordance",
+        "A nearby traversal affordance in front of the player should receive focus.");
+    Expect(focus.affordanceId == id,
+        "TestTraversalFocusSelectsAvailableAffordance",
+        "Traversal focus should expose the selected affordance id.");
+    Expect(focus.prompt == "Press Space: Vault Test Blocker",
+        "TestTraversalFocusSelectsAvailableAffordance",
+        "Traversal focus should expose the prompt text.");
+}
+
+void TestTraversalFocusIgnoresDisabledAffordance()
+{
+    TraversalSystem traversal;
+    TraversalAffordance disabled = MakeTestTraversalAffordance();
+    disabled.enabled = false;
+    traversal.addAffordance(disabled);
+
+    const TraversalFocus focus = traversal.updateFocus({0.0f, 0.0f, 0.1f}, {0.0f, 0.0f, 1.0f});
+    Expect(!focus.hasFocus,
+        "TestTraversalFocusIgnoresDisabledAffordance",
+        "Disabled traversal affordances should not receive focus.");
+}
+
+void TestTraversalTriggerTakesPriorityOverJumpWhenFocused()
+{
+    TraversalSystem traversal;
+    traversal.addAffordance(MakeTestTraversalAffordance());
+    traversal.updateFocus({0.0f, 0.0f, 0.1f}, {0.0f, 0.0f, 1.0f});
+
+    engine::InputState input;
+    input.jumpPressed = true;
+    const TraversalActivation activation = traversal.activationFromInput(input);
+
+    PlayerController player;
+    player.setPosition({0.0f, 0.0f, 0.1f});
+    player.update(0.1f, input, 0.0f, &activation);
+
+    Expect(player.state().traversalMode == PlayerTraversalMode::Traversing,
+        "TestTraversalTriggerTakesPriorityOverJumpWhenFocused",
+        "Focused traversal should put the player into traversal state.");
+    ExpectNear(player.state().velocity.y, 0.0f, 0.001f,
+        "TestTraversalTriggerTakesPriorityOverJumpWhenFocused",
+        "Traversal should suppress the normal jump impulse for that press.");
+}
+
+void TestTraversalCompletesAtTargetPosition()
+{
+    TraversalSystem traversal;
+    traversal.addAffordance(MakeTestTraversalAffordance());
+    traversal.updateFocus({0.0f, 0.0f, 0.1f}, {0.0f, 0.0f, 1.0f});
+
+    engine::InputState input;
+    input.jumpPressed = true;
+    TraversalActivation activation = traversal.activationFromInput(input);
+
+    PlayerController player;
+    player.setPosition({0.0f, 0.0f, 0.1f});
+    player.update(0.1f, input, 0.0f, &activation);
+
+    input.jumpPressed = false;
+    activation = {};
+    for (int i = 0; i < 10; ++i) {
+        player.update(0.05f, input, 0.0f, &activation);
+    }
+
+    Expect(player.state().traversalMode == PlayerTraversalMode::Normal,
+        "TestTraversalCompletesAtTargetPosition",
+        "Traversal should return the player to normal state after the duration.");
+    ExpectNear(player.state().position.x, 0.0f, 0.001f,
+        "TestTraversalCompletesAtTargetPosition",
+        "Traversal should end at the target X position.");
+    ExpectNear(player.state().position.y, 0.0f, 0.001f,
+        "TestTraversalCompletesAtTargetPosition",
+        "Traversal should end grounded at the target Y position.");
+    ExpectNear(player.state().position.z, 2.25f, 0.001f,
+        "TestTraversalCompletesAtTargetPosition",
+        "Traversal should end at the target Z position.");
+}
+
+void TestTraversalDoesNotRetriggerWhileActive()
+{
+    TraversalSystem traversal;
+    TraversalAffordance first = MakeTestTraversalAffordance();
+    first.name = "First Vault";
+    first.endPosition = {0.0f, 0.0f, 2.25f};
+    const int firstId = traversal.addAffordance(first);
+
+    TraversalAffordance second = MakeTestTraversalAffordance();
+    second.name = "Second Vault";
+    second.startPosition = {0.0f, 0.0f, 1.1f};
+    second.endPosition = {5.0f, 0.0f, 5.0f};
+    const int secondId = traversal.addAffordance(second);
+
+    engine::InputState input;
+    input.jumpPressed = true;
+    PlayerController player;
+    player.setPosition({0.0f, 0.0f, 0.1f});
+
+    traversal.updateFocus({0.0f, 0.0f, 0.1f}, {0.0f, 0.0f, 1.0f});
+    TraversalActivation activation = traversal.activationFromInput(input);
+    Expect(activation.affordanceId == firstId,
+        "TestTraversalDoesNotRetriggerWhileActive",
+        "The first traversal should be selected initially.");
+    player.update(0.05f, input, 0.0f, &activation);
+
+    TraversalActivation secondActivation;
+    secondActivation.started = true;
+    secondActivation.affordanceId = secondId;
+    secondActivation.name = "Second Vault";
+    secondActivation.type = TraversalType::Vault;
+    secondActivation.startPosition = {0.0f, 0.0f, 1.1f};
+    secondActivation.endPosition = {5.0f, 0.0f, 5.0f};
+    secondActivation.durationSeconds = 0.25f;
+
+    player.update(0.05f, input, 0.0f, &secondActivation);
+    Expect(player.state().activeTraversalId == firstId,
+        "TestTraversalDoesNotRetriggerWhileActive",
+        "A new traversal request should be ignored while traversal is already active.");
+}
+
+void TestNormalJumpStillWorksWithoutTraversalFocus()
+{
+    PlayerController player;
+    player.setPosition({0.0f, 0.0f, 0.0f});
+
+    engine::InputState input;
+    input.jumpPressed = true;
+    player.update(0.1f, input, 0.0f);
+
+    Expect(player.state().traversalMode == PlayerTraversalMode::Normal,
+        "TestNormalJumpStillWorksWithoutTraversalFocus",
+        "Normal jump should not enter traversal state without a traversal activation.");
+    Expect(player.state().position.y > 0.0f,
+        "TestNormalJumpStillWorksWithoutTraversalFocus",
+        "Normal jump should still lift the player when no traversal affordance is focused.");
+    Expect(!player.state().grounded,
+        "TestNormalJumpStillWorksWithoutTraversalFocus",
+        "Player should be airborne after a normal jump.");
+}
+
 } // namespace
 
 int main()
@@ -545,6 +708,12 @@ int main()
     TestOneShotPickupConsumesAndDoesNotTriggerAgain();
     TestToggleInteractableChangesStateOnEachPress();
     TestNoFocusedInteractableMeansNoAction();
+    TestTraversalFocusSelectsAvailableAffordance();
+    TestTraversalFocusIgnoresDisabledAffordance();
+    TestTraversalTriggerTakesPriorityOverJumpWhenFocused();
+    TestTraversalCompletesAtTargetPosition();
+    TestTraversalDoesNotRetriggerWhileActive();
+    TestNormalJumpStillWorksWithoutTraversalFocus();
 
     if (!failures.empty()) {
         std::cerr << failures.size() << " test failure(s):\n";

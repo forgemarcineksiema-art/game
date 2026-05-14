@@ -52,7 +52,7 @@ Prototype controls:
 
 - `W/A/S/D`: camera-relative movement
 - `Shift`: sprint
-- `Space`: jump
+- `Space`: jump, or vault/mantle when a traversal affordance is focused
 - `E`: interact with the focused debug object
 - Mouse movement over the window: orbit camera
 - Arrow keys: camera fallback controls
@@ -130,3 +130,4 @@ build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi
 - If mouse-look feels risky in a VM or remote session, use arrow keys for camera orbit. Mouse is not captured/locked in v0.2.
 - v0.3 collision is debug-only static AABB collision. If a collider layout feels odd, inspect `src/game/TestWorld.cpp` and rerun `scripts/verify.ps1` after edits.
 - v0.4 interaction focus is debug-only point/radius selection with a facing preference. If an object does not focus, move closer and face the marker, then press `E`.
+- v0.5 traversal uses `Space` only when a traversal affordance is focused. If traversal does not trigger, move to the traversal start marker and face the path direction. If no traversal is focused, `Space` remains normal jump.

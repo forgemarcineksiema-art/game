@@ -30,6 +30,27 @@ TestScene::TestScene()
     info.type = InteractableType::Info;
     info.message = "Debug marker: interaction plumbing online.";
     m_interactions.addInteractable(info);
+
+    Interactable maintenanceBox;
+    maintenanceBox.name = "Maintenance Box";
+    maintenanceBox.prompt = "Inspect Maintenance Box";
+    maintenanceBox.position = {2.8f, 0.65f, 0.25f};
+    maintenanceBox.radius = 1.6f;
+    maintenanceBox.type = InteractableType::Info;
+    maintenanceBox.message = "Maintenance box placeholder: reachable after traversal.";
+    m_interactions.addInteractable(maintenanceBox);
+
+    TraversalAffordance serviceVault;
+    serviceVault.name = "Service Barrier Vault";
+    serviceVault.prompt = "Press Space: Vault Service Barrier";
+    serviceVault.type = TraversalType::Vault;
+    serviceVault.startPosition = {2.8f, 0.0f, -2.35f};
+    serviceVault.endPosition = {2.8f, 0.0f, -0.55f};
+    serviceVault.focusRadius = 1.45f;
+    serviceVault.requiredFacingDirection = {0.0f, 0.0f, 1.0f};
+    serviceVault.requiredFacingDot = 0.15f;
+    serviceVault.durationSeconds = 0.55f;
+    m_traversal.addAffordance(serviceVault);
 }
 
 TestWorld& TestScene::world()
@@ -50,4 +71,14 @@ InteractionSystem& TestScene::interactions()
 const InteractionSystem& TestScene::interactions() const
 {
     return m_interactions;
+}
+
+TraversalSystem& TestScene::traversal()
+{
+    return m_traversal;
+}
+
+const TraversalSystem& TestScene::traversal() const
+{
+    return m_traversal;
 }

@@ -62,9 +62,19 @@ build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 120
 - [ ] Pressing `E` on the info marker logs/records the info message.
 - [ ] If an object does not focus, moving closer and facing it resolves the issue.
 
+## Traversal
+
+- [ ] Move to the service barrier traversal start marker near the low blocker.
+- [ ] Facing the traversal path shows the traversal prompt.
+- [ ] Pressing `Space` while focused starts the vault/mantle motion.
+- [ ] The player reaches the end marker on the far side of the blocker.
+- [ ] Holding `Space` does not retrigger traversal while traversal is already active.
+- [ ] Pressing `Space` away from traversal markers still performs normal jump.
+- [ ] Camera follow remains stable during and immediately after traversal.
+- [ ] The maintenance-box-like marker after the traversal route can be reached.
+
 ## Exit
 
 - [ ] `Esc` requests quit.
 - [ ] Closing the window exits cleanly.
 - [ ] Logs show startup, runtime renderer, sandbox attach/detach, renderer shutdown, and engine shutdown.
-

@@ -2,6 +2,7 @@
 
 #include "engine/input/Input.h"
 #include "engine/math/Math.h"
+#include "game/TraversalSystem.h"
 
 class TestWorld;
 
@@ -14,6 +15,11 @@ struct PlayerControllerSettings {
     float height = 1.8f;
 };
 
+enum class PlayerTraversalMode {
+    Normal,
+    Traversing,
+};
+
 struct PlayerState {
     engine::Vec3 position;
     engine::Vec3 velocity;
@@ -24,6 +30,9 @@ struct PlayerState {
     bool sprinting = false;
     float horizontalSpeed = 0.0f;
     int lastCollisionHitCount = 0;
+    PlayerTraversalMode traversalMode = PlayerTraversalMode::Normal;
+    float traversalProgress = 0.0f;
+    int activeTraversalId = 0;
 };
 
 class PlayerController {
@@ -31,7 +40,7 @@ public:
     void setSettings(const PlayerControllerSettings& settings);
     void setPosition(engine::Vec3 position);
     void setWorld(const TestWorld* world);
-    void update(float deltaSeconds, const engine::InputState& input, float cameraYawRadians);
+    void update(float deltaSeconds, const engine::InputState& input, float cameraYawRadians, const TraversalActivation* traversalActivation = nullptr);
 
     const PlayerState& state() const;
     const PlayerControllerSettings& settings() const;
@@ -40,4 +49,6 @@ private:
     PlayerControllerSettings m_settings;
     PlayerState m_state;
     const TestWorld* m_world = nullptr;
+    TraversalActivation m_activeTraversal;
+    float m_traversalElapsedSeconds = 0.0f;
 };
