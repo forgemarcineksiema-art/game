@@ -14,6 +14,7 @@ struct AppConfig {
     int windowHeight = 720;
     bool smokeTest = false;
     bool headless = false;
+    bool captureCursor = true;
     int maxFrames = 0;
     std::string rendererBackend = "auto";
     std::filesystem::path assetRoot = "assets";
@@ -30,4 +31,3 @@ ConfigParseResult ParseArguments(int argc, const char* const* argv);
 std::string BuildHelpText();
 
 } // namespace engine
-

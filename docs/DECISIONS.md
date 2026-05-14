@@ -262,3 +262,9 @@ Reason: After v0.7.1, these classes are no longer unit-test-like experiments; th
 Decision: Add `FerryOfficeData` under `src/game` for stable prototype names, prompts, messages, positions, radii, and traversal constants instead of introducing a scene file format.
 
 Reason: v0.8 is cleanup, not a content pipeline milestone. A small C++ data boundary removes repeated strings and coordinates while keeping the current prototype easy to compile, test, and refactor later.
+
+## v0.8.1 Cursor Capture
+
+Decision: Capture and hide the cursor by default during Win32 windowed play, using client-area confinement plus recentering for relative mouse/touchpad deltas. Add `--free-cursor` / `--show-cursor` for visible-cursor debugging and keep `Esc` as quit.
+
+Reason: The visible desktop cursor was distracting during play, especially on a laptop/touchpad. Keeping this in the Win32 window boundary improves camera comfort without touching gameplay systems, adding dependencies, or changing smoke/headless behavior.

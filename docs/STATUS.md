@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-05-14
+Last updated: 2026-05-15
 
 ## Milestone A - Inspection Findings
 
@@ -1296,3 +1296,116 @@ Results:
 ## v0.8 Next Honest Step
 
 Run a focused follow-up goal: v0.8.1 Ferry Office Manual Playtest Notes + Follow-up Fixes. Keep it manual-playtest driven and fix only clarity/completion issues that survive the cleanup.
+
+## v0.8.1 Baseline - 2026-05-15
+
+Goal: improve windowed input/camera comfort by making the mouse cursor less distracting for laptop/touchpad play while preserving all existing movement, interaction, traversal, smoke, renderer, and validation behavior. This goal must not add new gameplay systems.
+
+Required context read before coding:
+
+- `AGENTS.md`
+- `docs/STATUS.md`
+- `docs/RUNBOOK.md`
+- `docs/ARCHITECTURE.md`
+- `docs/TECH_DEBT.md`
+- `docs/MANUAL_TEST_CHECKLIST.md`
+- `docs/DECISIONS.md`
+
+Baseline command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+```
+
+Baseline result:
+
+- Passed.
+- Doctor found all expected project docs and structure.
+- Doctor warnings remain for tools not visible in the plain PATH: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- CMake configured with `windows-vs2022-debug`.
+- Build produced `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- CTest passed 2/2 tests.
+- Headless smoke run passed with the null renderer and engine `v0.8.0`.
+- Smoke logs showed the existing Ferry Office start state, initial Ferry Manifest focus prompt, all Ferry Office flags false, and `sliceComplete=no`.
+
+## v0.8.1 Short Implementation Plan
+
+1. Inspect the current Win32 input/window path, config parsing, and application startup to find the smallest safe cursor behavior hook.
+2. Add focused tests first for any new CLI/config cursor flags and default behavior.
+3. Add a small cursor mode to `AppConfig` and pass it through application/window creation without affecting smoke/headless mode.
+4. Implement safe Win32 cursor capture/hide behavior for windowed play, with a clear non-captured mode and preserved `Esc` quit behavior.
+5. Preserve arrow-key camera fallback and existing `Space`/`E` pressed-edge behavior.
+6. Update runbook, architecture, manual checklist, decisions, technical debt, and this status file.
+7. Run the full validation matrix, record exact results, then commit and push.
+
+## v0.8.1 Changes Made
+
+- Updated project version to `0.8.1`.
+- Added `AppConfig::captureCursor`, defaulting to captured cursor mode for windowed play.
+- Added CLI flags:
+  - `--capture-cursor`
+  - `--free-cursor`
+  - `--show-cursor`
+- Added `IWindow::setCursorCaptured(bool)` and wired application startup to apply the configured cursor mode only after a real window is created.
+- Implemented Win32 cursor capture/hide in the window boundary:
+  - hides the cursor while captured and focused,
+  - confines it to the client area,
+  - recenters it for relative mouse/touchpad deltas,
+  - releases/restores it on focus loss, close, and shutdown.
+- Preserved `Esc` as quit; quitting restores the cursor during shutdown.
+- Preserved arrow-key camera fallback, `Space`/`E` pressed-edge behavior, and smoke/headless behavior.
+- Updated runbook, architecture, manual checklist, roadmap, decisions, and technical debt docs.
+
+## v0.8.1 Intermediate Results
+
+Commands:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+ctest --preset windows-vs2022-debug --output-on-failure
+```
+
+Results:
+
+- Initial TDD build failed as expected after adding cursor config tests:
+  - `error C2039: "captureCursor": is not a member of "engine::AppConfig"`
+- After adding config flags and Win32 cursor capture behavior, `scripts/build.ps1` passed.
+- `ctest --preset windows-vs2022-debug --output-on-failure` passed, 2/2 tests.
+
+## v0.8.1 Final Validation - 2026-05-15
+
+Commands:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/doctor.ps1
+powershell -ExecutionPolicy Bypass -File scripts/configure.ps1
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+ctest --preset windows-vs2022-debug --output-on-failure
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --frames 240
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 240
+python tools/status_report.py
+```
+
+Results:
+
+- `scripts/doctor.ps1`: passed. Warnings remain for tools not visible in the plain PATH: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- `scripts/configure.ps1`: passed using `windows-vs2022-debug`.
+- `scripts/build.ps1`: passed and produced `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 2/2 tests.
+- `scripts/verify.ps1`: passed; ran doctor, configure, build, CTest, and null-renderer smoke run. Smoke logs show engine `v0.8.1`, five interactables, the initial Ferry Manifest prompt, all Ferry Office flags false, and `sliceComplete=no`.
+- `EngineApp.exe --renderer gdi --frames 240`: passed; created a Win32 window, logged `Cursor captured for windowed play.`, initialized the GDI fallback renderer, showed the existing Ferry Office debug text, logged `Cursor released.`, and exited cleanly.
+- `EngineApp.exe --renderer dx11 --frames 240`: passed; created a Win32 window and initialized DirectX 11 through WARP after hardware DX11 device creation failed. The bounded run exited cleanly.
+- `python tools/status_report.py`: passed and reported the expected v0.8.1 working tree changes before commit.
+
+## v0.8.1 Known Issues / Limitations
+
+- Cursor capture is implemented with Win32 client-area confinement and recentering, not raw input or a settings UI.
+- `Esc` still quits the app rather than toggling cursor capture. This is intentionally simple and safe for now; `--free-cursor` / `--show-cursor` are available for visible-cursor debugging.
+- A true human laptop/touchpad playtest still needs to confirm comfort on the target device.
+- DX11 hardware device creation still falls back to WARP in this environment.
+- No new gameplay systems, vehicles, NPC AI, combat, inventory, save/load, online/multiplayer, asset pipeline, physics library, or visual overhaul were added.
+
+## v0.8.1 Next Honest Step
+
+Run a focused follow-up goal: v0.9 Atmospheric Ferry Office / Island Mood Prototype. Keep it focused on making the existing micro-slice read like a place with mood and solid placeholder presentation, not on adding new gameplay systems.

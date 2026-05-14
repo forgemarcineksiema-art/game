@@ -70,6 +70,41 @@ void TestInvalidRendererIsRejected()
     Expect(!result.errors.empty(), "TestInvalidRendererIsRejected", "Invalid renderer should emit an error.");
 }
 
+void TestCursorCaptureArguments()
+{
+    {
+        const char* argv[] = {"EngineApp"};
+        const auto result = engine::ParseArguments(1, argv);
+
+        Expect(result.errors.empty(), "TestCursorCaptureArguments", "Default arguments should parse cleanly.");
+        Expect(result.config.captureCursor, "TestCursorCaptureArguments", "Windowed play should default to captured cursor mode.");
+    }
+
+    {
+        const char* argv[] = {"EngineApp", "--free-cursor"};
+        const auto result = engine::ParseArguments(2, argv);
+
+        Expect(result.errors.empty(), "TestCursorCaptureArguments", "Free cursor argument should parse cleanly.");
+        Expect(!result.config.captureCursor, "TestCursorCaptureArguments", "Free cursor argument should disable cursor capture.");
+    }
+
+    {
+        const char* argv[] = {"EngineApp", "--show-cursor"};
+        const auto result = engine::ParseArguments(2, argv);
+
+        Expect(result.errors.empty(), "TestCursorCaptureArguments", "Show cursor alias should parse cleanly.");
+        Expect(!result.config.captureCursor, "TestCursorCaptureArguments", "Show cursor alias should disable cursor capture.");
+    }
+
+    {
+        const char* argv[] = {"EngineApp", "--free-cursor", "--capture-cursor"};
+        const auto result = engine::ParseArguments(3, argv);
+
+        Expect(result.errors.empty(), "TestCursorCaptureArguments", "Cursor mode arguments should parse cleanly.");
+        Expect(result.config.captureCursor, "TestCursorCaptureArguments", "Later capture cursor argument should win.");
+    }
+}
+
 void TestNormalizePathKeepsAssetPathsInsideBase()
 {
     const std::filesystem::path base = "C:/project";
@@ -1193,6 +1228,7 @@ int main()
     TestSmokeArgumentsEnableBoundedHeadlessRun();
     TestFramesArgumentOverridesSmokeDefault();
     TestInvalidRendererIsRejected();
+    TestCursorCaptureArguments();
     TestNormalizePathKeepsAssetPathsInsideBase();
     TestClockStartsAtFrameZeroAndTicksForward();
     TestNullRendererRecordsFrameAndDebugDraw();

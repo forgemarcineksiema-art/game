@@ -1,8 +1,8 @@
 # Technical Debt
 
-Last updated: 2026-05-14
+Last updated: 2026-05-15
 
-This file lists known foundation issues after v0.8. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
+This file lists known foundation issues after v0.8.1. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
 
 ## Build / Toolchain
 
@@ -22,7 +22,8 @@ This file lists known foundation issues after v0.8. It is not a mandate to fix e
 - Input is polled in the Win32 window path, not a full input subsystem.
 - `E` has both held and pressed-edge state.
 - `Space` now behaves as a pressed-edge jump action in the Win32 path; this is correct for jumping, but docs and tests should keep that distinction explicit.
-- Mouse-look is hover-delta only. The cursor is not captured, hidden, centered, or locked.
+- Windowed mouse-look now captures/hides the cursor by default and recenters it for relative deltas, with `--free-cursor` / `--show-cursor` for debugging.
+- Cursor capture is still basic Win32 `ClipCursor` + recentering, not raw input, a settings UI, or a full input subsystem.
 - There is no key rebinding or controller support.
 
 ## Player / Camera
@@ -75,11 +76,12 @@ This file lists known foundation issues after v0.8. It is not a mandate to fix e
 - `InteractionSystem` belongs in `src/game` for now. Promote it to `src/engine` only after multiple gameplay contexts prove a stable boundary.
 - There is no scene serialization, asset registry, or editor.
 
-## Recommended Debt After v0.8
+## Recommended Debt After v0.8.1
 
 1. Run a full human keyboard/mouse playthrough of the Ferry Office loop.
 2. Tighten prompt/marker placement if human input still feels awkward.
-3. Keep `WorldState` runtime-only unless a later goal explicitly asks for persistence.
-4. Keep debug text readable before adding any richer objective or UI layer.
-5. Avoid adding a mission scripting system before the micro-slice proves its minimal state flow.
-6. Consider a small scene-data loading format only after one more hand-authored slice exposes repeated authoring pain.
+3. Validate captured cursor feel on the target laptop/touchpad and use `--free-cursor` if a remote session behaves badly.
+4. Keep `WorldState` runtime-only unless a later goal explicitly asks for persistence.
+5. Keep debug text readable before adding any richer objective or UI layer.
+6. Avoid adding a mission scripting system before the micro-slice proves its minimal state flow.
+7. Consider a small scene-data loading format only after one more hand-authored slice exposes repeated authoring pain.

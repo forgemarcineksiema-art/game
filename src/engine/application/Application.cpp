@@ -28,6 +28,7 @@ int Application::run(AppConfig config, std::unique_ptr<IGameLayer> layer)
         window = CreatePlatformWindow();
         if (window && window->create(config.windowWidth, config.windowHeight, config.appName)) {
             window->show();
+            window->setCursorCaptured(config.captureCursor);
         } else {
             Logger::warning("Window creation unavailable; falling back to headless renderer.");
             window.reset();

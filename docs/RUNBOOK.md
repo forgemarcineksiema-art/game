@@ -54,9 +54,9 @@ Prototype controls:
 - `Shift`: sprint
 - `Space`: jump, or vault/mantle when a traversal affordance is focused
 - `E`: interact with the focused debug object
-- Mouse movement over the window: orbit camera
+- Mouse/touchpad movement: orbit camera. Windowed play captures and hides the cursor by default.
 - Arrow keys: camera fallback controls
-- `Esc`: quit
+- `Esc`: quit and restore the cursor
 
 Headless smoke mode:
 
@@ -71,6 +71,16 @@ scripts/run.ps1 -Args @("--renderer", "dx11", "--frames", "120")
 scripts/run.ps1 -Args @("--renderer", "gdi", "--frames", "120")
 scripts/run.ps1 -Args @("--renderer", "null", "--headless", "--frames", "120")
 ```
+
+Cursor mode:
+
+```powershell
+scripts/run.ps1 -Args @("--renderer", "gdi", "--capture-cursor")
+scripts/run.ps1 -Args @("--renderer", "gdi", "--free-cursor")
+scripts/run.ps1 -Args @("--renderer", "gdi", "--show-cursor")
+```
+
+`--capture-cursor` is the default for windowed play. It hides and confines the cursor to the game window so mouse/touchpad camera movement is less distracting. `--free-cursor` and `--show-cursor` keep the desktop cursor visible for debugging or remote-session troubleshooting. Arrow keys continue to orbit the camera in either mode.
 
 ## Test
 
@@ -127,7 +137,7 @@ build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi
 - If the windowed app fails, run the headless path: `scripts/run.ps1 -Args @("--smoke-test", "--frames", "3")`.
 - If DirectX 11 fails, try `scripts/run.ps1 -Args @("--renderer", "gdi", "--frames", "120")`.
 - If all windowed rendering fails, keep `--renderer null --headless` working while the renderer issue is fixed.
-- If mouse-look feels risky in a VM or remote session, use arrow keys for camera orbit. Mouse is not captured/locked in v0.2.
+- If captured mouse-look feels risky in a VM or remote session, run with `--free-cursor` and use arrow keys for camera orbit.
 - v0.3 collision is debug-only static AABB collision. If a collider layout feels odd, inspect `src/game/TestWorld.cpp` and rerun `scripts/verify.ps1` after edits.
 - v0.4 interaction focus is debug-only point/radius selection with a facing preference. If an object does not focus, move closer and face the marker, then press `E`.
 - v0.5 traversal uses `Space` only when a traversal affordance is focused. If traversal does not trigger, move near the traversal start marker and face the path direction. If no traversal is focused, `Space` remains normal jump.

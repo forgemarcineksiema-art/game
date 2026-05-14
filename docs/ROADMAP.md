@@ -105,6 +105,15 @@ Status: implemented as a focused polish pass. The Service Barrier Vault start is
 
 Status: implemented as a cleanup milestone with no new gameplay systems.
 
+## v0.8.1 - Input / Camera Comfort + Cursor Capture Polish
+
+- Hide and confine the cursor by default during windowed play.
+- Keep a visible cursor mode for debugging and remote sessions.
+- Preserve mouse/touchpad camera, arrow-key fallback, `Esc` quit, and smoke/headless behavior.
+- Keep scope on comfort, not new gameplay systems.
+
+Status: implemented as an input/camera comfort polish pass.
+
 ## Recommended Next Goal
 
-Build v0.8.1 Ferry Office Manual Playtest Notes + Follow-up Fixes.
+Build v0.9 Atmospheric Ferry Office / Island Mood Prototype.

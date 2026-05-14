@@ -68,6 +68,16 @@ ConfigParseResult ParseArguments(int argc, const char* const* argv)
             continue;
         }
 
+        if (argument == "--capture-cursor") {
+            result.config.captureCursor = true;
+            continue;
+        }
+
+        if (argument == "--free-cursor" || argument == "--show-cursor") {
+            result.config.captureCursor = false;
+            continue;
+        }
+
         if (ReadValue(argc, argv, index, argument, "--frames", value)) {
             if (!ParsePositiveInt(value, result.config.maxFrames)) {
                 result.errors.push_back("--frames must be a positive integer.");
@@ -117,6 +127,9 @@ std::string BuildHelpText()
         << "  --smoke-test          Run a bounded headless startup/render loop and exit.\n"
         << "  --frames <count>      Exit after count frames.\n"
         << "  --headless            Run without opening a platform window.\n"
+        << "  --capture-cursor      Hide and confine the cursor during windowed play (default).\n"
+        << "  --free-cursor         Keep the cursor visible and uncaptured for desktop debugging.\n"
+        << "  --show-cursor         Alias for --free-cursor.\n"
         << "  --renderer <backend>  Select auto, null, gdi, or dx11.\n"
         << "  --width <pixels>      Window width for windowed runs.\n"
         << "  --height <pixels>     Window height for windowed runs.\n"

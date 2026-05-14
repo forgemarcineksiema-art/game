@@ -1,6 +1,6 @@
 # Manual Test Checklist
 
-Last updated: 2026-05-14
+Last updated: 2026-05-15
 
 Use this after automated validation when a change affects player feel, camera, collision, renderer, or interactions.
 
@@ -17,6 +17,12 @@ Run GDI for readable debug text:
 
 ```powershell
 build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi
+```
+
+Run with visible desktop cursor for troubleshooting:
+
+```powershell
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --free-cursor
 ```
 
 Optional bounded DX11 run:
@@ -36,7 +42,9 @@ build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 120
 
 ## Camera
 
-- [ ] Mouse movement over the window orbits the camera.
+- [ ] Windowed play hides/confines the cursor by default after the game window is focused.
+- [ ] Mouse/touchpad movement orbits the camera without the desktop cursor distracting from play.
+- [ ] Running with `--free-cursor` keeps the desktop cursor visible for debugging.
 - [ ] Arrow keys orbit the camera as a fallback.
 - [ ] Pitch clamps and does not flip the camera.
 - [ ] Normal walking does not create obvious camera jitter.
@@ -109,6 +117,6 @@ build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 120
 
 ## Exit
 
-- [ ] `Esc` requests quit.
+- [ ] `Esc` requests quit and restores the cursor.
 - [ ] Closing the window exits cleanly.
 - [ ] Logs show startup, runtime renderer, sandbox attach/detach, renderer shutdown, and engine shutdown.

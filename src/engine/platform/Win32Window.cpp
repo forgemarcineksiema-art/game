@@ -82,6 +82,14 @@ public:
     {
         ShowWindow(m_window, SW_SHOW);
         UpdateWindow(m_window);
+        m_hasFocus = GetForegroundWindow() == m_window;
+        updateCursorState();
+    }
+
+    void setCursorCaptured(bool captured) override
+    {
+        m_cursorCaptureRequested = captured;
+        updateCursorState();
     }
 
     void processEvents() override
@@ -98,6 +106,7 @@ public:
             TranslateMessage(&message);
             DispatchMessageW(&message);
         }
+        refreshCursorClip();
 
         m_input.moveForward = AxisFromKeys('W', 'S');
         m_input.moveRight = AxisFromKeys('D', 'A');
@@ -146,6 +155,7 @@ public:
 
     void shutdown() override
     {
+        releaseCursor();
         if (m_window) {
             DestroyWindow(m_window);
             m_window = nullptr;
@@ -169,21 +179,33 @@ private:
             switch (message) {
             case WM_CLOSE:
                 self->m_shouldClose = true;
+                self->releaseCursor();
                 DestroyWindow(window);
                 return 0;
             case WM_DESTROY:
                 self->m_shouldClose = true;
+                self->releaseCursor();
+                return 0;
+            case WM_ACTIVATE:
+                self->m_hasFocus = LOWORD(wParam) != WA_INACTIVE;
+                self->updateCursorState();
+                break;
+            case WM_MOUSEACTIVATE:
+                self->m_hasFocus = true;
+                self->updateCursorState();
+                return MA_ACTIVATE;
+            case WM_SETFOCUS:
+                self->m_hasFocus = true;
+                self->updateCursorState();
+                return 0;
+            case WM_KILLFOCUS:
+                self->m_hasFocus = false;
+                self->releaseCursor();
                 return 0;
             case WM_MOUSEMOVE: {
                 const int x = GET_X_LPARAM(lParam);
                 const int y = GET_Y_LPARAM(lParam);
-                if (self->m_hasMousePosition) {
-                    self->m_input.mouseDeltaX += static_cast<float>(x - self->m_lastMouseX);
-                    self->m_input.mouseDeltaY += static_cast<float>(y - self->m_lastMouseY);
-                }
-                self->m_lastMouseX = x;
-                self->m_lastMouseY = y;
-                self->m_hasMousePosition = true;
+                self->handleMouseMove(x, y);
                 return 0;
             }
             default:
@@ -194,9 +216,138 @@ private:
         return DefWindowProcW(window, message, wParam, lParam);
     }
 
+    void handleMouseMove(int x, int y)
+    {
+        if (m_cursorCapturedActive) {
+            const POINT center = clientCenter();
+            const int deltaX = x - center.x;
+            const int deltaY = y - center.y;
+            if (deltaX != 0 || deltaY != 0) {
+                m_input.mouseDeltaX += static_cast<float>(deltaX);
+                m_input.mouseDeltaY += static_cast<float>(deltaY);
+                centerCursor();
+            }
+            m_lastMouseX = center.x;
+            m_lastMouseY = center.y;
+            m_hasMousePosition = true;
+            return;
+        }
+
+        if (m_hasMousePosition) {
+            m_input.mouseDeltaX += static_cast<float>(x - m_lastMouseX);
+            m_input.mouseDeltaY += static_cast<float>(y - m_lastMouseY);
+        }
+        m_lastMouseX = x;
+        m_lastMouseY = y;
+        m_hasMousePosition = true;
+    }
+
+    void updateCursorState()
+    {
+        const bool shouldCapture = m_cursorCaptureRequested && m_hasFocus && m_window != nullptr;
+        if (shouldCapture == m_cursorCapturedActive) {
+            return;
+        }
+
+        if (shouldCapture) {
+            captureCursor();
+        } else {
+            releaseCursor();
+        }
+    }
+
+    void captureCursor()
+    {
+        if (!m_window) {
+            return;
+        }
+
+        m_cursorCapturedActive = true;
+        setCursorVisible(false);
+        refreshCursorClip();
+        centerCursor();
+        Logger::info("Cursor captured for windowed play.");
+    }
+
+    void releaseCursor()
+    {
+        if (!m_cursorCapturedActive && !m_cursorHidden) {
+            return;
+        }
+
+        ClipCursor(nullptr);
+        setCursorVisible(true);
+        m_cursorCapturedActive = false;
+        m_hasMousePosition = false;
+        Logger::info("Cursor released.");
+    }
+
+    void refreshCursorClip()
+    {
+        if (!m_cursorCapturedActive || !m_window) {
+            return;
+        }
+
+        RECT clientRect {};
+        if (!GetClientRect(m_window, &clientRect)) {
+            return;
+        }
+
+        POINT topLeft {clientRect.left, clientRect.top};
+        POINT bottomRight {clientRect.right, clientRect.bottom};
+        ClientToScreen(m_window, &topLeft);
+        ClientToScreen(m_window, &bottomRight);
+
+        RECT clipRect {topLeft.x, topLeft.y, bottomRight.x, bottomRight.y};
+        ClipCursor(&clipRect);
+    }
+
+    POINT clientCenter() const
+    {
+        RECT clientRect {};
+        GetClientRect(m_window, &clientRect);
+        POINT center {
+            (clientRect.right - clientRect.left) / 2,
+            (clientRect.bottom - clientRect.top) / 2,
+        };
+        return center;
+    }
+
+    void centerCursor()
+    {
+        if (!m_window) {
+            return;
+        }
+
+        POINT center = clientCenter();
+        POINT screenCenter = center;
+        ClientToScreen(m_window, &screenCenter);
+        SetCursorPos(screenCenter.x, screenCenter.y);
+        m_lastMouseX = center.x;
+        m_lastMouseY = center.y;
+        m_hasMousePosition = true;
+    }
+
+    void setCursorVisible(bool visible)
+    {
+        if (visible && m_cursorHidden) {
+            while (ShowCursor(TRUE) < 0) {
+            }
+            m_cursorHidden = false;
+        } else if (!visible && !m_cursorHidden) {
+            while (ShowCursor(FALSE) >= 0) {
+            }
+            m_cursorHidden = true;
+        }
+    }
+
     HWND m_window = nullptr;
     bool m_shouldClose = false;
     InputState m_input;
+    bool m_hasFocus = false;
+    bool m_cursorCaptureRequested = false;
+    bool m_cursorCapturedActive = false;
+    bool m_cursorHidden = false;
     bool m_hasMousePosition = false;
     int m_lastMouseX = 0;
     int m_lastMouseY = 0;

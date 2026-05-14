@@ -14,6 +14,7 @@ public:
 
     virtual bool create(int width, int height, std::string_view title) = 0;
     virtual void show() = 0;
+    virtual void setCursorCaptured(bool captured) = 0;
     virtual void processEvents() = 0;
     virtual InputState inputState() const = 0;
     virtual void setTitle(std::string_view title) = 0;

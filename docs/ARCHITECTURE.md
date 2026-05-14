@@ -12,7 +12,7 @@ The project is a small custom C++20 runtime with explicit boundaries between app
 
 `src/engine/platform/Window.h` defines `IWindow`.
 
-On Windows, `src/engine/platform/Win32Window.cpp` provides a small Win32 window implementation. It also owns the current input snapshot and title updates. Non-Windows builds can still use headless smoke mode through the null renderer path.
+On Windows, `src/engine/platform/Win32Window.cpp` provides a small Win32 window implementation. It also owns the current input snapshot, cursor capture/hide behavior, relative mouse recentering for camera control, and title updates. Non-Windows builds can still use headless smoke mode through the null renderer path.
 
 ## Input
 
@@ -26,7 +26,7 @@ On Windows, `src/engine/platform/Win32Window.cpp` provides a small Win32 window 
 - mouse deltas,
 - quit.
 
-The Win32 layer maps `W/A/S/D`, `Shift`, `Space`, `E`, `Esc`, mouse movement, and arrow-key camera fallback into this state. `E` is tracked as both held and pressed-edge state so gameplay code can trigger one interaction per key press. Mouse movement is safe window-hover delta, not captured or locked.
+The Win32 layer maps `W/A/S/D`, `Shift`, `Space`, `E`, `Esc`, mouse/touchpad movement, and arrow-key camera fallback into this state. `E` is tracked as both held and pressed-edge state so gameplay code can trigger one interaction per key press. Windowed play captures and hides the cursor by default, confines it to the client area while focused, recenters it for relative mouse deltas, and restores it on focus loss or shutdown. `--free-cursor` / `--show-cursor` keep the old visible-cursor behavior for debugging.
 
 ## Math
 
@@ -48,6 +48,9 @@ The Win32 layer maps `W/A/S/D`, `Shift`, `Space`, `E`, `Esc`, mouse movement, an
 - `--frames <count>`
 - `--headless`
 - `--renderer <auto|null|gdi|dx11>`
+- `--capture-cursor`
+- `--free-cursor`
+- `--show-cursor`
 - `--width <pixels>`
 - `--height <pixels>`
 - `--assets <path>`
