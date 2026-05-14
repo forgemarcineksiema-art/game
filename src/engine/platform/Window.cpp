@@ -12,4 +12,3 @@ std::unique_ptr<IWindow> CreatePlatformWindow()
 } // namespace engine
 
 #endif
-

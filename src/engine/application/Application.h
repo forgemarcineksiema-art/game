@@ -5,6 +5,7 @@
 #include "engine/renderer/Renderer.h"
 
 #include <memory>
+#include <string>
 
 namespace engine {
 
@@ -15,6 +16,7 @@ public:
     virtual void onAttach() {}
     virtual void onUpdate(double deltaSeconds, const InputState& input) = 0;
     virtual void onRender(IRenderer& renderer) = 0;
+    virtual std::string debugText() const { return {}; }
     virtual void onDetach() {}
 };
 
@@ -24,4 +26,3 @@ public:
 };
 
 } // namespace engine
-

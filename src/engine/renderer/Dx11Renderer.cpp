@@ -3,9 +3,11 @@
 #if defined(_WIN32)
 
 #include "engine/core/Logger.h"
+#include "engine/renderer/DebugProjection.h"
 
 #include <d3dcompiler.h>
 
+#include <algorithm>
 #include <array>
 #include <cstring>
 #include <iterator>
@@ -55,6 +57,30 @@ void AddLine(std::vector<Dx11Renderer::Vertex>& vertices,
 {
     vertices.push_back({x0, y0, 0.0f, r, g, b, 1.0f});
     vertices.push_back({x1, y1, 0.0f, r, g, b, 1.0f});
+}
+
+float AspectRatio(const RendererConfig& config)
+{
+    return static_cast<float>(std::max(config.width, 1)) / static_cast<float>(std::max(config.height, 1));
+}
+
+void AddProjectedLine(
+    std::vector<Dx11Renderer::Vertex>& vertices,
+    const DebugCamera& camera,
+    float aspectRatio,
+    Vec3 from,
+    Vec3 to,
+    Color color)
+{
+    ProjectedPoint a;
+    ProjectedPoint b;
+    if (!ProjectWorldPoint(camera, aspectRatio, from, a)
+        || !ProjectWorldPoint(camera, aspectRatio, to, b)) {
+        return;
+    }
+
+    vertices.push_back({a.x, a.y, 0.0f, color.r, color.g, color.b, color.a});
+    vertices.push_back({b.x, b.y, 0.0f, color.r, color.g, color.b, color.a});
 }
 
 } // namespace
@@ -301,24 +327,83 @@ void Dx11Renderer::beginFrame(unsigned long long)
     m_context->RSSetViewports(1, &viewport);
 }
 
+void Dx11Renderer::setDebugCamera(const DebugCamera& camera)
+{
+    m_debugCamera = camera;
+}
+
 void Dx11Renderer::drawDebugGridAndAxes()
 {
+    std::vector<Vertex> vertices;
+    const float aspectRatio = AspectRatio(m_config);
+    for (int line = -10; line <= 10; ++line) {
+        const float p = static_cast<float>(line);
+        AddProjectedLine(vertices, m_debugCamera, aspectRatio, {p, 0.0f, -10.0f}, {p, 0.0f, 10.0f}, {0.22f, 0.28f, 0.36f, 1.0f});
+        AddProjectedLine(vertices, m_debugCamera, aspectRatio, {-10.0f, 0.0f, p}, {10.0f, 0.0f, p}, {0.22f, 0.28f, 0.36f, 1.0f});
+    }
+
+    AddProjectedLine(vertices, m_debugCamera, aspectRatio, {-10.0f, 0.02f, 0.0f}, {10.0f, 0.02f, 0.0f}, {0.95f, 0.24f, 0.24f, 1.0f});
+    AddProjectedLine(vertices, m_debugCamera, aspectRatio, {0.0f, 0.02f, -10.0f}, {0.0f, 0.02f, 10.0f}, {0.24f, 0.85f, 0.38f, 1.0f});
+    drawLineVertices(vertices);
+}
+
+void Dx11Renderer::drawDebugLine(Vec3 from, Vec3 to, Color color)
+{
+    std::vector<Vertex> vertices;
+    AddProjectedLine(vertices, m_debugCamera, AspectRatio(m_config), from, to, color);
+    drawLineVertices(vertices);
+}
+
+void Dx11Renderer::drawDebugBox(Vec3 center, Vec3 halfExtents, Color color)
+{
+    const Vec3 corners[] = {
+        center + Vec3 {-halfExtents.x, -halfExtents.y, -halfExtents.z},
+        center + Vec3 { halfExtents.x, -halfExtents.y, -halfExtents.z},
+        center + Vec3 { halfExtents.x, -halfExtents.y,  halfExtents.z},
+        center + Vec3 {-halfExtents.x, -halfExtents.y,  halfExtents.z},
+        center + Vec3 {-halfExtents.x,  halfExtents.y, -halfExtents.z},
+        center + Vec3 { halfExtents.x,  halfExtents.y, -halfExtents.z},
+        center + Vec3 { halfExtents.x,  halfExtents.y,  halfExtents.z},
+        center + Vec3 {-halfExtents.x,  halfExtents.y,  halfExtents.z},
+    };
+
+    const int edges[][2] = {
+        {0, 1}, {1, 2}, {2, 3}, {3, 0},
+        {4, 5}, {5, 6}, {6, 7}, {7, 4},
+        {0, 4}, {1, 5}, {2, 6}, {3, 7},
+    };
+
+    std::vector<Vertex> vertices;
+    for (const auto& edge : edges) {
+        AddProjectedLine(vertices, m_debugCamera, AspectRatio(m_config), corners[edge[0]], corners[edge[1]], color);
+    }
+    drawLineVertices(vertices);
+}
+
+void Dx11Renderer::drawDebugText(std::string_view)
+{
+}
+
+void Dx11Renderer::drawLineVertices(const std::vector<Vertex>& vertices)
+{
+    if (vertices.empty()) {
+        return;
+    }
+
+    Microsoft::WRL::ComPtr<ID3D11Buffer> buffer;
+    if (!createBuffer(vertices.data(), static_cast<unsigned int>(vertices.size()), buffer)) {
+        return;
+    }
+
     const UINT stride = sizeof(Vertex);
     const UINT offset = 0;
-
+    ID3D11Buffer* vertexBuffer = buffer.Get();
     m_context->IASetInputLayout(m_inputLayout.Get());
+    m_context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+    m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
     m_context->VSSetShader(m_vertexShader.Get(), nullptr, 0);
     m_context->PSSetShader(m_pixelShader.Get(), nullptr, 0);
-
-    ID3D11Buffer* gridBuffer = m_gridBuffer.Get();
-    m_context->IASetVertexBuffers(0, 1, &gridBuffer, &stride, &offset);
-    m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
-    m_context->Draw(m_gridVertexCount, 0);
-
-    ID3D11Buffer* triangleBuffer = m_triangleBuffer.Get();
-    m_context->IASetVertexBuffers(0, 1, &triangleBuffer, &stride, &offset);
-    m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    m_context->Draw(3, 0);
+    m_context->Draw(static_cast<UINT>(vertices.size()), 0);
 }
 
 void Dx11Renderer::endFrame()

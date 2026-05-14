@@ -4,11 +4,16 @@
 
 #if defined(_WIN32)
 
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 #include <d3d11.h>
 #include <wrl/client.h>
+
+#include <vector>
 
 namespace engine {
 
@@ -16,7 +21,11 @@ class Dx11Renderer final : public IRenderer {
 public:
     bool initialize(const RendererConfig& config) override;
     void beginFrame(unsigned long long frameIndex) override;
+    void setDebugCamera(const DebugCamera& camera) override;
     void drawDebugGridAndAxes() override;
+    void drawDebugLine(Vec3 from, Vec3 to, Color color) override;
+    void drawDebugBox(Vec3 center, Vec3 halfExtents, Color color) override;
+    void drawDebugText(std::string_view text) override;
     void endFrame() override;
     void shutdown() override;
     std::string name() const override;
@@ -37,8 +46,10 @@ private:
     bool createShaders();
     bool createDebugGeometry();
     bool createBuffer(const Vertex* vertices, unsigned int vertexCount, Microsoft::WRL::ComPtr<ID3D11Buffer>& buffer);
+    void drawLineVertices(const std::vector<Vertex>& vertices);
 
     RendererConfig m_config;
+    DebugCamera m_debugCamera;
     HWND m_window = nullptr;
     Microsoft::WRL::ComPtr<ID3D11Device> m_device;
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_context;

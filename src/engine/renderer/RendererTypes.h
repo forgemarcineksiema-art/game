@@ -1,5 +1,7 @@
 #pragma once
 
+#include "engine/math/Math.h"
+
 #include <string>
 
 namespace engine {
@@ -20,5 +22,11 @@ struct RendererConfig {
     void* nativeWindow = nullptr;
 };
 
-} // namespace engine
+struct DebugCamera {
+    Vec3 position = {0.0f, 6.0f, -8.0f};
+    Vec3 target = {0.0f, 1.0f, 0.0f};
+    float fovYRadians = Radians(60.0f);
+    float nearPlane = 0.05f;
+};
 
+} // namespace engine

@@ -58,3 +58,33 @@ Deferred until later milestones:
 - Asset import pipeline.
 - NPC AI.
 - Mission tooling.
+
+## v0.2 Minimal Math Instead of a Library
+
+Decision: Add `src/engine/math/Math.h` with only the vector and helper operations needed by the player/camera prototype.
+
+Reason: v0.2 needs deterministic movement, yaw/pitch camera math, and debug projection. A full math dependency would be overkill and would add setup risk before the engine needs matrices, quaternions, or SIMD.
+
+## v0.2 Input Snapshot
+
+Decision: Extend the existing Win32 window path to provide an `InputState` snapshot instead of adding a global input manager.
+
+Reason: The prototype only needs movement axes, sprint, jump, mouse deltas, arrow fallback, and quit. Keeping input inside the window boundary avoids spreading direct Win32 key checks through game code.
+
+## v0.2 Mouse-Look Scope
+
+Decision: Use safe mouse movement over the window plus arrow-key fallback. Do not capture, hide, or lock the cursor yet.
+
+Reason: Cursor capture is easy to get wrong in short smoke runs and remote/VM sessions. v0.2 proves camera orbit and player feel without risking a hostile development loop.
+
+## v0.2 Debug Rendering Scope
+
+Decision: Extend `IRenderer` with simple debug lines, boxes, camera, and text instead of adding meshes/materials.
+
+Reason: The goal is player/camera feel. A mesh pipeline, material system, or UI layer would be premature.
+
+## v0.2 Dependencies
+
+Decision: Add no new third-party dependencies.
+
+Reason: Standard C++ and the existing Windows SDK path are enough for the prototype.

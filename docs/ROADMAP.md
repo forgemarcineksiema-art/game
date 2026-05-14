@@ -19,6 +19,8 @@ This roadmap is intentionally realistic. The project is a custom engine workbenc
 - Keep collisions simple or mocked.
 - Validate with smoke tests and one manual windowed run.
 
+Status: implemented in this branch as a focused prototype with debug primitives, camera-relative movement, sprint, jump, simple obstacle push-out, and lightweight tests.
+
 ## v0.3 - World / Collision Prototype
 
 - Add a simple static world representation.
@@ -52,4 +54,4 @@ This roadmap is intentionally realistic. The project is a custom engine workbenc
 
 ## Recommended Next Goal
 
-Build v0.2 third-person player controller + camera prototype.
+Build v0.3 World / Collision Prototype.

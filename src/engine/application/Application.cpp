@@ -71,9 +71,21 @@ int Application::run(AppConfig config, std::unique_ptr<IGameLayer> layer)
 
         const double deltaSeconds = engine.clock().tick();
         InputState input;
-        input.quitRequested = !running;
+        if (window) {
+            input = window->inputState();
+            if (input.quitRequested) {
+                running = false;
+            }
+        }
+        input.quitRequested = input.quitRequested || !running;
 
         layer->onUpdate(deltaSeconds, input);
+        if (window && engine.clock().frameIndex() % 10 == 0) {
+            const std::string debugText = layer->debugText();
+            if (!debugText.empty()) {
+                window->setTitle(config.appName + " | " + debugText);
+            }
+        }
         renderer->beginFrame(engine.clock().frameIndex());
         layer->onRender(*renderer);
         renderer->endFrame();

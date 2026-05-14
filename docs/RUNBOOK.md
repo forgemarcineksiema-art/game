@@ -48,6 +48,15 @@ Windowed runtime, using the last configured preset:
 scripts/run.ps1
 ```
 
+v0.2 controls:
+
+- `W/A/S/D`: camera-relative movement
+- `Shift`: sprint
+- `Space`: jump
+- Mouse movement over the window: orbit camera
+- Arrow keys: camera fallback controls
+- `Esc`: quit
+
 Headless smoke mode:
 
 ```powershell
@@ -58,7 +67,7 @@ Renderer selection:
 
 ```powershell
 scripts/run.ps1 -Args @("--renderer", "dx11", "--frames", "120")
-scripts/run.ps1 -Args @("--renderer", "gdi")
+scripts/run.ps1 -Args @("--renderer", "gdi", "--frames", "120")
 scripts/run.ps1 -Args @("--renderer", "null", "--headless", "--frames", "120")
 ```
 
@@ -103,3 +112,4 @@ Prints git status, important file presence, build output presence, and the openi
 - If the windowed app fails, run the headless path: `scripts/run.ps1 -Args @("--smoke-test", "--frames", "3")`.
 - If DirectX 11 fails, try `scripts/run.ps1 -Args @("--renderer", "gdi", "--frames", "120")`.
 - If all windowed rendering fails, keep `--renderer null --headless` working while the renderer issue is fixed.
+- If mouse-look feels risky in a VM or remote session, use arrow keys for camera orbit. Mouse is not captured/locked in v0.2.

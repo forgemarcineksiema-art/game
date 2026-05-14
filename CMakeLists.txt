@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.24)
 
 project(GameEngineFoundation
-    VERSION 0.1.0
+    VERSION 0.2.0
     DESCRIPTION "AI-native C++ action/adventure engine foundation"
     LANGUAGES CXX
 )
@@ -63,12 +63,37 @@ else()
     endif()
 endif()
 
-add_executable(EngineApp
+add_library(GamePrototype STATIC
+    src/game/PlayerController.cpp
     src/game/SandboxLayer.cpp
+    src/game/TestScene.cpp
+    src/game/ThirdPersonCamera.cpp
+)
+
+target_include_directories(GamePrototype
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
+target_link_libraries(GamePrototype PUBLIC EngineCore)
+
+if(MSVC)
+    target_compile_options(GamePrototype PRIVATE /W4 /permissive-)
+    if(ENGINE_WARNINGS_AS_ERRORS)
+        target_compile_options(GamePrototype PRIVATE /WX)
+    endif()
+else()
+    target_compile_options(GamePrototype PRIVATE -Wall -Wextra -Wpedantic)
+    if(ENGINE_WARNINGS_AS_ERRORS)
+        target_compile_options(GamePrototype PRIVATE -Werror)
+    endif()
+endif()
+
+add_executable(EngineApp
     src/game/main.cpp
 )
 
-target_link_libraries(EngineApp PRIVATE EngineCore)
+target_link_libraries(EngineApp PRIVATE GamePrototype)
 
 if(ENGINE_BUILD_TESTS)
     enable_testing()
@@ -77,7 +102,7 @@ if(ENGINE_BUILD_TESTS)
         tests/EngineCoreTests.cpp
     )
 
-    target_link_libraries(EngineCoreTests PRIVATE EngineCore)
+    target_link_libraries(EngineCoreTests PRIVATE EngineCore GamePrototype)
 
     add_test(NAME EngineCoreTests COMMAND EngineCoreTests)
     add_test(NAME EngineSmokeTest COMMAND EngineApp --smoke-test --frames 3)

@@ -135,3 +135,121 @@ powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
 ## Next Honest Step
 
 Use the v0.1 foundation for the next goal: v0.2 third-person player controller + camera prototype. Start by reading `AGENTS.md`, `docs/AI_WORKFLOW.md`, and this status file, then run `scripts/verify.ps1` before changing code.
+
+## v0.2 Baseline - 2026-05-14
+
+Required v0.1 docs read before coding:
+
+- `AGENTS.md`
+- `docs/STATUS.md`
+- `docs/RUNBOOK.md`
+- `docs/ARCHITECTURE.md`
+- `docs/ROADMAP.md`
+- `docs/AI_WORKFLOW.md`
+
+Baseline command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+```
+
+Baseline result:
+
+- Passed.
+- Doctor found expected project files and scripts.
+- Doctor warnings remain: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg` are not visible in the plain PATH.
+- CMake configured with `windows-vs2022-debug`.
+- Build produced `EngineCore.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- CTest passed 2/2 tests.
+- Headless smoke run passed with the null renderer.
+
+## v0.2 Short Implementation Plan
+
+1. Add tests first for the new deterministic logic: vector math, camera clamp/smoothing, player movement normalization, and frame-bounded smoke behavior.
+2. Add minimal math under `src/engine/math` with `Vec2`, `Vec3`, clamp, lerp, radians/degrees, normalization, yaw helpers, and camera orbit helpers only as needed.
+3. Extend input under `src/engine/input` with an `InputState` that carries movement axes, sprint, jump, camera yaw/pitch input, mouse deltas, and quit.
+4. Extend the Win32 window path to update keyboard and mouse state safely. If mouse capture is risky, keep arrow-key camera fallback working and document limitations.
+5. Add v0.2 game modules under `src/game`: a player controller, third-person camera controller, and a small sandbox scene with floor/obstacles.
+6. Extend the renderer debug interface with simple world-space debug primitives: grid, boxes, player proxy, camera marker, and text/debug lines where supported.
+7. Keep smoke mode deterministic and bounded. Smoke mode should exercise the update path without requiring a real window or user input.
+8. Update docs and run the full validation matrix: doctor, configure, build, CTest, verify, smoke run wrapper, short GDI windowed run, and short DX11 windowed run if practical.
+
+## v0.2 Changes Made
+
+- Updated project version to `0.2.0`.
+- Added minimal math in `src/engine/math/Math.h`.
+- Extended `InputState` and the Win32 window path for:
+  - `W/A/S/D` movement,
+  - `Shift` sprint,
+  - `Space` jump,
+  - mouse camera delta,
+  - arrow-key camera fallback,
+  - `Esc` quit.
+- Added `PlayerController` with camera-relative movement, sprint, jump/gravity, grounded state, facing yaw, and simple obstacle push-out.
+- Added `ThirdPersonCamera` with yaw/pitch orbit, distance, height offset, pitch clamp, and exponential smoothing.
+- Added `TestScene` with simple obstacle boxes.
+- Extended renderer debug support with debug camera, lines, boxes, and best-effort text.
+- Updated `SandboxLayer` to render a floor/grid, obstacle boxes, player proxy, facing line, camera target marker, debug logs, and window-title debug state.
+- Added lightweight tests for math/player/camera behavior in `tests/EngineCoreTests.cpp`.
+
+## v0.2 Commands Run So Far
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+ctest --preset windows-vs2022-debug --output-on-failure
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; ctest --preset windows-vs2022-debug --output-on-failure
+powershell -ExecutionPolicy Bypass -File scripts/run.ps1 -Args @('--smoke-test','--frames','3')
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --frames 30
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 30
+```
+
+## v0.2 Intermediate Results
+
+- Initial TDD build failed as expected because `engine/math/Math.h` did not exist yet.
+- First implementation build failed on Windows-specific issues:
+  - missing `GET_X_LPARAM` / `GET_Y_LPARAM` include,
+  - `min/max` macro conflict with `std::max`.
+- Build passed after adding `windowsx.h` and `NOMINMAX`.
+- CTest initially failed because the movement normalization test asserted one second of position movement while the controller intentionally clamps large frame deltas.
+- Test was corrected to assert `horizontalSpeed`, the intended movement normalization contract.
+- Build + CTest then passed: 2/2 tests.
+- Smoke run passed with null renderer.
+- Short GDI windowed run passed.
+- Short DX11 windowed run passed; DX11 again used WARP after hardware/debug device creation failed.
+
+## v0.2 Final Validation - 2026-05-14
+
+Commands:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/doctor.ps1
+powershell -ExecutionPolicy Bypass -File scripts/configure.ps1
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+ctest --preset windows-vs2022-debug --output-on-failure
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+powershell -ExecutionPolicy Bypass -File scripts/run.ps1 -Args @('--smoke-test','--frames','3')
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --frames 30
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 30
+```
+
+Results:
+
+- `scripts/doctor.ps1`: passed. Warnings remain for tools not visible in the plain PATH: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- `scripts/configure.ps1`: passed using `windows-vs2022-debug`.
+- `scripts/build.ps1`: passed and produced `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 2/2 tests.
+- `scripts/verify.ps1`: passed; ran doctor, configure, build, CTest, and null-renderer smoke run.
+- `scripts/run.ps1 -Args @('--smoke-test','--frames','3')`: passed with the null renderer.
+- `EngineApp.exe --renderer gdi --frames 30`: passed; created a Win32 window and initialized the GDI fallback renderer.
+- `EngineApp.exe --renderer dx11 --frames 30`: passed; created a Win32 window and initialized DirectX 11 through WARP after hardware/debug device creation failed.
+
+## v0.2 Known Issues / Limitations
+
+- Mouse-look is window-hover delta only. The cursor is not captured, hidden, or locked in v0.2; arrow keys are the safe fallback.
+- DX11 hardware/debug device creation still fails in this environment, but WARP initializes and the bounded DX11 run exits cleanly.
+- Collision is intentionally simple: floor clamp plus lightweight horizontal push-out from debug obstacle boxes. No physics engine has been added.
+- Debug rendering is line/box based. There is no mesh, material, animation, UI, or asset pipeline yet.
+
+## v0.2 Next Honest Step
+
+Use the v0.2 foundation for the next goal: v0.3 World / Collision Prototype. Keep it focused on static world representation, primitive collision queries, and debug collision visualization.

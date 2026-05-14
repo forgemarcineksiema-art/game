@@ -21,6 +21,21 @@ void NullRenderer::drawDebugGridAndAxes()
     ++m_debugDrawCount;
 }
 
+void NullRenderer::drawDebugLine(Vec3, Vec3, Color)
+{
+    ++m_debugDrawCount;
+}
+
+void NullRenderer::drawDebugBox(Vec3, Vec3, Color)
+{
+    ++m_debugDrawCount;
+}
+
+void NullRenderer::drawDebugText(std::string_view)
+{
+    ++m_debugDrawCount;
+}
+
 void NullRenderer::endFrame()
 {
 }
@@ -46,4 +61,3 @@ unsigned int NullRenderer::debugDrawCount() const
 }
 
 } // namespace engine
-

@@ -3,9 +3,11 @@
 #if defined(_WIN32)
 
 #include "engine/core/Logger.h"
+#include "engine/renderer/DebugProjection.h"
 
 #include <algorithm>
 #include <cmath>
+#include <string>
 
 namespace engine {
 namespace {
@@ -18,6 +20,19 @@ int ToByte(float value)
 COLORREF ToColorRef(const Color& color)
 {
     return RGB(ToByte(color.r), ToByte(color.g), ToByte(color.b));
+}
+
+float AspectRatio(const RendererConfig& config)
+{
+    return static_cast<float>(std::max(config.width, 1)) / static_cast<float>(std::max(config.height, 1));
+}
+
+POINT ToScreen(const ProjectedPoint& point, int width, int height)
+{
+    return {
+        static_cast<LONG>((point.x * 0.5f + 0.5f) * static_cast<float>(width)),
+        static_cast<LONG>((0.5f - point.y * 0.5f) * static_cast<float>(height)),
+    };
 }
 
 } // namespace
@@ -33,6 +48,11 @@ bool GdiRenderer::initialize(const RendererConfig& config)
 
     Logger::info("GDI fallback renderer initialized.");
     return true;
+}
+
+void GdiRenderer::setDebugCamera(const DebugCamera& camera)
+{
+    m_debugCamera = camera;
 }
 
 void GdiRenderer::beginFrame(unsigned long long)
@@ -56,54 +76,79 @@ void GdiRenderer::drawDebugGridAndAxes()
         return;
     }
 
+    for (int line = -10; line <= 10; ++line) {
+        const float p = static_cast<float>(line);
+        drawDebugLine({p, 0.0f, -10.0f}, {p, 0.0f, 10.0f}, {0.22f, 0.28f, 0.36f, 1.0f});
+        drawDebugLine({-10.0f, 0.0f, p}, {10.0f, 0.0f, p}, {0.22f, 0.28f, 0.36f, 1.0f});
+    }
+    drawDebugLine({-10.0f, 0.02f, 0.0f}, {10.0f, 0.02f, 0.0f}, {0.95f, 0.24f, 0.24f, 1.0f});
+    drawDebugLine({0.0f, 0.02f, -10.0f}, {0.0f, 0.02f, 10.0f}, {0.24f, 0.85f, 0.38f, 1.0f});
+}
+
+void GdiRenderer::drawDebugLine(Vec3 from, Vec3 to, Color color)
+{
+    if (!m_deviceContext) {
+        return;
+    }
+
     RECT rect {};
     GetClientRect(m_window, &rect);
     const int width = rect.right - rect.left;
     const int height = rect.bottom - rect.top;
-    const int centerX = width / 2;
-    const int centerY = height / 2;
 
-    HPEN gridPen = CreatePen(PS_SOLID, 1, RGB(53, 65, 82));
-    HPEN oldPen = static_cast<HPEN>(SelectObject(m_deviceContext, gridPen));
-    for (int x = centerX % 40; x < width; x += 40) {
-        MoveToEx(m_deviceContext, x, 0, nullptr);
-        LineTo(m_deviceContext, x, height);
+    ProjectedPoint a;
+    ProjectedPoint b;
+    if (!ProjectWorldPoint(m_debugCamera, AspectRatio(m_config), from, a)
+        || !ProjectWorldPoint(m_debugCamera, AspectRatio(m_config), to, b)) {
+        return;
     }
-    for (int y = centerY % 40; y < height; y += 40) {
-        MoveToEx(m_deviceContext, 0, y, nullptr);
-        LineTo(m_deviceContext, width, y);
-    }
-    SelectObject(m_deviceContext, oldPen);
-    DeleteObject(gridPen);
 
-    HPEN xAxis = CreatePen(PS_SOLID, 3, RGB(224, 80, 80));
-    oldPen = static_cast<HPEN>(SelectObject(m_deviceContext, xAxis));
-    MoveToEx(m_deviceContext, centerX - 240, centerY, nullptr);
-    LineTo(m_deviceContext, centerX + 240, centerY);
-    SelectObject(m_deviceContext, oldPen);
-    DeleteObject(xAxis);
+    const POINT screenA = ToScreen(a, width, height);
+    const POINT screenB = ToScreen(b, width, height);
 
-    HPEN yAxis = CreatePen(PS_SOLID, 3, RGB(80, 200, 120));
-    oldPen = static_cast<HPEN>(SelectObject(m_deviceContext, yAxis));
-    MoveToEx(m_deviceContext, centerX, centerY + 180, nullptr);
-    LineTo(m_deviceContext, centerX, centerY - 180);
+    HPEN pen = CreatePen(PS_SOLID, 2, ToColorRef(color));
+    HPEN oldPen = static_cast<HPEN>(SelectObject(m_deviceContext, pen));
+    MoveToEx(m_deviceContext, screenA.x, screenA.y, nullptr);
+    LineTo(m_deviceContext, screenB.x, screenB.y);
     SelectObject(m_deviceContext, oldPen);
-    DeleteObject(yAxis);
+    DeleteObject(pen);
+}
 
-    HPEN primitivePen = CreatePen(PS_SOLID, 2, RGB(96, 160, 255));
-    HBRUSH primitiveBrush = CreateSolidBrush(RGB(96, 160, 255));
-    oldPen = static_cast<HPEN>(SelectObject(m_deviceContext, primitivePen));
-    HBRUSH oldBrush = static_cast<HBRUSH>(SelectObject(m_deviceContext, primitiveBrush));
-    POINT triangle[] = {
-        {centerX, centerY - 110},
-        {centerX - 90, centerY + 70},
-        {centerX + 90, centerY + 70}
+void GdiRenderer::drawDebugBox(Vec3 center, Vec3 halfExtents, Color color)
+{
+    const Vec3 corners[] = {
+        center + Vec3 {-halfExtents.x, -halfExtents.y, -halfExtents.z},
+        center + Vec3 { halfExtents.x, -halfExtents.y, -halfExtents.z},
+        center + Vec3 { halfExtents.x, -halfExtents.y,  halfExtents.z},
+        center + Vec3 {-halfExtents.x, -halfExtents.y,  halfExtents.z},
+        center + Vec3 {-halfExtents.x,  halfExtents.y, -halfExtents.z},
+        center + Vec3 { halfExtents.x,  halfExtents.y, -halfExtents.z},
+        center + Vec3 { halfExtents.x,  halfExtents.y,  halfExtents.z},
+        center + Vec3 {-halfExtents.x,  halfExtents.y,  halfExtents.z},
     };
-    Polygon(m_deviceContext, triangle, 3);
-    SelectObject(m_deviceContext, oldBrush);
-    SelectObject(m_deviceContext, oldPen);
-    DeleteObject(primitiveBrush);
-    DeleteObject(primitivePen);
+
+    const int edges[][2] = {
+        {0, 1}, {1, 2}, {2, 3}, {3, 0},
+        {4, 5}, {5, 6}, {6, 7}, {7, 4},
+        {0, 4}, {1, 5}, {2, 6}, {3, 7},
+    };
+
+    for (const auto& edge : edges) {
+        drawDebugLine(corners[edge[0]], corners[edge[1]], color);
+    }
+}
+
+void GdiRenderer::drawDebugText(std::string_view text)
+{
+    if (!m_deviceContext || text.empty()) {
+        return;
+    }
+
+    RECT rect {};
+    GetClientRect(m_window, &rect);
+    SetTextColor(m_deviceContext, RGB(230, 235, 245));
+    std::string copy(text);
+    TextOutA(m_deviceContext, 16, 16, copy.c_str(), static_cast<int>(copy.size()));
 }
 
 void GdiRenderer::endFrame()
@@ -127,4 +172,3 @@ std::string GdiRenderer::name() const
 } // namespace engine
 
 #endif
-
