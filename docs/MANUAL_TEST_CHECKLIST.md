@@ -140,8 +140,9 @@ python tools/mesh_report.py
 - [ ] Releasing `W/S` lets drag settle the vehicle instead of coasting forever.
 - [ ] `A/D` steer the vehicle and the heading marker turns with it.
 - [ ] At low speed, the vehicle can turn around within the service-yard bounds without feeling twitchy.
+- [ ] At low speed, steering still visibly rotates the vehicle enough to make the yard turn-around readable.
 - [ ] Reverse steering is understandable when backing up.
-- [ ] The vehicle camera follows the vehicle without obvious jitter.
+- [ ] The vehicle camera follows slightly ahead of the vehicle and gently recenters toward vehicle yaw without obvious jitter.
 - [ ] The service-yard bounds prevent the vehicle from drifting far outside the test pad.
 - [ ] The service-yard pad/rails/back-stop visually communicate the vehicle start area.
 - [ ] The vehicle can drive from the service-yard pad through the east opening onto the short dock road segment.
@@ -150,6 +151,7 @@ python tools/mesh_report.py
 - [ ] Pressing `E` exits only when the side exit marker is clear.
 - [ ] After exit, on-foot movement, camera, traversal, and Ferry Office interactions still work.
 - [ ] Debug text reports vehicle occupancy, speed, throttle/brake/steer, camera mode, and physics backend status.
+- [ ] Playtest text while driving reports speed, checkpoint status, and whether the exit marker is clear or blocked.
 - [ ] The vehicle does not steal `E` from the Ferry Manifest, Maintenance Box, Wall Button, Ferry Office Notice, or Exit Summary Marker when those are focused.
 
 ## First Driver/Fixer Job

@@ -517,3 +517,11 @@ Decision: Keep authored scene prompt strings action/status oriented, and let run
 Reason: v0.21 found two small playable-build clarity risks: the traversal affordance could duplicate `Press Space` wording because `SandboxLayer` already prefixes traversal prompts, and the Service Run Marker could imply confirmation before `FerryOfficeJob` prerequisites were actually satisfied. The fix keeps traversal prompt text as `Vault Service Barrier` and changes the Service Run Marker to status-neutral copy (`Review Service Run Marker`) without adding a mission scripting layer or dynamic prompt framework.
 
 Dependency impact: no dependency or new gameplay system was added.
+
+## v0.22 Vehicle Camera And Low-Speed Steering Polish
+
+Decision: Keep the service-yard vehicle deterministic and game-layer scoped, but add a narrow camera/control polish pass: vehicle camera targets look slightly ahead of the vehicle, vehicle camera mode gently follows the vehicle yaw, and low-speed steering uses an explicit minimum steering speed factor.
+
+Reason: The current blocker is trust in the existing dock-road driving loop, not new vehicle physics. A look-ahead camera target and yaw follow make the route easier to read while reversing/turning, and low-speed steering assist makes compact service-yard turn-arounds less dead without adding wheels, suspension, Jolt VehicleConstraint, or a full vehicle tuning framework.
+
+Dependency impact: no dependency or new gameplay system was added. Jolt remains private to `src/engine` and is not used for live vehicle control in v0.22.

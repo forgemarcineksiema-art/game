@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.24)
 
 project(GameEngineFoundation
-    VERSION 0.21.0
+    VERSION 0.22.0
     DESCRIPTION "AI-native C++ action/adventure engine foundation"
     LANGUAGES CXX
 )

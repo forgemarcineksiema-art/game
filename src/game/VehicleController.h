@@ -13,11 +13,13 @@ struct VehicleControllerSettings {
     float braking = 10.0f;
     float drag = 2.4f;
     float steeringRate = 2.05f;
+    float minSteeringSpeedFactor = 0.38f;
     float enterRadius = 1.8f;
     float closeEnterRadius = 0.8f;
     float requiredFacingDot = 0.15f;
     float exitSideOffset = 1.65f;
     float exitBackOffset = 0.35f;
+    float cameraLookAhead = 0.85f;
     bool clampToBounds = true;
     float boundsMinX = -9.5f;
     float boundsMaxX = 9.5f;

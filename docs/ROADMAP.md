@@ -281,6 +281,16 @@ Status: implemented. Blender 5.1.1 is available from PATH, `tools/blender/create
 
 Status: implemented as a focused playable-build polish pass. The traversal prompt now avoids duplicated input wording, the Service Run Marker no longer claims completion before job prerequisites are met, v0.21 bumps the runtime version, and `TECH_DEBT.md` now highlights vehicle/control polish as the strongest near-term blocker.
 
+## v0.22 - Vehicle / Driving Control Polish
+
+- Keep the existing Ferry Office Service Call as the only job.
+- Polish the deterministic service-yard vehicle enough to make the current dock-road loop more trustworthy.
+- Improve vehicle camera behavior, low-speed steering readability, and playtest driving status text.
+- Preserve vehicle enter/exit safety, interaction priority, scene loading, static mesh assets, default validation, and Jolt opt-in validation.
+- Avoid Jolt VehicleConstraint, wheel/suspension simulation, traffic, new vehicles, map expansion, or Job #2.
+
+Status: implemented as a narrow vehicle-control polish pass. The vehicle camera now looks slightly ahead, vehicle camera mode gently follows vehicle yaw, low-speed steering has an explicit assist factor for compact turn-arounds, and playtest text while driving reports speed, checkpoint status, and exit clear/blocked state.
+
 ## Recommended Next Goal
 
-Build v0.22 Vehicle / Driving Control Polish.
+Build v0.23 Playable Build Packaging / Run UX Polish.

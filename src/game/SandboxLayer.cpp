@@ -302,9 +302,10 @@ void SandboxLayer::onAttach()
     m_player.setWorld(&m_scene.world());
     m_onFootCameraSettings = m_camera.settings();
     m_vehicleCameraSettings = m_onFootCameraSettings;
-    m_vehicleCameraSettings.distance = 7.25f;
-    m_vehicleCameraSettings.heightOffset = 2.05f;
-    m_vehicleCameraSettings.smoothing = 10.5f;
+    m_vehicleCameraSettings.distance = 6.75f;
+    m_vehicleCameraSettings.heightOffset = 1.95f;
+    m_vehicleCameraSettings.smoothing = 9.0f;
+    m_vehicleCameraSettings.targetYawFollowStrength = 3.5f;
     setupVehiclePhysicsWorld();
     loadStaticMeshAssets();
     updateDebugText();
@@ -568,6 +569,12 @@ std::string SandboxLayer::buildPresentationText(bool minimal) const
         output << "Status: service gate=" << (m_scene.worldState().isFlagSet(WorldFlag::RouteOpened) ? "open" : "closed")
                << " | power=" << (m_scene.worldState().isFlagSet(WorldFlag::PowerRestored) ? "restored" : "offline")
                << " | mode=" << (vehicle.occupied ? "driving" : "on foot") << "\n";
+        if (vehicle.occupied) {
+            output << "Drive: speed=" << vehicle.speed
+                   << " | checkpoint="
+                   << (m_scene.worldState().isFlagSet(WorldFlag::DockRoadReached) ? "reached" : "drive east")
+                   << " | exit=" << (isVehicleExitPositionClear(m_vehicle.exitPosition()) ? "clear" : "blocked") << "\n";
+        }
         output << "F1: debug | Esc: quit";
     }
 

@@ -132,7 +132,9 @@ void VehicleController::updateDriving(float deltaSeconds, const engine::InputSta
 
     const float absoluteSpeed = std::abs(m_state.speed);
     if (absoluteSpeed > 0.05f && std::abs(m_state.steer) > 0.001f) {
-        const float speedFactor = engine::Clamp(absoluteSpeed / std::max(0.001f, m_settings.maxForwardSpeed), 0.25f, 1.0f);
+        const float speedFactor = engine::Clamp(absoluteSpeed / std::max(0.001f, m_settings.maxForwardSpeed),
+            m_settings.minSteeringSpeedFactor,
+            1.0f);
         const float directionSign = m_state.speed >= 0.0f ? 1.0f : -1.0f;
         m_state.yawRadians += m_state.steer * m_settings.steeringRate * speedFactor * dt * directionSign;
     }
@@ -163,7 +165,7 @@ engine::Vec3 VehicleController::exitPosition() const
 CameraTarget VehicleController::cameraTarget() const
 {
     CameraTarget target;
-    target.position = m_state.position;
+    target.position = m_state.position + forward() * m_settings.cameraLookAhead;
     target.yawRadians = m_state.yawRadians;
     return target;
 }

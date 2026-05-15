@@ -819,6 +819,33 @@ void TestVehicleControllerSteeringChangesYawWhileMoving()
         "Vehicle velocity should reflect the driven movement.");
 }
 
+void TestVehicleLowSpeedSteeringAssistKeepsTurnaroundReadable()
+{
+    VehicleController vehicle;
+    VehicleControllerSettings settings;
+    settings.maxForwardSpeed = 8.0f;
+    settings.acceleration = 3.0f;
+    settings.steeringRate = 2.0f;
+    settings.minSteeringSpeedFactor = 0.38f;
+    vehicle.setSettings(settings);
+    vehicle.setPosition({0.0f, 0.0f, 0.0f});
+    vehicle.setOccupiedForTesting(true);
+
+    engine::InputState input;
+    input.moveForward = 1.0f;
+    input.moveRight = 1.0f;
+
+    vehicle.beginFrame();
+    vehicle.updateDriving(0.05f, input);
+
+    Expect(vehicle.state().speed < 0.25f,
+        "TestVehicleLowSpeedSteeringAssistKeepsTurnaroundReadable",
+        "Test setup should keep the vehicle in a low-speed turn state.");
+    Expect(vehicle.state().yawRadians > 0.03f,
+        "TestVehicleLowSpeedSteeringAssistKeepsTurnaroundReadable",
+        "Low-speed steering assist should make compact turn-around steering readable.");
+}
+
 void TestVehicleEnterExitUsesPressedEdgeAndSafeExit()
 {
     VehicleController vehicle;
@@ -867,20 +894,48 @@ void TestVehicleEnterExitUsesPressedEdgeAndSafeExit()
 void TestVehicleCameraTargetFollowsVehicle()
 {
     VehicleController vehicle;
+    VehicleControllerSettings settings;
+    settings.cameraLookAhead = 0.85f;
+    vehicle.setSettings(settings);
     vehicle.setPosition({2.0f, 0.0f, 3.0f});
     vehicle.setYawRadians(engine::Radians(45.0f));
 
     const CameraTarget target = vehicle.cameraTarget();
+    const engine::Vec3 expectedPosition = vehicle.state().position + vehicle.forward() * settings.cameraLookAhead;
 
-    ExpectNear(target.position.x, 2.0f, 0.001f,
+    ExpectNear(target.position.x, expectedPosition.x, 0.001f,
         "TestVehicleCameraTargetFollowsVehicle",
-        "Vehicle camera target should use vehicle X position.");
-    ExpectNear(target.position.z, 3.0f, 0.001f,
+        "Vehicle camera target should look ahead of the vehicle X position.");
+    ExpectNear(target.position.z, expectedPosition.z, 0.001f,
         "TestVehicleCameraTargetFollowsVehicle",
-        "Vehicle camera target should use vehicle Z position.");
+        "Vehicle camera target should look ahead of the vehicle Z position.");
     ExpectNear(target.yawRadians, engine::Radians(45.0f), 0.001f,
         "TestVehicleCameraTargetFollowsVehicle",
         "Vehicle camera target should use vehicle yaw.");
+}
+
+void TestThirdPersonCameraCanFollowTargetYawForVehicles()
+{
+    ThirdPersonCamera camera;
+    ThirdPersonCameraSettings settings;
+    settings.distance = 6.0f;
+    settings.heightOffset = 1.6f;
+    settings.targetYawFollowStrength = 8.0f;
+    camera.setSettings(settings);
+
+    CameraTarget target;
+    target.position = {0.0f, 0.0f, 0.0f};
+    target.yawRadians = engine::Radians(90.0f);
+
+    engine::InputState input;
+    camera.update(0.1f, input, target);
+
+    Expect(camera.state().yawRadians > engine::Radians(40.0f),
+        "TestThirdPersonCameraCanFollowTargetYawForVehicles",
+        "Vehicle camera follow should rotate toward the target yaw without player input.");
+    Expect(camera.state().yawRadians < engine::Radians(90.0f),
+        "TestThirdPersonCameraCanFollowTargetYawForVehicles",
+        "Vehicle camera follow should smooth toward target yaw instead of snapping.");
 }
 
 void TestVehicleDefaultTuningFitsSmallServiceYard()
@@ -2595,6 +2650,7 @@ int main()
     TestJoltBackendAvailabilityIsExplicit();
     TestVehicleControllerAcceleratesBrakesAndReversesDeterministically();
     TestVehicleControllerSteeringChangesYawWhileMoving();
+    TestVehicleLowSpeedSteeringAssistKeepsTurnaroundReadable();
     TestVehicleEnterExitUsesPressedEdgeAndSafeExit();
     TestVehicleCameraTargetFollowsVehicle();
     TestVehicleDefaultTuningFitsSmallServiceYard();
@@ -2616,6 +2672,7 @@ int main()
     TestPlayerMovementIsCameraRelativeAndNormalized();
     TestPlayerSprintAndJumpRemainGroundedDeterministically();
     TestThirdPersonCameraClampsPitchAndSmooths();
+    TestThirdPersonCameraCanFollowTargetYawForVehicles();
     TestAabbOverlapAndClosestPoint();
     TestPrototypeWorldGroundClampAndGroundedState();
     TestPrototypeWorldPushesPlayerOutOfBox();

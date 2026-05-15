@@ -4082,3 +4082,114 @@ Result:
 - Ferry Office Service Call remains the single playable job.
 - TECH_DEBT is now triaged for the next goal.
 - Recommended next goal: v0.22 Vehicle / Driving Control Polish.
+
+## v0.22 Baseline - 2026-05-15
+
+Goal: polish the existing service-yard vehicle and dock-road driving loop without adding Job #2, new vehicle physics, Jolt VehicleConstraint, traffic, new map content, or a new major gameplay system.
+
+Required context read before implementation:
+
+- `AGENTS.md`
+- `docs/STATUS.md`
+- `docs/GAME_DIRECTION.md`
+- `docs/VERTICAL_SLICE.md`
+- `docs/ROADMAP.md`
+- `docs/ARCHITECTURE.md`
+- `docs/TECH_DEBT.md`
+- `docs/MANUAL_TEST_CHECKLIST.md`
+- `docs/SCENE_AUTHORING.md`
+- `docs/ASSET_GUIDE.md`
+- `docs/MESH_RENDERING.md`
+- `docs/ASSET_PIPELINE_DECISION.md`
+- `docs/BLENDER_WORKFLOW.md`
+- `docs/DECISIONS.md`
+
+Baseline results:
+
+- Git state before v0.22 work: `main...origin/main`, clean working tree.
+- `powershell -ExecutionPolicy Bypass -File scripts\verify.ps1`: passed. Default doctor/configure/build/CTest, scene validation, asset validation, mesh report, and null smoke all completed. Null smoke reported engine `v0.21.0` and loaded all seven scene-authored static mesh assets.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 3/3 tests.
+- `python tools\scene_report.py`: passed; scene reports 9 colliders, 21 visual placeholders, 7 mesh assets, 17 mesh instances, 6 interactables, 1 traversal affordance, 1 vehicle, 6 route markers, and 5 objective markers.
+- `python tools\validate_scene.py`: passed.
+- `python tools\validate_assets.py`: passed; 7 model files under `assets\models`.
+- `python tools\scale_audit.py`: passed with no suspicious scale issues.
+- `python tools\mesh_report.py`: passed; all seven `.gltf` files are referenced with license/provenance, vertex/index counts, and bounds.
+- `python tools\check_blender.py`: passed and reported Blender 5.1.1 available at `C:\Program Files\Blender Foundation\Blender 5.1\blender.EXE`.
+
+## v0.22 Short Implementation Plan
+
+1. Review vehicle/controller/camera code and bounded runtime behavior to find the smallest polish changes that improve driving trust without changing architecture.
+2. Add focused failing tests before behavior changes for vehicle camera follow/look-ahead or control/readability behavior.
+3. Implement only narrow vehicle polish: camera target/yaw behavior, small camera tuning, and player-facing vehicle status text if needed.
+4. Update TECH_DEBT and manual checklist to state whether vehicle/control remains the strongest blocker.
+5. Run the full validation matrix, record exact results, then commit and push only if validation passes.
+
+## v0.22 Implementation Notes - 2026-05-15
+
+Review method:
+
+- Reviewed `VehicleController`, `ThirdPersonCamera`, `SandboxLayer`, vehicle tests, scene-authored vehicle bounds, and the manual checklist vehicle section.
+- A full native-window keyboard/mouse driving playthrough was not automated in this session. Bounded runtime validation is still required below, and the target-laptop manual checklist remains the best source for final feel judgment.
+
+Findings:
+
+- `VehicleController::cameraTarget()` already carried vehicle yaw, but `ThirdPersonCamera` did not use target yaw at all. That made the vehicle camera less helpful while turning/reversing than the data shape implied.
+- The vehicle camera target sat directly on the vehicle center. For route readability, the camera benefits from looking slightly ahead of the vehicle rather than exactly at its pivot.
+- Low-speed steering was already possible, but the assist factor was hardcoded in the update math instead of being explicit/tested.
+- Playtest text while driving did not surface speed/checkpoint/exit-clear status in one direct player-facing line.
+
+Fixes:
+
+- Added `VehicleControllerSettings::cameraLookAhead` and made `VehicleController::cameraTarget()` look slightly ahead along the vehicle forward direction.
+- Added `ThirdPersonCameraSettings::targetYawFollowStrength` and made the camera gently rotate toward `CameraTarget::yawRadians` when that setting is enabled.
+- Tuned vehicle camera mode in `SandboxLayer`: slightly closer/lower camera, gentler smoothing, and target-yaw follow enabled only for vehicle mode.
+- Added `VehicleControllerSettings::minSteeringSpeedFactor` and used it instead of a hidden hardcoded low-speed steering minimum.
+- Added a playtest driving line while occupied: speed, checkpoint status, and exit clear/blocked.
+- Bumped the runtime version to `0.22.0`.
+
+Focused test results:
+
+- `cmake --build --preset windows-vs2022-debug`: first failed as expected when tests referenced missing `cameraLookAhead` / `targetYawFollowStrength`, then passed after implementation.
+- `cmake --build --preset windows-vs2022-debug`: first failed as expected when tests referenced missing `minSteeringSpeedFactor`, then passed after implementation.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 3/3 tests after the implementation.
+
+Known limitations after the polish pass:
+
+- v0.22 does not make the vehicle physics-driven. It remains deterministic and bounds-clamped.
+- The next decision still depends on human driving feel: if the vehicle now feels trustworthy enough, move to run UX/packaging or presentation polish; if not, consider a Jolt vehicle feasibility spike.
+
+## v0.22 Final Validation - 2026-05-15
+
+Commands run:
+
+- `powershell -ExecutionPolicy Bypass -File scripts\doctor.ps1`: passed. Expected PATH warnings remain for `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- `powershell -ExecutionPolicy Bypass -File scripts\configure.ps1`: passed for `windows-vs2022-debug`.
+- `powershell -ExecutionPolicy Bypass -File scripts\build.ps1`: passed. Built `EngineCore`, `GamePrototype`, `EngineApp`, and `EngineCoreTests`.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 3/3 tests.
+- `powershell -ExecutionPolicy Bypass -File scripts\verify.ps1`: passed. Null smoke reported engine `v0.22.0` and loaded all seven scene-authored static mesh assets.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 3/3 tests.
+- `python tools\scene_report.py`: passed; scene reports 9 colliders, 21 visual placeholders, 7 mesh assets, 17 mesh instances, 6 interactables, 1 traversal affordance, 1 vehicle, 6 route markers, and 5 objective markers.
+- `python tools\validate_scene.py`: passed.
+- `python tools\validate_assets.py`: passed; 7 model files under `assets\models`.
+- `python tools\scale_audit.py`: passed with no suspicious scale issues.
+- `python tools\mesh_report.py`: passed; all seven `.gltf` files are referenced with license/provenance, vertex/index counts, and bounds.
+- `python tools\status_report.py`: passed.
+- `python tools\check_blender.py`: passed and reported Blender 5.1.1 available at `C:\Program Files\Blender Foundation\Blender 5.1\blender.EXE`.
+- `build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --ui-mode playtest --frames 360`: passed. Playtest mode launched and kept the Ferry Manifest objective/prompt.
+- `build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --ui-mode debug --frames 360`: passed. Debug mode preserved player/camera/vehicle/scene/job/world-state telemetry.
+- `build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 360`: passed. Hardware DX11 still falls back to WARP. During the bounded run the vehicle entered and the new driving line appeared: speed, checkpoint status, and exit clear state.
+- `build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --scene data\scenes\ferry_office.scene.json --ui-mode playtest --frames 360`: passed. Explicit scene path loaded and the new driving line appeared while occupied.
+
+Result:
+
+- v0.22 validation passed.
+- No Job #2 or new major gameplay system was added.
+- Vehicle camera now uses look-ahead and target-yaw follow in vehicle mode.
+- Low-speed steering assist is explicit and covered by tests.
+- Playtest mode has clearer driving feedback while occupied.
+- Deterministic VehicleController remains acceptable for the next playable-build pass, but still needs human driving feel review before any physics migration decision.
+- Recommended next goal: v0.23 Playable Build Packaging / Run UX Polish.

@@ -2,26 +2,25 @@
 
 Last updated: 2026-05-15
 
-This file lists known foundation issues after v0.21. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
+This file lists known foundation issues after v0.22. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
 
-## v0.21 Priority Triage
+## v0.22 Priority Triage
 
 ### Blocking Playable Build
 
-- No confirmed blocker remains for the current Ferry Office Service Call after v0.21 bounded review and validation. The build launches, the scene loads, playtest/debug UI modes run, scene/asset tools pass, and the known misleading prompt copy around traversal and the Service Run Marker has been corrected.
+- No confirmed blocker remains for the current Ferry Office Service Call after v0.22 bounded review and validation. The build launches, the scene loads, playtest/debug UI modes run, scene/asset tools pass, and the vehicle now has camera look-ahead, target-yaw follow, low-speed steering assist, and clearer driving status text.
 
 ### Fix Soon
 
-1. Run another full human keyboard/mouse playthrough on the target laptop and capture any remaining confusion around Service Run Marker timing, vehicle exit, cursor capture, checkpoint readability, or prop visibility.
-2. Polish vehicle controls in the current dock-road loop before adding Job #2. The strongest near-term technical blocker is still vehicle feel/readability, not mission count: the vehicle is deterministic, bounded by a finite clamp, and needs hands-on tuning before the loop can feel trustworthy as a driver/fixer prototype.
-3. Decide the first production physics promotion path: vehicle-only, world queries-only, or player collision-only. Do this after the next vehicle-control polish, not during broad presentation work.
-4. Improve DX11 presentation feedback once the GDI playtest path is solid. DX11 still lacks text overlay, so player-facing verification remains GDI-biased.
-5. Keep the Blender/static mesh path narrow and honest. Add only a few controlled original props until cgltf/tinygltf is clearly justified.
+1. Run a full human keyboard/mouse playthrough on the target laptop after v0.22 and capture any remaining vehicle feel issues around braking distance, reverse steering, checkpoint approach, exit placement, or cursor/camera comfort.
+2. Decide whether the next vehicle step is more deterministic tuning or a Jolt vehicle feasibility spike. The strongest remaining vehicle-specific blocker is hands-on feel evidence, not code architecture: v0.22 improves camera/control trust, but the vehicle is still deterministic and bounds-clamped.
+3. Improve DX11 presentation feedback once the GDI playtest path is solid. DX11 still lacks text overlay, so player-facing verification remains GDI-biased.
+4. Keep the Blender/static mesh path narrow and honest. Add only a few controlled original props until cgltf/tinygltf is clearly justified.
 
 ### Acceptable For Now
 
 1. No Job #2 yet. The existing first job needs polish and control confidence before more content.
-2. Deterministic vehicle movement is acceptable for the next feel pass; Jolt VehicleConstraint remains deferred.
+2. Deterministic vehicle movement remains acceptable after v0.22 for the next playable-build pass; Jolt VehicleConstraint remains deferred until manual driving feedback proves deterministic tuning is the blocker.
 3. `WorldState` and `FerryOfficeJob` remain explicit in-memory prototype systems, not a save/load or mission framework.
 4. The tiny custom `.gltf` subset remains acceptable while assets are simple embedded-buffer static props.
 5. GDI remains the primary visual/playtest renderer while DX11 lacks debug text and often falls back to WARP on this laptop.
@@ -166,4 +165,4 @@ This file lists known foundation issues after v0.21. It is not a mandate to fix 
 
 ## Deprecated Priority Lists
 
-Older `Fix Soon` and `Known But Acceptable For Now` sections were folded into the v0.21 priority triage at the top of this file. Keep future triage updates there so the next goal can see the current blocking/fix-soon/acceptable split without rereading the entire debt log.
+Older `Fix Soon` and `Known But Acceptable For Now` sections were folded into the current priority triage at the top of this file. Keep future triage updates there so the next goal can see the current blocking/fix-soon/acceptable split without rereading the entire debt log.

@@ -12,6 +12,7 @@ struct ThirdPersonCameraSettings {
     float yawSensitivity = 0.004f;
     float pitchSensitivity = 0.004f;
     float smoothing = 12.0f;
+    float targetYawFollowStrength = 0.0f;
 };
 
 struct CameraTarget {

@@ -12,6 +12,12 @@ void ThirdPersonCamera::update(float deltaSeconds, const engine::InputState& inp
 {
     const float dt = engine::Clamp(deltaSeconds, 0.0f, 0.1f);
     m_state.yawRadians += input.cameraYawDelta * m_settings.yawSensitivity;
+    if (m_settings.targetYawFollowStrength > 0.0f) {
+        const float yawDelta = std::atan2(std::sin(target.yawRadians - m_state.yawRadians),
+            std::cos(target.yawRadians - m_state.yawRadians));
+        const float yawFollow = engine::ExponentialSmoothingFactor(m_settings.targetYawFollowStrength, dt);
+        m_state.yawRadians += yawDelta * yawFollow;
+    }
     m_state.pitchRadians += input.cameraPitchDelta * m_settings.pitchSensitivity;
     m_state.pitchRadians = engine::Clamp(m_state.pitchRadians, m_settings.minPitchRadians, m_settings.maxPitchRadians);
     m_state.distance = m_settings.distance;
