@@ -3,6 +3,7 @@
 #if defined(_WIN32)
 
 #include "engine/core/Logger.h"
+#include "engine/math/BoxEdges.h"
 #include "engine/renderer/DebugProjection.h"
 
 #include <d3dcompiler.h>
@@ -330,6 +331,7 @@ bool Dx11Renderer::createBuffer(const Vertex* vertices, unsigned int vertexCount
 
 void Dx11Renderer::beginFrame(unsigned long long)
 {
+    m_debugText.clear();
     const float color[] = {
         m_config.clearColor.r,
         m_config.clearColor.g,
@@ -446,21 +448,16 @@ void Dx11Renderer::drawDebugBox(Vec3 center, Vec3 halfExtents, Color color)
         center + Vec3 {-halfExtents.x,  halfExtents.y,  halfExtents.z},
     };
 
-    const int edges[][2] = {
-        {0, 1}, {1, 2}, {2, 3}, {3, 0},
-        {4, 5}, {5, 6}, {6, 7}, {7, 4},
-        {0, 4}, {1, 5}, {2, 6}, {3, 7},
-    };
-
     std::vector<Vertex> vertices;
-    for (const auto& edge : edges) {
+    for (const auto& edge : BoxEdgeIndices) {
         AddProjectedLine(vertices, m_debugCamera, AspectRatio(m_config), corners[edge[0]], corners[edge[1]], color);
     }
     drawLineVertices(vertices);
 }
 
-void Dx11Renderer::drawDebugText(std::string_view)
+void Dx11Renderer::drawDebugText(std::string_view text)
 {
+    m_debugText = std::string(text);
 }
 
 bool Dx11Renderer::ensureDynamicBuffer(unsigned int vertexCount)
@@ -551,6 +548,7 @@ void Dx11Renderer::drawTriangleVertices(const std::vector<Vertex>& vertices)
 void Dx11Renderer::endFrame()
 {
     m_swapChain->Present(1, 0);
+    drawDebugTextOverlay();
 }
 
 void Dx11Renderer::shutdown()
@@ -571,6 +569,26 @@ void Dx11Renderer::shutdown()
 std::string Dx11Renderer::name() const
 {
     return "dx11";
+}
+
+void Dx11Renderer::drawDebugTextOverlay()
+{
+    if (!m_window || m_debugText.empty()) {
+        return;
+    }
+
+    HDC deviceContext = GetDC(m_window);
+    if (!deviceContext) {
+        return;
+    }
+
+    RECT rect {};
+    GetClientRect(m_window, &rect);
+    RECT textRect {16, 16, rect.right - 16, rect.bottom - 16};
+    SetBkMode(deviceContext, TRANSPARENT);
+    SetTextColor(deviceContext, RGB(230, 235, 245));
+    DrawTextA(deviceContext, m_debugText.c_str(), static_cast<int>(m_debugText.size()), &textRect, DT_LEFT | DT_TOP | DT_WORDBREAK | DT_NOCLIP);
+    ReleaseDC(m_window, deviceContext);
 }
 
 } // namespace engine

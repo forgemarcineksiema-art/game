@@ -3,6 +3,7 @@
 #if defined(_WIN32)
 
 #include "engine/core/Logger.h"
+#include "engine/math/BoxEdges.h"
 #include "engine/renderer/DebugProjection.h"
 
 #include <algorithm>
@@ -115,7 +116,7 @@ void GdiRenderer::drawDebugLine(Vec3 from, Vec3 to, Color color)
     const POINT screenA = ToScreen(a, width, height);
     const POINT screenB = ToScreen(b, width, height);
 
-    HPEN pen = acquirePen(ToColorRef(color));
+    HPEN pen = acquirePen(ToColorRef(color), 2);
     HPEN oldPen = static_cast<HPEN>(SelectObject(m_deviceContext, pen));
     MoveToEx(m_deviceContext, screenA.x, screenA.y, nullptr);
     LineTo(m_deviceContext, screenB.x, screenB.y);
@@ -166,7 +167,7 @@ void GdiRenderer::drawDebugSolidBox(Vec3 center, Vec3 halfExtents, Color color)
     };
 
     HBRUSH brush = acquireBrush(ToColorRef(color));
-    HPEN pen = acquirePen(ToColorRef(color));
+    HPEN pen = acquirePen(ToColorRef(color), 1);
     HGDIOBJ oldBrush = SelectObject(m_deviceContext, brush);
     HGDIOBJ oldPen = SelectObject(m_deviceContext, pen);
     for (const auto& face : faces) {
@@ -197,7 +198,7 @@ void GdiRenderer::drawDebugFlatTriangles(std::span<const Vec3> triangleVertices,
     }
 
     HBRUSH brush = acquireBrush(ToColorRef(color));
-    HPEN pen = acquirePen(ToColorRef(color));
+    HPEN pen = acquirePen(ToColorRef(color), 1);
     HGDIOBJ oldBrush = SelectObject(m_deviceContext, brush);
     HGDIOBJ oldPen = SelectObject(m_deviceContext, pen);
 
@@ -234,13 +235,7 @@ void GdiRenderer::drawDebugBox(Vec3 center, Vec3 halfExtents, Color color)
         center + Vec3 {-halfExtents.x,  halfExtents.y,  halfExtents.z},
     };
 
-    const int edges[][2] = {
-        {0, 1}, {1, 2}, {2, 3}, {3, 0},
-        {4, 5}, {5, 6}, {6, 7}, {7, 4},
-        {0, 4}, {1, 5}, {2, 6}, {3, 7},
-    };
-
-    for (const auto& edge : edges) {
+    for (const auto& edge : BoxEdgeIndices) {
         drawDebugLine(corners[edge[0]], corners[edge[1]], color);
     }
 }
@@ -341,15 +336,17 @@ void GdiRenderer::releaseGdiObjects()
     m_brushCache.clear();
 }
 
-HPEN GdiRenderer::acquirePen(COLORREF color)
+HPEN GdiRenderer::acquirePen(COLORREF color, int width)
 {
-    const auto it = m_penCache.find(color);
+    const int safeWidth = std::max(width, 1);
+    const std::uint64_t key = (static_cast<std::uint64_t>(safeWidth) << 32) | static_cast<std::uint64_t>(color);
+    const auto it = m_penCache.find(key);
     if (it != m_penCache.end()) {
         return it->second;
     }
 
-    HPEN pen = CreatePen(PS_SOLID, 2, color);
-    m_penCache[color] = pen;
+    HPEN pen = CreatePen(PS_SOLID, safeWidth, color);
+    m_penCache[key] = pen;
     return pen;
 }
 

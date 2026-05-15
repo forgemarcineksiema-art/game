@@ -23,6 +23,7 @@ public:
     virtual void drawDebugText(std::string_view text) { (void)text; }
     virtual void endFrame() = 0;
     virtual void shutdown() = 0;
+    virtual bool isFramePaced() const { return false; }
     virtual std::string name() const = 0;
 };
 

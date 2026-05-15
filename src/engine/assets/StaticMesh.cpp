@@ -161,6 +161,7 @@ StaticMeshLoadResult LoadStaticMeshFromGltf(const std::filesystem::path& path)
         return Fail("glTF mesh file is not valid JSON: " + path.string());
     }
 
+    try {
     if (!root.contains("buffers") || !root["buffers"].is_array() || root["buffers"].empty()) {
         return Fail("glTF mesh must contain at least one buffer.");
     }
@@ -223,9 +224,15 @@ StaticMeshLoadResult LoadStaticMeshFromGltf(const std::filesystem::path& path)
     if (!attributes.contains("POSITION")) {
         return Fail("glTF mesh primitive must have a POSITION attribute.");
     }
+    if (!attributes["POSITION"].is_number_integer()) {
+        return Fail("glTF POSITION attribute must reference an integer accessor index.");
+    }
+    if (!primitive.contains("indices") || !primitive["indices"].is_number_integer()) {
+        return Fail("glTF mesh must contain an integer indices accessor.");
+    }
 
     const int positionAccessorIndex = attributes["POSITION"].get<int>();
-    const int indexAccessorIndex = primitive.value("indices", -1);
+    const int indexAccessorIndex = primitive["indices"].get<int>();
 
     if (indexAccessorIndex < 0) {
         return Fail("glTF mesh must contain indices accessor.");
@@ -296,6 +303,9 @@ StaticMeshLoadResult LoadStaticMeshFromGltf(const std::filesystem::path& path)
 
     mesh.bounds = ComputeBounds(mesh.vertices);
     return {mesh, {}};
+    } catch (const std::exception&) {
+        return Fail("glTF mesh contains unsupported JSON field types: " + path.string());
+    }
 }
 
 std::vector<Vec3> BuildFlatTriangleList(const StaticMeshAsset& mesh, const StaticMeshInstance& instance)

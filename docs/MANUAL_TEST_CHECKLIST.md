@@ -37,6 +37,8 @@ Optional bounded DX11 run:
 scripts/play.ps1 -Dx11 -Frames 120
 ```
 
+DX11 should show the same playtest/debug text overlay content as GDI for bounded checks. GDI remains the simpler renderer for overlay troubleshooting.
+
 Optional physics dependency spike:
 
 ```powershell

@@ -10,6 +10,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+#include <cstdint>
 #include <unordered_map>
 
 namespace engine {
@@ -41,13 +42,13 @@ private:
     int m_backBufferWidth = 0;
     int m_backBufferHeight = 0;
 
-    std::unordered_map<COLORREF, HPEN> m_penCache;
+    std::unordered_map<std::uint64_t, HPEN> m_penCache;
     std::unordered_map<COLORREF, HBRUSH> m_brushCache;
 
     bool ensureBackBuffer(int width, int height);
     void releaseBackBuffer();
     void releaseGdiObjects();
-    HPEN acquirePen(COLORREF color);
+    HPEN acquirePen(COLORREF color, int width);
     HBRUSH acquireBrush(COLORREF color);
 };
 

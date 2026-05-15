@@ -2683,6 +2683,7 @@ Commands and results:
 
 - `powershell -ExecutionPolicy Bypass -File scripts\doctor.ps1`: passed. Same environment warnings remain: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg` are not on PATH, but CMake/VS preset builds work.
 - `powershell -ExecutionPolicy Bypass -File scripts\configure.ps1`: passed for `windows-vs2022-debug`.
+- `powershell -ExecutionPolicy Bypass -File scripts\configure.ps1 -Preset windows-vs2022-debug`: passed and wrote `build\.last_preset` to `windows-vs2022-debug`.
 - `powershell -ExecutionPolicy Bypass -File scripts\build.ps1`: passed; built `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
 - `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 3/3 tests.
 - `powershell -ExecutionPolicy Bypass -File scripts\verify.ps1`: passed; repeated doctor/configure/build/CTest, scene validation, mesh report, and null smoke. Null smoke reported engine `v0.13.0`.
@@ -4369,7 +4370,67 @@ powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
 
 ### Known Issues / Limitations
 
-- P2 items from audit remain (empty .cpp files, box edge duplication, missing Release preset, ASCII-only ToWide, DX11 no debug text, STATUS.md size).
+- At the time of v0.23.1, P2 items from audit remained (empty .cpp files, box edge duplication, missing Release preset, ASCII-only ToWide, DX11 no debug text, STATUS.md size). The v0.23.1 follow-up section below records the items addressed afterward.
 - Jolt raycast still doesn't return surface normal (requires `CastRay` with body hit collector).
 - P3 items remain (missing noexcept, manual test checklist not executed).
 
+## v0.23.1 Follow-up - DX11 Text Overlay / Cleanup Pass (2026-05-15)
+
+Scope:
+
+- Make `scripts\play.ps1 -Dx11` usable for playtest/debug checks by adding a small DX11 debug text overlay.
+- Keep GDI playable frame pacing after the v0.23.1 loop change.
+- Clean up low-risk code-health items from the audit: empty `.cpp` files, duplicated box-edge arrays, README/run docs, configure script robustness, and static mesh loader error handling.
+
+Implementation plan:
+
+1. Add a narrow text overlay path to `Dx11Renderer` without adding a UI framework or renderer rewrite.
+2. Restore non-headless frame pacing for non-vsynced renderers while leaving DX11 paced by swap-chain `Present`.
+3. Move repeated box-edge indices into one shared engine math header.
+4. Remove empty `Input.cpp` and `FerryOfficeData.cpp` from the build.
+5. Harden the nlohmann-based static mesh loader so parseable JSON with unsupported field types returns a clear loader error instead of throwing.
+6. Update README/docs/TECH_DEBT to reflect that DX11 text is no longer the current Fix Soon blocker.
+
+Focused TDD result:
+
+- Added `TestStaticMeshLoaderReportsInvalidJsonTypesWithoutThrowing`.
+- `ctest --preset windows-vs2022-debug --output-on-failure -R EngineCoreTests`: first failed because invalid-but-parseable `.gltf` JSON could throw instead of returning a loader error.
+- After the loader fix, `cmake --build --preset windows-vs2022-debug` passed and `ctest --preset windows-vs2022-debug --output-on-failure -R EngineCoreTests` passed.
+
+Implementation notes:
+
+- `Dx11Renderer` now stores the current debug text and draws it through a small Win32 `DrawTextA` overlay after swap-chain `Present`.
+- `IRenderer::isFramePaced()` lets `Application` sleep non-headless GDI frames while leaving DX11 paced by `Present(1, 0)`.
+- `GdiRenderer` keeps cached pens keyed by color and width so filled primitives can use thin outlines without reintroducing per-draw object churn.
+- Shared `engine::BoxEdgeIndices` replaces duplicated box-edge arrays in GDI, DX11, simple physics debug lines, and Jolt physics debug lines.
+- Empty `src\engine\input\Input.cpp` and `src\game\FerryOfficeData.cpp` were removed from the build.
+- `scripts\configure.ps1` now creates `build\` before writing `.last_preset`, and also records `.last_preset` when a specific preset is configured.
+- `README.md`, `docs\RUNBOOK.md`, `docs\MANUAL_TEST_CHECKLIST.md`, `docs\ARCHITECTURE.md`, `docs\DECISIONS.md`, and `docs\TECH_DEBT.md` now reflect the playable `scripts\play.ps1` path and DX11 text-overlay status.
+
+Validation:
+
+- `powershell -ExecutionPolicy Bypass -File scripts\doctor.ps1`: passed; expected PATH warnings remain for compiler/tool binaries not on PATH.
+- `powershell -ExecutionPolicy Bypass -File scripts\configure.ps1`: passed for `windows-vs2022-debug`.
+- `powershell -ExecutionPolicy Bypass -File scripts\build.ps1`: passed.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 4/4 tests.
+- `powershell -ExecutionPolicy Bypass -File scripts\verify.ps1`: passed.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 4/4 tests.
+- `python tools\scene_report.py`: passed.
+- `python tools\validate_scene.py`: passed.
+- `python tools\validate_assets.py`: passed.
+- `python tools\scale_audit.py`: passed.
+- `python tools\mesh_report.py`: passed.
+- `python tools\status_report.py`: passed.
+- `python tools\check_blender.py`: passed; Blender 5.1.1 available.
+- `powershell -ExecutionPolicy Bypass -File scripts\play.ps1 -Frames 360`: passed.
+- `powershell -ExecutionPolicy Bypass -File scripts\play.ps1 -DebugUi -Frames 360`: passed.
+- `powershell -ExecutionPolicy Bypass -File scripts\play.ps1 -Dx11 -Frames 360`: passed; hardware DX11 still falls back to WARP, but the playtest/debug text path is now implemented for DX11.
+- `powershell -ExecutionPolicy Bypass -File scripts\play.ps1 -Dx11 -DebugUi -Frames 360`: passed.
+
+Result:
+
+- The DX11 debug text overlay is no longer the active Fix Soon blocker.
+- `scripts\play.ps1 -Dx11` is now a usable bounded playtest/check path, though the overlay remains a stopgap and not a production UI renderer.
+- Cleanup items from the audit were addressed except unrelated lower-priority items such as Release preset, ASCII-only `ToWide`, STATUS.md size, Jolt raycast normals, and broader manual checklist execution.

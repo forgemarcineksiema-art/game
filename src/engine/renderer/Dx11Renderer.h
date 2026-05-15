@@ -13,6 +13,7 @@
 #include <d3d11.h>
 #include <wrl/client.h>
 
+#include <string>
 #include <vector>
 
 namespace engine {
@@ -30,6 +31,7 @@ public:
     void drawDebugText(std::string_view text) override;
     void endFrame() override;
     void shutdown() override;
+    bool isFramePaced() const override { return true; }
     std::string name() const override;
 
     struct Vertex {
@@ -51,9 +53,11 @@ private:
     bool ensureDynamicBuffer(unsigned int vertexCount);
     void drawLineVertices(const std::vector<Vertex>& vertices);
     void drawTriangleVertices(const std::vector<Vertex>& vertices);
+    void drawDebugTextOverlay();
 
     RendererConfig m_config;
     DebugCamera m_debugCamera;
+    std::string m_debugText;
     HWND m_window = nullptr;
     Microsoft::WRL::ComPtr<ID3D11Device> m_device;
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_context;

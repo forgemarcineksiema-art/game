@@ -34,7 +34,6 @@ add_library(EngineCore STATIC
     src/engine/core/Config.cpp
     src/engine/core/FileSystem.cpp
     src/engine/core/Logger.cpp
-    src/engine/input/Input.cpp
     src/engine/platform/Window.cpp
     src/engine/physics/PhysicsWorld.cpp
     src/engine/renderer/NullRenderer.cpp
@@ -47,6 +46,7 @@ target_include_directories(EngineCore
 )
 
 target_compile_features(EngineCore PUBLIC cxx_std_20)
+target_link_libraries(EngineCore PUBLIC nlohmann_json::nlohmann_json)
 
 target_compile_definitions(EngineCore
     PUBLIC
@@ -62,7 +62,7 @@ if(WIN32)
             src/engine/platform/Win32Window.cpp
             src/engine/renderer/GdiRenderer.cpp
     )
-    target_link_libraries(EngineCore PUBLIC nlohmann_json::nlohmann_json user32 gdi32 d3d11 dxgi d3dcompiler)
+    target_link_libraries(EngineCore PUBLIC user32 gdi32 d3d11 dxgi d3dcompiler)
 else()
     target_compile_definitions(EngineCore PUBLIC ENGINE_PLATFORM_WINDOWS=0)
 endif()
@@ -119,7 +119,6 @@ endif()
 add_library(GamePrototype STATIC
     src/game/FerryOfficeJob.cpp
     src/game/InteractionSystem.cpp
-    src/game/FerryOfficeData.cpp
     src/game/PlayerController.cpp
     src/game/SandboxLayer.cpp
     src/game/SceneDefinition.cpp

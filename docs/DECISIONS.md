@@ -533,3 +533,11 @@ Decision: Add `scripts/play.ps1` as the player-facing local launch path for the 
 Reason: The prototype has become playable, but the previous launch flow still required remembering long development arguments or using the lower-level `scripts/run.ps1` preset wrapper. A small tested wrapper improves hand-play and presentation without adding an installer, release packaging system, config UI, save/settings persistence, or new gameplay feature. Low-level direct executable, `scripts/run.ps1`, smoke/headless, DX11, Jolt, Blender, and scene-tool workflows remain available for development validation.
 
 Dependency impact: no dependency or new gameplay system was added.
+
+## v0.23.1 Follow-up DX11 Text Overlay As Stopgap
+
+Decision: Add a small Win32 text overlay to `Dx11Renderer` after swap-chain `Present`, and keep GDI frame pacing through a tiny `IRenderer::isFramePaced()` hook.
+
+Reason: The playable build now has a good launch wrapper, but DX11 remained weak for playtest because objective/debug text was absent. A narrow Win32 overlay makes `scripts/play.ps1 -Dx11` useful without adding a UI framework, font system, material pipeline, renderer rewrite, or new gameplay. DX11 still falls back to WARP on this laptop and the overlay is not production presentation tech.
+
+Dependency impact: no new dependency was added.

@@ -143,6 +143,8 @@ v0.2 adds debug primitive drawing to the renderer interface: debug camera, lines
 
 v0.12 adds `IRenderer::drawDebugFlatTriangles` as a narrow immediate-mode static mesh submission path. DX11 and GDI use the same CPU debug projection model as solid boxes; the null renderer accepts the call for smoke/test safety. v0.12.1 uses this path for a small unit-box prop replacement pass, and v0.18 extends it to a few original service-road prop meshes. This is still not a real material or GPU mesh-resource system.
 
+v0.23.1 follow-up work adds a small `IRenderer::isFramePaced()` hook so GDI can keep windowed frame pacing while DX11 relies on swap-chain presentation. DX11 debug text now uses a simple Win32 text overlay after `Present`, which makes `scripts/play.ps1 -Dx11` usable for playtest/debug checks. This is a narrow stopgap, not a renderer-owned font system, UI framework, or production HUD.
+
 ## Game Layer
 
 `src/game/SandboxLayer.*` is the first game-facing layer. It owns the prototype scene, player controller, third-person camera, and the current placeholder service-yard vehicle spike.

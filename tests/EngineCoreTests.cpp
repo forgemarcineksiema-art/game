@@ -406,6 +406,36 @@ void TestStaticMeshLoaderReportsMissingAsset()
         "Missing glTF asset failure should mention not found.");
 }
 
+void TestStaticMeshLoaderReportsInvalidJsonTypesWithoutThrowing()
+{
+    const std::filesystem::path meshPath = std::filesystem::temp_directory_path() / "tidebreak_bad_accessor_type.gltf";
+    {
+        std::ofstream file(meshPath);
+        file << R"({
+            "buffers": [{"uri": "data:application/octet-stream;base64,AA=="}],
+            "bufferViews": [{"buffer": 0, "byteOffset": 0, "byteLength": 1}],
+            "accessors": [{"bufferView": 0, "componentType": 5126, "count": 1, "type": "VEC3"}],
+            "meshes": [{"primitives": [{"attributes": {"POSITION": "not-an-index"}, "indices": 0}]}]
+        })";
+    }
+
+    bool threw = false;
+    engine::StaticMeshLoadResult result;
+    try {
+        result = engine::LoadStaticMeshFromGltf(meshPath);
+    } catch (...) {
+        threw = true;
+    }
+    std::filesystem::remove(meshPath);
+
+    Expect(!threw,
+        "TestStaticMeshLoaderReportsInvalidJsonTypesWithoutThrowing",
+        "Invalid but parseable glTF JSON should report a load error instead of throwing.");
+    Expect(!result.ok() && !result.error.empty(),
+        "TestStaticMeshLoaderReportsInvalidJsonTypesWithoutThrowing",
+        "Invalid glTF accessor types should produce a clear loader error.");
+}
+
 void TestStaticMeshBuildsTransformedTriangleList()
 {
     engine::StaticMeshAsset mesh;
@@ -2636,6 +2666,7 @@ int main()
     TestStaticMeshLoaderLoadsCommittedUnitBox();
     TestStaticMeshLoaderLoadsV018PropKit();
     TestStaticMeshLoaderReportsMissingAsset();
+    TestStaticMeshLoaderReportsInvalidJsonTypesWithoutThrowing();
     TestStaticMeshBuildsTransformedTriangleList();
     TestSceneLoaderLoadsDefaultFerryOfficeScene();
     TestSceneLoaderLoadsV018VisualIdentityPropKit();

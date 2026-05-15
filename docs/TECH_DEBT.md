@@ -14,9 +14,8 @@ This file lists known foundation issues during v0.23. It is not a mandate to fix
 ### Fix Soon
 
 1. Run a full human keyboard/mouse playthrough on the target laptop through `scripts/play.ps1` and capture any remaining vehicle feel issues around braking distance, reverse steering, checkpoint approach, exit placement, or cursor/camera comfort.
-2. Improve DX11 presentation feedback once the GDI playtest path is solid. DX11 still lacks text overlay, so player-facing verification remains GDI-biased.
-3. Keep the Blender/static mesh path narrow and honest. Add only a few controlled original props until cgltf/tinygltf is clearly justified.
-4. Decide whether the next non-packaging pass is presentation polish, a hand-authored Blender prop pass, or a Jolt vehicle feasibility spike based on actual hand-play feedback.
+2. Keep the Blender/static mesh path narrow and honest. Add only a few controlled original props until cgltf/tinygltf is clearly justified.
+3. Decide whether the next non-packaging pass is presentation polish, a hand-authored Blender prop pass, or a Jolt vehicle feasibility spike based on actual hand-play feedback.
 
 ### Acceptable For Now
 
@@ -24,7 +23,7 @@ This file lists known foundation issues during v0.23. It is not a mandate to fix
 2. Deterministic vehicle movement remains acceptable after v0.22 for the next playable-build pass; Jolt VehicleConstraint remains deferred until manual driving feedback proves deterministic tuning is the blocker.
 3. `WorldState` and `FerryOfficeJob` remain explicit in-memory prototype systems, not a save/load or mission framework.
 4. The tiny custom `.gltf` subset remains acceptable while assets are simple embedded-buffer static props.
-5. GDI remains the primary visual/playtest renderer while DX11 lacks debug text and often falls back to WARP on this laptop.
+5. GDI remains the most battle-tested visual/playtest renderer, but DX11 now has a simple debug text overlay and can be used for bounded playtest checks. DX11 still often falls back to WARP on this laptop.
 6. Scene data is the runtime source of truth for layout, while behavior mappings stay in C++ until more job types prove a stable data shape.
 7. v0.23 adds launch scripts, not release packaging, an installer, signing, updater, config UI, or save/settings persistence.
 
@@ -37,7 +36,7 @@ This file lists known foundation issues during v0.23. It is not a mandate to fix
 ## Renderer
 
 - DX11 hardware/debug device creation fails in this environment and falls back to WARP.
-- DX11 debug text is currently a no-op; GDI shows debug text.
+- DX11 debug text now uses a small Win32 text overlay after `Present`. This makes `scripts/play.ps1 -Dx11` usable for playtest checks, but it is not a production HUD/text renderer.
 - Debug boxes/lines/solid boxes and v0.12 flat mesh triangles are enough for prototypes but not a real mesh/material pipeline.
 - v0.9 solid debug boxes and v0.12 mesh triangles are projected placeholder geometry with no depth buffer, sorting, lighting, textures, materials, or transparency.
 - There is no resize handling, depth buffer, camera clip tuning, or resource lifetime stress testing.
@@ -162,7 +161,7 @@ This file lists known foundation issues during v0.23. It is not a mandate to fix
 - v0.11 documents art direction and placeholder color keys. v0.12/v0.12.1 add first static mesh rendering and a small prop replacement pass, and v0.18 adds the first original service-road prop kit, but still no final art, lighting, textures, materials, or model loading beyond a tiny proof subset.
 - v0.14 makes the service-yard read more like a dock road with a shore/water edge cue and turn-around marker. v0.15 loads that layout from scene data, but it remains hand-authored placeholder geometry.
 - v0.17 playtest mode puts objective/focus/job status first and reserves raw telemetry for debug mode, but it remains functional debug text rather than a polished UI.
-- DX11 has no debug text overlay, so visual playtesting still favors GDI until a real overlay or text path exists.
+- DX11 now has a simple debug text overlay, so bounded DX11 playtest checks are useful. GDI still remains the simpler renderer for overlay debugging, and a real renderer-owned text/HUD path is deferred.
 - There is no authored composition pass for camera start angle, signposting, silhouettes, or route readability beyond simple colored volumes and the first flat-tinted prop-kit meshes.
 
 ## Deprecated Priority Lists

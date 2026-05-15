@@ -133,6 +133,8 @@ int Application::run(AppConfig config, std::unique_ptr<IGameLayer> layer)
 
         if (config.headless) {
             std::this_thread::yield();
+        } else if (!renderer->isFramePaced()) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(16));
         }
     }
 

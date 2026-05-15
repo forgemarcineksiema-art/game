@@ -128,9 +128,9 @@ build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --ui-mode debug
 build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --ui-mode minimal
 ```
 
-Normal windowed play defaults to `playtest`, which keeps objective, prompt, job state, vehicle/checkpoint hints, and completion status visible without the raw telemetry wall. Use `--ui-mode debug` or `--debug-ui` for full development telemetry. Use `--ui-mode minimal` or `--playtest-ui --ui-mode minimal` only when you want the smallest objective/prompt/status readout. `F1` toggles from playtest/minimal to debug and back during a GDI run.
+Normal windowed play defaults to `playtest`, which keeps objective, prompt, job state, vehicle/checkpoint hints, and completion status visible without the raw telemetry wall. Use `--ui-mode debug` or `--debug-ui` for full development telemetry. Use `--ui-mode minimal` or `--playtest-ui --ui-mode minimal` only when you want the smallest objective/prompt/status readout. `F1` toggles from playtest/minimal to debug and back during a windowed run.
 
-GDI is the best renderer for overlay review because it supports debug text. DX11 bounded runs remain useful for renderer validation, but DX11 text is still intentionally absent.
+GDI remains the simplest renderer for overlay debugging. DX11 now draws a small Win32 debug text overlay after presenting, so `scripts/play.ps1 -Dx11` is usable for bounded playtest checks too; it is still not a production HUD/text renderer.
 
 Headless smoke mode:
 

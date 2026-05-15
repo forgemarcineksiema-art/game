@@ -19,6 +19,14 @@ Run the smoke path:
 scripts/run.ps1 -Args @("--smoke-test", "--frames", "3")
 ```
 
+Run the current playable Ferry Office build:
+
+```powershell
+scripts/play.ps1
+scripts/play.ps1 -Dx11
+scripts/play.ps1 -DebugUi
+```
+
 Read `AGENTS.md` and `docs/RUNBOOK.md` before making engine changes.
 
 Direction docs:

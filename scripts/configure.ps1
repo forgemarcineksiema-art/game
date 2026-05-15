@@ -19,8 +19,15 @@ function Invoke-Preset($Name) {
     }
 }
 
+function Save-LastPreset($Name) {
+    $BuildDir = Join-Path $Root "build"
+    New-Item -ItemType Directory -Force -Path $BuildDir | Out-Null
+    Set-Content -Path (Join-Path $BuildDir ".last_preset") -Value $Name
+}
+
 if ($Preset -ne "auto") {
     if (Invoke-Preset $Preset) {
+        Save-LastPreset $Preset
         exit 0
     }
     exit 1
@@ -35,7 +42,7 @@ $Candidates = @(
 foreach ($Candidate in $Candidates) {
     if (Invoke-Preset $Candidate) {
         Write-Host "Configured with preset: $Candidate"
-        Set-Content -Path (Join-Path $Root "build\.last_preset") -Value $Candidate
+        Save-LastPreset $Candidate
         exit 0
     }
     Write-Host "Preset failed: $Candidate"
@@ -43,4 +50,3 @@ foreach ($Candidate in $Candidates) {
 
 Write-Host "No configure preset succeeded."
 exit 1
-

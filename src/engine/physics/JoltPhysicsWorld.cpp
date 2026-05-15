@@ -2,6 +2,8 @@
 
 #if ENGINE_WITH_JOLT
 
+#include "engine/math/BoxEdges.h"
+
 #include <Jolt/Jolt.h>
 #include <Jolt/RegisterTypes.h>
 #include <Jolt/Core/Factory.h>
@@ -409,13 +411,7 @@ private:
             {min.x, max.y, max.z},
         };
 
-        const int edges[12][2] = {
-            {0, 1}, {1, 2}, {2, 3}, {3, 0},
-            {4, 5}, {5, 6}, {6, 7}, {7, 4},
-            {0, 4}, {1, 5}, {2, 6}, {3, 7},
-        };
-
-        for (const auto& edge : edges) {
+        for (const auto& edge : BoxEdgeIndices) {
             lines.push_back({c[edge[0]], c[edge[1]], color});
         }
     }
