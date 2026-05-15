@@ -57,8 +57,10 @@ def main() -> int:
         "docs/ART_DIRECTION.md",
         "docs/MESH_RENDERING.md",
         "docs/ASSET_PIPELINE_DECISION.md",
+        "docs/BLENDER_WORKFLOW.md",
         "data/scenes/ferry_office.scene.json",
         "assets/models/unit_box.gltf",
+        "assets/models/ferry_notice_board.gltf",
         "scripts/doctor.ps1",
         "scripts/configure.ps1",
         "scripts/build.ps1",
@@ -70,6 +72,8 @@ def main() -> int:
         "tools/validate_assets.py",
         "tools/scale_audit.py",
         "tools/mesh_report.py",
+        "tools/check_blender.py",
+        "tools/create_simple_prop_gltf.py",
     ]:
         print(f"  {path}: {exists(path)}")
 

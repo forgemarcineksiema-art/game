@@ -296,6 +296,17 @@
       "provenance": "Generated in-repo for the v0.18 Tidebreak service-road prop style spike.",
       "authoringBoundsHalfExtents": [0.32, 0.44, 0.25],
       "notes": "Simple utility cabinet/service panel silhouette for the maintenance side."
+    },
+    {
+      "id": "ferry-notice-board-mesh",
+      "path": "assets/models/ferry_notice_board.gltf",
+      "format": "gltf",
+      "units": "meter",
+      "upAxis": "Y",
+      "license": "project-original",
+      "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v0.20 fallback static prop because Blender was unavailable; not a Blender export.",
+      "authoringBoundsHalfExtents": [0.58, 0.70, 0.16],
+      "notes": "Small original ferry notice board silhouette for route readability. No textures, logos, text, or final signage."
     }
   ],
   "meshInstances": [
@@ -398,6 +409,15 @@
       "colorKey": "ferry-route-sign-blue",
       "replacesVisualPlaceholderId": "dock-road-end-marker",
       "notes": "First v0.18 service-road sign cue; the shape is intentionally original, untextured, and non-final."
+    },
+    {
+      "id": "mesh-ferry-notice-board",
+      "assetId": "ferry-notice-board-mesh",
+      "position": [-1.75, 0.0, 1.75],
+      "yawDegrees": 25.0,
+      "scale": [1.0, 1.0, 1.0],
+      "colorKey": "dock-muted-sign-yellow",
+      "notes": "v0.20 fallback-generated prop placed near the office approach; this is not a Blender export."
     },
     {
       "id": "mesh-dock-road-edge-post-a",

@@ -95,8 +95,10 @@ Scene tools live under `tools`:
 - `asset_data.py`: shared static mesh file scanning and tiny glTF metadata helpers for tools.
 - `validate_assets.py`: asset workflow validation for mesh files, scene references, provenance, unsupported formats, and unsupported buffers.
 - `mesh_report.py`: static mesh file/reference summary with vertex/index counts, bounds, usage, and provenance.
+- `check_blender.py`: optional local Blender availability check; Blender is not required for default validation yet.
+- `create_simple_prop_gltf.py`: fallback generator for tiny original static props when Blender is unavailable; it is not a Blender exporter.
 
-v0.12 extends the scene file with `meshAssets` and `meshInstances`. These are validated scene entries, not a full asset registry. v0.12.1 grows the Ferry Office prop set to 10 mesh instances for roof/facade/sign, service gate, maintenance box, dock props, service-yard crate, and vehicle body/cabin. v0.15 submits those mesh instances from loaded scene data. v0.18 adds four original service-road prop meshes and 15 total mesh instances; `SandboxLayer` now loads scene mesh assets by id instead of assuming only `unit-box-mesh`. v0.19 keeps that runtime boundary and improves tooling around it rather than adding a resource manager.
+v0.12 extends the scene file with `meshAssets` and `meshInstances`. These are validated scene entries, not a full asset registry. v0.12.1 grows the Ferry Office prop set to 10 mesh instances for roof/facade/sign, service gate, maintenance box, dock props, service-yard crate, and vehicle body/cabin. v0.15 submits those mesh instances from loaded scene data. v0.18 adds four original service-road prop meshes and 15 total mesh instances; `SandboxLayer` now loads scene mesh assets by id instead of assuming only `unit-box-mesh`. v0.19 keeps that runtime boundary and improves tooling around it rather than adding a resource manager. v0.20 adds one fallback-generated ferry notice board, raising the current scene to 6 mesh assets and 16 mesh instances, while documenting that real Blender export is still blocked.
 
 ## Static Mesh Assets
 

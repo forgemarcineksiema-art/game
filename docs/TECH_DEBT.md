@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-15
 
-This file lists known foundation issues after v0.19. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
+This file lists known foundation issues after v0.20. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
 
 ## Build / Toolchain
 
@@ -119,6 +119,7 @@ This file lists known foundation issues after v0.19. It is not a mandate to fix 
 - v0.12 supports only a tiny `.gltf` subset: embedded base64 buffer, float position vertices, indexed triangle list.
 - `.glb`, external buffers, materials, textures, normals in the renderer, UVs, node hierarchy, animation, skinning, and morph targets are not supported.
 - `assets/models/unit_box.gltf` and the v0.18 prop-kit meshes are placeholder proof assets, not production art.
+- `assets/models/ferry_notice_board.gltf` is a v0.20 fallback-generated proof prop, not a Blender export or production art.
 - There is no asset registry, mesh resource cache, file watcher, importer/cooker, mesh optimizer, LOD, or material assignment.
 - Mesh instances render visually but do not define collision or physics shapes.
 - The current loader is intentionally narrow. v0.19 decides to keep it briefly while asset workflow validation improves, then move to cgltf/tinygltf when real glTF coverage is needed.
@@ -126,6 +127,7 @@ This file lists known foundation issues after v0.19. It is not a mandate to fix 
 - v0.18 adds four original tiny `.gltf` prop meshes (`service_road_sign`, `road_edge_post`, `service_barrier`, and `utility_box`) and a scene-driven asset-id map in `SandboxLayer`, but this is still not an asset registry or resource cache.
 - Mesh placement is now submitted from loaded scene data, but rendering still uses the immediate flat-triangle spike instead of real GPU mesh resources.
 - v0.19 asset validation catches unreferenced `.gltf`, unsupported `.glb`, external buffers, missing provenance, duplicate mesh ids, unknown mesh instance asset ids, and duplicate replacement links. It still is not a glTF schema validator or Blender import pipeline.
+- v0.20 adds `tools/check_blender.py` and `tools/create_simple_prop_gltf.py`, but Blender is not currently available in PATH. A real Blender export remains blocked until Blender is installed or located and tested.
 
 ## Visual Readability
 
@@ -139,7 +141,7 @@ This file lists known foundation issues after v0.19. It is not a mandate to fix 
 
 ## Fix Soon
 
-1. Prove a tiny Blender-to-Tidebreak prop workflow with one original static prop, constrained export settings, and validation through the current `.gltf` subset or a deliberate cgltf/tinygltf follow-up.
+1. Install or locate Blender, then prove a real Blender-to-Tidebreak prop workflow with one original static prop, constrained export settings, and validation through the current `.gltf` subset or a deliberate cgltf/tinygltf follow-up.
 2. Run a full human keyboard/mouse playthrough of the v0.19 playtest overlay on the target laptop and note any objective, marker, cursor, vehicle-exit, or prop-visibility confusion.
 3. Keep the next gameplay goal narrow and use scene data first when adding or moving layout objects.
 4. Decide whether the first Jolt gameplay promotion should be vehicle-only, world queries-only, or player collision-only after vehicle/job playtests.

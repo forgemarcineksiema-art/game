@@ -493,3 +493,11 @@ Decision: Keep the current tiny custom `.gltf` loader for the next short prototy
 Reason: The active blocker is workflow discipline, not broad glTF coverage. Tidebreak currently needs original simple static props, scene references, license/provenance, bounds, and Codex-friendly validation more than it needs materials, textures, GLB, external buffers, or multi-format import. v0.19 therefore adds `tools/validate_assets.py`, expands `tools/mesh_report.py`, documents the decision in `docs/ASSET_PIPELINE_DECISION.md`, and makes asset validation part of `scripts/verify.ps1`.
 
 Dependency impact: no new third-party dependency was added. cgltf is the preferred next loader candidate when Blender-authored assets, GLB, external buffers, normals, UVs, or materials become necessary. tinygltf remains a credible backup; Assimp remains too broad for this stage.
+
+## v0.20 Honest Blender Check With Fallback Prop
+
+Decision: Add an optional Blender availability checker and a tiny fallback `.gltf` prop generator, but do not claim a Blender export because Blender is not installed or not in PATH in this environment.
+
+Reason: The project needs a practical DCC workflow, but pretending success would poison the asset pipeline. The fallback generator keeps one small original prop moving through scene data, validation, runtime loading, and rendering while preserving the truth that real Blender export remains blocked.
+
+Dependency impact: no new third-party dependency was added. Blender remains an optional local tool until a future goal installs/configures it and verifies export compatibility. If Blender output immediately exceeds the current tiny `.gltf` subset, cgltf remains the preferred loader stabilization path.

@@ -3670,3 +3670,151 @@ Known remaining issues:
 Recommended next goal:
 
 Build v0.20 Blender-to-Tidebreak Static Prop Workflow Spike.
+
+## v0.20 Baseline - 2026-05-15
+
+Goal: prove or honestly block a tiny repeatable Blender-to-Tidebreak static prop workflow using one original simple prop, while preserving the existing Ferry Office Service Call, v0.19 static mesh tooling, default validation, and Jolt opt-in validation. No Job #2, gameplay system, broad asset registry, material pipeline, animation, or renderer rewrite should be added.
+
+Required context read before implementation:
+
+- `AGENTS.md`
+- `docs/STATUS.md`
+- `docs/ROADMAP.md`
+- `docs/ARCHITECTURE.md`
+- `docs/TECH_DEBT.md`
+- `docs/ASSET_GUIDE.md`
+- `docs/SCENE_AUTHORING.md`
+- `docs/MESH_RENDERING.md`
+- `docs/ASSET_PIPELINE_DECISION.md`
+- `docs/ART_DIRECTION.md`
+- `docs/DECISIONS.md`
+- `docs/MANUAL_TEST_CHECKLIST.md`
+
+Baseline results:
+
+- Git state before v0.20 work: `main...origin/main`, clean working tree.
+- `scripts\verify.ps1`: passed. Default doctor/configure/build/CTest, scene validation, asset validation, mesh report, and null smoke all completed. Null smoke reported engine `v0.19.0` and loaded all five scene-authored static mesh assets.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 3/3 tests.
+- `python tools\scene_report.py`: passed; scene reports 9 colliders, 21 visual placeholders, 5 mesh assets, 15 mesh instances, 6 interactables, 1 traversal affordance, 1 vehicle, 6 route markers, and 5 objective markers.
+- `python tools\validate_scene.py`: passed.
+- `python tools\validate_assets.py`: passed.
+- `python tools\scale_audit.py`: passed.
+- `python tools\mesh_report.py`: passed; reports all 5 model files as referenced with bounds and provenance.
+- Blender availability check:
+  - `blender --version`: failed because `blender` is not recognized as a command in the current PATH.
+  - `Get-Command blender -ErrorAction SilentlyContinue | Select-Object Source,Version`: returned no Blender command.
+
+## v0.20 Short Implementation Plan
+
+1. Add failing tests first for an optional Blender availability helper, a repeatable fallback static-prop generator, scene references for a new v0.20 prop, and mesh report/asset validation coverage.
+2. Add `tools\check_blender.py` so future Codex runs can check Blender without making normal validation fail when Blender is absent.
+3. Because Blender is unavailable in this environment, do not claim a Blender export. Add a clearly labeled fallback generator for one simple original prop and document it as not Blender-exported.
+4. Generate one small original fallback prop, add it to `assets\models`, reference it from `data\scenes\ferry_office.scene.json`, and keep it compatible with the existing tiny `.gltf` subset.
+5. Update docs for the Blender workflow, fallback path, validation commands, current blocker, and when cgltf/tinygltf becomes necessary.
+6. Run the full default/Jolt/tool/windowed validation matrix, record exact results, then commit and push only after successful validation.
+
+## v0.20 Implementation Notes - 2026-05-15
+
+TDD checkpoint:
+
+- Added failing tests in `tests\test_scene_tools.py` for:
+  - an optional Blender checker that reports a missing command without throwing,
+  - a fallback static-prop generator that writes supported embedded-buffer `.gltf`,
+  - a new `ferry-notice-board-mesh` scene asset and `mesh-ferry-notice-board` instance,
+  - `mesh_report.py` visibility for the new asset.
+- Initial red run:
+  - `python tests\test_scene_tools.py` failed as expected because `tools\check_blender.py` did not exist yet.
+
+Implemented changes:
+
+- Bumped project version to `0.20.0`.
+- Added `tools\check_blender.py`.
+  - `python tools\check_blender.py` reports Blender unavailable without failing normal validation.
+  - `python tools\check_blender.py --require` can be used by a local setup that wants Blender to be mandatory.
+- Added `tools\create_simple_prop_gltf.py`.
+  - This is a fallback generator, not a Blender exporter.
+  - It writes a small original embedded-buffer `ferry_notice_board.gltf` in the currently supported static mesh subset.
+- Generated `assets\models\ferry_notice_board.gltf`.
+- Added `ferry-notice-board-mesh` and `mesh-ferry-notice-board` to `data\scenes\ferry_office.scene.json`.
+  - Provenance explicitly says it is fallback-generated because Blender was unavailable and is not a Blender export.
+- Created `docs\BLENDER_WORKFLOW.md`.
+- Updated runbook, architecture, asset guide, scene authoring, mesh rendering, asset pipeline decision, art direction, tech debt, manual checklist, decisions, roadmap, doctor checks, and status reporting for the v0.20 workflow.
+
+Focused checks:
+
+- `python tests\test_scene_tools.py`: passed, 25 tests.
+- `python tools\check_blender.py`: passed as an optional check and reported Blender unavailable.
+- `python tools\validate_scene.py`: passed.
+- `python tools\validate_assets.py`: passed; reports 6 model files.
+- `python tools\mesh_report.py`: passed; reports 6 mesh assets, 16 mesh instances, and 6 referenced model files.
+
+Known implementation limitations:
+
+- Blender is not installed or not in PATH in this environment. No Blender export was produced or claimed.
+- The new notice board is fallback-generated static geometry. It is useful for validating the workflow and scene integration, but it is not proof of Blender export compatibility.
+- The custom `.gltf` subset remains intentionally tiny and still rejects `.glb`, external buffers, textures/materials, animation, mesh collision, and broad glTF features.
+
+## v0.20 Final Validation - 2026-05-15
+
+Commands run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\doctor.ps1
+powershell -ExecutionPolicy Bypass -File scripts\configure.ps1
+powershell -ExecutionPolicy Bypass -File scripts\build.ps1
+ctest --preset windows-vs2022-debug --output-on-failure
+powershell -ExecutionPolicy Bypass -File scripts\verify.ps1
+cmake --preset windows-vs2022-debug-jolt
+cmake --build --preset windows-vs2022-debug-jolt
+ctest --preset windows-vs2022-debug-jolt --output-on-failure
+python tools\scene_report.py
+python tools\validate_scene.py
+python tools\validate_assets.py
+python tools\scale_audit.py
+python tools\mesh_report.py
+python tools\status_report.py
+python tools\check_blender.py
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --ui-mode playtest --frames 360
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --ui-mode debug --frames 360
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 360
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --scene data\scenes\ferry_office.scene.json --ui-mode playtest --frames 360
+```
+
+Results:
+
+- `scripts\doctor.ps1`: passed. Expected PATH warnings remain for `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- `scripts\configure.ps1`: passed with preset `windows-vs2022-debug`.
+- `scripts\build.ps1`: passed.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 3/3 tests.
+- `scripts\verify.ps1`: passed. Null smoke reported engine `v0.20.0` and loaded all six scene-authored static mesh assets, including `ferry-notice-board-mesh`.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 3/3 tests.
+- `python tools\scene_report.py`: passed; scene now reports 9 colliders, 21 visual placeholders, 6 mesh assets, 16 mesh instances, 6 interactables, 1 traversal affordance, 1 vehicle, 6 route markers, and 5 objective markers.
+- `python tools\validate_scene.py`: passed.
+- `python tools\validate_assets.py`: passed; 6 model files under `assets\models`.
+- `python tools\scale_audit.py`: passed; no suspicious scale issues found.
+- `python tools\mesh_report.py`: passed; all six `.gltf` files are referenced with license/provenance, vertex/index counts, and bounds.
+- `python tools\status_report.py`: passed and reported the v0.20 working tree changes plus expected docs/tools/assets.
+- `python tools\check_blender.py`: passed as an optional check and reported Blender unavailable because `blender` is not found in PATH.
+- GDI playtest bounded run: passed, loaded the new notice-board mesh asset and exited cleanly.
+- GDI debug bounded run: passed, preserved full debug telemetry and exited cleanly.
+- DX11 bounded run: passed; hardware DX11 device creation still fell back to WARP, then loaded all six mesh assets and exited cleanly.
+- Explicit `--scene data\scenes\ferry_office.scene.json` GDI playtest run: passed and exited cleanly.
+
+Visual / workflow evidence:
+
+- No screenshot was replaced in v0.20 because the important evidence is workflow truthfulness rather than a major presentation change. Bounded GDI/DX11 runs confirmed the scene still loads and renders with the new scene-authored mesh asset.
+- Blender export remains unverified. The fallback notice board is intentionally documented as fallback-generated project geometry, not Blender output.
+
+Known remaining issues:
+
+- Blender is unavailable in PATH in this environment. A future goal must install/locate Blender before claiming DCC export success.
+- The current custom `.gltf` loader remains narrow. If real Blender output requires GLB, external buffers, multiple primitives, normals/UVs, or materials, prefer a cgltf stabilization goal over expanding the custom parser ad hoc.
+- DX11 still falls back to WARP in this environment and still does not render text overlays.
+
+Recommended next goal:
+
+Build v0.20.1 Blender Export / Loader Compatibility Stabilization.

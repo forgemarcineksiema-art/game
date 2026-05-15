@@ -203,9 +203,34 @@ assets/models/service_road_sign.gltf
 assets/models/road_edge_post.gltf
 assets/models/service_barrier.gltf
 assets/models/utility_box.gltf
+assets/models/ferry_notice_board.gltf
 ```
 
-The supported loader subset is intentionally tiny: `.gltf`, one embedded base64 buffer, `POSITION` float `VEC3`, indexed triangle list, no materials/textures/animation. v0.18 can load multiple scene-authored mesh asset ids, and v0.19 validates the asset workflow around those files, but this is still not an asset registry or production mesh pipeline. See `docs/MESH_RENDERING.md` and `docs/ASSET_PIPELINE_DECISION.md` before changing mesh loading or renderer behavior.
+The supported loader subset is intentionally tiny: `.gltf`, one embedded base64 buffer, `POSITION` float `VEC3`, indexed triangle list, no materials/textures/animation. v0.18 can load multiple scene-authored mesh asset ids, v0.19 validates the asset workflow around those files, and v0.20 adds an optional Blender check plus one clearly labeled fallback-generated notice-board prop. This is still not an asset registry or production mesh pipeline. See `docs/MESH_RENDERING.md`, `docs/ASSET_PIPELINE_DECISION.md`, and `docs/BLENDER_WORKFLOW.md` before changing mesh loading or renderer behavior.
+
+## Blender / Static Prop Workflow
+
+Blender is optional for normal validation until the project explicitly makes it a required DCC dependency.
+
+Check local Blender availability:
+
+```powershell
+python tools/check_blender.py
+```
+
+Require Blender in a local setup check:
+
+```powershell
+python tools/check_blender.py --require
+```
+
+Generate the v0.20 fallback prop again:
+
+```powershell
+python tools/create_simple_prop_gltf.py --output assets/models/ferry_notice_board.gltf --overwrite
+```
+
+The fallback helper is not Blender export. Use it only for simple original placeholder geometry while Blender/export compatibility is blocked.
 
 ## Verify
 

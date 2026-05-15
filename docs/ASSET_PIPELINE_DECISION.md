@@ -144,3 +144,16 @@ The likely migration path is:
 This decision does not make the current visuals production quality. It only prevents the asset workflow from becoming accidental chaos while the renderer and art direction are still young.
 
 It also does not block Blender. Blender remains the intended DCC direction; v0.19 simply says that the next Blender step should be a narrow workflow spike, not a silent expansion of the runtime loader in the middle of unrelated gameplay work.
+
+## v0.20 Blender Workflow Update
+
+The v0.20 spike checked Blender honestly and found that `blender` is not available in the current PATH. Because of that, the project does not claim a successful Blender export yet.
+
+v0.20 adds:
+
+- `tools/check_blender.py` for optional DCC availability checks,
+- `tools/create_simple_prop_gltf.py` as a clearly labeled fallback generator,
+- `assets/models/ferry_notice_board.gltf` as project-original fallback geometry, not Blender export,
+- `docs/BLENDER_WORKFLOW.md` with the exact current blocker and next intended workflow.
+
+This does not change the v0.19 recommendation. Keep the tiny loader briefly, but the first real Blender install/export pass should happen soon. If Blender produces `.gltf` files that require external buffers, GLB, multiple primitives, normals/UVs, or material dependencies, prefer stabilizing cgltf next instead of growing a fragile custom parser.

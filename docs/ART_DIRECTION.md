@@ -123,3 +123,7 @@ The v0.18 pass adds the first original service-road prop-kit silhouettes: a rout
 ## v0.19 Asset Workflow Observation
 
 v0.19 intentionally does not change the visual composition. It stabilizes the path that allowed the v0.18 props to exist: every committed mesh file should be visible to `tools/mesh_report.py`, referenced by scene data, documented with license/provenance, and accepted by `tools/validate_assets.py`. This keeps future visual identity work from becoming a pile of untracked prop experiments.
+
+## v0.20 Blender Workflow Observation
+
+v0.20 adds one small fallback-generated ferry notice board near the office approach. It supports the dock/ferry-service identity, but it is explicitly not a Blender export because Blender was not available in the current environment. Treat it as a workflow placeholder: useful for route readability and validation, not a proof that real DCC art is flowing yet.

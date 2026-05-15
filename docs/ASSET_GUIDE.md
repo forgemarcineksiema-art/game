@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-15
 
-This guide defines Tidebreak's early asset and scale conventions. v0.19 still does not add a full asset pipeline, but the project now has a tiny static `.gltf` prop path for original placeholder meshes plus stronger asset workflow validation.
+This guide defines Tidebreak's early asset and scale conventions. v0.20 still does not add a full asset pipeline, but the project now has a tiny static `.gltf` prop path for original placeholder meshes, stronger asset workflow validation, and an honest Blender-availability check plus fallback prop generator.
 
 ## Units And Axes
 
@@ -74,6 +74,7 @@ v0.12-v0.18 supports a tiny static `.gltf` subset through `src/engine/assets/Sta
 - Current committed proof asset: `assets/models/unit_box.gltf`.
 - v0.12.1 deliberately reuses that asset for a small Ferry Office prop kit.
 - v0.18 adds four original prop-kit meshes: `service_road_sign.gltf`, `road_edge_post.gltf`, `service_barrier.gltf`, and `utility_box.gltf`.
+- v0.20 adds `ferry_notice_board.gltf` through `tools/create_simple_prop_gltf.py` because Blender was unavailable in the current environment. This asset is project-original fallback geometry, not Blender export.
 - Use meters, Y-up, +Z forward.
 - Keep placeholder meshes small, original, and clearly documented.
 - Add `license` and `provenance` for every scene `meshAssets` entry.
@@ -89,7 +90,7 @@ Still deferred:
 - mesh collision import,
 - skeletal animation assets.
 
-Near-term decision: keep the custom tiny `.gltf` loader while the project stabilizes naming, scale, provenance, and validation. Switch to cgltf or tinygltf only when Blender-authored assets, GLB, external buffers, normals, UVs, or materials become necessary. See `docs/ASSET_PIPELINE_DECISION.md`.
+Near-term decision: keep the custom tiny `.gltf` loader while the project stabilizes naming, scale, provenance, validation, and the first DCC workflow. Switch to cgltf or tinygltf when Blender-authored assets cannot stay inside the current subset or when GLB, external buffers, normals, UVs, or materials become necessary. See `docs/ASSET_PIPELINE_DECISION.md` and `docs/BLENDER_WORKFLOW.md`.
 
 ## What Not To Add Yet
 

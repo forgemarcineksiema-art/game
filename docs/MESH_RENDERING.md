@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-15
 
-v0.12 adds the first narrow static mesh path. v0.19 stabilizes the surrounding asset workflow, but this remains a render spike and authoring bridge, not a full asset pipeline.
+v0.12 adds the first narrow static mesh path. v0.19 stabilizes the surrounding asset workflow, and v0.20 proves the current Blender gap plus a small fallback prop workflow. This remains a render spike and authoring bridge, not a full asset pipeline.
 
 ## What Exists
 
@@ -19,6 +19,7 @@ v0.12 adds the first narrow static mesh path. v0.19 stabilizes the surrounding a
 - Null renderer accepts the call and counts it for smoke/test visibility.
 - `assets/models/unit_box.gltf` is a tiny original project-owned placeholder mesh.
 - v0.18 adds four more original tiny static prop meshes: `service_road_sign.gltf`, `road_edge_post.gltf`, `service_barrier.gltf`, and `utility_box.gltf`.
+- v0.20 adds `ferry_notice_board.gltf` through a project fallback generator because Blender is not available in the current environment.
 - `data/scenes/ferry_office.scene.json` now has `meshAssets` and `meshInstances`.
 - v0.12.1 uses that single unit-box asset for a small prop kit: Ferry Office roof/facade/sign, service gate, maintenance box, dock bollards, service-yard crate, and service-yard vehicle body/cabin.
 - v0.18 uses multiple scene-authored mesh asset ids for the first service-road prop style pass. `SandboxLayer` loads the authored mesh assets into a local `assetId -> StaticMeshAsset` map before drawing mesh instances.
@@ -72,7 +73,7 @@ This is not a production renderer yet. DX11 has no depth buffer, no real world/v
 
 Keep wire/debug markers visible until a later overlay and asset pipeline exist.
 
-The v0.12.1 and v0.18 mesh instances are still flat-tinted composition placeholders. They improve scale/readability and prop language, but they are not final art, material assets, or collision sources.
+The v0.12.1, v0.18, and v0.20 mesh instances are still flat-tinted composition placeholders. They improve scale/readability and prop language, but they are not final art, material assets, or collision sources.
 
 ## How To Add A Simple Mesh
 
@@ -94,7 +95,7 @@ Every `.gltf` under `assets/models` should be referenced by scene data. Keep exp
 
 ## Loader Decision
 
-See `docs/ASSET_PIPELINE_DECISION.md` for the v0.19 decision. Short version: keep the tiny custom loader for the next few prototype milestones, stabilize tools and provenance first, and move to cgltf or tinygltf when real Blender-authored assets, GLB, external buffers, normals, UVs, or materials become necessary.
+See `docs/ASSET_PIPELINE_DECISION.md` for the v0.19 decision and `docs/BLENDER_WORKFLOW.md` for the v0.20 workflow spike. Short version: keep the tiny custom loader briefly, stabilize tools and provenance first, and move to cgltf or tinygltf when real Blender-authored assets, GLB, external buffers, normals, UVs, or materials become necessary.
 
 ## Deferred
 

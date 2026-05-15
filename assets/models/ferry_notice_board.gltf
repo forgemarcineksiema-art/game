@@ -1,0 +1,90 @@
+{
+  "asset": {
+    "version": "2.0",
+    "generator": "Tidebreak tools/create_simple_prop_gltf.py v0.20 fallback helper",
+    "extras": {
+      "tidebreakSource": "project-original fallback geometry",
+      "notBlenderExport": true
+    }
+  },
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "mesh": 0,
+      "name": "ferry_notice_board"
+    }
+  ],
+  "meshes": [
+    {
+      "name": "ferry_notice_board",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0
+          },
+          "indices": 1,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 504,
+      "uri": "data:application/octet-stream;base64,j8J1vQAAAACPwnW9j8J1PQAAAACPwnW9j8J1PcP1qD+PwnW9j8J1vcP1qD+PwnW9j8J1vQAAAACPwnU9j8J1PQAAAACPwnU9j8J1PcP1qD+PwnU9j8J1vcP1qD+PwnU94XoUv9ejcD/sUTi94XoUP9ejcD/sUTi94XoUP4/CtT/sUTi94XoUv4/CtT/sUTi94XoUv9ejcD/sUTg94XoUP9ejcD/sUTg94XoUP4/CtT/sUTg94XoUv4/CtT/sUTg9rkdhvgAAAAAK1yO+rkdhPgAAAAAK1yO+rkdhPgrXoz0K1yO+rkdhvgrXoz0K1yO+rkdhvgAAAAAK1yM+rkdhPgAAAAAK1yM+rkdhPgrXoz0K1yM+rkdhvgrXoz0K1yM+AAABAAIAAAACAAMABQAEAAcABQAHAAYABAAAAAMABAADAAcAAQAFAAYAAQAGAAIAAwACAAYAAwAGAAcABAAFAAEABAABAAAACAAJAAoACAAKAAsADQAMAA8ADQAPAA4ADAAIAAsADAALAA8ACQANAA4ACQAOAAoACwAKAA4ACwAOAA8ADAANAAkADAAJAAgAEAARABIAEAASABMAFQAUABcAFQAXABYAFAAQABMAFAATABcAEQAVABYAEQAWABIAEwASABYAEwAWABcAFAAVABEAFAARABAA"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 288,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 288,
+      "byteLength": 216,
+      "target": 34963
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 24,
+      "type": "VEC3",
+      "min": [
+        -0.58,
+        0.0,
+        -0.16
+      ],
+      "max": [
+        0.58,
+        1.42,
+        0.16
+      ]
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 0,
+      "componentType": 5123,
+      "count": 108,
+      "type": "SCALAR",
+      "min": [
+        0
+      ],
+      "max": [
+        23
+      ]
+    }
+  ]
+}

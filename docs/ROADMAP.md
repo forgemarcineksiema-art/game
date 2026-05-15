@@ -251,6 +251,16 @@ Status: implemented as a visual-identity/readability pass. The scene now referen
 
 Status: implemented as a workflow-stabilization milestone. The project keeps the tiny custom `.gltf` loader for the short prototype phase, adds `tools/validate_assets.py`, expands `tools/mesh_report.py`, and makes asset validation part of `scripts/verify.ps1`.
 
+## v0.20 - Blender-to-Tidebreak Static Prop Workflow Spike
+
+- Check Blender availability honestly.
+- Prove one Blender-exported original prop if Blender is available.
+- If Blender is unavailable, document the exact blocker and keep a clearly labeled fallback path.
+- Preserve the tiny static mesh subset, asset validation, scene data, runtime loading, default validation, and Jolt opt-in validation.
+- Avoid final art, textures/materials, animation, editor, asset registry, resource cache, and new gameplay systems.
+
+Status: in progress. Blender is not available in PATH in this environment, so v0.20 adds an optional Blender checker, a documented fallback generator, and one fallback-generated original notice-board prop without claiming Blender export success.
+
 ## Recommended Next Goal
 
-Build v0.20 Blender-to-Tidebreak Static Prop Workflow Spike.
+Build v0.20.1 Blender Export / Loader Compatibility Stabilization if Blender remains unavailable or export compatibility is still unproven.
