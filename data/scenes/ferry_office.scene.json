@@ -252,6 +252,50 @@
       "provenance": "Created in-repo for the v0.12 static mesh render spike.",
       "authoringBoundsHalfExtents": [0.5, 0.5, 0.5],
       "notes": "Simple original cube placeholder used to prove mesh instances before final art."
+    },
+    {
+      "id": "service-road-sign-mesh",
+      "path": "assets/models/service_road_sign.gltf",
+      "format": "gltf",
+      "units": "meter",
+      "upAxis": "Y",
+      "license": "project-original",
+      "provenance": "Generated in-repo for the v0.18 Tidebreak service-road prop style spike.",
+      "authoringBoundsHalfExtents": [0.48, 0.59, 0.035],
+      "notes": "Simple sign post and board silhouette; no text, logos, textures, or final signage."
+    },
+    {
+      "id": "road-edge-post-mesh",
+      "path": "assets/models/road_edge_post.gltf",
+      "format": "gltf",
+      "units": "meter",
+      "upAxis": "Y",
+      "license": "project-original",
+      "provenance": "Generated in-repo for the v0.18 Tidebreak service-road prop style spike.",
+      "authoringBoundsHalfExtents": [0.09, 0.42, 0.09],
+      "notes": "Small road-edge post used to define the compact dock road silhouette."
+    },
+    {
+      "id": "service-barrier-mesh",
+      "path": "assets/models/service_barrier.gltf",
+      "format": "gltf",
+      "units": "meter",
+      "upAxis": "Y",
+      "license": "project-original",
+      "provenance": "Generated in-repo for the v0.18 Tidebreak service-road prop style spike.",
+      "authoringBoundsHalfExtents": [0.92, 0.29, 0.09],
+      "notes": "Low service barrier silhouette for route and service-yard cues."
+    },
+    {
+      "id": "utility-box-mesh",
+      "path": "assets/models/utility_box.gltf",
+      "format": "gltf",
+      "units": "meter",
+      "upAxis": "Y",
+      "license": "project-original",
+      "provenance": "Generated in-repo for the v0.18 Tidebreak service-road prop style spike.",
+      "authoringBoundsHalfExtents": [0.32, 0.44, 0.25],
+      "notes": "Simple utility cabinet/service panel silhouette for the maintenance side."
     }
   ],
   "meshInstances": [
@@ -344,6 +388,54 @@
       "scale": [0.84, 0.40, 0.92],
       "colorKey": "service-vehicle-cabin-placeholder",
       "linkedColliderId": "service-yard-vehicle"
+    },
+    {
+      "id": "mesh-service-road-sign",
+      "assetId": "service-road-sign-mesh",
+      "position": [10.05, 0.0, -0.55],
+      "yawDegrees": 90.0,
+      "scale": [1.0, 1.0, 1.0],
+      "colorKey": "ferry-route-sign-blue",
+      "replacesVisualPlaceholderId": "dock-road-end-marker",
+      "notes": "First v0.18 service-road sign cue; the shape is intentionally original, untextured, and non-final."
+    },
+    {
+      "id": "mesh-dock-road-edge-post-a",
+      "assetId": "road-edge-post-mesh",
+      "position": [11.15, 0.0, -3.45],
+      "yawDegrees": 0.0,
+      "scale": [1.0, 1.0, 1.0],
+      "colorKey": "salt-white-road-post",
+      "notes": "Road-edge rhythm marker for the short dock service road."
+    },
+    {
+      "id": "mesh-dock-road-edge-post-b",
+      "assetId": "road-edge-post-mesh",
+      "position": [15.8, 0.0, -3.45],
+      "yawDegrees": 0.0,
+      "scale": [1.0, 1.0, 1.0],
+      "colorKey": "salt-white-road-post",
+      "notes": "Second road-edge rhythm marker for the short dock service road."
+    },
+    {
+      "id": "mesh-service-yard-barrier-cue",
+      "assetId": "service-barrier-mesh",
+      "position": [9.35, 0.0, -4.1],
+      "yawDegrees": 90.0,
+      "scale": [1.0, 1.0, 1.0],
+      "colorKey": "warning-service-orange",
+      "replacesVisualPlaceholderId": "service-yard-east-entry-south-post",
+      "notes": "Low barrier cue that helps the yard entrance read as intentional service infrastructure."
+    },
+    {
+      "id": "mesh-maintenance-utility-box",
+      "assetId": "utility-box-mesh",
+      "position": [3.45, 0.0, 1.25],
+      "yawDegrees": 0.0,
+      "scale": [1.0, 1.0, 1.0],
+      "colorKey": "oxidized-service-green",
+      "linkedColliderId": "maintenance-crate",
+      "notes": "Small maintenance-side utility cabinet; keeps the existing interaction marker visible."
     }
   ],
   "interactables": [

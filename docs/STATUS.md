@@ -3354,3 +3354,175 @@ Known remaining issues:
 Recommended next goal:
 
 Build v0.18 Island Service Road Visual Identity / First Real Prop Style Spike.
+
+## v0.18 Baseline - 2026-05-15
+
+Goal: strengthen the Ferry Office / service yard / dock road visual identity with original mesh-backed props and a small readability pass, while preserving the existing Ferry Office Service Call, playtest/debug UI modes, scene loading, static mesh validation, default validation, and Jolt opt-in validation. No Job #2 or new gameplay system should be added.
+
+Required context read before implementation:
+
+- `AGENTS.md`
+- `docs/STATUS.md`
+- `docs/GAME_DIRECTION.md`
+- `docs/VERTICAL_SLICE.md`
+- `docs/ROADMAP.md`
+- `docs/ARCHITECTURE.md`
+- `docs/TECH_DEBT.md`
+- `docs/SCENE_AUTHORING.md`
+- `docs/ASSET_GUIDE.md`
+- `docs/ART_DIRECTION.md`
+- `docs/MESH_RENDERING.md`
+- `docs/MANUAL_TEST_CHECKLIST.md`
+- `docs/DECISIONS.md`
+
+Baseline commands:
+
+```powershell
+git status --short --branch
+powershell -ExecutionPolicy Bypass -File scripts\verify.ps1
+cmake --preset windows-vs2022-debug-jolt
+cmake --build --preset windows-vs2022-debug-jolt
+ctest --preset windows-vs2022-debug-jolt --output-on-failure
+python tools\scene_report.py
+python tools\validate_scene.py
+python tools\scale_audit.py
+python tools\mesh_report.py
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --ui-mode playtest --frames 240
+```
+
+Baseline results:
+
+- Git state before v0.18 work: `main...origin/main`, clean working tree.
+- `scripts\verify.ps1`: passed. Default doctor/configure/build/CTest, scene validation, mesh report, and null smoke all completed. Null smoke reported engine `v0.17.0`, loaded scene `ferry-office`, `unit-box-mesh`, and the playtest overlay text.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 3/3 tests.
+- `python tools\scene_report.py`: passed; scene reports 9 colliders, 21 visual placeholders, 1 mesh asset, 10 mesh instances, 6 interactables, 1 traversal affordance, 1 vehicle, 6 route markers, and 5 objective markers.
+- `python tools\validate_scene.py`: passed.
+- `python tools\scale_audit.py`: passed; no suspicious scale issues found.
+- `python tools\mesh_report.py`: passed; `unit-box-mesh` has 10 scene uses.
+- `EngineApp.exe --renderer gdi --ui-mode playtest --frames 240`: passed; bounded review showed the cleaner playtest overlay and current Ferry Office objective/prompt text.
+
+Presentation / bug review notes:
+
+- The scene now has a usable playtest overlay, but the environment still reads mostly as flat debug volumes and unit-box placeholders.
+- The Ferry Office front/sign cue exists, but it is still a scaled box rather than a recognizable prop language.
+- Dock/service-road mood needs stronger small-object silhouettes: road posts, signs, barriers, and utility/service props.
+- Current mesh tooling and scene data are healthy, but adding new mesh asset ids requires runtime support beyond the current effective single-asset `unit-box-mesh` drawing path.
+- DX11 text remains absent and hardware DX11 still falls back to WARP; visual overlay review should remain GDI-first.
+
+Read-only subagent review notes:
+
+- Mesh/render review found that scene data can describe multiple mesh assets, but runtime rendering currently loads/draws only `unit-box-mesh`. v0.18 should either reuse `unit_box.gltf` only or add a small `assetId -> StaticMeshAsset` map in `SandboxLayer`. The latter is the useful narrow integration step.
+- Scene/tooling review recommended explicit v0.18 prop-id tests, validation for mesh instance replacement/linkage, avoiding brittle exact-count assertions as the main oracle, and documenting the v0.18 prop set in scene-authoring docs.
+
+## v0.18 Short Implementation Plan
+
+1. Add failing tests first:
+   - C++ static mesh loading for at least one new committed original mesh.
+   - C++ `SandboxLayer`/debug text or scene-runtime checks proving multiple mesh asset ids are accepted rather than only `unit-box-mesh`.
+   - Python scene-tool tests for required v0.18 prop ids, new mesh asset ids, no duplicate mesh replacement links, and route/marker preservation.
+2. Add a tiny original prop kit that stays inside the current glTF subset: embedded-buffer `.gltf`, one primitive, `POSITION` float `VEC3`, indexed triangles, no materials/textures/animation.
+3. Keep runtime integration narrow by adding an asset map/cache inside `SandboxLayer` for loaded scene mesh assets. Do not add an asset registry, material system, resource cache, or loader expansion.
+4. Update `data/scenes/ferry_office.scene.json` with new mesh assets/instances for a focused visual identity pass: service road sign, road edge posts, service barrier/rail cue, utility/service box, and dock/shore prop cues.
+5. Improve the service-road/dock read by tuning prop placement, colors, and marker clarity while keeping playtest mode usable and debug mode complete.
+6. Update scene tools/tests/docs so Codex can inspect and validate the new prop set.
+7. Run the full default/Jolt/tool/windowed validation matrix, record exact results, then commit and push only after successful validation.
+
+## v0.18 Implementation Notes
+
+TDD / focused checks:
+
+- Added C++ tests for the v0.18 prop-kit mesh files, scene-authored v0.18 mesh ids, and `SandboxLayer` rendering of every loaded scene mesh instance including non-`unit-box-mesh` assets.
+- Added Python scene-tool tests for required v0.18 prop ids and duplicate `replacesVisualPlaceholderId` detection.
+- Red checks before implementation:
+  - `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: failed as expected because the new prop meshes and scene ids did not exist and non-unit-box scene assets were not rendered.
+  - `python tests\test_scene_tools.py`: failed as expected because the v0.18 prop ids did not exist and duplicate mesh replacement links were not reported.
+- Green checks after implementation:
+  - `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: passed.
+  - `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+  - `python tests\test_scene_tools.py`: passed, 18 tests.
+
+Code/data changes:
+
+- Added four original tiny `.gltf` placeholder prop meshes:
+  - `assets/models/service_road_sign.gltf`
+  - `assets/models/road_edge_post.gltf`
+  - `assets/models/service_barrier.gltf`
+  - `assets/models/utility_box.gltf`
+- Updated `data/scenes/ferry_office.scene.json` from 1 mesh asset / 10 mesh instances to 5 mesh assets / 15 mesh instances.
+- Added scene-authored v0.18 prop instances for a service-road sign, road-edge posts, service-yard barrier cue, and maintenance utility box.
+- Changed `SandboxLayer` static mesh loading from a single `unit-box-mesh` member to a local `assetId -> StaticMeshAsset` map, so scene data can submit multiple mesh asset ids without exposing a real asset registry yet.
+- Extended scene validation for known color keys, `.gltf` mesh-asset format discipline, mesh instance color keys, and duplicate `replacesVisualPlaceholderId` links.
+- Updated docs for v0.18 prop style, current mesh counts, limitations, and the recommended next asset-workflow stabilization step.
+
+Tool observations after implementation:
+
+- `python tools\scene_report.py`: passed; scene reports 9 colliders, 21 visual placeholders, 5 mesh assets, 15 mesh instances, 6 interactables, 1 traversal affordance, 1 vehicle, 6 route markers, and 5 objective markers.
+- `python tools\validate_scene.py`: passed.
+- `python tools\scale_audit.py`: passed; no suspicious scale issues found.
+- `python tools\mesh_report.py`: passed; the new prop meshes load with small vertex/index counts and project-original provenance.
+
+Known limitations:
+
+- The new prop-kit meshes are original and more readable, but still flat-tinted placeholders, not commercial art.
+- The static mesh path is still a tiny `.gltf` subset with no materials, textures, depth-aware renderer path, asset registry, resource cache, importer, GLB support, or collision import.
+- DX11 still has no text overlay and should remain secondary to GDI for playtest presentation review.
+
+## v0.18 Final Validation - 2026-05-15
+
+Commands run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\doctor.ps1
+powershell -ExecutionPolicy Bypass -File scripts\configure.ps1
+powershell -ExecutionPolicy Bypass -File scripts\build.ps1
+ctest --preset windows-vs2022-debug --output-on-failure
+powershell -ExecutionPolicy Bypass -File scripts\verify.ps1
+cmake --preset windows-vs2022-debug-jolt
+cmake --build --preset windows-vs2022-debug-jolt
+ctest --preset windows-vs2022-debug-jolt --output-on-failure
+python tools\scene_report.py
+python tools\validate_scene.py
+python tools\scale_audit.py
+python tools\mesh_report.py
+python tools\status_report.py
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --ui-mode playtest --frames 360
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --ui-mode debug --frames 360
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 360
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --scene data\scenes\ferry_office.scene.json --ui-mode playtest --frames 360
+```
+
+Results:
+
+- `scripts\doctor.ps1`: passed; expected PATH warnings remain for `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- `scripts\configure.ps1`: passed for `windows-vs2022-debug`.
+- `scripts\build.ps1`: passed.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 3/3 tests.
+- `scripts\verify.ps1`: passed; null smoke reported engine `v0.18.0`, loaded scene `ferry-office`, and all five static mesh assets.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 3/3 tests.
+- `python tools\scene_report.py`: passed; scene reports 9 colliders, 21 visual placeholders, 5 mesh assets, 15 mesh instances, 6 interactables, 1 traversal affordance, 1 vehicle, 6 route markers, and 5 objective markers.
+- `python tools\validate_scene.py`: passed.
+- `python tools\scale_audit.py`: passed; no suspicious scale issues found.
+- `python tools\mesh_report.py`: passed; `unit-box-mesh` has 10 uses, `road-edge-post-mesh` has 2 uses, and the three remaining v0.18 prop meshes each have 1 use.
+- `python tools\status_report.py`: completed and showed the expected v0.18 modified/new files before commit.
+- `EngineApp.exe --renderer gdi --ui-mode playtest --frames 360`: passed; playtest overlay stayed concise and the runtime loaded all five mesh assets.
+- `EngineApp.exe --renderer gdi --ui-mode debug --frames 360`: passed; full telemetry stayed available.
+- `EngineApp.exe --renderer dx11 --frames 360`: passed; hardware DX11 device failed and WARP was used, then the bounded run completed cleanly.
+- `EngineApp.exe --renderer gdi --scene data\scenes\ferry_office.scene.json --ui-mode playtest --frames 360`: passed with the explicit scene path.
+
+Visual evidence:
+
+- Captured `docs/images/v0.18-gdi-screenshot.png` using the GDI playtest mode. The screenshot shows the existing Ferry Office Service Call overlay plus the stronger dock/service-road prop silhouettes.
+
+Known remaining issues:
+
+- DX11 still falls back to WARP in this environment and still does not render text overlays.
+- The v0.18 prop kit improves place identity, but it is still placeholder presentation, not commercial-quality art.
+- The next visual/asset risk is workflow stability: the project needs a decision on whether to keep the tiny custom `.gltf` subset briefly or move to cgltf/tinygltf and a more deliberate static mesh workflow.
+
+Recommended next goal:
+
+Build v0.19 Tiny Asset Pipeline Decision + Static Mesh Workflow Stabilization.

@@ -94,7 +94,7 @@ Scene tools live under `tools`:
 - `scale_audit.py`: suspicious-scale report for object sizes and vehicle dimensions.
 - `mesh_report.py`: static mesh asset/reference summary.
 
-v0.12 extends the scene file with `meshAssets` and `meshInstances`. These are validated scene entries, not a full asset registry. v0.12.1 grows the Ferry Office prop set to 10 mesh instances for roof/facade/sign, service gate, maintenance box, dock props, service-yard crate, and vehicle body/cabin. v0.15 submits those mesh instances from loaded scene data; the current renderer still uses the narrow unit-box flat-triangle path.
+v0.12 extends the scene file with `meshAssets` and `meshInstances`. These are validated scene entries, not a full asset registry. v0.12.1 grows the Ferry Office prop set to 10 mesh instances for roof/facade/sign, service gate, maintenance box, dock props, service-yard crate, and vehicle body/cabin. v0.15 submits those mesh instances from loaded scene data. v0.18 adds four original service-road prop meshes and 15 total mesh instances; `SandboxLayer` now loads scene mesh assets by id instead of assuming only `unit-box-mesh`.
 
 ## Static Mesh Assets
 
@@ -136,7 +136,7 @@ Renderer selection defaults to `auto`, which attempts DirectX 11 on Windows when
 
 v0.2 adds debug primitive drawing to the renderer interface: debug camera, lines, boxes, grid/axes, and best-effort text. This is not a mesh/material pipeline.
 
-v0.12 adds `IRenderer::drawDebugFlatTriangles` as a narrow immediate-mode static mesh submission path. DX11 and GDI use the same CPU debug projection model as solid boxes; the null renderer accepts the call for smoke/test safety. v0.12.1 uses this path for a small unit-box prop replacement pass only. This is still not a real material or GPU mesh-resource system.
+v0.12 adds `IRenderer::drawDebugFlatTriangles` as a narrow immediate-mode static mesh submission path. DX11 and GDI use the same CPU debug projection model as solid boxes; the null renderer accepts the call for smoke/test safety. v0.12.1 uses this path for a small unit-box prop replacement pass, and v0.18 extends it to a few original service-road prop meshes. This is still not a real material or GPU mesh-resource system.
 
 ## Game Layer
 

@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-15
 
-This file lists known foundation issues after v0.17. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
+This file lists known foundation issues after v0.18. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
 
 ## Build / Toolchain
 
@@ -118,27 +118,28 @@ This file lists known foundation issues after v0.17. It is not a mandate to fix 
 
 - v0.12 supports only a tiny `.gltf` subset: embedded base64 buffer, float position vertices, indexed triangle list.
 - `.glb`, external buffers, materials, textures, normals in the renderer, UVs, node hierarchy, animation, skinning, and morph targets are not supported.
-- `assets/models/unit_box.gltf` is a placeholder proof asset, not production art.
+- `assets/models/unit_box.gltf` and the v0.18 prop-kit meshes are placeholder proof assets, not production art.
 - There is no asset registry, mesh resource cache, file watcher, importer/cooker, mesh optimizer, LOD, or material assignment.
 - Mesh instances render visually but do not define collision or physics shapes.
 - The current loader is intentionally narrow and should be replaced or backed by cgltf/tinygltf when real glTF coverage is needed.
 - v0.12.1 improves prop scale by reusing `unit_box.gltf` for 10 mesh instances, but those are still flat-tinted placeholder blocks, not authored production meshes.
-- Mesh placement is now submitted from loaded scene data, but rendering still uses the immediate flat-triangle/unit-box spike instead of real GPU mesh resources.
+- v0.18 adds four original tiny `.gltf` prop meshes (`service_road_sign`, `road_edge_post`, `service_barrier`, and `utility_box`) and a scene-driven asset-id map in `SandboxLayer`, but this is still not an asset registry or resource cache.
+- Mesh placement is now submitted from loaded scene data, but rendering still uses the immediate flat-triangle spike instead of real GPU mesh resources.
 
 ## Visual Readability
 
 - v0.9 improves the Ferry Office read with solid placeholder color, but it is still a debug scene. It is not final art and should not be mistaken for the target commercial visual quality.
 - v0.9.1 adds a route polyline, stronger marker hierarchy, and clearer objective wording, but the space still needs a real human playthrough on the target laptop.
-- v0.11 documents art direction and placeholder color keys. v0.12/v0.12.1 add first static mesh rendering and a small prop replacement pass, but still do not add final art, lighting, textures, materials, or model loading beyond a tiny proof subset.
+- v0.11 documents art direction and placeholder color keys. v0.12/v0.12.1 add first static mesh rendering and a small prop replacement pass, and v0.18 adds the first original service-road prop kit, but still no final art, lighting, textures, materials, or model loading beyond a tiny proof subset.
 - v0.14 makes the service-yard read more like a dock road with a shore/water edge cue and turn-around marker. v0.15 loads that layout from scene data, but it remains hand-authored placeholder geometry.
 - v0.17 playtest mode puts objective/focus/job status first and reserves raw telemetry for debug mode, but it remains functional debug text rather than a polished UI.
 - DX11 has no debug text overlay, so visual playtesting still favors GDI until a real overlay or text path exists.
-- There is no authored composition pass for camera start angle, signposting, silhouettes, or route readability beyond simple colored volumes and unit-box mesh placeholders.
+- There is no authored composition pass for camera start angle, signposting, silhouettes, or route readability beyond simple colored volumes and the first flat-tinted prop-kit meshes.
 
 ## Fix Soon
 
-1. Run a full human keyboard/mouse playthrough of the v0.17 playtest overlay on the target laptop and note any objective, marker, cursor, or vehicle-exit confusion.
-2. Give the island service road a stronger first visual identity before adding Job #2.
+1. Decide whether the tiny custom `.gltf` path should be stabilized for a few more handmade props or replaced by cgltf/tinygltf before larger art work.
+2. Run a full human keyboard/mouse playthrough of the v0.18 playtest overlay on the target laptop and note any objective, marker, cursor, vehicle-exit, or prop-visibility confusion.
 3. Keep the next gameplay goal narrow and use scene data first when adding or moving layout objects.
 4. Decide whether the first Jolt gameplay promotion should be vehicle-only, world queries-only, or player collision-only after vehicle/job playtests.
 
@@ -149,4 +150,4 @@ This file lists known foundation issues after v0.17. It is not a mandate to fix 
 3. `FerryOfficeJob` is one explicit job helper, not a general mission framework.
 4. DX11 still falls back to WARP on this machine.
 5. The scene is still debug/placeholder presentation, not commercial visual quality.
-6. glTF support remains the tiny custom unit-box subset until a later mesh/material milestone justifies cgltf/tinygltf.
+6. glTF support remains the tiny custom static-prop subset until a later mesh/material milestone justifies cgltf/tinygltf.

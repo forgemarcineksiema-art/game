@@ -1,0 +1,75 @@
+{
+  "asset": {
+    "version": "2.0",
+    "generator": "Tidebreak v0.18 static prop generator"
+  },
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "mesh": 0
+    }
+  ],
+  "meshes": [
+    {
+      "name": "mesh",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0
+          },
+          "indices": 1,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 336,
+      "uri": "data:application/octet-stream;base64,KVwPvQAAAAApXA+9KVwPPQAAAAApXA+9KVwPPSlcjz8pXA+9KVwPvSlcjz8pXA+9KVwPvQAAAAApXA89KVwPPQAAAAApXA89KVwPPSlcjz8pXA89KVwPvSlcjz8pXA89j8L1vhSuRz8pXA+9j8L1PhSuRz8pXA+9j8L1Pj0Klz8pXA+9j8L1vj0Klz8pXA+9j8L1vhSuRz8pXA89j8L1PhSuRz8pXA89j8L1Pj0Klz8pXA89j8L1vj0Klz8pXA89AAABAAIAAAACAAMABAAGAAUABAAHAAYAAAAEAAUAAAAFAAEAAwACAAYAAwAGAAcAAQAFAAYAAQAGAAIAAAADAAcAAAAHAAQACAAJAAoACAAKAAsADAAOAA0ADAAPAA4ACAAMAA0ACAANAAkACwAKAA4ACwAOAA8ACQANAA4ACQAOAAoACAALAA8ACAAPAAwA"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 192
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 192,
+      "byteLength": 144
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 16,
+      "type": "VEC3",
+      "min": [
+        -0.48,
+        0,
+        -0.035
+      ],
+      "max": [
+        0.48,
+        1.18,
+        0.035
+      ]
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5123,
+      "count": 72,
+      "type": "SCALAR"
+    }
+  ]
+}

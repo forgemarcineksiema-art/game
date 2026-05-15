@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-15
 
-v0.11 introduced scene data for Codex-friendly inspection and validation. v0.12 added mesh asset and mesh instance references. v0.12.1 expanded the Ferry Office mesh set for a focused prop/scale pass. v0.14 added the first dock road segment as authored placeholders and route markers. v0.15 makes `data/scenes/ferry_office.scene.json` the runtime source of truth for current layout data while keeping Tidebreak-specific behavior in C++.
+v0.11 introduced scene data for Codex-friendly inspection and validation. v0.12 added mesh asset and mesh instance references. v0.12.1 expanded the Ferry Office mesh set for a focused prop/scale pass. v0.14 added the first dock road segment as authored placeholders and route markers. v0.15 makes `data/scenes/ferry_office.scene.json` the runtime source of truth for current layout data while keeping Tidebreak-specific behavior in C++. v0.18 adds the first original service-road prop-kit meshes and keeps them scene-authored.
 
 ## Scene Data Location
 
@@ -150,7 +150,7 @@ Optional fields can link the instance to existing debug data:
 - `linkedColliderId`,
 - `colorKey`.
 
-v0.12/v0.12.1 supports only tiny original `.gltf` placeholder assets through the static mesh spike. The current Ferry Office prop pass intentionally reuses `unit_box.gltf` for multiple authored instances. Do not add materials, textures, animation, mesh collision, or imported third-party art through this scene format yet.
+v0.12-v0.18 supports only tiny original `.gltf` placeholder assets through the static mesh spike. The current Ferry Office prop set uses `unit_box.gltf` plus the v0.18 service-road prop kit: `service_road_sign.gltf`, `road_edge_post.gltf`, `service_barrier.gltf`, and `utility_box.gltf`. Do not add materials, textures, animation, mesh collision, or imported third-party art through this scene format yet.
 
 ## Interactables
 
@@ -218,6 +218,16 @@ Do not turn these entries into a generic mission scripting format yet. New job b
 ## Dock Road Segment
 
 Use `visualPlaceholders` for road pads, shore/water cues, edge rails, curbs, bollards, and end markers. Use `routeMarkers` for Codex-readable route intent such as `route-service-yard-to-dock-road`. The road is an authored placeholder route, not a terrain system, road spline, traffic path, or full map.
+
+v0.18 adds mesh-backed dock/service-road cues on top of that placeholder layout:
+
+- `mesh-service-road-sign`,
+- `mesh-dock-road-edge-post-a`,
+- `mesh-dock-road-edge-post-b`,
+- `mesh-service-yard-barrier-cue`,
+- `mesh-maintenance-utility-box`.
+
+These props are visual identity anchors. Keep their ids stable unless tests and docs are updated together.
 
 ## Avoiding Layout Drift
 

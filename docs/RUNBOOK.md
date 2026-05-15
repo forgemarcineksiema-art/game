@@ -188,13 +188,17 @@ python tools/mesh_report.py data/scenes/ferry_office.scene.json
 
 ## Static Mesh Rendering
 
-v0.12 adds a small static mesh/glTF spike. The current supported asset is:
+v0.12 adds a small static mesh/glTF spike. Current supported project-original assets are:
 
 ```text
 assets/models/unit_box.gltf
+assets/models/service_road_sign.gltf
+assets/models/road_edge_post.gltf
+assets/models/service_barrier.gltf
+assets/models/utility_box.gltf
 ```
 
-The supported loader subset is intentionally tiny: `.gltf`, one embedded base64 buffer, `POSITION` float `VEC3`, indexed triangle list, no materials/textures/animation. See `docs/MESH_RENDERING.md` before changing mesh loading or renderer behavior.
+The supported loader subset is intentionally tiny: `.gltf`, one embedded base64 buffer, `POSITION` float `VEC3`, indexed triangle list, no materials/textures/animation. v0.18 can load multiple scene-authored mesh asset ids, but this is still not an asset registry or production mesh pipeline. See `docs/MESH_RENDERING.md` before changing mesh loading or renderer behavior.
 
 ## Verify
 

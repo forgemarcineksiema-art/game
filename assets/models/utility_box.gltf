@@ -1,0 +1,75 @@
+{
+  "asset": {
+    "version": "2.0",
+    "generator": "Tidebreak v0.18 static prop generator"
+  },
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "mesh": 0
+    }
+  ],
+  "meshes": [
+    {
+      "name": "mesh",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0
+          },
+          "indices": 1,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 504,
+      "uri": "data:application/octet-stream;base64,CtejvgAAAACuR2G+CtejPgAAAACuR2G+CtejPhSuRz+uR2G+CtejvhSuRz+uR2G+CtejvgAAAACuR2E+CtejPgAAAACuR2E+CtejPhSuRz+uR2E+CtejvhSuRz+uR2E+rkdhvq5HYT4AAIC+rkdhPq5HYT4AAIC+rkdhPilcDz8AAIC+rkdhvilcDz8AAIC+rkdhvq5HYT6uR2G+rkdhPq5HYT6uR2G+rkdhPilcDz+uR2G+rkdhvilcDz+uR2G+j8J1vhSuRz/sUTi+j8J1PhSuRz/sUTi+j8J1Pq5HYT/sUTi+j8J1vq5HYT/sUTi+j8J1vhSuRz/sUTg+j8J1PhSuRz/sUTg+j8J1Pq5HYT/sUTg+j8J1vq5HYT/sUTg+AAABAAIAAAACAAMABAAGAAUABAAHAAYAAAAEAAUAAAAFAAEAAwACAAYAAwAGAAcAAQAFAAYAAQAGAAIAAAADAAcAAAAHAAQACAAJAAoACAAKAAsADAAOAA0ADAAPAA4ACAAMAA0ACAANAAkACwAKAA4ACwAOAA8ACQANAA4ACQAOAAoACAALAA8ACAAPAAwAEAARABIAEAASABMAFAAWABUAFAAXABYAEAAUABUAEAAVABEAEwASABYAEwAWABcAEQAVABYAEQAWABIAEAATABcAEAAXABQA"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 288
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 288,
+      "byteLength": 216
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 24,
+      "type": "VEC3",
+      "min": [
+        -0.32,
+        0,
+        -0.25
+      ],
+      "max": [
+        0.32,
+        0.88,
+        0.22
+      ]
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5123,
+      "count": 108,
+      "type": "SCALAR"
+    }
+  ]
+}

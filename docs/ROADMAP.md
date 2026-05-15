@@ -231,6 +231,16 @@ Status: implemented as the first driver/fixer job loop. `FerryOfficeJob` owns de
 
 Status: implemented as a presentation/readability pass. Normal windowed play now defaults to `--ui-mode playtest`, `--ui-mode debug` keeps full raw telemetry, `--ui-mode minimal` provides a tiny objective/prompt/job view, and `F1` toggles the debug overlay at runtime. No Job #2 or new gameplay system was added.
 
+## v0.18 - Island Service Road Visual Identity / First Real Prop Style Spike
+
+- Keep the existing Ferry Office Service Call as the only job.
+- Add a small original prop style kit for the island service road without adding textures, materials, lighting, final art, or a broader asset pipeline.
+- Improve the Ferry Office / service yard / dock road read with service-road signs, road-edge posts, a barrier cue, and a maintenance utility box.
+- Preserve playtest/debug/minimal UI modes, scene-data source of truth, static mesh tooling, default validation, and Jolt opt-in validation.
+- Keep the work inside the current tiny `.gltf` static mesh subset.
+
+Status: implemented as a visual-identity/readability pass. The scene now references 5 mesh assets and 15 mesh instances, including four new original v0.18 prop meshes, and `SandboxLayer` loads scene mesh assets by id instead of only drawing `unit-box-mesh`.
+
 ## Recommended Next Goal
 
-Build v0.18 Island Service Road Visual Identity / First Real Prop Style Spike.
+Build v0.19 Tiny Asset Pipeline Decision + Static Mesh Workflow Stabilization.

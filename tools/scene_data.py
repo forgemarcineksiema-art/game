@@ -26,6 +26,26 @@ REQUIRED_IDS = {
     "service-yard-vehicle",
 }
 
+KNOWN_COLOR_KEYS = {
+    "dark-service-asphalt",
+    "damp-service-concrete",
+    "deep-harbor-blue",
+    "dock-muted-sign-yellow",
+    "dock-weathered-wood",
+    "ferry-route-sign-blue",
+    "mossy-service-crate",
+    "office-muted-concrete",
+    "oxidized-service-green",
+    "rusted-roof-trim",
+    "salt-white-road-post",
+    "service-gate-state",
+    "service-vehicle-cabin-placeholder",
+    "service-vehicle-placeholder",
+    "warning-service-orange",
+    "weathered-yard-rail",
+    "wet-timber",
+}
+
 
 @dataclass
 class ValidationResult:
@@ -143,6 +163,7 @@ def validate_scene(scene: dict[str, Any]) -> ValidationResult:
         _validate_vec3(item.get("center"), f"{label}.center", result)
         _validate_positive_vec3(item.get("halfExtents"), f"{label}.halfExtents", result)
         _require_string(item, "colorKey", label, result)
+        _validate_color_key(item.get("colorKey"), label, result)
 
     for interactable in _as_list(scene.get("interactables")):
         item = _as_dict(interactable)
@@ -207,8 +228,8 @@ def validate_scene(scene: dict[str, Any]) -> ValidationResult:
         for key in ["path", "format", "units", "upAxis", "license", "provenance"]:
             _require_string(item, key, label, result)
         _validate_mesh_asset_path(item.get("path"), label, result)
-        if item.get("format") not in ("gltf", "glb", None):
-            result.errors.append(f"{label}.format must be 'gltf' or 'glb'.")
+        if item.get("format") not in ("gltf", None):
+            result.errors.append(f"{label}.format must be 'gltf'.")
         if item.get("units") not in ("meter", None):
             result.warnings.append(f"{label}.units should remain 'meter'.")
         if item.get("upAxis") not in ("Y", None):
@@ -217,6 +238,7 @@ def validate_scene(scene: dict[str, Any]) -> ValidationResult:
             _validate_positive_vec3(item.get("authoringBoundsHalfExtents"), f"{label}.authoringBoundsHalfExtents", result)
 
     known_ids = set(seen)
+    replacement_links: dict[str, str] = {}
     for instance in _as_list(scene.get("meshInstances")):
         item = _as_dict(instance)
         label = f"meshInstance {item.get('id', '<missing-id>')}"
@@ -228,10 +250,21 @@ def validate_scene(scene: dict[str, Any]) -> ValidationResult:
         _validate_vec3(item.get("position"), f"{label}.position", result)
         _require_number(item, "yawDegrees", label, result)
         _validate_positive_scale(item.get("scale"), f"{label}.scale", result)
+        if "colorKey" in item:
+            _validate_color_key(item.get("colorKey"), label, result)
         for reference_key in ["replacesVisualPlaceholderId", "linkedColliderId"]:
             reference = item.get(reference_key)
             if reference is not None and (not isinstance(reference, str) or reference not in known_ids):
                 result.errors.append(f"{label}.{reference_key} references unknown id '{reference}'.")
+        replacement = item.get("replacesVisualPlaceholderId")
+        if isinstance(replacement, str) and replacement:
+            previous = replacement_links.get(replacement)
+            if previous is not None:
+                result.errors.append(
+                    f"{label}.duplicate replacesVisualPlaceholderId '{replacement}' already used by {previous}."
+                )
+            else:
+                replacement_links[replacement] = str(item.get("id", label))
 
     ids = set(seen)
     for route in _as_list(scene.get("routeMarkers")):
@@ -396,8 +429,8 @@ def _validate_mesh_asset_path(value: Any, label: str, result: ValidationResult) 
         return
     path = pathlib.PurePosixPath(value.replace("\\", "/"))
     suffix = path.suffix.lower()
-    if suffix not in {".gltf", ".glb"}:
-        result.errors.append(f"{label}.path must end in .gltf or .glb.")
+    if suffix != ".gltf":
+        result.errors.append(f"{label}.path must end in .gltf.")
     if path.is_absolute() or ".." in path.parts or not value.replace("\\", "/").startswith("assets/"):
         result.errors.append(f"{label}.path must be a repo-relative path under assets/.")
         return
@@ -412,6 +445,16 @@ def _validate_positive_scale(value: Any, label: str, result: ValidationResult) -
         return
     if any(component <= 0.0 for component in scale):
         result.errors.append(f"{label} must contain positive values.")
+
+
+def _validate_color_key(value: Any, label: str, result: ValidationResult) -> None:
+    if value is None:
+        return
+    if not isinstance(value, str) or not value:
+        result.errors.append(f"{label}.colorKey must be a non-empty string.")
+        return
+    if value not in KNOWN_COLOR_KEYS:
+        result.errors.append(f"{label}.colorKey is unknown: {value}")
 
 
 def _number_or_none(value: Any) -> float | None:

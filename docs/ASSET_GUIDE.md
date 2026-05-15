@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-15
 
-This guide defines Tidebreak's early asset and scale conventions. v0.11 does not add a full asset pipeline or model loading; it gives future Codex runs a stable target before glTF work begins.
+This guide defines Tidebreak's early asset and scale conventions. v0.18 still does not add a full asset pipeline, but the project now has a tiny static `.gltf` prop path for original placeholder meshes.
 
 ## Units And Axes
 
@@ -49,6 +49,9 @@ Scene data uses `colorKey` strings, not final material assets. Current intent:
 - `deep-harbor-blue`: water-edge bands.
 - `weathered-yard-rail`: simple service-yard barriers.
 - `rusted-roof-trim`: rusty ferry-office silhouette accents.
+- `ferry-route-sign-blue`: dock-road/ferry-route sign cues.
+- `salt-white-road-post`: pale road-edge posts against the dark dock road.
+- `warning-service-orange`: low service barriers and practical caution cues.
 
 Future renderer work can map these keys to material presets. Do not turn color keys into a material system in v0.11.
 
@@ -66,10 +69,11 @@ Future authored assets should come from Blender or another legal DCC tool and ex
 
 ## glTF Direction
 
-v0.12/v0.12.1 supports a tiny static `.gltf` subset through `src/engine/assets/StaticMesh.*`.
+v0.12-v0.18 supports a tiny static `.gltf` subset through `src/engine/assets/StaticMesh.*`.
 
 - Current committed proof asset: `assets/models/unit_box.gltf`.
-- v0.12.1 deliberately reuses that asset for a small Ferry Office prop kit instead of adding new mesh files.
+- v0.12.1 deliberately reuses that asset for a small Ferry Office prop kit.
+- v0.18 adds four original prop-kit meshes: `service_road_sign.gltf`, `road_edge_post.gltf`, `service_barrier.gltf`, and `utility_box.gltf`.
 - Use meters, Y-up, +Z forward.
 - Keep placeholder meshes small, original, and clearly documented.
 - Add `license` and `provenance` for every scene `meshAssets` entry.

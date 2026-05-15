@@ -93,6 +93,41 @@ class SceneToolTests(unittest.TestCase):
         ]:
             self.assertIn(required_id, ids)
 
+    def test_v018_visual_identity_prop_kit_exists(self) -> None:
+        ids = scene_data.collect_ids(self.scene)
+        mesh_assets = {asset["id"] for asset in self.scene["meshAssets"]}
+
+        for required_asset_id in [
+            "service-road-sign-mesh",
+            "road-edge-post-mesh",
+            "service-barrier-mesh",
+            "utility-box-mesh",
+        ]:
+            self.assertIn(required_asset_id, mesh_assets)
+
+        for required_instance_id in [
+            "mesh-service-road-sign",
+            "mesh-dock-road-edge-post-a",
+            "mesh-dock-road-edge-post-b",
+            "mesh-service-yard-barrier-cue",
+            "mesh-maintenance-utility-box",
+        ]:
+            self.assertIn(required_instance_id, ids)
+
+    def test_duplicate_mesh_replacement_links_are_reported(self) -> None:
+        scene = copy.deepcopy(self.scene)
+        first = copy.deepcopy(scene["meshInstances"][0])
+        second = copy.deepcopy(scene["meshInstances"][1])
+        first["id"] = "duplicate-replacement-a"
+        second["id"] = "duplicate-replacement-b"
+        first["replacesVisualPlaceholderId"] = "dock-main-slab"
+        second["replacesVisualPlaceholderId"] = "dock-main-slab"
+        scene["meshInstances"] = [first, second]
+
+        result = scene_data.validate_scene(scene)
+
+        self.assertTrue(any("duplicate replacesVisualPlaceholderId" in error for error in result.errors))
+
     def test_v014_service_yard_vehicle_bounds_include_dock_road(self) -> None:
         vehicle = self.scene["vehicles"][0]
 

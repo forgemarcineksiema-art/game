@@ -5,6 +5,7 @@
 #include "engine/math/Math.h"
 #include "engine/physics/PhysicsWorld.h"
 #include "engine/assets/StaticMesh.h"
+#include "engine/renderer/Renderer.h"
 #include "engine/renderer/NullRenderer.h"
 #include "game/InteractionSystem.h"
 #include "game/PlayerController.h"
@@ -24,6 +25,7 @@
 #include <fstream>
 #include <iostream>
 #include <array>
+#include <iterator>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -110,6 +112,45 @@ void ExpectNear(float actual, float expected, float tolerance, const std::string
     if (std::abs(actual - expected) > tolerance) {
         failures.push_back({name, message});
     }
+}
+
+class CountingRenderer final : public engine::IRenderer {
+public:
+    bool initialize(const engine::RendererConfig&) override { return true; }
+    void beginFrame(unsigned long long) override {}
+    void drawDebugGridAndAxes() override {}
+    void drawDebugLine(engine::Vec3, engine::Vec3, engine::Color) override {}
+    void drawDebugSolidBox(engine::Vec3, engine::Vec3, engine::Color) override {}
+    void drawDebugFlatTriangles(std::span<const engine::Vec3>, engine::Color) override { ++flatTriangleDrawCount; }
+    void drawDebugBox(engine::Vec3, engine::Vec3, engine::Color) override {}
+    void drawDebugText(std::string_view) override {}
+    void endFrame() override {}
+    void shutdown() override {}
+    std::string name() const override { return "counting-test-renderer"; }
+
+    unsigned int flatTriangleDrawCount = 0;
+};
+
+const SceneMeshAssetDefinition* FindMeshAsset(const SceneDefinition& scene, std::string_view id)
+{
+    for (const SceneMeshAssetDefinition& asset : scene.meshAssets) {
+        if (asset.id == id) {
+            return &asset;
+        }
+    }
+
+    return nullptr;
+}
+
+const SceneMeshInstanceDefinition* FindMeshInstance(const SceneDefinition& scene, std::string_view id)
+{
+    for (const SceneMeshInstanceDefinition& instance : scene.meshInstances) {
+        if (instance.id == id) {
+            return &instance;
+        }
+    }
+
+    return nullptr;
 }
 
 void TestSmokeArgumentsEnableBoundedHeadlessRun()
@@ -323,6 +364,35 @@ void TestStaticMeshLoaderLoadsCommittedUnitBox()
         "Unit box max y should be 0.5m.");
 }
 
+void TestStaticMeshLoaderLoadsV018PropKit()
+{
+    const std::array<std::filesystem::path, 4> propPaths {{
+        std::filesystem::path(ENGINE_SOURCE_ROOT) / "assets" / "models" / "service_road_sign.gltf",
+        std::filesystem::path(ENGINE_SOURCE_ROOT) / "assets" / "models" / "road_edge_post.gltf",
+        std::filesystem::path(ENGINE_SOURCE_ROOT) / "assets" / "models" / "service_barrier.gltf",
+        std::filesystem::path(ENGINE_SOURCE_ROOT) / "assets" / "models" / "utility_box.gltf",
+    }};
+
+    for (const std::filesystem::path& meshPath : propPaths) {
+        const engine::StaticMeshLoadResult result = engine::LoadStaticMeshFromGltf(meshPath);
+
+        Expect(result.ok(),
+            "TestStaticMeshLoaderLoadsV018PropKit",
+            "Every v0.18 original prop mesh should load through the tiny glTF subset.");
+        if (result.ok()) {
+            Expect(!result.mesh.vertices.empty(),
+                "TestStaticMeshLoaderLoadsV018PropKit",
+                "v0.18 prop meshes should expose position vertices.");
+            Expect(result.mesh.indices.size() >= 3 && result.mesh.indices.size() % 3 == 0,
+                "TestStaticMeshLoaderLoadsV018PropKit",
+                "v0.18 prop meshes should expose triangle indices.");
+            Expect(result.mesh.bounds.max.y > result.mesh.bounds.min.y,
+                "TestStaticMeshLoaderLoadsV018PropKit",
+                "v0.18 prop meshes should have useful vertical bounds.");
+        }
+    }
+}
+
 void TestStaticMeshLoaderReportsMissingAsset()
 {
     const std::filesystem::path meshPath = std::filesystem::path(ENGINE_SOURCE_ROOT) / "assets" / "models" / "missing_mesh.gltf";
@@ -379,15 +449,47 @@ void TestSceneLoaderLoadsDefaultFerryOfficeScene()
     Expect(result.scene.visualPlaceholders.size() == 21,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored visual placeholders.");
-    Expect(result.scene.meshInstances.size() == 10,
+    Expect(result.scene.meshInstances.size() >= 15,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
-        "Loaded scene should expose authored mesh instances.");
+        "Loaded scene should expose authored mesh instances, including the v0.18 prop style kit.");
     Expect(result.scene.interactables.size() == 6,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored interactables.");
     Expect(result.scene.traversalAffordances.size() == 1,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored traversal affordances.");
+}
+
+void TestSceneLoaderLoadsV018VisualIdentityPropKit()
+{
+    const SceneLoadResult result = LoadSceneDefinition(DefaultScenePathForTests());
+
+    Expect(result.ok(),
+        "TestSceneLoaderLoadsV018VisualIdentityPropKit",
+        "Default Ferry Office scene JSON should load before querying v0.18 props.");
+
+    for (const std::string_view assetId : {
+             "service-road-sign-mesh",
+             "road-edge-post-mesh",
+             "service-barrier-mesh",
+             "utility-box-mesh",
+         }) {
+        Expect(FindMeshAsset(result.scene, assetId) != nullptr,
+            "TestSceneLoaderLoadsV018VisualIdentityPropKit",
+            "Scene data should expose each v0.18 original mesh asset id.");
+    }
+
+    for (const std::string_view instanceId : {
+             "mesh-service-road-sign",
+             "mesh-dock-road-edge-post-a",
+             "mesh-dock-road-edge-post-b",
+             "mesh-service-yard-barrier-cue",
+             "mesh-maintenance-utility-box",
+         }) {
+        Expect(FindMeshInstance(result.scene, instanceId) != nullptr,
+            "TestSceneLoaderLoadsV018VisualIdentityPropKit",
+            "Scene data should expose each v0.18 visual identity mesh instance id.");
+    }
 }
 
 void TestSceneLoaderLoadsFirstJobMarkers()
@@ -993,6 +1095,77 @@ void TestSandboxLayerDebugTextIncludesDockRoadTelemetry()
     Expect(debug.find("roadBounds=(3.35,-5.05)-(19.45,0.95)") != std::string::npos,
         "TestSandboxLayerDebugTextIncludesDockRoadTelemetry",
         "Sandbox debug text should expose the finite vehicle road-test bounds.");
+}
+
+void TestSandboxLayerDrawsEveryLoadedSceneMeshInstance()
+{
+    const std::filesystem::path defaultScenePath = DefaultScenePathForTests();
+    std::ifstream input(defaultScenePath);
+    std::string sceneText((std::istreambuf_iterator<char>(input)), std::istreambuf_iterator<char>());
+
+    const std::string extraAsset =
+        R"(,
+    {
+      "id": "alternate-unit-box-mesh",
+      "path": "assets/models/unit_box.gltf",
+      "format": "gltf",
+      "units": "meter",
+      "upAxis": "Y",
+      "license": "project-original",
+      "provenance": "Temporary test asset alias used to prove multi-asset runtime rendering.",
+      "authoringBoundsHalfExtents": [0.5, 0.5, 0.5]
+    })";
+    const std::string extraInstance =
+        R"(,
+    {
+      "id": "mesh-runtime-multi-asset-proof",
+      "assetId": "alternate-unit-box-mesh",
+      "position": [1.75, 0.5, -1.25],
+      "yawDegrees": 0.0,
+      "scale": [0.35, 0.35, 0.35],
+      "colorKey": "dock-muted-sign-yellow"
+    })";
+
+    const std::string meshAssetNeedle = "\n  ],\n  \"meshInstances\"";
+    const std::string meshInstanceNeedle = "\n  ],\n  \"interactables\"";
+    const std::size_t meshAssetInsert = sceneText.find(meshAssetNeedle);
+    const std::size_t meshInstanceInsert = sceneText.find(meshInstanceNeedle);
+    Expect(meshAssetInsert != std::string::npos && meshInstanceInsert != std::string::npos,
+        "TestSandboxLayerDrawsEveryLoadedSceneMeshInstance",
+        "Default scene JSON should expose insertion points for mesh asset and instance test data.");
+    if (meshAssetInsert == std::string::npos || meshInstanceInsert == std::string::npos) {
+        return;
+    }
+
+    sceneText.insert(meshInstanceInsert, extraInstance);
+    sceneText.insert(meshAssetInsert, extraAsset);
+
+    const std::filesystem::path tempScenePath =
+        std::filesystem::temp_directory_path() / "tidebreak-v018-multi-mesh.scene.json";
+    {
+        std::ofstream output(tempScenePath, std::ios::binary);
+        output << sceneText;
+    }
+
+    const SceneLoadResult loadedScene = LoadSceneDefinition(tempScenePath);
+    Expect(loadedScene.ok(),
+        "TestSandboxLayerDrawsEveryLoadedSceneMeshInstance",
+        "Temporary multi-asset scene should load successfully.");
+
+    SandboxLayer layer(tempScenePath, engine::UiMode::Playtest);
+    layer.onAttach();
+    CountingRenderer renderer;
+    renderer.initialize({});
+    renderer.beginFrame(1);
+    layer.onRender(renderer);
+    renderer.endFrame();
+    layer.onDetach();
+
+    Expect(renderer.flatTriangleDrawCount >= loadedScene.scene.meshInstances.size(),
+        "TestSandboxLayerDrawsEveryLoadedSceneMeshInstance",
+        "Sandbox rendering should submit every authored scene mesh instance, including non-unit-box asset ids.");
+
+    std::filesystem::remove(tempScenePath);
 }
 
 void TestSandboxLayerPlaytestTextPrioritizesObjectiveAndPrompt()
@@ -2406,9 +2579,11 @@ int main()
     TestClockStartsAtFrameZeroAndTicksForward();
     TestNullRendererRecordsFrameAndDebugDraw();
     TestStaticMeshLoaderLoadsCommittedUnitBox();
+    TestStaticMeshLoaderLoadsV018PropKit();
     TestStaticMeshLoaderReportsMissingAsset();
     TestStaticMeshBuildsTransformedTriangleList();
     TestSceneLoaderLoadsDefaultFerryOfficeScene();
+    TestSceneLoaderLoadsV018VisualIdentityPropKit();
     TestSceneLoaderLoadsFirstJobMarkers();
     TestSceneLoaderReportsMissingSceneFile();
     TestSceneLoaderLoadsVehicleBoundsAndRoadMarkers();
@@ -2430,6 +2605,7 @@ int main()
     TestVehicleReverseSteeringIsPredictable();
     TestSandboxLayerVehicleDebugTextIncludesRoadTestTelemetry();
     TestSandboxLayerDebugTextIncludesDockRoadTelemetry();
+    TestSandboxLayerDrawsEveryLoadedSceneMeshInstance();
     TestSandboxLayerPlaytestTextPrioritizesObjectiveAndPrompt();
     TestSandboxLayerDebugTextPreservesFullTelemetry();
     TestSandboxLayerMinimalTextStaysSmallButUseful();

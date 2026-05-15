@@ -12,6 +12,7 @@
 #include <filesystem>
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 class SandboxLayer final : public engine::IGameLayer {
 public:
@@ -51,7 +52,7 @@ private:
     PlayerController m_player;
     ThirdPersonCamera m_camera;
     VehicleController m_vehicle;
-    engine::StaticMeshAsset m_unitBoxMesh;
+    std::unordered_map<std::string, engine::StaticMeshAsset> m_staticMeshAssets;
     engine::Vec3 m_vehicleProxyHalfExtents {0.58f, 0.34f, 0.92f};
     engine::Vec3 m_vehicleCabinHalfExtents {0.42f, 0.20f, 0.46f};
     ThirdPersonCameraSettings m_onFootCameraSettings;
@@ -66,7 +67,6 @@ private:
     bool m_traversalPressedThisFrame = false;
     bool m_worldStateChangedThisFrame = false;
     bool m_cameraInVehicleMode = false;
-    bool m_unitBoxMeshLoaded = false;
     bool m_sceneDefinitionLoaded = false;
     engine::UiMode m_uiMode = engine::UiMode::Debug;
     engine::UiMode m_nonDebugUiMode = engine::UiMode::Playtest;

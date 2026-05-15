@@ -473,3 +473,15 @@ Reason: The build should be understandable without hiding the systems Codex need
 Decision: Extend Python scene validation so route marker `from` / `to` ids must reference known scene ids.
 
 Reason: v0.15 made scene JSON the layout source of truth, and v0.16/v0.17 depend on route/checkpoint markers for player guidance. Catching stale route endpoint ids in tools is cheaper than discovering broken signposting at runtime.
+
+## v0.18 Tiny Original Prop Kit Before Job #2
+
+Decision: Add a small original service-road prop kit (`service_road_sign`, `road_edge_post`, `service_barrier`, and `utility_box`) before adding another job or expanding gameplay.
+
+Reason: The first Ferry Office Service Call already feels promising, but the scene still needs place identity. A few deliberate coastal-service silhouettes improve readability and mood without changing mechanics, adding final art, or growing the map.
+
+## v0.18 Scene Mesh Asset Map, Not Asset Pipeline
+
+Decision: Let `SandboxLayer` load the scene-authored mesh assets into a local `assetId -> StaticMeshAsset` map, while still avoiding an asset registry, resource cache, material system, editor, or renderer rewrite.
+
+Reason: v0.18 needs multiple authored prop meshes, and the previous effective single-asset `unit-box-mesh` path would make scene data misleading. A local map keeps the runtime honest and tested while staying inside the static-mesh spike boundary.

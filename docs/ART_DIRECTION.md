@@ -54,7 +54,7 @@ Future rendering should aim for:
 - readable silhouettes,
 - gentle contrast rather than harsh action-game lighting.
 
-In v0.12/v0.12.1 this remains documentation plus tiny static mesh placeholders only. Do not add lighting, shadows, post-processing, or weather systems yet.
+In v0.12-v0.18 this remains documentation plus tiny static mesh placeholders only. Do not add lighting, shadows, post-processing, or weather systems yet.
 
 ## Prop Language
 
@@ -90,6 +90,7 @@ These remain debug/prototype-only:
 - wire outlines,
 - solid debug boxes,
 - flat-tinted unit-box mesh placeholders,
+- flat-tinted v0.18 prop-kit mesh placeholders,
 - GDI debug text,
 - route polylines,
 - interactable cubes/beacons,
@@ -114,3 +115,7 @@ The v0.12.1 screenshot at `docs/images/v0.12.1-gdi-screenshot.png` shows a clear
 ## v0.14 Dock Road Observation
 
 The v0.14 dock road pass extends the service-yard into a compact island service road with a dark road pad, turn-around/end marker, shore/water edge cue, and weathered rail/curb edges. This improves the first read of "vehicle near a dock road" without changing the renderer or adding final art. The strongest remaining visual limitation is still composition and authored assets: the area is more legible, but it remains a hand-mirrored debug layout rather than a production scene.
+
+## v0.18 Prop Style Observation
+
+The v0.18 pass adds the first original service-road prop-kit silhouettes: a route sign, road-edge posts, a low service barrier, and a utility cabinet. The screenshot at `docs/images/v0.18-gdi-screenshot.png` shows the current GDI reference. These are still flat-tinted, tiny-subset `.gltf` placeholders, but they shift the scene away from pure scaled boxes toward a practical coastal service-road language. The next visual risk is workflow, not quantity: before many more props are added, the project should decide whether to keep hand-authored tiny `.gltf` files briefly or stabilize a real static-mesh import path.

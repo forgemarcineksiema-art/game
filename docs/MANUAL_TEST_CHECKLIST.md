@@ -109,7 +109,7 @@ python tools/mesh_report.py
 - [ ] `python tools/scene_report.py` reports scene id `ferry-office`.
 - [ ] Scene report lists 9 colliders, 6 interactables, 1 traversal affordance, 1 vehicle, 6 route markers, and 5 objective markers.
 - [ ] `python tools/scale_audit.py` reports no suspicious scale issues, or any issue is documented.
-- [ ] `python tools/mesh_report.py` reports mesh asset `unit-box-mesh` and 10 expected Ferry Office/service-yard mesh instances.
+- [ ] `python tools/mesh_report.py` reports 5 mesh assets and 15 Ferry Office/service-yard/dock-road mesh instances.
 - [ ] `data/scenes/ferry_office.scene.json` contains the service gate, manifest, maintenance box, wall button, exit marker, service vault, player start, and service-yard vehicle ids.
 - [ ] `data/scenes/ferry_office.scene.json` contains `service-run-confirm-marker`, `service-run-checkpoint-marker`, and `route-dock-road-to-service-confirm`.
 - [ ] `data/scenes/ferry_office.scene.json` contains `meshAssets` and `meshInstances` for the current static mesh spike.
@@ -120,9 +120,10 @@ python tools/mesh_report.py
 
 - [ ] GDI run still shows debug text and all old gameplay markers.
 - [ ] GDI run shows flat mesh placeholders for the ferry office roof cap, facade/sign cue, service gate, maintenance box, dock bollards, service-yard crate, vehicle body, and vehicle cabin.
+- [ ] GDI run shows the v0.18 original prop-kit silhouettes: service road sign, road-edge posts, service-yard barrier cue, and maintenance utility box.
 - [ ] DX11 bounded run exits cleanly with mesh submissions enabled.
 - [ ] Mesh placeholders do not hide route, interaction, traversal, collision, or vehicle debug markers.
-- [ ] `assets/models/unit_box.gltf` remains a small original placeholder asset with scene-data license/provenance.
+- [ ] `assets/models/unit_box.gltf` and the v0.18 prop-kit meshes remain small original placeholder assets with scene-data license/provenance.
 
 ## Vehicle Spike
 
@@ -195,11 +196,12 @@ python tools/mesh_report.py
 - [ ] The scene reads as a dock/service-yard/ferry-office layout instead of only a wireframe test.
 - [ ] Distinct colors separate the dock/floor, ferry office volume, service gate, traversal path, interactables, player, and exit marker.
 - [ ] Solid placeholder geometry does not hide the important wire/debug outlines.
-- [ ] The committed visual reference at `docs/images/v0.12.1-gdi-screenshot.png` roughly matches the current GDI presentation.
+- [ ] The committed visual reference at `docs/images/v0.18-gdi-screenshot.png` roughly matches the current GDI presentation.
 - [ ] The ferry office front/sign cue reads as a deliberate public/service building marker, not only a wall of debug colliders.
 - [ ] The service-yard vehicle reads as a vehicle proxy with a separate cabin silhouette.
 - [ ] The dock road extension reads as a short island service road connected to the service-yard, not random extra boxes.
 - [ ] The road-end marker and shore/water edge cue help orient the driving route.
+- [ ] The service road sign, road-edge posts, service-yard barrier cue, and utility box make the area read more like coastal service infrastructure than raw debug boxes.
 - [ ] A light route polyline guides the eye from manifest to service vault, maintenance box, wall button, and exit marker.
 - [ ] The objective text names the next spatial target instead of only the next abstract action.
 - [ ] Collect the Ferry Manifest near the office approach.

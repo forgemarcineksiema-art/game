@@ -11,6 +11,7 @@
 #include <sstream>
 #include <string>
 #include <string_view>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -103,6 +104,15 @@ engine::Color ColorForSceneKey(std::string_view key, bool routeOpened = false, b
     }
     if (key == "dock-muted-sign-yellow") {
         return {0.78f, 0.65f, 0.22f, 1.0f};
+    }
+    if (key == "ferry-route-sign-blue") {
+        return {0.10f, 0.32f, 0.42f, 1.0f};
+    }
+    if (key == "salt-white-road-post") {
+        return {0.74f, 0.76f, 0.68f, 1.0f};
+    }
+    if (key == "warning-service-orange") {
+        return {0.82f, 0.35f, 0.12f, 1.0f};
     }
     if (key == "service-gate-state") {
         return routeOpened
@@ -273,23 +283,6 @@ void DrawMeshInstance(engine::IRenderer& renderer, const engine::StaticMeshAsset
 {
     const std::vector<engine::Vec3> triangles = engine::BuildFlatTriangleList(mesh, instance);
     renderer.drawDebugFlatTriangles(triangles, instance.tint);
-}
-
-void DrawUnitBoxMeshInstance(
-    engine::IRenderer& renderer,
-    const engine::StaticMeshAsset& mesh,
-    engine::Vec3 position,
-    engine::Vec3 scale,
-    engine::Color tint,
-    float yawRadians = 0.0f)
-{
-    engine::StaticMeshInstance instance;
-    instance.assetId = "unit-box-mesh";
-    instance.position = position;
-    instance.scale = scale;
-    instance.tint = tint;
-    instance.yawRadians = yawRadians;
-    DrawMeshInstance(renderer, mesh, instance);
 }
 
 } // namespace
@@ -961,7 +954,7 @@ void SandboxLayer::drawVehicleDebug(engine::IRenderer& renderer)
 
 void SandboxLayer::drawStaticMeshDebug(engine::IRenderer& renderer)
 {
-    if (!m_unitBoxMeshLoaded) {
+    if (m_staticMeshAssets.empty()) {
         return;
     }
 
@@ -970,9 +963,17 @@ void SandboxLayer::drawStaticMeshDebug(engine::IRenderer& renderer)
     const bool vehicleOccupied = m_vehicle.state().occupied;
 
     for (const SceneMeshInstanceDefinition& authored : m_sceneDefinition.meshInstances) {
-        if (authored.assetId != "unit-box-mesh") {
+        const auto meshIt = m_staticMeshAssets.find(authored.assetId);
+        if (meshIt == m_staticMeshAssets.end()) {
             continue;
         }
+
+        engine::StaticMeshInstance instance;
+        instance.assetId = authored.assetId;
+        instance.position = authored.position;
+        instance.scale = authored.scale;
+        instance.tint = ColorForSceneKey(authored.colorKey, routeOpened, powerRestored, vehicleOccupied);
+        instance.yawRadians = authored.yawRadians;
 
         engine::Vec3 position = authored.position;
         float yawRadians = authored.yawRadians;
@@ -981,14 +982,10 @@ void SandboxLayer::drawStaticMeshDebug(engine::IRenderer& renderer)
             position.z = m_vehicle.state().position.z;
             yawRadians = m_vehicle.state().yawRadians;
         }
+        instance.position = position;
+        instance.yawRadians = yawRadians;
 
-        DrawUnitBoxMeshInstance(
-            renderer,
-            m_unitBoxMesh,
-            position,
-            authored.scale,
-            ColorForSceneKey(authored.colorKey, routeOpened, powerRestored, vehicleOccupied),
-            yawRadians);
+        DrawMeshInstance(renderer, meshIt->second, instance);
     }
 }
 
@@ -1115,21 +1112,34 @@ void SandboxLayer::applyCameraSettingsForMode(bool vehicleMode)
 
 void SandboxLayer::loadStaticMeshAssets()
 {
-    std::filesystem::path unitBoxPath = "assets/models/unit_box.gltf";
-    if (const SceneMeshAssetDefinition* unitBoxAsset = FindSceneMeshAssetById(m_sceneDefinition, "unit-box-mesh")) {
-        unitBoxPath = unitBoxAsset->path;
+    m_staticMeshAssets.clear();
+
+    std::vector<SceneMeshAssetDefinition> assetsToLoad;
+    if (m_sceneDefinitionLoaded) {
+        assetsToLoad = m_sceneDefinition.meshAssets;
+    }
+    if (assetsToLoad.empty()) {
+        SceneMeshAssetDefinition fallback;
+        fallback.id = "unit-box-mesh";
+        fallback.path = "assets/models/unit_box.gltf";
+        assetsToLoad.push_back(fallback);
     }
 
-    unitBoxPath = ResolveProjectPath(unitBoxPath);
-    const engine::StaticMeshLoadResult unitBox = engine::LoadStaticMeshFromGltf(unitBoxPath);
-    if (!unitBox.ok()) {
-        engine::Logger::warning("Static mesh load failed: " + unitBox.error);
-        m_unitBoxMeshLoaded = false;
-        return;
-    }
+    for (const SceneMeshAssetDefinition& asset : assetsToLoad) {
+        if (asset.id.empty()) {
+            continue;
+        }
 
-    m_unitBoxMesh = unitBox.mesh;
-    m_unitBoxMesh.id = "unit-box-mesh";
-    m_unitBoxMeshLoaded = true;
-    engine::Logger::info("Loaded static mesh asset: unit-box-mesh from " + unitBoxPath.string());
+        const std::filesystem::path meshPath = ResolveProjectPath(asset.path);
+        const engine::StaticMeshLoadResult loadedMesh = engine::LoadStaticMeshFromGltf(meshPath);
+        if (!loadedMesh.ok()) {
+            engine::Logger::warning("Static mesh load failed for " + asset.id + ": " + loadedMesh.error);
+            continue;
+        }
+
+        engine::StaticMeshAsset mesh = loadedMesh.mesh;
+        mesh.id = asset.id;
+        m_staticMeshAssets[asset.id] = std::move(mesh);
+        engine::Logger::info("Loaded static mesh asset: " + asset.id + " from " + meshPath.string());
+    }
 }

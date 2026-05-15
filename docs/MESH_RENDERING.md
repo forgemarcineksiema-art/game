@@ -18,8 +18,10 @@ v0.12 adds the first narrow static mesh path. It is a render spike and authoring
 - GDI renders projected triangle polygons as a fallback.
 - Null renderer accepts the call and counts it for smoke/test visibility.
 - `assets/models/unit_box.gltf` is a tiny original project-owned placeholder mesh.
+- v0.18 adds four more original tiny static prop meshes: `service_road_sign.gltf`, `road_edge_post.gltf`, `service_barrier.gltf`, and `utility_box.gltf`.
 - `data/scenes/ferry_office.scene.json` now has `meshAssets` and `meshInstances`.
 - v0.12.1 uses that single unit-box asset for a small prop kit: Ferry Office roof/facade/sign, service gate, maintenance box, dock bollards, service-yard crate, and service-yard vehicle body/cabin.
+- v0.18 uses multiple scene-authored mesh asset ids for the first service-road prop style pass. `SandboxLayer` loads the authored mesh assets into a local `assetId -> StaticMeshAsset` map before drawing mesh instances.
 
 ## Supported glTF Subset
 
@@ -59,7 +61,7 @@ Use:
 - `meshAssets` for source files, license/provenance, and authored bounds.
 - `meshInstances` for position, yaw, scale, tint/color key, and optional links back to placeholders/colliders.
 
-v0.15 loads these mesh asset and mesh instance records through the runtime scene loader. `SandboxLayer::drawStaticMeshDebug` still applies dynamic state rules, such as service-gate color and moving vehicle body/cabin placement, but the authored mesh instance list now comes from `data/scenes/ferry_office.scene.json`.
+v0.15 loads these mesh asset and mesh instance records through the runtime scene loader. v0.18 loads every referenced scene mesh asset by id, not just `unit-box-mesh`. `SandboxLayer::drawStaticMeshDebug` still applies dynamic state rules, such as service-gate color and moving vehicle body/cabin placement, but the authored mesh instance list now comes from `data/scenes/ferry_office.scene.json`.
 
 ## Renderer Notes
 
@@ -67,7 +69,7 @@ This is not a production renderer yet. DX11 has no depth buffer, no real world/v
 
 Keep wire/debug markers visible until a later overlay and asset pipeline exist.
 
-The v0.12.1 mesh instances are still flat-tinted composition placeholders. They improve scale/readability, but they are not final art, material assets, or collision sources.
+The v0.12.1 and v0.18 mesh instances are still flat-tinted composition placeholders. They improve scale/readability and prop language, but they are not final art, material assets, or collision sources.
 
 ## How To Add A Simple Mesh
 
