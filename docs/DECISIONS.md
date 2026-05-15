@@ -408,3 +408,11 @@ Reason: The current milestone is about clarity, control feel, enter/exit safety,
 Decision: Keep service-yard runtime placement explicit in `SandboxLayer.cpp`, but group the vehicle spawn, bounds, pad, rails, back-stop, crate, and vehicle proxy constants near the top of the file and mirror them in `data/scenes/ferry_office.scene.json`.
 
 Reason: v0.13 needs safer iteration without adding runtime scene loading. Grouped constants reduce accidental drift and make future Codex edits easier to audit, while the JSON scene tools continue to validate the authoring mirror.
+
+## Creative Direction - Island Driver/Fixer Sandbox
+
+Decision: Treat Tidebreak as an island-first third-person driver/fixer sandbox where every job leaves a mark on a small coastal community.
+
+Reason: This gives the project a sharper identity than "mini GTA" or pure trucking. Veyra Reach should first become a compact, dense, memorable region with practical jobs, grounded driving, route access, systemic objects, humor, atmosphere, and remembered local consequences. A larger city/mainland region can become a later expansion, but not before the island has strong place, vehicle feel, and world-memory foundations.
+
+Reference filter: learn map density from `Bully`/`Yakuza`, vehicle weight from `Mafia 2`/`GTA IV`, world reactivity from `RDR2`/`GTA IV`, object systems from `Watch Dogs`, local mission structure from `Bully`/`Yakuza`, and social memory from `Kingdom Come`/`RDR2`-lite. These are inspiration lenses only, not content or design to copy.
