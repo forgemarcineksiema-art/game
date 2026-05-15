@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cmath>
 #include <string>
+#include <vector>
 
 namespace engine {
 namespace {
@@ -161,22 +162,26 @@ void GdiRenderer::drawDebugSolidBox(Vec3 center, Vec3 halfExtents, Color color)
     HGDIOBJ oldBrush = SelectObject(m_deviceContext, brush);
     HGDIOBJ oldPen = SelectObject(m_deviceContext, pen);
     const float aspectRatio = AspectRatio(m_config);
+    std::vector<ProjectedTriangle> projectedTriangles;
     for (const auto& triangle : triangles) {
-        ProjectedPolygon projected;
-        if (!ProjectWorldTriangle(m_debugCamera,
+        ProjectedTriangle projected;
+        if (ProjectWorldTriangleWithDepth(m_debugCamera,
                 aspectRatio,
                 corners[triangle[0]],
                 corners[triangle[1]],
                 corners[triangle[2]],
                 projected)) {
-            continue;
+            projectedTriangles.push_back(projected);
         }
+    }
 
+    SortProjectedTrianglesBackToFront(projectedTriangles);
+    for (const ProjectedTriangle& projected : projectedTriangles) {
         POINT points[4] {};
-        for (std::size_t pointIndex = 0; pointIndex < projected.pointCount; ++pointIndex) {
-            points[pointIndex] = ToScreen(projected.points[pointIndex], width, height);
+        for (std::size_t pointIndex = 0; pointIndex < projected.polygon.pointCount; ++pointIndex) {
+            points[pointIndex] = ToScreen(projected.polygon.points[pointIndex], width, height);
         }
-        Polygon(m_deviceContext, points, static_cast<int>(projected.pointCount));
+        Polygon(m_deviceContext, points, static_cast<int>(projected.polygon.pointCount));
     }
     SelectObject(m_deviceContext, oldPen);
     SelectObject(m_deviceContext, oldBrush);
@@ -202,20 +207,26 @@ void GdiRenderer::drawDebugFlatTriangles(std::span<const Vec3> triangleVertices,
     HGDIOBJ oldPen = SelectObject(m_deviceContext, pen);
 
     const float aspectRatio = AspectRatio(m_config);
+    std::vector<ProjectedTriangle> projectedTriangles;
     for (std::size_t index = 0; index + 2 < triangleVertices.size(); index += 3) {
-        ProjectedPolygon projected;
-        if (ProjectWorldTriangle(m_debugCamera,
+        ProjectedTriangle projected;
+        if (ProjectWorldTriangleWithDepth(m_debugCamera,
                 aspectRatio,
                 triangleVertices[index],
                 triangleVertices[index + 1],
                 triangleVertices[index + 2],
                 projected)) {
-            POINT points[4] {};
-            for (std::size_t pointIndex = 0; pointIndex < projected.pointCount; ++pointIndex) {
-                points[pointIndex] = ToScreen(projected.points[pointIndex], width, height);
-            }
-            Polygon(m_deviceContext, points, static_cast<int>(projected.pointCount));
+            projectedTriangles.push_back(projected);
         }
+    }
+
+    SortProjectedTrianglesBackToFront(projectedTriangles);
+    for (const ProjectedTriangle& projected : projectedTriangles) {
+        POINT points[4] {};
+        for (std::size_t pointIndex = 0; pointIndex < projected.polygon.pointCount; ++pointIndex) {
+            points[pointIndex] = ToScreen(projected.polygon.points[pointIndex], width, height);
+        }
+        Polygon(m_deviceContext, points, static_cast<int>(projected.polygon.pointCount));
     }
 
     SelectObject(m_deviceContext, oldPen);

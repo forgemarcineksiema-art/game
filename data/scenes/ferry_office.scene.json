@@ -339,6 +339,17 @@
       "provenance": "Authored procedurally by tools/blender/create_tidebreak_notice_board.py and exported headlessly by Blender 5.1.1 during v0.20.1.",
       "authoringBoundsHalfExtents": [0.62, 0.705, 0.16],
       "notes": "First real Blender-exported Tidebreak static prop. It remains low-detail placeholder geometry with no textures, materials, or final signage."
+    },
+    {
+      "id": "blender-cable-reel-mesh",
+      "path": "assets/models/blender_cable_reel.gltf",
+      "format": "gltf",
+      "units": "meter",
+      "upAxis": "Y",
+      "license": "project-original",
+      "provenance": "Authored procedurally by tools/blender/create_tidebreak_cable_reel.py and exported headlessly by Blender 5.1.1 during v0.27.",
+      "authoringBoundsHalfExtents": [0.34, 0.38, 0.38],
+      "notes": "Tiny original service-yard cable reel prop for the v0.27 presentation spike. It remains untextured placeholder geometry inside the current embedded-buffer glTF subset."
     }
   ],
   "meshInstances": [
@@ -485,6 +496,15 @@
       "scale": [0.62, 0.52, 0.48],
       "colorKey": "mossy-service-crate",
       "notes": "v0.26 small service-yard prop that reinforces the utility area without altering route clearance."
+    },
+    {
+      "id": "mesh-service-yard-cable-reel",
+      "assetId": "blender-cable-reel-mesh",
+      "position": [7.02, 0.0, 0.48],
+      "yawDegrees": 18.0,
+      "scale": [1.0, 1.0, 1.0],
+      "colorKey": "wet-timber",
+      "notes": "v0.27 Blender-authored service-yard cable reel cue; visual only, no collision or new job beat."
     },
     {
       "id": "mesh-service-yard-vehicle-body",

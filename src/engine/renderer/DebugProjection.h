@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 #include <cmath>
+#include <vector>
 
 namespace engine {
 
@@ -18,6 +19,11 @@ struct ProjectedPoint {
 struct ProjectedPolygon {
     std::array<ProjectedPoint, 4> points {};
     std::size_t pointCount = 0;
+};
+
+struct ProjectedTriangle {
+    ProjectedPolygon polygon {};
+    float cameraDepth = 0.0f;
 };
 
 namespace detail {
@@ -181,13 +187,13 @@ inline bool ProjectWorldLine(
         && detail::ProjectCameraPoint(camera, aspectRatio, cameraTo, projectedTo);
 }
 
-inline bool ProjectWorldTriangle(
+inline bool ProjectWorldTriangleWithDepth(
     const DebugCamera& camera,
     float aspectRatio,
     Vec3 a,
     Vec3 b,
     Vec3 c,
-    ProjectedPolygon& projected)
+    ProjectedTriangle& projected)
 {
     detail::DebugProjectionBasis basis;
     if (!detail::BuildDebugProjectionBasis(camera, basis)) {
@@ -203,20 +209,48 @@ inline bool ProjectWorldTriangle(
     std::array<Vec3, 4> clippedPoints {};
     const std::size_t clippedPointCount = detail::ClipTriangleToNearPlane(camera, cameraPoints, clippedPoints);
     if (clippedPointCount < 3) {
-        projected.pointCount = 0;
+        projected.polygon.pointCount = 0;
+        projected.cameraDepth = 0.0f;
         return false;
     }
 
-    projected.pointCount = 0;
+    projected.polygon.pointCount = 0;
+    float cameraDepthSum = 0.0f;
     for (std::size_t index = 0; index < clippedPointCount; ++index) {
         ProjectedPoint point;
         if (!detail::ProjectCameraPoint(camera, aspectRatio, clippedPoints[index], point)) {
-            projected.pointCount = 0;
+            projected.polygon.pointCount = 0;
+            projected.cameraDepth = 0.0f;
             return false;
         }
-        projected.points[projected.pointCount++] = point;
+        projected.polygon.points[projected.polygon.pointCount++] = point;
+        cameraDepthSum += clippedPoints[index].z;
     }
+    projected.cameraDepth = cameraDepthSum / static_cast<float>(clippedPointCount);
     return true;
+}
+
+inline bool ProjectWorldTriangle(
+    const DebugCamera& camera,
+    float aspectRatio,
+    Vec3 a,
+    Vec3 b,
+    Vec3 c,
+    ProjectedPolygon& projected)
+{
+    ProjectedTriangle triangle;
+    const bool result = ProjectWorldTriangleWithDepth(camera, aspectRatio, a, b, c, triangle);
+    projected = triangle.polygon;
+    return result;
+}
+
+inline void SortProjectedTrianglesBackToFront(std::vector<ProjectedTriangle>& triangles)
+{
+    std::stable_sort(triangles.begin(),
+        triangles.end(),
+        [](const ProjectedTriangle& lhs, const ProjectedTriangle& rhs) {
+            return lhs.cameraDepth > rhs.cameraDepth;
+        });
 }
 
 } // namespace engine

@@ -335,6 +335,17 @@ Status: implemented as an authored composition/readability pass. The scene start
 
 Status: implemented as a scene-data prop/identity pass. The Ferry Office scene now reuses the existing seven mesh assets for 31 total mesh instances, adding manifest counter/paperwork cues, a side service panel, dock cleats, a service-yard tool crate, and a Service Run review board without adding collision, new assets, or gameplay systems.
 
+## v0.27 - Renderer/Depth Presentation Spike + Tiny Blender Props Pass
+
+- Keep the existing Ferry Office Service Call as the only job.
+- Improve debug-presentation readability where flat projected triangles overlap, without converting the renderer to a full world/view/projection, material, lighting, or depth-buffer path.
+- Add a tiny painter-depth helper for projected debug triangles so GDI and DX11 draw solid boxes and flat mesh submissions back-to-front within each immediate triangle batch.
+- Add one small original Blender-authored service-yard prop only if it stays in the existing embedded-buffer `.gltf` subset with scene provenance and validation coverage.
+- Preserve progressive playtest guidance, debug validation mode, current vehicle behavior, scene loading, static mesh tooling, default validation, and Jolt opt-in boundaries.
+- Avoid Job #2, new missions, NPCs, combat, Jolt VehicleConstraint, full renderer rewrite, material/texture pipeline, asset registry, editor, packaging, save/settings persistence, or broad refactors.
+
+Status: implemented as a narrow presentation/readability spike. Debug projection now exposes camera depth for projected triangles, GDI/DX11 sort solid boxes and flat mesh triangle batches back-to-front, and the service yard gained one Blender-authored `blender_cable_reel.gltf` prop for 8 mesh assets and 32 mesh instances total.
+
 ## Recommended Next Goal
 
-Run a short human v0.26 visual/playability pass through `scripts/play.ps1`, checking whether the manifest props, service panel, dock cleats, service-yard crate, and Service Run review board improve readability without hiding prompts, markers, or route/debug geometry. Use that feedback to choose between a tiny authored Blender prop follow-up, vehicle-feel polish, or a renderer/depth presentation spike.
+Run a short human v0.27 visual/playability pass through `scripts/play.ps1`, checking whether painter-depth sorting reduces distracting mesh/solid-box overlap and whether the cable reel improves service-yard identity without hiding prompts, markers, route/debug geometry, or the vehicle route. Use that feedback to choose between a focused renderer depth-buffer/matrix spike, a small vehicle-feel pass, or a second tiny authored prop only if the prop language is now the clearest blocker.

@@ -541,3 +541,11 @@ Decision: Add a small Win32 text overlay to `Dx11Renderer` after swap-chain `Pre
 Reason: The playable build now has a good launch wrapper, but DX11 remained weak for playtest because objective/debug text was absent. A narrow Win32 overlay makes `scripts/play.ps1 -Dx11` useful without adding a UI framework, font system, material pipeline, renderer rewrite, or new gameplay. DX11 still falls back to WARP on this laptop and the overlay is not production presentation tech.
 
 Dependency impact: no new dependency was added.
+
+## v0.27 Painter-Depth Debug Projection, Not Renderer Rewrite
+
+Decision: Add camera-depth metadata and back-to-front sorting for projected debug triangle batches, and keep the existing immediate `IRenderer` debug path rather than introducing a true depth buffer, world/view/projection matrix path, material system, or GPU mesh resources.
+
+Reason: v0.26 increased the number of flat mesh props enough that arbitrary triangle order became a presentation liability, but the current prototype still benefits from GDI/DX11 parity and simple debug visibility. Painter-depth sorting improves face/mesh readability inside solid-box and flat-mesh batches with low risk, while leaving a future real renderer/depth-buffer milestone explicit.
+
+Dependency impact: no dependency was added. The v0.27 cable reel uses the existing optional Blender 5.1.1 headless workflow and the current embedded-buffer `.gltf` subset.

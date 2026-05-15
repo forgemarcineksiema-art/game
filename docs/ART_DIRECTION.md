@@ -131,3 +131,7 @@ v0.20 adds one small fallback-generated ferry notice board near the office appro
 ## v0.20.1 Blender Export Observation
 
 v0.20.1 adds a second notice-board style prop, this time generated through a real headless Blender 5.1.1 script. It is still low-detail flat placeholder geometry, but it proves the first DCC-authored prop path and gives the ferry-office approach a more intentional service-location cue without adding textures, materials, lighting, or final art.
+
+## v0.27 Renderer / Cable Reel Observation
+
+v0.27 adds painter-depth ordering for projected solid-box and flat-mesh triangle batches, plus one small Blender-authored cable reel in the service yard. This is still debug rendering, not real lighting/material/depth-buffer presentation, but it should make overlapping flat meshes feel less arbitrary while giving the service yard one more practical infrastructure silhouette.

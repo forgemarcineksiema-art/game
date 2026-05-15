@@ -31,6 +31,14 @@ blender --background --python tools\blender\create_tidebreak_notice_board.py
 
 It creates `assets/models/blender_ferry_notice_board.gltf`, a project-original procedural notice-board prop.
 
+v0.27 adds a second controlled Blender script:
+
+```powershell
+blender --background --python tools\blender\create_tidebreak_cable_reel.py
+```
+
+It creates `assets/models/blender_cable_reel.gltf`, a small project-original procedural service-yard cable reel prop.
+
 ## Check Blender
 
 Run:
@@ -68,6 +76,12 @@ The first real command is:
 
 ```powershell
 blender --background --python tools\blender\create_tidebreak_notice_board.py
+```
+
+The current second proof prop command is:
+
+```powershell
+blender --background --python tools\blender\create_tidebreak_cable_reel.py
 ```
 
 Blender 5.1.1 does not expose direct `GLTF_EMBEDDED` export in this environment. The script uses `GLTF_SEPARATE`, embeds the generated `.bin` buffer into the `.gltf`, and deletes the temporary `.bin`. Keep that post-export step small and deterministic; move to cgltf/tinygltf if broader Blender output is needed.

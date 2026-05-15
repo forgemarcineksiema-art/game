@@ -466,6 +466,43 @@ void TestDebugProjectionClipsLinesAndTrianglesAgainstNearPlane()
         "Debug solid ground triangles crossing the near plane should still produce a visible clipped polygon.");
 }
 
+void TestDebugProjectionSortsProjectedTrianglesBackToFront()
+{
+    engine::DebugCamera camera;
+    camera.position = {0.0f, 1.0f, 0.0f};
+    camera.target = {0.0f, 1.0f, 1.0f};
+
+    engine::ProjectedTriangle nearTriangle;
+    engine::ProjectedTriangle farTriangle;
+    const bool nearProjected = engine::ProjectWorldTriangleWithDepth(
+        camera,
+        16.0f / 9.0f,
+        {-0.5f, 0.5f, 2.0f},
+        {0.5f, 0.5f, 2.0f},
+        {0.0f, 1.5f, 2.0f},
+        nearTriangle);
+    const bool farProjected = engine::ProjectWorldTriangleWithDepth(
+        camera,
+        16.0f / 9.0f,
+        {-0.5f, 0.5f, 7.0f},
+        {0.5f, 0.5f, 7.0f},
+        {0.0f, 1.5f, 7.0f},
+        farTriangle);
+
+    Expect(nearProjected && farProjected,
+        "TestDebugProjectionSortsProjectedTrianglesBackToFront",
+        "Depth-aware debug projection should still project near and far triangles.");
+    Expect(farTriangle.cameraDepth > nearTriangle.cameraDepth,
+        "TestDebugProjectionSortsProjectedTrianglesBackToFront",
+        "Projected debug triangles should expose camera depth for painter ordering.");
+
+    std::vector<engine::ProjectedTriangle> triangles {nearTriangle, farTriangle};
+    engine::SortProjectedTrianglesBackToFront(triangles);
+    Expect(triangles.front().cameraDepth == farTriangle.cameraDepth,
+        "TestDebugProjectionSortsProjectedTrianglesBackToFront",
+        "Painter ordering should place farther projected debug triangles before nearer ones.");
+}
+
 void TestStaticMeshLoaderLoadsCommittedUnitBox()
 {
     const std::filesystem::path meshPath = std::filesystem::path(ENGINE_SOURCE_ROOT) / "assets" / "models" / "unit_box.gltf";
@@ -2893,6 +2930,7 @@ int main()
     TestNullRendererRecordsFrameAndDebugDraw();
     TestDebugProjectionKeepsLongVisibleLinesWhenEndpointsAreOffscreen();
     TestDebugProjectionClipsLinesAndTrianglesAgainstNearPlane();
+    TestDebugProjectionSortsProjectedTrianglesBackToFront();
     TestStaticMeshLoaderLoadsCommittedUnitBox();
     TestStaticMeshLoaderLoadsV018PropKit();
     TestStaticMeshLoaderReportsMissingAsset();

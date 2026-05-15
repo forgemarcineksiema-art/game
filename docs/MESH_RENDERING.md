@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-15
 
-v0.12 adds the first narrow static mesh path. v0.19 stabilizes the surrounding asset workflow, v0.20 proves the Blender gap plus a small fallback prop workflow, and v0.20.1 proves one real headless Blender export. This remains a render spike and authoring bridge, not a full asset pipeline.
+v0.12 adds the first narrow static mesh path. v0.19 stabilizes the surrounding asset workflow, v0.20 proves the Blender gap plus a small fallback prop workflow, v0.20.1 proves one real headless Blender export, and v0.27 adds a tiny painter-depth presentation spike plus one more Blender prop. This remains a render spike and authoring bridge, not a full asset pipeline.
 
 ## What Exists
 
@@ -21,6 +21,7 @@ v0.12 adds the first narrow static mesh path. v0.19 stabilizes the surrounding a
 - v0.18 adds four more original tiny static prop meshes: `service_road_sign.gltf`, `road_edge_post.gltf`, `service_barrier.gltf`, and `utility_box.gltf`.
 - v0.20 adds `ferry_notice_board.gltf` through a project fallback generator because Blender is not available in the current environment.
 - v0.20.1 adds `blender_ferry_notice_board.gltf` through a real headless Blender 5.1.1 script.
+- v0.27 adds `blender_cable_reel.gltf` through a second real headless Blender 5.1.1 script.
 - `data/scenes/ferry_office.scene.json` now has `meshAssets` and `meshInstances`.
 - v0.12.1 uses that single unit-box asset for a small prop kit: Ferry Office roof/facade/sign, service gate, maintenance box, dock bollards, service-yard crate, and service-yard vehicle body/cabin.
 - v0.18 uses multiple scene-authored mesh asset ids for the first service-road prop style pass. `SandboxLayer` loads the authored mesh assets into a local `assetId -> StaticMeshAsset` map before drawing mesh instances.
@@ -71,7 +72,7 @@ v0.15 loads these mesh asset and mesh instance records through the runtime scene
 
 ## Renderer Notes
 
-This is not a production renderer yet. DX11 has no depth buffer, no real world/view/projection matrix, no material system, and no texture path. Triangles draw in submission order using the current debug projection. That is acceptable for small placeholder props and visual proof, but not for final art.
+This is not a production renderer yet. DX11 has no depth buffer, no real world/view/projection matrix, no material system, and no texture path. v0.27 sorts projected solid-box and flat-mesh triangle batches back-to-front using camera depth, but separate debug draw calls still use the current immediate debug path. That is acceptable for small placeholder props and visual proof, but not for final art.
 
 Keep wire/debug markers visible until a later overlay and asset pipeline exist.
 

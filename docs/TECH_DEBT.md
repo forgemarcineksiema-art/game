@@ -13,9 +13,9 @@ This file lists known foundation issues during the current playable-build phase.
 
 ### Fix Soon
 
-1. Run a short human v0.26 visual/playability pass through `scripts/play.ps1` and capture any issues with the new manifest props, office-side panel, dock cleats, service-yard crate, Service Run review board, marker visibility, route readability, or remaining vehicle feel.
-2. Keep the Blender/static mesh path narrow and honest. v0.26 deliberately reused existing meshes; add only one or two controlled original Blender/procedural props next if the reused-box silhouettes are the clearest remaining presentation blocker.
-3. Decide whether the next non-packaging pass is a tiny authored prop follow-up, a small vehicle-feel follow-up, a renderer/depth presentation spike, or a Jolt vehicle feasibility spike based on actual v0.26 hand-play feedback.
+1. Run a short human v0.27 visual/playability pass through `scripts/play.ps1` and capture any issues with triangle painter-depth readability, cable reel placement, marker visibility, route readability, or remaining vehicle feel.
+2. Decide whether the next non-packaging pass should be a true depth-buffer/world-matrix renderer spike, a small vehicle-feel follow-up, or one more tiny authored prop. Do not expand all three at once.
+3. Keep the Blender/static mesh path narrow and honest. v0.27 adds one controlled original Blender prop; avoid more quantity until the hand pass proves prop language, not renderer readability or vehicle feel, is the blocker.
 
 ### Acceptable For Now
 
@@ -38,7 +38,7 @@ This file lists known foundation issues during the current playable-build phase.
 - DX11 hardware/debug device creation fails in this environment and falls back to WARP.
 - DX11 debug text now uses a small Win32 text overlay after `Present`. This makes `scripts/play.ps1 -Dx11` usable for playtest checks, but it is not a production HUD/text renderer.
 - Debug boxes/lines/solid boxes and v0.12 flat mesh triangles are enough for prototypes but not a real mesh/material pipeline.
-- v0.9 solid debug boxes and v0.12 mesh triangles are projected placeholder geometry with no depth buffer, sorting, lighting, textures, materials, or transparency.
+- v0.9 solid debug boxes and v0.12 mesh triangles are projected placeholder geometry with no depth buffer, lighting, textures, materials, or transparency. v0.27 adds only a small painter-depth sort for projected solid-box and flat-mesh triangle batches.
 - There is no resize handling, depth buffer, camera clip tuning, or resource lifetime stress testing.
 - `IRenderer::drawDebugFlatTriangles` is immediate-mode and creates transient renderer data; it is not a GPU static mesh resource path.
 - DX11 mesh rendering still uses CPU debug projection, not world/view/projection matrices.
@@ -145,6 +145,7 @@ This file lists known foundation issues during the current playable-build phase.
 - `assets/models/ferry_notice_board.gltf` is a v0.20 fallback-generated proof prop, not a Blender export or production art.
 - `assets/models/blender_ferry_notice_board.gltf` is a v0.20.1 Blender-exported procedural proof prop, not production art.
 - v0.26 reuses the existing seven scene mesh assets for 31 total mesh instances, adding manifest counter/paperwork cues, a side service panel, dock cleats, a service-yard tool crate, and a Service Run review board without new model files or collision.
+- v0.27 adds `assets/models/blender_cable_reel.gltf`, a second small Blender-authored procedural prop, and references it once in the service yard. It is still untextured placeholder geometry, not a material/asset-pipeline expansion.
 - There is no asset registry, mesh resource cache, file watcher, importer/cooker, mesh optimizer, LOD, or material assignment.
 - Mesh instances render visually but do not define collision or physics shapes.
 - The current loader is intentionally narrow. v0.19 decides to keep it briefly while asset workflow validation improves, then move to cgltf/tinygltf when real glTF coverage is needed.
@@ -165,8 +166,9 @@ This file lists known foundation issues during the current playable-build phase.
 - v0.24 adds a first progressive-guidance pass for playtest/minimal modes so future route, traversal, vehicle, checkpoint, and service-run markers wait for the relevant Ferry Office job phase. Debug mode still keeps the full authored guidance set for validation.
 - v0.25 adds a first authored composition pass: scene-authored player-start yaw now drives initial facing/camera composition, and existing placeholder assets add office approach, service-yard threshold, dock-road rhythm, and Service Run confirmation cues.
 - v0.26 adds a controlled existing-asset prop/identity pass around the manifest, Ferry Office controls side, dock edge, service yard, and Service Run endpoint. It improves authored read but is still built from placeholder flat-tinted meshes.
+- v0.27 adds painter-depth ordering for projected debug triangles and one Blender cable reel prop. This should make overlapping solid boxes/flat meshes less arbitrary, but it is still not a real depth-buffered renderer.
 - DX11 now has a simple debug text overlay, so bounded DX11 playtest checks are useful. GDI still remains the simpler renderer for overlay debugging, and a real renderer-owned text/HUD path is deferred.
-- The v0.26 prop/identity pass is still prototype presentation: there is no final art-quality signage, depth-aware renderer, lighting, materials, textures, authored terrain, or production HUD.
+- The v0.27 presentation spike is still prototype presentation: there is no final art-quality signage, real depth buffer, renderer-owned world/view/projection path, lighting, materials, textures, authored terrain, or production HUD.
 
 ## Deprecated Priority Lists
 

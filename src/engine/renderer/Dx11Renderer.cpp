@@ -84,23 +84,28 @@ void AddProjectedLine(
 }
 
 void AddProjectedTriangle(
-    std::vector<Dx11Renderer::Vertex>& vertices,
+    std::vector<ProjectedTriangle>& triangles,
     const DebugCamera& camera,
     float aspectRatio,
     Vec3 a,
     Vec3 b,
-    Vec3 c,
+    Vec3 c)
+{
+    ProjectedTriangle triangle;
+    if (ProjectWorldTriangleWithDepth(camera, aspectRatio, a, b, c, triangle)) {
+        triangles.push_back(triangle);
+    }
+}
+
+void AddProjectedTriangleVertices(
+    std::vector<Dx11Renderer::Vertex>& vertices,
+    const ProjectedTriangle& triangle,
     Color color)
 {
-    ProjectedPolygon polygon;
-    if (!ProjectWorldTriangle(camera, aspectRatio, a, b, c, polygon)) {
-        return;
-    }
-
-    for (std::size_t index = 1; index + 1 < polygon.pointCount; ++index) {
-        const ProjectedPoint& pa = polygon.points[0];
-        const ProjectedPoint& pb = polygon.points[index];
-        const ProjectedPoint& pc = polygon.points[index + 1];
+    for (std::size_t index = 1; index + 1 < triangle.polygon.pointCount; ++index) {
+        const ProjectedPoint& pa = triangle.polygon.points[0];
+        const ProjectedPoint& pb = triangle.polygon.points[index];
+        const ProjectedPoint& pc = triangle.polygon.points[index + 1];
         vertices.push_back({pa.x, pa.y, 0.0f, color.r, color.g, color.b, color.a});
         vertices.push_back({pb.x, pb.y, 0.0f, color.r, color.g, color.b, color.a});
         vertices.push_back({pc.x, pc.y, 0.0f, color.r, color.g, color.b, color.a});
@@ -401,16 +406,21 @@ void Dx11Renderer::drawDebugSolidBox(Vec3 center, Vec3 halfExtents, Color color)
         {3, 0, 4}, {3, 4, 7},
     };
 
-    std::vector<Vertex> vertices;
+    std::vector<ProjectedTriangle> projectedTriangles;
     const float aspectRatio = AspectRatio(m_config);
     for (const auto& triangle : triangles) {
-        AddProjectedTriangle(vertices,
+        AddProjectedTriangle(projectedTriangles,
             m_debugCamera,
             aspectRatio,
             corners[triangle[0]],
             corners[triangle[1]],
-            corners[triangle[2]],
-            color);
+            corners[triangle[2]]);
+    }
+
+    SortProjectedTrianglesBackToFront(projectedTriangles);
+    std::vector<Vertex> vertices;
+    for (const ProjectedTriangle& triangle : projectedTriangles) {
+        AddProjectedTriangleVertices(vertices, triangle, color);
     }
     drawTriangleVertices(vertices);
 }
@@ -421,16 +431,21 @@ void Dx11Renderer::drawDebugFlatTriangles(std::span<const Vec3> triangleVertices
         return;
     }
 
-    std::vector<Vertex> vertices;
+    std::vector<ProjectedTriangle> projectedTriangles;
     const float aspectRatio = AspectRatio(m_config);
     for (std::size_t index = 0; index + 2 < triangleVertices.size(); index += 3) {
-        AddProjectedTriangle(vertices,
+        AddProjectedTriangle(projectedTriangles,
             m_debugCamera,
             aspectRatio,
             triangleVertices[index],
             triangleVertices[index + 1],
-            triangleVertices[index + 2],
-            color);
+            triangleVertices[index + 2]);
+    }
+
+    SortProjectedTrianglesBackToFront(projectedTriangles);
+    std::vector<Vertex> vertices;
+    for (const ProjectedTriangle& triangle : projectedTriangles) {
+        AddProjectedTriangleVertices(vertices, triangle, color);
     }
     drawTriangleVertices(vertices);
 }

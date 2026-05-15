@@ -180,8 +180,8 @@ class SceneToolTests(unittest.TestCase):
         mesh_assets = {asset["id"] for asset in self.scene["meshAssets"]}
         mesh_instances = {instance["id"]: instance for instance in self.scene["meshInstances"]}
 
-        self.assertEqual(7, len(mesh_assets))
-        self.assertEqual(31, len(mesh_instances))
+        self.assertGreaterEqual(len(mesh_assets), 7)
+        self.assertGreaterEqual(len(mesh_instances), 31)
 
         expected_assets = {
             "mesh-manifest-counter-shelf": "unit-box-mesh",
@@ -195,6 +195,20 @@ class SceneToolTests(unittest.TestCase):
         for required_id, asset_id in expected_assets.items():
             self.assertIn(required_id, ids)
             self.assertEqual(asset_id, mesh_instances[required_id]["assetId"])
+
+    def test_v027_blender_cable_reel_asset_and_instance_exist(self) -> None:
+        ids = scene_data.collect_ids(self.scene)
+        mesh_assets = {asset["id"]: asset for asset in self.scene["meshAssets"]}
+        mesh_instances = {instance["id"]: instance for instance in self.scene["meshInstances"]}
+
+        self.assertEqual(8, len(mesh_assets))
+        self.assertEqual(32, len(mesh_instances))
+        self.assertIn("blender-cable-reel-mesh", mesh_assets)
+        self.assertIn("mesh-service-yard-cable-reel", ids)
+        self.assertEqual("blender-cable-reel-mesh", mesh_instances["mesh-service-yard-cable-reel"]["assetId"])
+        self.assertEqual("assets/models/blender_cable_reel.gltf", mesh_assets["blender-cable-reel-mesh"]["path"])
+        self.assertIn("blender", mesh_assets["blender-cable-reel-mesh"]["provenance"].lower())
+        self.assertIn("5.1.1", mesh_assets["blender-cable-reel-mesh"]["provenance"])
 
     def test_duplicate_mesh_replacement_links_are_reported(self) -> None:
         scene = copy.deepcopy(self.scene)
@@ -420,6 +434,16 @@ class SceneToolTests(unittest.TestCase):
         self.assertTrue(script_path.exists())
         script_text = script_path.read_text(encoding="utf-8")
         self.assertIn("blender_ferry_notice_board.gltf", script_text)
+        self.assertIn("export_scene.gltf", script_text)
+        self.assertIn("GLTF_SEPARATE", script_text)
+        self.assertIn("data:application/octet-stream;base64", script_text)
+
+    def test_blender_cable_reel_script_exists_and_documents_export_contract(self) -> None:
+        script_path = ROOT / "tools" / "blender" / "create_tidebreak_cable_reel.py"
+
+        self.assertTrue(script_path.exists())
+        script_text = script_path.read_text(encoding="utf-8")
+        self.assertIn("blender_cable_reel.gltf", script_text)
         self.assertIn("export_scene.gltf", script_text)
         self.assertIn("GLTF_SEPARATE", script_text)
         self.assertIn("data:application/octet-stream;base64", script_text)

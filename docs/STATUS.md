@@ -4616,3 +4616,57 @@ Remaining limitations:
 
 - v0.26 is still a placeholder prop/identity pass using flat-tinted prototype meshes. It is not final art, final signage, a production HUD, lighting, materials, textures, depth-aware rendering, authored terrain, or a real asset pipeline.
 - A short human v0.26 pass should check that the new prop cues improve readability without hiding prompts, markers, route/debug geometry, or vehicle route understanding.
+
+## v0.27 Renderer/Depth Presentation Spike + Tiny Blender Props Pass (2026-05-15)
+
+Scope:
+
+- Kept the existing Ferry Office Service Call as the only job.
+- Chose the narrow painter-depth presentation spike plus one tiny Blender prop, rather than a full DX11 depth-buffer/world-matrix renderer rewrite or a broad prop quantity pass.
+- Targeted the current debug-projection limitation where solid boxes and flat mesh triangles draw by submission/triangle order and can overlap in arbitrary-looking ways.
+- Added one original service-yard cable reel prop because it reinforces the practical Ferry Office service-yard identity and stays inside the existing embedded-buffer `.gltf` subset.
+- Avoided Job #2, new missions, NPCs, combat, Jolt VehicleConstraint, material/texture pipeline, broad asset registry, editor, packaging, save/settings persistence, and copied commercial content.
+
+Focused TDD result:
+
+- Added `TestDebugProjectionSortsProjectedTrianglesBackToFront` before implementation.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests` failed as expected before implementation because `engine::ProjectedTriangle`, `ProjectWorldTriangleWithDepth`, and `SortProjectedTrianglesBackToFront` did not exist.
+- Added `test_v027_blender_cable_reel_asset_and_instance_exist` and `test_blender_cable_reel_script_exists_and_documents_export_contract` before implementation.
+- `python tests\test_scene_tools.py` failed as expected before implementation because the cable reel Blender script, scene mesh asset, and scene mesh instance did not exist and the scene still had 7 mesh assets / 31 mesh instances.
+
+Implementation notes:
+
+- `src\engine\renderer\DebugProjection.h` now exposes `ProjectedTriangle`, `ProjectWorldTriangleWithDepth`, and `SortProjectedTrianglesBackToFront`.
+- `GdiRenderer` and `Dx11Renderer` now sort projected solid-box and flat-mesh triangle batches back-to-front before drawing them.
+- This is painter-depth ordering for the existing debug projection path, not a true depth buffer, material system, shader/matrix rewrite, or GPU mesh resource path.
+- Added `tools\blender\create_tidebreak_cable_reel.py`.
+- Ran Blender 5.1.1 headlessly to generate `assets\models\blender_cable_reel.gltf`; the export produced one primitive, then embedded the generated buffer as a data URI.
+- `data\scenes\ferry_office.scene.json` now has 8 mesh assets and 32 mesh instances, including:
+  - `blender-cable-reel-mesh`
+  - `mesh-service-yard-cable-reel`
+
+Validation so far:
+
+- `python tools\check_blender.py`: passed; Blender 5.1.1 available from PATH.
+- `blender --background --python tools\blender\create_tidebreak_cable_reel.py`: passed.
+- `powershell -ExecutionPolicy Bypass -File scripts\doctor.ps1`: passed; expected warnings remain for compiler/tool binaries outside plain `PATH`.
+- `powershell -ExecutionPolicy Bypass -File scripts\configure.ps1`: passed for `windows-vs2022-debug`.
+- `powershell -ExecutionPolicy Bypass -File scripts\build.ps1`: passed.
+- `ctest --preset windows-vs2022-debug -R EngineCoreTests --output-on-failure`: passed.
+- `python tests\test_scene_tools.py`: passed, 33 tests.
+- `python tools\validate_scene.py`: passed.
+- `python tools\validate_assets.py`: passed; modelFiles 8.
+- `python tools\scale_audit.py`: passed, no suspicious scale issues.
+- `python tools\mesh_report.py`: passed; reports 8 mesh assets, 32 mesh instances, and 8 referenced model files.
+- `python tools\scene_report.py`: passed; scene now reports 9 colliders, 24 visual placeholders, 8 mesh assets, 32 mesh instances, 6 interactables, 1 traversal affordance, 1 vehicle, 6 route markers, and 5 objective markers.
+- `powershell -ExecutionPolicy Bypass -File scripts\verify.ps1`: passed; CTest 4/4 passed, scene validation passed, asset validation passed, mesh report passed, and null smoke loaded all 8 static mesh assets including `blender-cable-reel-mesh`.
+
+Visual evidence:
+
+- Captured bounded GDI playtest start screenshot at `build\captures\v0.27-presentation-start.png`.
+
+Remaining limitations:
+
+- v0.27 improves draw ordering inside projected triangle batches, but it is not a real depth-buffered renderer and cannot solve every overlap between separate debug draw calls.
+- The cable reel is a low-detail flat-tinted placeholder prop with no material, texture, collision, animation, or final art treatment.
+- A short human v0.27 pass should check that painter-depth ordering and the cable reel improve readability without hiding prompts, markers, route/debug geometry, or the service-yard vehicle route.
