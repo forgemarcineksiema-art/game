@@ -163,6 +163,12 @@ Scene validation:
 python tools/validate_scene.py
 ```
 
+Static mesh asset workflow validation:
+
+```powershell
+python tools/validate_assets.py
+```
+
 Scale sanity audit:
 
 ```powershell
@@ -179,12 +185,13 @@ Use an explicit scene path when experimenting with a copy:
 
 ```powershell
 python tools/validate_scene.py data/scenes/ferry_office.scene.json
+python tools/validate_assets.py data/scenes/ferry_office.scene.json
 python tools/scene_report.py data/scenes/ferry_office.scene.json
 python tools/scale_audit.py data/scenes/ferry_office.scene.json
 python tools/mesh_report.py data/scenes/ferry_office.scene.json
 ```
 
-`scripts/verify.ps1` runs `python tools/validate_scene.py` and `python tools/mesh_report.py` after CTest. Scene and mesh reference validation are part of the normal path.
+`scripts/verify.ps1` runs `python tools/validate_scene.py`, `python tools/validate_assets.py`, and `python tools/mesh_report.py` after CTest. Scene and mesh asset/reference validation are part of the normal path.
 
 ## Static Mesh Rendering
 
@@ -198,7 +205,7 @@ assets/models/service_barrier.gltf
 assets/models/utility_box.gltf
 ```
 
-The supported loader subset is intentionally tiny: `.gltf`, one embedded base64 buffer, `POSITION` float `VEC3`, indexed triangle list, no materials/textures/animation. v0.18 can load multiple scene-authored mesh asset ids, but this is still not an asset registry or production mesh pipeline. See `docs/MESH_RENDERING.md` before changing mesh loading or renderer behavior.
+The supported loader subset is intentionally tiny: `.gltf`, one embedded base64 buffer, `POSITION` float `VEC3`, indexed triangle list, no materials/textures/animation. v0.18 can load multiple scene-authored mesh asset ids, and v0.19 validates the asset workflow around those files, but this is still not an asset registry or production mesh pipeline. See `docs/MESH_RENDERING.md` and `docs/ASSET_PIPELINE_DECISION.md` before changing mesh loading or renderer behavior.
 
 ## Verify
 
@@ -249,7 +256,7 @@ build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi
 - If the Jolt preset fails while normal validation passes, keep using the default preset and inspect `docs/PHYSICS_DECISION.md`. The Jolt path is opt-in until the physics backend is promoted by a later goal.
 - If the runtime logs `Runtime scene load failed`, check the `--scene` path first, then run `python tools/validate_scene.py <path>`.
 - If scene validation fails, inspect `data/scenes/ferry_office.scene.json` and run `python tools/scene_report.py` to see the current object counts and required ids.
-- If mesh references fail, run `python tools/mesh_report.py` and verify referenced files exist under `assets/models` with license/provenance in scene data.
+- If mesh references fail, run `python tools/validate_assets.py` and `python tools/mesh_report.py`. Verify referenced files exist under `assets/models`, every committed `.gltf` is scene-referenced, `.glb`/external buffers are not used yet, and license/provenance exists in scene data.
 - v0.3+ collision is debug-only static AABB collision. If a collider layout feels odd, inspect `src/game/PrototypeWorld.cpp` and rerun `scripts/verify.ps1` after edits.
 - v0.4 interaction focus is debug-only point/radius selection with a facing preference. If an object does not focus, move closer and face the marker, then press `E`.
 - v0.5 traversal uses `Space` only when a traversal affordance is focused. If traversal does not trigger, move near the traversal start marker and face the path direction. If no traversal is focused, `Space` remains normal jump.

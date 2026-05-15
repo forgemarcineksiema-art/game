@@ -50,6 +50,7 @@ Optional scene authoring checks:
 ```powershell
 python tools/scene_report.py
 python tools/validate_scene.py
+python tools/validate_assets.py
 python tools/scale_audit.py
 python tools/mesh_report.py
 ```
@@ -106,10 +107,11 @@ python tools/mesh_report.py
 ## Scene Authoring Tools
 
 - [ ] `python tools/validate_scene.py` reports `Scene validation passed.`
+- [ ] `python tools/validate_assets.py` reports `Asset validation passed.`
 - [ ] `python tools/scene_report.py` reports scene id `ferry-office`.
 - [ ] Scene report lists 9 colliders, 6 interactables, 1 traversal affordance, 1 vehicle, 6 route markers, and 5 objective markers.
 - [ ] `python tools/scale_audit.py` reports no suspicious scale issues, or any issue is documented.
-- [ ] `python tools/mesh_report.py` reports 5 mesh assets and 15 Ferry Office/service-yard/dock-road mesh instances.
+- [ ] `python tools/mesh_report.py` reports 5 mesh assets, 15 Ferry Office/service-yard/dock-road mesh instances, and 5 referenced `.gltf` model files.
 - [ ] `data/scenes/ferry_office.scene.json` contains the service gate, manifest, maintenance box, wall button, exit marker, service vault, player start, and service-yard vehicle ids.
 - [ ] `data/scenes/ferry_office.scene.json` contains `service-run-confirm-marker`, `service-run-checkpoint-marker`, and `route-dock-road-to-service-confirm`.
 - [ ] `data/scenes/ferry_office.scene.json` contains `meshAssets` and `meshInstances` for the current static mesh spike.
@@ -124,6 +126,7 @@ python tools/mesh_report.py
 - [ ] DX11 bounded run exits cleanly with mesh submissions enabled.
 - [ ] Mesh placeholders do not hide route, interaction, traversal, collision, or vehicle debug markers.
 - [ ] `assets/models/unit_box.gltf` and the v0.18 prop-kit meshes remain small original placeholder assets with scene-data license/provenance.
+- [ ] No `.glb`, external-buffer `.gltf`, unreferenced `.gltf`, or undocumented mesh asset appears in `assets/models`.
 
 ## Vehicle Spike
 

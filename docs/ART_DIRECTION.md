@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-15
 
-This document gives Tidebreak a practical visual target before real assets exist. It is not a final art bible and does not authorize final art, model loading, textures, or a renderer overhaul in v0.11.
+This document gives Tidebreak a practical visual target before real assets exist. It is not a final art bible and does not authorize final art, textures, materials, lighting, or a renderer overhaul.
 
 ## Visual Target
 
@@ -119,3 +119,7 @@ The v0.14 dock road pass extends the service-yard into a compact island service 
 ## v0.18 Prop Style Observation
 
 The v0.18 pass adds the first original service-road prop-kit silhouettes: a route sign, road-edge posts, a low service barrier, and a utility cabinet. The screenshot at `docs/images/v0.18-gdi-screenshot.png` shows the current GDI reference. These are still flat-tinted, tiny-subset `.gltf` placeholders, but they shift the scene away from pure scaled boxes toward a practical coastal service-road language. The next visual risk is workflow, not quantity: before many more props are added, the project should decide whether to keep hand-authored tiny `.gltf` files briefly or stabilize a real static-mesh import path.
+
+## v0.19 Asset Workflow Observation
+
+v0.19 intentionally does not change the visual composition. It stabilizes the path that allowed the v0.18 props to exist: every committed mesh file should be visible to `tools/mesh_report.py`, referenced by scene data, documented with license/provenance, and accepted by `tools/validate_assets.py`. This keeps future visual identity work from becoming a pile of untracked prop experiments.

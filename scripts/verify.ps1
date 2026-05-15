@@ -38,6 +38,11 @@ try {
         exit $LASTEXITCODE
     }
 
+    python tools\validate_assets.py
+    if ($LASTEXITCODE -ne 0) {
+        exit $LASTEXITCODE
+    }
+
     python tools\mesh_report.py
     if ($LASTEXITCODE -ne 0) {
         exit $LASTEXITCODE

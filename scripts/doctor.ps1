@@ -66,6 +66,7 @@ foreach ($Path in @(
     "docs\SCENE_AUTHORING.md",
     "docs\ART_DIRECTION.md",
     "docs\MESH_RENDERING.md",
+    "docs\ASSET_PIPELINE_DECISION.md",
     "data\scenes\ferry_office.scene.json",
     "assets\models\unit_box.gltf",
     "src\engine",
@@ -76,6 +77,7 @@ foreach ($Path in @(
     "tools\scene_data.py",
     "tools\scene_report.py",
     "tools\validate_scene.py",
+    "tools\validate_assets.py",
     "tools\scale_audit.py",
     "tools\mesh_report.py"
 )) {

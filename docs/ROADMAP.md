@@ -241,6 +241,16 @@ Status: implemented as a presentation/readability pass. Normal windowed play now
 
 Status: implemented as a visual-identity/readability pass. The scene now references 5 mesh assets and 15 mesh instances, including four new original v0.18 prop meshes, and `SandboxLayer` loads scene mesh assets by id instead of only drawing `unit-box-mesh`.
 
+## v0.19 - Tiny Asset Pipeline Decision + Static Mesh Workflow Stabilization
+
+- Decide whether to keep the custom tiny `.gltf` loader, switch to cgltf/tinygltf, or broaden the asset path.
+- Document the near-term static mesh workflow in `docs/ASSET_PIPELINE_DECISION.md`.
+- Improve Codex-facing mesh/asset reporting and validation so committed model files, scene references, provenance, unsupported formats, and bounds are visible.
+- Keep the runtime mesh path narrow: no asset registry, material system, texture pipeline, renderer rewrite, editor, or final art.
+- Preserve the Ferry Office Service Call, presentation modes, v0.18 prop visibility, default validation, and Jolt opt-in validation.
+
+Status: implemented as a workflow-stabilization milestone. The project keeps the tiny custom `.gltf` loader for the short prototype phase, adds `tools/validate_assets.py`, expands `tools/mesh_report.py`, and makes asset validation part of `scripts/verify.ps1`.
+
 ## Recommended Next Goal
 
-Build v0.19 Tiny Asset Pipeline Decision + Static Mesh Workflow Stabilization.
+Build v0.20 Blender-to-Tidebreak Static Prop Workflow Spike.

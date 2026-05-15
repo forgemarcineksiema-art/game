@@ -4,8 +4,10 @@
 from __future__ import annotations
 
 import copy
+import json
 import pathlib
 import sys
+import tempfile
 import unittest
 
 
@@ -13,6 +15,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 
 import scene_data  # noqa: E402
+import mesh_report  # noqa: E402
 
 
 class SceneToolTests(unittest.TestCase):
@@ -286,6 +289,71 @@ class SceneToolTests(unittest.TestCase):
         result = scene_data.validate_scene(scene)
 
         self.assertTrue(any("scale" in error and "positive" in error for error in result.errors))
+
+    def test_mesh_report_scans_model_files_and_reports_reference_status(self) -> None:
+        report = mesh_report.build_mesh_report(self.scene)
+        files_by_path = {file.relative_path: file for file in report.files}
+
+        self.assertIn("assets/models/unit_box.gltf", files_by_path)
+        self.assertIn("assets/models/service_road_sign.gltf", files_by_path)
+        self.assertTrue(files_by_path["assets/models/unit_box.gltf"].referenced)
+        self.assertGreater(files_by_path["assets/models/unit_box.gltf"].vertex_count or 0, 0)
+        self.assertGreater(files_by_path["assets/models/unit_box.gltf"].index_count or 0, 0)
+        self.assertIsNotNone(files_by_path["assets/models/unit_box.gltf"].bounds_min)
+        self.assertIsNotNone(files_by_path["assets/models/unit_box.gltf"].bounds_max)
+        self.assertEqual([], [file.relative_path for file in report.files if file.suffix == ".gltf" and not file.referenced])
+
+    def test_asset_workflow_reports_unreferenced_gltf_files(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            models_dir = pathlib.Path(temp_dir)
+            (models_dir / "orphan.gltf").write_text(json.dumps({"asset": {"version": "2.0"}, "meshes": []}), encoding="utf-8")
+            scene = copy.deepcopy(self.scene)
+            scene["meshAssets"] = []
+            scene["meshInstances"] = []
+
+            result = scene_data.validate_asset_workflow(scene, models_dir=models_dir)
+
+        self.assertTrue(any("unreferenced" in error and "orphan.gltf" in error for error in result.errors))
+
+    def test_asset_workflow_reports_unsupported_glb_files(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            models_dir = pathlib.Path(temp_dir)
+            (models_dir / "not-supported.glb").write_bytes(b"glTF")
+
+            result = scene_data.validate_asset_workflow(self.scene, models_dir=models_dir)
+
+        self.assertTrue(any("unsupported .glb" in error for error in result.errors))
+
+    def test_asset_workflow_reports_external_buffers(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            models_dir = pathlib.Path(temp_dir)
+            (models_dir / "external_buffer.gltf").write_text(
+                json.dumps(
+                    {
+                        "asset": {"version": "2.0"},
+                        "buffers": [{"uri": "external_buffer.bin", "byteLength": 12}],
+                        "meshes": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            scene = copy.deepcopy(self.scene)
+            scene["meshAssets"] = [
+                {
+                    "id": "external-buffer-mesh",
+                    "path": "external_buffer.gltf",
+                    "format": "gltf",
+                    "units": "meter",
+                    "upAxis": "Y",
+                    "license": "project-original",
+                    "provenance": "Created in test.",
+                }
+            ]
+            scene["meshInstances"] = []
+
+            result = scene_data.validate_asset_workflow(scene, models_dir=models_dir)
+
+        self.assertTrue(any("external buffer" in error for error in result.errors))
 
 
 if __name__ == "__main__":

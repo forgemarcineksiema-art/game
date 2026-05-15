@@ -92,15 +92,17 @@ Scene tools live under `tools`:
 - `validate_scene.py`: hard validation for required ids, numeric vectors, uniqueness, radii/extents, traversal data, vehicle bounds, and scale sanity.
 - `scene_report.py`: compact Codex-readable scene summary.
 - `scale_audit.py`: suspicious-scale report for object sizes and vehicle dimensions.
-- `mesh_report.py`: static mesh asset/reference summary.
+- `asset_data.py`: shared static mesh file scanning and tiny glTF metadata helpers for tools.
+- `validate_assets.py`: asset workflow validation for mesh files, scene references, provenance, unsupported formats, and unsupported buffers.
+- `mesh_report.py`: static mesh file/reference summary with vertex/index counts, bounds, usage, and provenance.
 
-v0.12 extends the scene file with `meshAssets` and `meshInstances`. These are validated scene entries, not a full asset registry. v0.12.1 grows the Ferry Office prop set to 10 mesh instances for roof/facade/sign, service gate, maintenance box, dock props, service-yard crate, and vehicle body/cabin. v0.15 submits those mesh instances from loaded scene data. v0.18 adds four original service-road prop meshes and 15 total mesh instances; `SandboxLayer` now loads scene mesh assets by id instead of assuming only `unit-box-mesh`.
+v0.12 extends the scene file with `meshAssets` and `meshInstances`. These are validated scene entries, not a full asset registry. v0.12.1 grows the Ferry Office prop set to 10 mesh instances for roof/facade/sign, service gate, maintenance box, dock props, service-yard crate, and vehicle body/cabin. v0.15 submits those mesh instances from loaded scene data. v0.18 adds four original service-road prop meshes and 15 total mesh instances; `SandboxLayer` now loads scene mesh assets by id instead of assuming only `unit-box-mesh`. v0.19 keeps that runtime boundary and improves tooling around it rather than adding a resource manager.
 
 ## Static Mesh Assets
 
 `src/engine/assets/StaticMesh.*` is the first engine-owned static mesh boundary. It defines `StaticMeshAsset`, `StaticMeshVertex`, `StaticMeshInstance`, local bounds, a minimal glTF loader, and a helper that expands indexed mesh data into flat triangle lists for the current immediate renderer path.
 
-The v0.12 loader supports only a tiny `.gltf` subset: one embedded base64 buffer, one primitive with `POSITION` float `VEC3`, and indexed triangle lists. It intentionally does not support materials, textures, node hierarchy, GLB, animation, skinning, mesh collision, or an asset registry.
+The v0.12 loader supports only a tiny `.gltf` subset: one embedded base64 buffer, one primitive with `POSITION` float `VEC3`, and indexed triangle lists. v0.19 documents the decision to keep this tiny custom loader briefly while validating the workflow around it. It intentionally does not support materials, textures, node hierarchy, GLB, external buffers, animation, skinning, mesh collision, or an asset registry.
 
 ## Physics
 
@@ -235,9 +237,9 @@ v0.9 adds a narrow solid debug drawing path, `IRenderer::drawDebugSolidBox`, imp
 
 v0.10 adds a service-yard driving pad, a placeholder vehicle body/cabin, vehicle heading line, enter radius, safe exit marker, yard bounds, and physics debug lines. v0.14 adds a compact dock road pad, shore/water edge cue, rail/curb edges, road route line, turn-around/end marker, and expanded finite vehicle bounds. v0.15 draws these scene presentation objects from runtime scene data. These are debug primitives only; there is still no vehicle mesh resource pipeline, material system, tire model, terrain system, traffic path, or final road art.
 
-This is not a full asset pipeline. There are still no textures, materials, lighting, shadows, post-processing, scene editor, prefabs, or asset registry. Solid debug geometry should stay simple and disposable until later art/asset milestones prove what the engine actually needs.
+This is not a full asset pipeline. There are still no textures, materials, lighting, shadows, post-processing, scene editor, prefabs, resource cache, importer/cooker, or asset registry. Solid debug geometry and flat-tinted mesh props should stay simple until later art/asset milestones prove what the engine actually needs.
 
-`docs/ASSET_GUIDE.md`, `docs/SCENE_AUTHORING.md`, and `docs/ART_DIRECTION.md` define the first scale, naming, Blender/glTF direction, scene editing workflow, and coastal-industrial mood target. These guide future asset/model work but do not add runtime model loading yet.
+`docs/ASSET_GUIDE.md`, `docs/SCENE_AUTHORING.md`, `docs/ART_DIRECTION.md`, and `docs/ASSET_PIPELINE_DECISION.md` define the first scale, naming, Blender/glTF direction, scene editing workflow, asset-pipeline decision, and coastal-industrial mood target. These guide future asset/model work but do not turn the current static mesh spike into a production asset pipeline.
 
 v0.17 separates presentation from raw debugging:
 
@@ -276,4 +278,6 @@ v0.8 renamed the stale `TestWorld` / `TestScene` boundaries to `PrototypeWorld` 
 - `tools/status_report.py`: compact status report for AI agents.
 - `tools/scene_report.py`: scene object/count/route/vehicle summary.
 - `tools/validate_scene.py`: scene data validation gate.
+- `tools/validate_assets.py`: static mesh asset workflow validation gate.
 - `tools/scale_audit.py`: scene scale sanity report.
+- `tools/mesh_report.py`: static mesh file/reference/provenance report.

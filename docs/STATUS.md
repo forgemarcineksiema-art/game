@@ -3526,3 +3526,147 @@ Known remaining issues:
 Recommended next goal:
 
 Build v0.19 Tiny Asset Pipeline Decision + Static Mesh Workflow Stabilization.
+
+## v0.19 Baseline - 2026-05-15
+
+Goal: decide and stabilize Tidebreak's near-term static mesh / glTF workflow before adding more visual content or gameplay. This goal should improve asset validation, mesh reporting, documentation, and the static mesh workflow contract while preserving the existing Ferry Office Service Call, playtest/debug/minimal UI modes, scene loading, v0.18 prop visibility, default validation, and Jolt opt-in validation. No Job #2 or new gameplay system should be added.
+
+Required context read before implementation:
+
+- `AGENTS.md`
+- `docs/STATUS.md`
+- `docs/ROADMAP.md`
+- `docs/ARCHITECTURE.md`
+- `docs/TECH_DEBT.md`
+- `docs/ASSET_GUIDE.md`
+- `docs/SCENE_AUTHORING.md`
+- `docs/MESH_RENDERING.md`
+- `docs/ART_DIRECTION.md`
+- `docs/DECISIONS.md`
+- `docs/MANUAL_TEST_CHECKLIST.md`
+
+Baseline commands:
+
+```powershell
+git status --short --branch
+powershell -ExecutionPolicy Bypass -File scripts\verify.ps1
+cmake --preset windows-vs2022-debug-jolt
+cmake --build --preset windows-vs2022-debug-jolt
+ctest --preset windows-vs2022-debug-jolt --output-on-failure
+python tools\scene_report.py
+python tools\validate_scene.py
+python tools\scale_audit.py
+python tools\mesh_report.py
+```
+
+Baseline results:
+
+- Git state before v0.19 work: `main...origin/main`, clean working tree.
+- `scripts\verify.ps1`: passed. Default doctor/configure/build/CTest, scene validation, mesh report, and null smoke all completed. Null smoke reported engine `v0.18.0`, loaded scene `ferry-office`, and all five static mesh assets.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 3/3 tests.
+- `python tools\scene_report.py`: passed; scene reports 9 colliders, 21 visual placeholders, 5 mesh assets, 15 mesh instances, 6 interactables, 1 traversal affordance, 1 vehicle, 6 route markers, and 5 objective markers.
+- `python tools\validate_scene.py`: passed.
+- `python tools\scale_audit.py`: passed; no suspicious scale issues found.
+- `python tools\mesh_report.py`: passed; reports 5 mesh assets and 15 mesh instances.
+
+## v0.19 Short Implementation Plan
+
+1. Add failing tests first for asset-tool behavior that v0.18 does not yet guarantee:
+   - all committed `.gltf` files under `assets/models` are reported, referenced, and documented,
+   - missing license/provenance is reported,
+   - unsupported `.glb` or external-buffer assets are rejected/reported clearly,
+   - duplicate mesh ids and duplicate mesh replacement links stay caught,
+   - current scene mesh assets and instances remain valid.
+2. Improve `tools/mesh_report.py` and shared scene/asset validation with standard-library Python only. Add `tools/validate_assets.py` only if a separate command makes the workflow clearer than folding everything into scene validation.
+3. Keep runtime static mesh changes minimal. Improve loader/runtime error reporting only if tests expose unclear failure paths; do not add an asset registry, resource cache, material system, or renderer rewrite.
+4. Create `docs/ASSET_PIPELINE_DECISION.md` comparing the current tiny loader, cgltf, tinygltf, Assimp, and Blender-export-first workflow. Recommend keeping the tiny loader briefly while stabilizing tooling, with cgltf/tinygltf as the likely next step when real Blender/GLB/material coverage is needed.
+5. Update `docs/ASSET_GUIDE.md`, `docs/SCENE_AUTHORING.md`, `docs/MESH_RENDERING.md`, `docs/RUNBOOK.md`, `docs/TECH_DEBT.md`, `docs/ROADMAP.md`, `docs/DECISIONS.md`, and the manual checklist to describe the v0.19 asset workflow.
+6. Run the full validation matrix, including default/Jolt builds, scene/asset tools, and bounded GDI/DX11 runs. Do not replace the v0.18 screenshot unless presentation output changes materially.
+
+## v0.19 Implementation Notes - 2026-05-15
+
+- Added red tests in `tests/test_scene_tools.py` for model-file scanning/reference status, bounds reporting, unreferenced `.gltf` files, unsupported `.glb` files, and external-buffer `.gltf` files.
+- Initial TDD run:
+  - `python tests\test_scene_tools.py` failed as expected because `mesh_report.build_mesh_report` and `scene_data.validate_asset_workflow` did not exist yet.
+- Added `tools/asset_data.py` with shared static mesh file scanning, tiny `.gltf` metadata extraction, bounds reporting, and scene asset path resolution.
+- Rebuilt `tools/mesh_report.py` so it reports every `.gltf`/`.glb` under `assets/models`, scene reference status, asset ids, usage counts, license/provenance, vertex/index counts, bounds, file size, and parse errors.
+- Added `tools/validate_assets.py` and `scene_data.validate_asset_workflow` to fail on unreferenced committed `.gltf`, unsupported `.glb`, unsupported external buffers, missing ownership metadata, unknown mesh asset refs, and duplicate mesh links through the existing scene validation path.
+- Added asset validation to `scripts/verify.ps1`, `scripts/doctor.ps1`, and `tools/status_report.py`.
+- Updated project version to `0.19.0`.
+- Created `docs/ASSET_PIPELINE_DECISION.md`: recommendation is to keep the tiny custom `.gltf` loader briefly, stabilize validation/provenance now, prefer cgltf as the likely next loader when Blender/GLB/external-buffer/material needs appear, keep tinygltf as backup, and avoid Assimp for this stage.
+- Updated `docs/RUNBOOK.md`, `docs/ARCHITECTURE.md`, `docs/ASSET_GUIDE.md`, `docs/SCENE_AUTHORING.md`, `docs/MESH_RENDERING.md`, `docs/ART_DIRECTION.md`, `docs/DECISIONS.md`, `docs/TECH_DEBT.md`, `docs/MANUAL_TEST_CHECKLIST.md`, and `docs/ROADMAP.md`.
+- TDD green check:
+  - `python tests\test_scene_tools.py` passed, 22 tests.
+- Tool spot checks:
+  - `python tools\mesh_report.py` passed and reported 5 referenced model files with counts/bounds.
+  - `python tools\validate_assets.py` passed.
+  - `python tools\scene_report.py` passed.
+  - `python tools\validate_scene.py` passed.
+
+## v0.19 Final Validation - 2026-05-15
+
+Commands run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\doctor.ps1
+powershell -ExecutionPolicy Bypass -File scripts\configure.ps1
+powershell -ExecutionPolicy Bypass -File scripts\build.ps1
+ctest --preset windows-vs2022-debug --output-on-failure
+powershell -ExecutionPolicy Bypass -File scripts\verify.ps1
+cmake --preset windows-vs2022-debug-jolt
+cmake --build --preset windows-vs2022-debug-jolt
+ctest --preset windows-vs2022-debug-jolt --output-on-failure
+build\windows-vs2022-debug-jolt\Debug\EngineCoreTests.exe
+ctest --preset windows-vs2022-debug-jolt --output-on-failure
+python tools\scene_report.py
+python tools\validate_scene.py
+python tools\validate_assets.py
+python tools\scale_audit.py
+python tools\mesh_report.py
+python tools\status_report.py
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --ui-mode playtest --frames 360
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --ui-mode debug --frames 360
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 360
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --scene data\scenes\ferry_office.scene.json --ui-mode playtest --frames 360
+```
+
+Results:
+
+- `scripts\doctor.ps1`: passed. Expected warnings remain: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg` are not in plain PATH.
+- `scripts\configure.ps1`: passed with `windows-vs2022-debug`.
+- `scripts\build.ps1`: passed.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 3/3 tests.
+- `scripts\verify.ps1`: passed. It now runs scene validation, asset validation, mesh report, and null smoke. Null smoke reported engine `v0.19.0` and loaded all five scene-authored static mesh assets.
+- After tightening asset validation to also parse-check every scanned `.gltf`, `scripts\verify.ps1` was run again and passed with the same v0.19.0 null smoke result.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- First `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: failed once in `TestGameCodeDoesNotReferenceJoltVendorApi` with false-looking paths under `src\game\engine\physics`. Investigation found no such `src\game\engine` directory, direct `build\windows-vs2022-debug-jolt\Debug\EngineCoreTests.exe` passed with the same built binary, and a repeated `ctest --preset windows-vs2022-debug-jolt --output-on-failure` passed 3/3. Treat this as a non-reproduced transient validation anomaly, not hidden success.
+- Final `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 3/3 tests.
+- After the final asset validation tightening, `ctest --preset windows-vs2022-debug-jolt --output-on-failure` was run again and passed, 3/3 tests.
+- `python tools\scene_report.py`: passed; scene still reports 9 colliders, 21 visual placeholders, 5 mesh assets, 15 mesh instances, 6 interactables, 1 traversal affordance, 1 vehicle, 6 route markers, and 5 objective markers.
+- `python tools\validate_scene.py`: passed.
+- `python tools\validate_assets.py`: passed; 5 model files under `assets\models`.
+- `python tools\scale_audit.py`: passed; no suspicious scale issues found.
+- `python tools\mesh_report.py`: passed; all 5 `.gltf` files are referenced and reported with vertex/index counts, bounds, license/provenance, and usage.
+- `python tools\status_report.py`: passed.
+- `EngineApp.exe --renderer gdi --ui-mode playtest --frames 360`: passed; playtest overlay stayed concise and all five static mesh assets loaded.
+- `EngineApp.exe --renderer gdi --ui-mode debug --frames 360`: passed; full telemetry remained available.
+- `EngineApp.exe --renderer dx11 --frames 360`: passed; hardware DX11 device failed and WARP was used, then the bounded run completed cleanly.
+- `EngineApp.exe --renderer gdi --scene data\scenes\ferry_office.scene.json --ui-mode playtest --frames 360`: passed with explicit scene path.
+
+Visual evidence:
+
+- No screenshot was replaced in v0.19 because this goal intentionally changed asset workflow/tooling and documentation, not visual composition. Bounded GDI/DX11 runs confirmed the v0.18 scene still loads and renders current static mesh assets.
+
+Known remaining issues:
+
+- DX11 still falls back to WARP in this environment and still does not render text overlays.
+- The custom `.gltf` loader remains intentionally tiny. `.glb`, external buffers, textures/materials, normals/UVs in the renderer, animation, skeletal meshes, and mesh collision are still unsupported.
+- There is still no asset registry, resource cache, importer/cooker, editor, material system, or Blender export pipeline.
+- The one non-reproduced Jolt CTest anomaly should be watched if it appears again, but final reruns passed without code changes.
+
+Recommended next goal:
+
+Build v0.20 Blender-to-Tidebreak Static Prop Workflow Spike.

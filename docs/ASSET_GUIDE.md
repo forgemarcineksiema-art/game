@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-15
 
-This guide defines Tidebreak's early asset and scale conventions. v0.18 still does not add a full asset pipeline, but the project now has a tiny static `.gltf` prop path for original placeholder meshes.
+This guide defines Tidebreak's early asset and scale conventions. v0.19 still does not add a full asset pipeline, but the project now has a tiny static `.gltf` prop path for original placeholder meshes plus stronger asset workflow validation.
 
 ## Units And Axes
 
@@ -77,7 +77,8 @@ v0.12-v0.18 supports a tiny static `.gltf` subset through `src/engine/assets/Sta
 - Use meters, Y-up, +Z forward.
 - Keep placeholder meshes small, original, and clearly documented.
 - Add `license` and `provenance` for every scene `meshAssets` entry.
-- Run `python tools/mesh_report.py` after adding or moving mesh references.
+- Run `python tools/validate_assets.py` and `python tools/mesh_report.py` after adding or moving mesh references.
+- Every committed `.gltf` under `assets/models` should be referenced by scene data. Keep work-in-progress exports outside the repo until they are ready to be documented and validated.
 
 Still deferred:
 
@@ -88,18 +89,15 @@ Still deferred:
 - mesh collision import,
 - skeletal animation assets.
 
-Do not add a broad asset registry.
-- Do not add skeletal animation assets.
-- Do not add PBR/material complexity.
-- Keep scene JSON, mesh instances, and debug geometry as the active authoring bridge.
+Near-term decision: keep the custom tiny `.gltf` loader while the project stabilizes naming, scale, provenance, and validation. Switch to cgltf or tinygltf only when Blender-authored assets, GLB, external buffers, normals, UVs, or materials become necessary. See `docs/ASSET_PIPELINE_DECISION.md`.
 
 ## What Not To Add Yet
 
 - Final art.
-- Model loading.
 - Asset cooking.
 - Animation runtime.
 - Texture/material pipeline.
 - Procedural terrain.
 - Physics-authored mesh collision.
 - Marketplace or copied assets without clear license provenance.
+- Broad asset registry or resource cache.

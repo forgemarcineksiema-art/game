@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-15
 
-v0.12 adds the first narrow static mesh path. It is a render spike and authoring bridge, not a full asset pipeline.
+v0.12 adds the first narrow static mesh path. v0.19 stabilizes the surrounding asset workflow, but this remains a render spike and authoring bridge, not a full asset pipeline.
 
 ## What Exists
 
@@ -22,6 +22,7 @@ v0.12 adds the first narrow static mesh path. It is a render spike and authoring
 - `data/scenes/ferry_office.scene.json` now has `meshAssets` and `meshInstances`.
 - v0.12.1 uses that single unit-box asset for a small prop kit: Ferry Office roof/facade/sign, service gate, maintenance box, dock bollards, service-yard crate, and service-yard vehicle body/cabin.
 - v0.18 uses multiple scene-authored mesh asset ids for the first service-road prop style pass. `SandboxLayer` loads the authored mesh assets into a local `assetId -> StaticMeshAsset` map before drawing mesh instances.
+- v0.19 adds `tools/validate_assets.py` and expands `tools/mesh_report.py` so Codex can audit every committed `.gltf`, reference status, vertex/index counts, bounds, license/provenance, and unsupported file errors.
 
 ## Supported glTF Subset
 
@@ -47,6 +48,8 @@ It does not support:
 - animations,
 - cameras or lights,
 - mesh collision.
+
+`tools/validate_assets.py` deliberately fails on `.glb`, external buffers, unreferenced committed `.gltf` files, missing license/provenance, and invalid scene mesh references. This keeps the current custom loader honest until a later cgltf/tinygltf migration is justified.
 
 ## Scene Data Connection
 
@@ -81,10 +84,17 @@ The v0.12.1 and v0.18 mesh instances are still flat-tinted composition placehold
 
 ```powershell
 python tools/validate_scene.py
+python tools/validate_assets.py
 python tools/mesh_report.py
 python tools/scale_audit.py
 scripts/verify.ps1
 ```
+
+Every `.gltf` under `assets/models` should be referenced by scene data. Keep experimental files out of the repo or document them through a `meshAssets` entry with clear provenance.
+
+## Loader Decision
+
+See `docs/ASSET_PIPELINE_DECISION.md` for the v0.19 decision. Short version: keep the tiny custom loader for the next few prototype milestones, stabilize tools and provenance first, and move to cgltf or tinygltf when real Blender-authored assets, GLB, external buffers, normals, UVs, or materials become necessary.
 
 ## Deferred
 

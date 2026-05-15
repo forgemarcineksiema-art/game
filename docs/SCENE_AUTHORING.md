@@ -17,6 +17,7 @@ Required tools:
 ```powershell
 python tools/scene_report.py
 python tools/validate_scene.py
+python tools/validate_assets.py
 python tools/scale_audit.py
 python tools/mesh_report.py
 ```
@@ -150,7 +151,9 @@ Optional fields can link the instance to existing debug data:
 - `linkedColliderId`,
 - `colorKey`.
 
-v0.12-v0.18 supports only tiny original `.gltf` placeholder assets through the static mesh spike. The current Ferry Office prop set uses `unit_box.gltf` plus the v0.18 service-road prop kit: `service_road_sign.gltf`, `road_edge_post.gltf`, `service_barrier.gltf`, and `utility_box.gltf`. Do not add materials, textures, animation, mesh collision, or imported third-party art through this scene format yet.
+v0.12-v0.19 supports only tiny original `.gltf` placeholder assets through the static mesh spike. The current Ferry Office prop set uses `unit_box.gltf` plus the v0.18 service-road prop kit: `service_road_sign.gltf`, `road_edge_post.gltf`, `service_barrier.gltf`, and `utility_box.gltf`. Do not add `.glb`, external buffers, materials, textures, animation, mesh collision, or imported third-party art through this scene format yet.
+
+Asset workflow validation now expects every committed `.gltf` under `assets/models` to be referenced by scene data and documented with license/provenance. Use `python tools/validate_assets.py` before and after adding mesh files.
 
 ## Interactables
 
@@ -243,6 +246,7 @@ Remaining drift risks:
 ## Definition Of Done For Scene Edits
 
 - `python tools/validate_scene.py` passes.
+- `python tools/validate_assets.py` passes when mesh assets are involved.
 - `python tools/scene_report.py` summarizes the expected ids/counts.
 - `python tools/scale_audit.py` reports no surprising scale issues, or the issue is documented.
 - `python tools/mesh_report.py` reports expected mesh asset usage when mesh references are involved.

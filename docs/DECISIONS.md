@@ -485,3 +485,11 @@ Reason: The first Ferry Office Service Call already feels promising, but the sce
 Decision: Let `SandboxLayer` load the scene-authored mesh assets into a local `assetId -> StaticMeshAsset` map, while still avoiding an asset registry, resource cache, material system, editor, or renderer rewrite.
 
 Reason: v0.18 needs multiple authored prop meshes, and the previous effective single-asset `unit-box-mesh` path would make scene data misleading. A local map keeps the runtime honest and tested while staying inside the static-mesh spike boundary.
+
+## v0.19 Tiny Loader Stabilization Before Loader Swap
+
+Decision: Keep the current tiny custom `.gltf` loader for the next short prototype phase instead of switching immediately to cgltf, tinygltf, or Assimp.
+
+Reason: The active blocker is workflow discipline, not broad glTF coverage. Tidebreak currently needs original simple static props, scene references, license/provenance, bounds, and Codex-friendly validation more than it needs materials, textures, GLB, external buffers, or multi-format import. v0.19 therefore adds `tools/validate_assets.py`, expands `tools/mesh_report.py`, documents the decision in `docs/ASSET_PIPELINE_DECISION.md`, and makes asset validation part of `scripts/verify.ps1`.
+
+Dependency impact: no new third-party dependency was added. cgltf is the preferred next loader candidate when Blender-authored assets, GLB, external buffers, normals, UVs, or materials become necessary. tinygltf remains a credible backup; Assimp remains too broad for this stage.

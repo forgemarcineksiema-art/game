@@ -8,6 +8,8 @@ import json
 import pathlib
 from typing import Any, Iterable
 
+import asset_data
+
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DEFAULT_SCENE_PATH = ROOT / "data" / "scenes" / "ferry_office.scene.json"
@@ -280,6 +282,60 @@ def validate_scene(scene: dict[str, Any]) -> ValidationResult:
             result.errors.append(f"Required id missing: {required_id}")
 
     result.warnings.extend(scale_warnings(scene))
+    return result
+
+
+def validate_asset_workflow(
+    scene: dict[str, Any],
+    models_dir: pathlib.Path = asset_data.DEFAULT_MODELS_DIR,
+) -> ValidationResult:
+    result = ValidationResult()
+    models_dir = pathlib.Path(models_dir)
+    scene_paths = asset_data.scene_asset_paths(scene, models_dir)
+    scanned_paths: dict[str, pathlib.Path] = {}
+    scanned_metadata: dict[str, asset_data.GltfMetadata] = {}
+
+    for path in asset_data.model_files(models_dir):
+        relative_path = asset_data.display_path(path, models_dir)
+        scanned_paths[relative_path] = path
+        suffix = path.suffix.lower()
+        if suffix == ".glb":
+            result.errors.append(f"unsupported .glb model file: {relative_path}")
+            continue
+        if suffix == ".gltf" and relative_path not in scene_paths:
+            result.errors.append(f"unreferenced model asset file: {relative_path}")
+        metadata = asset_data.load_gltf_metadata(path)
+        scanned_metadata[relative_path] = metadata
+        for error in metadata.errors:
+            result.errors.append(f"model file {relative_path}: {error}")
+        for warning in metadata.warnings:
+            result.warnings.append(f"model file {relative_path}: {warning}")
+
+    for asset in _as_list(scene.get("meshAssets")):
+        item = _as_dict(asset)
+        asset_id = item.get("id", "<missing-id>")
+        label = f"meshAsset {asset_id}"
+        path_text = item.get("path")
+        if not isinstance(path_text, str) or not path_text:
+            result.errors.append(f"{label}.path must be a non-empty string.")
+            continue
+
+        for key in ["license", "provenance"]:
+            value = item.get(key)
+            if not isinstance(value, str) or not value.strip():
+                result.errors.append(f"{label}.{key} must describe asset ownership/source.")
+
+        resolved = asset_data.resolve_scene_asset_path(path_text, models_dir)
+        relative_path = asset_data.display_path(resolved, models_dir)
+        metadata = scanned_metadata.get(relative_path) or asset_data.load_gltf_metadata(resolved)
+        for error in metadata.errors:
+            result.errors.append(f"{label}.path {path_text}: {error}")
+        for warning in metadata.warnings:
+            result.warnings.append(f"{label}.path {path_text}: {warning}")
+
+        if resolved.suffix.lower() == ".gltf" and relative_path not in scanned_paths and resolved.exists():
+            result.warnings.append(f"{label}.path is outside the scanned models directory: {relative_path}")
+
     return result
 
 
