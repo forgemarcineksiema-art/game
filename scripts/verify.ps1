@@ -33,6 +33,11 @@ try {
         exit $LASTEXITCODE
     }
 
+    python tools\validate_scene.py
+    if ($LASTEXITCODE -ne 0) {
+        exit $LASTEXITCODE
+    }
+
     if (!$SkipSmokeRun) {
         $Candidates = @(
             "build\$Preset\Debug\EngineApp.exe",
@@ -56,4 +61,3 @@ try {
 
 Write-Host "Verification completed."
 exit 0
-

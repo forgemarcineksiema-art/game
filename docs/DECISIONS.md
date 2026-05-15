@@ -340,3 +340,27 @@ Reason: The Ferry Office micro-slice already depends on `E` for manifest, mainte
 Decision: Use `engine::physics` from `SandboxLayer` for a small service-yard validation/debug world, but keep Jolt private to `src/engine` and keep live vehicle movement deterministic for now.
 
 Reason: The goal is to exercise the engine-owned physics boundary without coupling game code to `JPH::*` or rewriting the prototype collision path. Tests now scan `src/game` for accidental Jolt references.
+
+## v0.11 Scene Data Before More Gameplay
+
+Decision: Add `data/scenes/ferry_office.scene.json` and scene tools before adding more gameplay systems.
+
+Reason: The prototype scene had too many hardcoded positions spread across `FerryOfficeData`, `PrototypeWorld`, `PrototypeScene`, and `SandboxLayer`. A human-readable scene mirror plus validation gives future Codex runs a stable way to inspect object ids, scale, routes, markers, and vehicle placement before runtime loading exists.
+
+## v0.11 Scene Data Mirror, Not Runtime Loader
+
+Decision: Keep the v0.11 scene data as a validated authoring snapshot instead of loading it at runtime.
+
+Reason: Runtime loading would touch gameplay setup, error handling, asset paths, and future serialization decisions. v0.11 is a production-foundation goal; preserving v0.10 gameplay is more important than rushing a partial loader. A later goal can either load the JSON directly or generate C++ data from it.
+
+## v0.11 Python Tools Without New Dependencies
+
+Decision: Build scene report, validation, and scale audit tools with Python standard library only.
+
+Reason: Future Codex runs need dependable commands on the current Windows setup. Adding a schema or CLI dependency would make the workbench more fragile before the data format proves itself.
+
+## v0.11 glTF Deferred To v0.12
+
+Decision: Document Blender/glTF direction but do not add model loading or an asset pipeline in v0.11.
+
+Reason: Scale, naming, scene data, and validation need to be stable before imported meshes enter the renderer. The next narrow goal can test static mesh/glTF rendering against this authoring foundation.

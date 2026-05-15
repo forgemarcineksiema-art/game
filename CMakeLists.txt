@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.24)
 
 project(GameEngineFoundation
-    VERSION 0.10.0
+    VERSION 0.11.0
     DESCRIPTION "AI-native C++ action/adventure engine foundation"
     LANGUAGES CXX
 )
@@ -9,6 +9,8 @@ project(GameEngineFoundation
 option(ENGINE_BUILD_TESTS "Build engine tests" ON)
 option(ENGINE_WARNINGS_AS_ERRORS "Treat warnings as errors" OFF)
 option(ENGINE_ENABLE_JOLT_PHYSICS "Enable the opt-in Jolt physics backend spike" OFF)
+
+find_package(Python3 COMPONENTS Interpreter REQUIRED)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -158,4 +160,9 @@ if(ENGINE_BUILD_TESTS)
 
     add_test(NAME EngineCoreTests COMMAND EngineCoreTests)
     add_test(NAME EngineSmokeTest COMMAND EngineApp --smoke-test --frames 3)
+    add_test(
+        NAME SceneToolTests
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_scene_tools.py
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    )
 endif()

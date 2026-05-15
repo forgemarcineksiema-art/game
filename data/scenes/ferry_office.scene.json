@@ -1,0 +1,336 @@
+{
+  "schemaVersion": 1,
+  "id": "ferry-office",
+  "name": "The Ferry Office",
+  "description": "Authoring snapshot for the current Ferry Office and service-yard prototype scene. Runtime still uses the existing C++ setup in v0.11.",
+  "units": {
+    "linear": "meter",
+    "upAxis": "Y",
+    "rightAxis": "X",
+    "forwardAxis": "Z",
+    "coordinateNotes": "Positions use engine Vec3 order [x, y, z]. Player forward at yaw 0 points along +Z."
+  },
+  "floorHeight": 0.0,
+  "playerStart": {
+    "id": "player-start-dock",
+    "position": [0.0, 0.0, 0.0],
+    "yawDegrees": 0.0
+  },
+  "scaleReference": {
+    "playerHeight": 1.8,
+    "playerRadius": 0.35,
+    "serviceVehicleLength": 1.84,
+    "serviceVehicleWidth": 1.16,
+    "serviceVehicleHeight": 1.06,
+    "doorWidthMin": 1.1,
+    "vehicleLaneWidthMin": 3.0
+  },
+  "colliders": [
+    {
+      "id": "ferry-office-back-wall",
+      "kind": "box",
+      "center": [0.0, 0.75, 5.4],
+      "halfExtents": [2.8, 0.75, 0.25],
+      "blocksPlayer": true
+    },
+    {
+      "id": "ferry-office-left-wall",
+      "kind": "box",
+      "center": [-2.8, 0.75, 3.75],
+      "halfExtents": [0.25, 0.75, 1.9],
+      "blocksPlayer": true
+    },
+    {
+      "id": "ferry-office-right-wall",
+      "kind": "box",
+      "center": [2.8, 0.75, 3.75],
+      "halfExtents": [0.25, 0.75, 1.9],
+      "blocksPlayer": true
+    },
+    {
+      "id": "service-gate",
+      "kind": "box",
+      "center": [0.0, 0.75, 2.35],
+      "halfExtents": [2.45, 0.75, 0.16],
+      "blocksPlayer": true,
+      "stateFlag": "routeOpened",
+      "blocksWhenFlagFalse": true
+    },
+    {
+      "id": "service-barrier",
+      "kind": "box",
+      "center": [2.8, 0.25, 0.55],
+      "halfExtents": [1.0, 0.25, 0.45],
+      "blocksPlayer": true
+    },
+    {
+      "id": "dock-rail-left",
+      "kind": "box",
+      "center": [-4.2, 0.45, -0.5],
+      "halfExtents": [0.2, 0.45, 3.0],
+      "blocksPlayer": true
+    },
+    {
+      "id": "dock-rail-right",
+      "kind": "box",
+      "center": [4.2, 0.45, -0.5],
+      "halfExtents": [0.2, 0.45, 3.0],
+      "blocksPlayer": true
+    },
+    {
+      "id": "office-counter",
+      "kind": "box",
+      "center": [-1.35, 0.45, 1.45],
+      "halfExtents": [0.7, 0.45, 0.3],
+      "blocksPlayer": true
+    },
+    {
+      "id": "maintenance-crate",
+      "kind": "box",
+      "center": [3.6, 0.45, 0.55],
+      "halfExtents": [0.45, 0.45, 0.45],
+      "blocksPlayer": true
+    }
+  ],
+  "visualPlaceholders": [
+    {
+      "id": "dock-main-slab",
+      "role": "dock-floor",
+      "center": [0.0, -0.055, -1.25],
+      "halfExtents": [4.35, 0.055, 2.05],
+      "colorKey": "dock-weathered-wood"
+    },
+    {
+      "id": "ferry-office-floor-slab",
+      "role": "office-floor",
+      "center": [0.0, -0.06, 3.25],
+      "halfExtents": [3.15, 0.06, 2.35],
+      "colorKey": "office-muted-concrete"
+    },
+    {
+      "id": "maintenance-side-pad",
+      "role": "service-pad",
+      "center": [2.85, -0.05, 1.35],
+      "halfExtents": [1.45, 0.05, 2.15],
+      "colorKey": "damp-service-concrete"
+    },
+    {
+      "id": "water-left-band",
+      "role": "water-edge",
+      "center": [-4.85, -0.07, -0.7],
+      "halfExtents": [0.35, 0.07, 3.25],
+      "colorKey": "deep-harbor-blue"
+    },
+    {
+      "id": "water-right-band",
+      "role": "water-edge",
+      "center": [4.85, -0.07, -0.7],
+      "halfExtents": [0.35, 0.07, 3.25],
+      "colorKey": "deep-harbor-blue"
+    },
+    {
+      "id": "ferry-office-roof-cap",
+      "role": "office-silhouette",
+      "center": [0.0, 1.68, 5.18],
+      "halfExtents": [2.95, 0.12, 0.55],
+      "colorKey": "rusted-roof-trim"
+    },
+    {
+      "id": "dock-post-left",
+      "role": "dock-post",
+      "center": [-0.55, 0.32, -1.35],
+      "halfExtents": [0.07, 0.32, 0.07],
+      "colorKey": "wet-timber"
+    },
+    {
+      "id": "dock-post-right",
+      "role": "dock-post",
+      "center": [0.55, 0.32, -1.35],
+      "halfExtents": [0.07, 0.32, 0.07],
+      "colorKey": "wet-timber"
+    },
+    {
+      "id": "maintenance-box-visual-post",
+      "role": "maintenance-marker-support",
+      "center": [2.85, 0.65, 1.85],
+      "halfExtents": [0.1, 0.65, 0.1],
+      "colorKey": "oxidized-service-green"
+    },
+    {
+      "id": "service-yard-driving-pad",
+      "role": "vehicle-test-pad",
+      "center": [6.25, -0.045, -2.1],
+      "halfExtents": [2.85, 0.045, 2.65],
+      "colorKey": "dark-service-asphalt"
+    },
+    {
+      "id": "service-yard-west-rail",
+      "role": "vehicle-yard-bound",
+      "center": [3.45, 0.35, -2.1],
+      "halfExtents": [0.12, 0.35, 2.55],
+      "colorKey": "weathered-yard-rail"
+    },
+    {
+      "id": "service-yard-east-rail",
+      "role": "vehicle-yard-bound",
+      "center": [9.05, 0.35, -2.1],
+      "halfExtents": [0.12, 0.35, 2.55],
+      "colorKey": "weathered-yard-rail"
+    },
+    {
+      "id": "service-yard-back-stop",
+      "role": "vehicle-yard-bound",
+      "center": [6.25, 0.18, -4.7],
+      "halfExtents": [2.25, 0.18, 0.12],
+      "colorKey": "weathered-yard-rail"
+    },
+    {
+      "id": "service-yard-crate",
+      "role": "service-yard-prop",
+      "center": [8.15, 0.45, 0.45],
+      "halfExtents": [0.55, 0.45, 0.45],
+      "colorKey": "mossy-service-crate"
+    }
+  ],
+  "interactables": [
+    {
+      "id": "ferry-manifest",
+      "name": "Ferry Manifest",
+      "prompt": "Collect Ferry Manifest",
+      "type": "pickup",
+      "position": [0.0, 0.45, 1.35],
+      "radius": 1.8,
+      "oneShot": true,
+      "message": "Collected Ferry Manifest.",
+      "worldFlagsSet": ["manifestCollected"]
+    },
+    {
+      "id": "wall-button",
+      "name": "Wall Button",
+      "prompt": "Open Service Gate",
+      "type": "info",
+      "position": [-0.9, 0.7, 2.15],
+      "radius": 1.7,
+      "oneShot": false,
+      "message": "Service gate opened.",
+      "worldFlagsSet": ["routeOpened"]
+    },
+    {
+      "id": "ferry-office-notice",
+      "name": "Ferry Office Notice",
+      "prompt": "Read Ferry Office Notice",
+      "type": "info",
+      "position": [-1.8, 0.55, 3.2],
+      "radius": 1.7,
+      "oneShot": false,
+      "message": "Notice: restore local power before opening the service route."
+    },
+    {
+      "id": "maintenance-box",
+      "name": "Maintenance Box",
+      "prompt": "Inspect Maintenance Box",
+      "type": "info",
+      "position": [2.8, 0.65, 1.9],
+      "radius": 1.4,
+      "oneShot": false,
+      "message": "Maintenance box inspected: local power restored.",
+      "worldFlagsSet": ["maintenanceBoxInspected", "powerRestored"]
+    },
+    {
+      "id": "exit-summary-marker",
+      "name": "Exit Summary Marker",
+      "prompt": "Review Ferry Office Summary",
+      "type": "info",
+      "position": [0.0, 0.55, 4.55],
+      "radius": 1.8,
+      "oneShot": false,
+      "message": "Ferry Office summary marker reached.",
+      "worldFlagsSetWhenReady": ["exitReached"]
+    }
+  ],
+  "traversalAffordances": [
+    {
+      "id": "service-barrier-vault",
+      "name": "Service Barrier Vault",
+      "prompt": "Press Space: Vault Service Barrier",
+      "type": "vault",
+      "startPosition": [2.8, 0.0, -0.35],
+      "endPosition": [2.8, 0.0, 1.45],
+      "focusRadius": 1.25,
+      "requiredFacingDirection": [0.0, 0.0, 1.0],
+      "requiredFacingDot": 0.15,
+      "durationSeconds": 0.55,
+      "worldFlagsSetOnComplete": ["serviceRouteUsed"]
+    }
+  ],
+  "vehicles": [
+    {
+      "id": "service-yard-vehicle",
+      "name": "Service Yard Vehicle",
+      "spawn": {
+        "position": [6.2, 0.0, -2.2],
+        "yawDegrees": 88.0
+      },
+      "proxyHalfExtents": [0.58, 0.53, 0.92],
+      "enterRadius": 1.8,
+      "bounds": {
+        "min": [3.55, -4.55],
+        "max": [8.95, 0.35]
+      },
+      "controls": {
+        "enterExit": "E",
+        "accelerate": "W",
+        "brakeReverse": "S",
+        "steer": "A/D"
+      }
+    }
+  ],
+  "routeMarkers": [
+    {
+      "id": "route-manifest-to-vault",
+      "from": "ferry-manifest",
+      "to": "service-barrier-vault",
+      "points": [[0.0, 0.08, 1.35], [2.8, 0.08, -0.35]]
+    },
+    {
+      "id": "route-vault-to-maintenance",
+      "from": "service-barrier-vault",
+      "to": "maintenance-box",
+      "points": [[2.8, 0.08, 1.45], [2.8, 0.08, 1.9]]
+    },
+    {
+      "id": "route-maintenance-to-button",
+      "from": "maintenance-box",
+      "to": "wall-button",
+      "points": [[2.8, 0.08, 1.9], [-0.9, 0.08, 2.15]]
+    },
+    {
+      "id": "route-button-to-exit",
+      "from": "wall-button",
+      "to": "exit-summary-marker",
+      "points": [[-0.9, 0.08, 2.15], [0.0, 0.08, 4.55]]
+    }
+  ],
+  "objectiveMarkers": [
+    {
+      "id": "dock-start-marker",
+      "label": "Dock-side start",
+      "position": [0.0, 0.08, -1.0]
+    },
+    {
+      "id": "office-marker",
+      "label": "Ferry office volume",
+      "position": [0.0, 1.05, 3.75]
+    },
+    {
+      "id": "service-yard-marker",
+      "label": "Service-yard vehicle test pad",
+      "position": [6.25, 0.08, -2.1]
+    }
+  ],
+  "authoringNotes": [
+    "Runtime behavior is still driven by C++ in v0.11; this file is the source-of-truth candidate and tool contract.",
+    "When moving a Ferry Office object in C++, update this data file in the same change until runtime loading exists.",
+    "Keep ids stable and lowercase-kebab-case so Codex tools can compare scene data against code/docs."
+  ]
+}

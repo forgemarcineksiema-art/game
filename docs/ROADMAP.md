@@ -152,6 +152,15 @@ Status: implemented as an architecture/dependency spike. Jolt is the primary pro
 
 Status: implemented as a first vehicle feel spike. The service-yard vehicle can be entered with `E` when no Ferry Office interactable is focused, driven with `W/S/A/D`, exited with `E` when the side exit marker is clear, and viewed through a vehicle camera mode. Jolt VehicleConstraint, wheels, suspension, traffic, cargo, and vehicle persistence are intentionally deferred.
 
+## v0.11 - Scene / Object Authoring Foundation + Codex World Tools
+
+- Add a human-readable Ferry Office/service-yard scene data file.
+- Add Codex-friendly scene report, validation, and scale-audit tools.
+- Document units, scale, pivots, naming, Blender/glTF direction, scene authoring workflow, and art/mood direction.
+- Keep runtime behavior unchanged and avoid a full editor, ECS, asset pipeline, model loading, animation runtime, or gameplay system.
+
+Status: implemented as a tooling/data foundation. The runtime still uses the existing C++ prototype setup, but `data/scenes/ferry_office.scene.json` now mirrors the scene and is validated by Python tools and CTest/verify.
+
 ## Recommended Next Goal
 
-Build v0.10.1 Vehicle Feel Tuning + Service Yard Road Test Polish.
+Build v0.12 Static Mesh + glTF Render Spike.

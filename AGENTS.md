@@ -32,6 +32,12 @@ Before physics, vehicles, player collision rewrites, or world-query work, also r
 
 - `docs/PHYSICS_DECISION.md`
 
+Before scene layout, map, object placement, asset, model, scale, or art-direction work, also read:
+
+- `docs/SCENE_AUTHORING.md`
+- `docs/ASSET_GUIDE.md`
+- `docs/ART_DIRECTION.md`
+
 ## Run Commands
 
 ```powershell
@@ -45,6 +51,14 @@ Direct executable form after a Visual Studio Debug build:
 build/windows-vs2022-debug/Debug/EngineApp.exe --smoke-test --frames 3
 ```
 
+Scene authoring tools:
+
+```powershell
+python tools/scene_report.py
+python tools/validate_scene.py
+python tools/scale_audit.py
+```
+
 ## Architecture Rules
 
 - Keep engine code under `src/engine`.
@@ -52,6 +66,7 @@ build/windows-vs2022-debug/Debug/EngineApp.exe --smoke-test --frames 3
 - Keep tests under `tests`.
 - Keep tooling under `scripts` and `tools`.
 - Keep original assets under `assets`.
+- Keep authored scene data under `data/scenes`.
 - Keep renderer code behind `IRenderer` and platform code behind `IWindow`.
 - Prefer small modules with explicit ownership over broad utility files.
 - Do not add advanced gameplay systems before the engine boot, validation, and renderer path are stable.

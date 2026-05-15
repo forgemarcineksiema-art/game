@@ -25,6 +25,20 @@ For physics, vehicles, player collision, or world-query work, also read:
 
 - `docs/PHYSICS_DECISION.md`
 
+For scene layout, object placement, scale, asset, model, or art-direction work, also read:
+
+- `docs/SCENE_AUTHORING.md`
+- `docs/ASSET_GUIDE.md`
+- `docs/ART_DIRECTION.md`
+
+For scene work, run:
+
+```powershell
+python tools/scene_report.py
+python tools/validate_scene.py
+python tools/scale_audit.py
+```
+
 ## 2. Pick One Safe Milestone
 
 Choose one narrow roadmap step. Do not mix milestones unless the user explicitly asks. Prefer finishing build stability before adding gameplay.

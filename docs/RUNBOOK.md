@@ -118,6 +118,36 @@ Jolt backend test:
 ctest --preset windows-vs2022-debug-jolt --output-on-failure
 ```
 
+## Scene Tools
+
+Scene summary for Codex/world-authoring work:
+
+```powershell
+python tools/scene_report.py
+```
+
+Scene validation:
+
+```powershell
+python tools/validate_scene.py
+```
+
+Scale sanity audit:
+
+```powershell
+python tools/scale_audit.py
+```
+
+Use an explicit scene path when experimenting with a copy:
+
+```powershell
+python tools/validate_scene.py data/scenes/ferry_office.scene.json
+python tools/scene_report.py data/scenes/ferry_office.scene.json
+python tools/scale_audit.py data/scenes/ferry_office.scene.json
+```
+
+`scripts/verify.ps1` runs `python tools/validate_scene.py` after CTest. Scene validation is now part of the normal dependency-free path.
+
 ## Verify
 
 ```powershell
@@ -165,6 +195,7 @@ build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi
 - If all windowed rendering fails, keep `--renderer null --headless` working while the renderer issue is fixed.
 - If captured mouse-look feels risky in a VM or remote session, run with `--free-cursor` and use arrow keys for camera orbit.
 - If the Jolt preset fails while normal validation passes, keep using the default preset and inspect `docs/PHYSICS_DECISION.md`. The Jolt path is opt-in until the physics backend is promoted by a later goal.
+- If scene validation fails, inspect `data/scenes/ferry_office.scene.json` and run `python tools/scene_report.py` to see the current object counts and required ids.
 - v0.3+ collision is debug-only static AABB collision. If a collider layout feels odd, inspect `src/game/PrototypeWorld.cpp` and rerun `scripts/verify.ps1` after edits.
 - v0.4 interaction focus is debug-only point/radius selection with a facing preference. If an object does not focus, move closer and face the marker, then press `E`.
 - v0.5 traversal uses `Space` only when a traversal affordance is focused. If traversal does not trigger, move near the traversal start marker and face the path direction. If no traversal is focused, `Space` remains normal jump.

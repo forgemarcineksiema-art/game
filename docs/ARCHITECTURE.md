@@ -59,6 +59,25 @@ The Win32 layer maps `W/A/S/D`, `Shift`, `Space`, `E`, `Esc`, mouse/touchpad mov
 
 `src/engine/core/FileSystem.*` contains small path helpers. Asset paths default to `assets`.
 
+## Scene Data
+
+v0.11 adds the first explicit scene/object authoring data:
+
+```text
+data/scenes/ferry_office.scene.json
+```
+
+This file mirrors the current Ferry Office and service-yard prototype: units, floor height, player start, scale references, static colliders, visual placeholders, interactables, traversal affordance, vehicle spawn/bounds, route markers, and objective markers.
+
+Runtime loading is intentionally deferred. The active game still uses `PrototypeWorld`, `PrototypeScene`, `FerryOfficeData`, and `SandboxLayer` C++ setup. Until a loader or generator exists, changes to authored layout must keep the JSON and matching C++ constants synchronized.
+
+Scene tools live under `tools`:
+
+- `scene_data.py`: shared loader/validation helpers.
+- `validate_scene.py`: hard validation for required ids, numeric vectors, uniqueness, radii/extents, traversal data, vehicle bounds, and scale sanity.
+- `scene_report.py`: compact Codex-readable scene summary.
+- `scale_audit.py`: suspicious-scale report for object sizes and vehicle dimensions.
+
 ## Physics
 
 `src/engine/physics/PhysicsWorld.*` defines the first engine-owned physics boundary. It exposes vendor-free types:
@@ -116,6 +135,8 @@ v0.2 adds debug primitive drawing to the renderer interface: debug camera, lines
 `src/game/PrototypeScene.*` also owns the first v0.5 traversal affordance: a service-barrier vault path used as access-gating groundwork for The Ferry Office.
 
 `src/game/FerryOfficeData.*` centralizes the Ferry Office prototype's stable debug names, prompts, messages, important marker positions, radii, and traversal tuning constants. It is not a content pipeline; it is a small data cleanup so scene setup, state mapping, debug rendering, and tests do not repeat string ids and coordinates.
+
+`data/scenes/ferry_office.scene.json` is now the Codex-facing scene mirror for those positions and ids. It should become the source of truth in a later goal, but v0.11 deliberately keeps it as a validated authoring snapshot so gameplay behavior stays unchanged.
 
 `src/game/PrototypeScene.*` maps prototype gameplay results to remembered state: Ferry Manifest sets `manifestCollected`, Wall Button sets `routeOpened=true`, Maintenance Box sets `maintenanceBoxInspected` and `powerRestored`, Service Barrier Vault completion sets `serviceRouteUsed`, and the Exit Summary Marker can set `exitReached` only after the required loop is ready. This mapping stays in the scene layer so `InteractionSystem` and `TraversalSystem` remain generic.
 
@@ -182,6 +203,8 @@ v0.10 adds a service-yard driving pad, a placeholder vehicle body/cabin, vehicle
 
 This is not an asset pipeline. There are still no textures, mesh loading, materials, lighting, shadows, post-processing, or scene serialization. Solid debug geometry should stay simple and disposable until a later art/asset milestone proves what the engine actually needs.
 
+`docs/ASSET_GUIDE.md`, `docs/SCENE_AUTHORING.md`, and `docs/ART_DIRECTION.md` define the first scale, naming, Blender/glTF direction, scene editing workflow, and coastal-industrial mood target. These guide future asset/model work but do not add runtime model loading yet.
+
 ## Interaction Focus Design Notes
 
 Current v0.4.1 behavior uses player-facing plus a close proximity fallback:
@@ -209,3 +232,6 @@ v0.8 renamed the stale `TestWorld` / `TestScene` boundaries to `PrototypeWorld` 
 - `scripts/verify.ps1`: doctor, configure, build, tests, smoke run.
 - `scripts/run.ps1`: run the app.
 - `tools/status_report.py`: compact status report for AI agents.
+- `tools/scene_report.py`: scene object/count/route/vehicle summary.
+- `tools/validate_scene.py`: scene data validation gate.
+- `tools/scale_audit.py`: scene scale sanity report.

@@ -62,11 +62,19 @@ foreach ($Path in @(
     "docs\TECH_DEBT.md",
     "docs\MANUAL_TEST_CHECKLIST.md",
     "docs\PHYSICS_DECISION.md",
+    "docs\ASSET_GUIDE.md",
+    "docs\SCENE_AUTHORING.md",
+    "docs\ART_DIRECTION.md",
+    "data\scenes\ferry_office.scene.json",
     "src\engine",
     "src\game",
     "tests",
     "assets",
-    "tools\status_report.py"
+    "tools\status_report.py",
+    "tools\scene_data.py",
+    "tools\scene_report.py",
+    "tools\validate_scene.py",
+    "tools\scale_audit.py"
 )) {
     Test-PathRequired $Path
 }

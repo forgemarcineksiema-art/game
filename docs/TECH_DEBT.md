@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-15
 
-This file lists known foundation issues after v0.10. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
+This file lists known foundation issues after v0.11. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
 
 ## Build / Toolchain
 
@@ -96,21 +96,31 @@ This file lists known foundation issues after v0.10. It is not a mandate to fix 
 - `InteractionSystem` belongs in `src/game` for now. Promote it to `src/engine` only after multiple gameplay contexts prove a stable boundary.
 - There is no scene serialization, asset registry, or editor.
 
+## Scene / Authoring Data
+
+- `data/scenes/ferry_office.scene.json` is a validated authoring mirror, not a runtime-loaded source of truth yet.
+- Scene facts are still duplicated between JSON and C++ in `FerryOfficeData`, `PrototypeWorld`, `PrototypeScene`, and `SandboxLayer`.
+- There is no generated C++ data path from scene JSON.
+- There is no schema file beyond the Python validator.
+- Scene tools validate ids, vectors, radii, extents, vehicle bounds, and scale sanity, but they do not compare every JSON value against C++ constants yet.
+- There is no editor, gizmo, visual placement tool, asset registry, prefab system, or scene diff tool.
+
 ## Visual Readability
 
 - v0.9 improves the Ferry Office read with solid placeholder color, but it is still a debug scene. It is not final art and should not be mistaken for the target commercial visual quality.
 - v0.9.1 adds a route polyline, stronger marker hierarchy, and clearer objective wording, but the space still needs a real human playthrough on the target laptop.
+- v0.11 documents art direction and placeholder color keys, but it still does not add final art, lighting, textures, materials, or model loading.
 - GDI debug text is now ordered around objective/focus first, but it remains functional debug text rather than a polished UI.
 - DX11 has no debug text overlay, so visual playtesting still favors GDI until a real overlay or text path exists.
 - There is no authored composition pass for camera start angle, signposting, silhouettes, or route readability beyond simple colored volumes.
 
-## Recommended Debt After v0.10
+## Recommended Debt After v0.11
 
 1. Run a full human keyboard/mouse playthrough of the Ferry Office loop and service-yard vehicle on the target laptop.
-2. Tune vehicle acceleration, braking, reverse speed, steering rate, and camera distance before adding more vehicle features.
-3. Validate captured cursor feel on the target laptop/touchpad and use `--free-cursor` if a remote session behaves badly.
-4. Decide whether the first Jolt gameplay promotion should be vehicle-only, world queries-only, or player collision-only after the v0.10.1 tuning pass.
-5. Keep `WorldState` runtime-only unless a later goal explicitly asks for persistence.
-6. Keep debug text readable before adding any richer objective or UI layer.
-7. Avoid adding a mission scripting system before the micro-slice proves its minimal state flow.
-8. Consider a small scene-data loading format only after one more hand-authored slice exposes repeated authoring pain.
+2. Keep scene JSON and C++ layout synchronized until runtime loading or generation exists.
+3. In v0.12, add static mesh/glTF rendering narrowly without replacing the scene data contract.
+4. Tune vehicle acceleration, braking, reverse speed, steering rate, and camera distance before adding more vehicle features.
+5. Validate captured cursor feel on the target laptop/touchpad and use `--free-cursor` if a remote session behaves badly.
+6. Decide whether the first Jolt gameplay promotion should be vehicle-only, world queries-only, or player collision-only after vehicle tuning.
+7. Keep `WorldState` runtime-only unless a later goal explicitly asks for persistence.
+8. Avoid adding a mission scripting system before the micro-slice proves its minimal state flow.

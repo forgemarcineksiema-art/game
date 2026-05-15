@@ -52,10 +52,18 @@ def main() -> int:
         "docs/TECH_DEBT.md",
         "docs/MANUAL_TEST_CHECKLIST.md",
         "docs/PHYSICS_DECISION.md",
+        "docs/ASSET_GUIDE.md",
+        "docs/SCENE_AUTHORING.md",
+        "docs/ART_DIRECTION.md",
+        "data/scenes/ferry_office.scene.json",
         "scripts/doctor.ps1",
         "scripts/configure.ps1",
         "scripts/build.ps1",
         "scripts/verify.ps1",
+        "tools/scene_data.py",
+        "tools/scene_report.py",
+        "tools/validate_scene.py",
+        "tools/scale_audit.py",
     ]:
         print(f"  {path}: {exists(path)}")
 

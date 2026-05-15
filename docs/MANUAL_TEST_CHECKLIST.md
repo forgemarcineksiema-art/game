@@ -39,6 +39,14 @@ cmake --build --preset windows-vs2022-debug-jolt
 ctest --preset windows-vs2022-debug-jolt --output-on-failure
 ```
 
+Optional scene authoring checks:
+
+```powershell
+python tools/scene_report.py
+python tools/validate_scene.py
+python tools/scale_audit.py
+```
+
 ## Player
 
 - [ ] `W/A/S/D` moves the player camera-relative.
@@ -75,6 +83,15 @@ ctest --preset windows-vs2022-debug-jolt --output-on-failure
 - [ ] Jolt tests pass through the engine-owned `IPhysicsWorld` API.
 - [ ] `src/game` has no direct `JPH::*` or Jolt header usage.
 - [ ] Ferry Office player/camera/collision behavior still feels unchanged after physics foundation work.
+
+## Scene Authoring Tools
+
+- [ ] `python tools/validate_scene.py` reports `Scene validation passed.`
+- [ ] `python tools/scene_report.py` reports scene id `ferry-office`.
+- [ ] Scene report lists 9 colliders, 5 interactables, 1 traversal affordance, and 1 vehicle.
+- [ ] `python tools/scale_audit.py` reports no suspicious scale issues, or any issue is documented.
+- [ ] `data/scenes/ferry_office.scene.json` contains the service gate, manifest, maintenance box, wall button, exit marker, service vault, player start, and service-yard vehicle ids.
+- [ ] Any manual movement of scene objects is reflected in both C++ runtime data and scene JSON until runtime loading exists.
 
 ## Vehicle Spike
 

@@ -2035,3 +2035,171 @@ Known limitations after v0.10:
 Recommended next goal:
 
 Run v0.10.1 Vehicle Feel Tuning + Service Yard Road Test Polish.
+
+## v0.11 Baseline - 2026-05-15
+
+Goal: create a scene/object authoring foundation and Codex-friendly world tools before adding more gameplay. This goal must preserve the v0.10 Ferry Office and service-yard vehicle behavior while adding explicit scene data, validation/report tooling, scale conventions, scene authoring docs, and art direction notes. It must not add NPC AI, traffic, combat, missions, inventory, save/load, online/multiplayer, a full asset pipeline, model loading, animation runtime, new traversal types, Jolt vehicle constraints, final art, or a renderer overhaul.
+
+Required context read before coding:
+
+- `AGENTS.md`
+- `docs/STATUS.md`
+- `docs/ARCHITECTURE.md`
+- `docs/ROADMAP.md`
+- `docs/GAME_DIRECTION.md`
+- `docs/VERTICAL_SLICE.md`
+- `docs/TECH_DEBT.md`
+- `docs/MANUAL_TEST_CHECKLIST.md`
+- `docs/DECISIONS.md`
+- `docs/PHYSICS_DECISION.md`
+
+Baseline commands:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+cmake --preset windows-vs2022-debug-jolt
+cmake --build --preset windows-vs2022-debug-jolt
+ctest --preset windows-vs2022-debug-jolt --output-on-failure
+```
+
+Baseline results:
+
+- `scripts/verify.ps1`: passed.
+- Doctor found all expected v0.10 docs and structure. Existing warnings remain for tools not visible in the plain PATH: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- Default configure/build/test path passed with preset `windows-vs2022-debug`.
+- Default CTest passed 2/2 tests.
+- Null smoke run passed and reported engine `v0.10.0`, app `Tidebreak Prototype`, initial Ferry Manifest focus, service-yard vehicle state `empty`, `cameraMode=on-foot`, and `physics=simple`.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed; built `Jolt.lib`, `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 2/2 tests green.
+
+## v0.11 Short Implementation Plan
+
+1. Add a human-readable `data/scenes/ferry_office.scene.json` that mirrors the current Ferry Office and service-yard prototype: units, floor height, colliders, visual placeholders, interactables, traversal affordance, player start, vehicle spawn/bounds, and route/objective markers.
+2. Add Python scene tooling with no new dependencies:
+   - `tools/scene_data.py` shared loader/validation helpers,
+   - `tools/scene_report.py` for concise Codex-readable scene summaries,
+   - `tools/validate_scene.py` for required-id, numeric, uniqueness, radius, extent, and scale checks,
+   - `tools/scale_audit.py` for suspicious-size reporting.
+3. Add lightweight Python tests for the scene tools and wire them into CTest and `scripts/verify.ps1` if the dependency-free path stays reliable.
+4. Update `scripts/doctor.ps1` and `tools/status_report.py` so future runs see the scene docs/data/tools as first-class project artifacts.
+5. Create `docs/ASSET_GUIDE.md`, `docs/SCENE_AUTHORING.md`, and `docs/ART_DIRECTION.md`.
+6. Update architecture, decisions, roadmap, runbook, manual checklist, technical debt, and this status file.
+7. Run the full validation matrix, then commit and push if validation passes.
+
+## v0.11 Implementation Notes - 2026-05-15
+
+Changed:
+
+- Updated project version to `0.11.0`.
+- Added `data/scenes/ferry_office.scene.json`.
+- Added `tools/scene_data.py`.
+- Added `tools/scene_report.py`.
+- Added `tools/validate_scene.py`.
+- Added `tools/scale_audit.py`.
+- Added `tests/test_scene_tools.py`.
+- Added CTest coverage for the Python scene tool tests.
+- Updated `scripts/verify.ps1` so the default validation path runs `python tools\validate_scene.py` after CTest.
+- Updated `scripts/doctor.ps1` and `tools/status_report.py` to treat the new scene data/docs/tools as first-class artifacts.
+- Added `docs/ASSET_GUIDE.md`.
+- Added `docs/SCENE_AUTHORING.md`.
+- Added `docs/ART_DIRECTION.md`.
+- Updated `AGENTS.md`, architecture, runbook, roadmap, decisions, technical debt, and manual test checklist.
+
+Scene data contents:
+
+- Scene id/name and meter/Y-up/+Z-forward unit convention.
+- Floor height and player start.
+- Scale references for player, vehicle, doors, and lane widths.
+- 9 static Ferry Office colliders.
+- 14 visual placeholder boxes for dock, office, maintenance side, service yard, rails, water bands, and props.
+- 5 interactables: Ferry Manifest, Wall Button, Ferry Office Notice, Maintenance Box, Exit Summary Marker.
+- 1 traversal affordance: Service Barrier Vault.
+- 1 vehicle spawn with service-yard bounds and controls.
+- Route and objective markers for the Ferry Office loop.
+
+Test-first note:
+
+```powershell
+python tests\test_scene_tools.py
+```
+
+Result before implementation: failed as expected because `tools/scene_data.py` did not exist.
+
+Key error:
+
+```text
+ModuleNotFoundError: No module named 'scene_data'
+```
+
+Focused checks after implementation:
+
+```powershell
+python tests\test_scene_tools.py
+python tools\validate_scene.py
+python tools\scene_report.py
+python tools\scale_audit.py
+```
+
+Results:
+
+- `tests\test_scene_tools.py`: passed, 5/5 tests.
+- `tools\validate_scene.py`: passed.
+- `tools\scene_report.py`: completed; reported `ferry-office`, 9 colliders, 14 visual placeholders, 5 interactables, 1 traversal affordance, 1 vehicle, 4 routes, and 3 objective markers.
+- `tools\scale_audit.py`: completed; no suspicious scale issues found.
+
+Known limitations after implementation:
+
+- Runtime gameplay still uses the existing C++ setup. Scene JSON is a validated authoring mirror, not runtime-loaded data.
+- Layout facts are intentionally duplicated between JSON and C++ until a later loader or generator exists.
+- Scene validation does not yet compare every JSON value against C++ constants.
+- There is no editor, gizmo, asset registry, prefab system, model loading, animation runtime, or final art.
+
+## v0.11 Final Validation - 2026-05-15
+
+Commands run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/doctor.ps1
+powershell -ExecutionPolicy Bypass -File scripts/configure.ps1
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+ctest --preset windows-vs2022-debug --output-on-failure
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+cmake --preset windows-vs2022-debug-jolt
+cmake --build --preset windows-vs2022-debug-jolt
+ctest --preset windows-vs2022-debug-jolt --output-on-failure
+python tools\scene_report.py
+python tools\validate_scene.py
+python tools\scale_audit.py
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --frames 300
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 300
+python tools\status_report.py
+```
+
+Results:
+
+- `scripts/doctor.ps1`: completed. It now checks the v0.11 scene docs, scene data, and scene tools. Existing warnings remain: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg` are not in the plain PowerShell PATH.
+- `scripts/configure.ps1`: passed with preset `windows-vs2022-debug`.
+- `scripts/build.ps1`: passed; built `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 3/3 tests green (`EngineCoreTests`, `EngineSmokeTest`, `SceneToolTests`).
+- `scripts/verify.ps1`: passed; repeated doctor/configure/build/test, ran scene validation, and completed null smoke. Smoke log reported engine `v0.11.0`, app `Tidebreak Prototype`, the existing Ferry Office start state, vehicle `empty`, `cameraMode=on-foot`, and `physics=simple`.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed; built `Jolt.lib`, `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 3/3 tests green.
+- `python tools\scene_report.py`: completed; reported `ferry-office`, units `meter`, 9 colliders, 14 visual placeholders, 5 interactables, 1 traversal affordance, 1 vehicle, 4 route markers, 3 objective markers, and 0 validation errors/warnings.
+- `python tools\validate_scene.py`: passed.
+- `python tools\scale_audit.py`: completed; no suspicious scale issues found.
+- GDI bounded run: passed; window created, `gdi-fallback` renderer ran for 300 frames, clean shutdown.
+- DX11 bounded run: passed; hardware DX11 device failed and fell back to WARP, `dx11` renderer ran for 300 frames, clean shutdown.
+- `python tools\status_report.py`: completed and showed the expected v0.11 modified/new files before commit.
+
+Known limitations after v0.11:
+
+- Scene data is not runtime-loaded yet.
+- JSON/C++ layout drift remains possible if future work does not update both sides.
+- No full editor, ECS, asset pipeline, model loading, animation runtime, generated scene code, final art, or renderer overhaul was added.
+- DX11 still falls back to WARP in this environment.
+
+Recommended next goal:
+
+Run v0.12 Static Mesh + glTF Render Spike.
