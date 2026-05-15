@@ -12,6 +12,7 @@
 #include <filesystem>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 
 class SandboxLayer final : public engine::IGameLayer {
@@ -45,6 +46,12 @@ private:
     bool isVehicleExitPositionClear(engine::Vec3 position) const;
     void applyCameraSettingsForMode(bool vehicleMode);
     void loadStaticMeshAssets();
+    bool shouldDrawFullGuidance() const;
+    bool shouldDrawRouteMarker(std::string_view routeId) const;
+    bool shouldDrawObjectiveMarker(std::string_view markerId) const;
+    bool shouldDrawInteractableMarker(const Interactable& interactable) const;
+    bool shouldDrawTraversalMarker(const TraversalAffordance& affordance) const;
+    bool shouldDrawVehicleGuidance() const;
 
     PrototypeScene m_scene;
     SceneDefinition m_sceneDefinition;

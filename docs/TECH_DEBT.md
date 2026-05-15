@@ -13,7 +13,7 @@ This file lists known foundation issues during v0.23. It is not a mandate to fix
 
 ### Fix Soon
 
-1. Run a full human keyboard/mouse playthrough on the target laptop through `scripts/play.ps1` and capture any remaining vehicle feel issues around braking distance, reverse steering, checkpoint approach, exit placement, or cursor/camera comfort.
+1. Run a full human keyboard/mouse playthrough on the target laptop through `scripts/play.ps1` and capture any remaining vehicle feel issues around braking distance, reverse steering, checkpoint approach, exit placement, or cursor/camera comfort. v0.24 used bounded visual evidence, not a complete hand-play pass.
 2. Keep the Blender/static mesh path narrow and honest. Add only a few controlled original props until cgltf/tinygltf is clearly justified.
 3. Decide whether the next non-packaging pass is presentation polish, a hand-authored Blender prop pass, or a Jolt vehicle feasibility spike based on actual hand-play feedback.
 
@@ -161,8 +161,9 @@ This file lists known foundation issues during v0.23. It is not a mandate to fix
 - v0.11 documents art direction and placeholder color keys. v0.12/v0.12.1 add first static mesh rendering and a small prop replacement pass, and v0.18 adds the first original service-road prop kit, but still no final art, lighting, textures, materials, or model loading beyond a tiny proof subset.
 - v0.14 makes the service-yard read more like a dock road with a shore/water edge cue and turn-around marker. v0.15 loads that layout from scene data, but it remains hand-authored placeholder geometry.
 - v0.17 playtest mode puts objective/focus/job status first and reserves raw telemetry for debug mode, but it remains functional debug text rather than a polished UI.
+- v0.24 adds a first progressive-guidance pass for playtest/minimal modes so future route, traversal, vehicle, checkpoint, and service-run markers wait for the relevant Ferry Office job phase. Debug mode still keeps the full authored guidance set for validation.
 - DX11 now has a simple debug text overlay, so bounded DX11 playtest checks are useful. GDI still remains the simpler renderer for overlay debugging, and a real renderer-owned text/HUD path is deferred.
-- There is no authored composition pass for camera start angle, signposting, silhouettes, or route readability beyond simple colored volumes and the first flat-tinted prop-kit meshes.
+- There is still no final authored composition pass for camera start angle, silhouettes, art-quality signposting, or route readability beyond simple colored volumes, progressive debug guidance, and the first flat-tinted prop-kit meshes.
 
 ## Deprecated Priority Lists
 

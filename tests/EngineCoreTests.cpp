@@ -117,20 +117,65 @@ void ExpectNear(float actual, float expected, float tolerance, const std::string
 
 class CountingRenderer final : public engine::IRenderer {
 public:
+    struct LineCall {
+        engine::Vec3 from {};
+        engine::Vec3 to {};
+        engine::Color color {};
+    };
+
+    struct BoxCall {
+        engine::Vec3 center {};
+        engine::Vec3 halfExtents {};
+        engine::Color color {};
+    };
+
     bool initialize(const engine::RendererConfig&) override { return true; }
     void beginFrame(unsigned long long) override {}
     void drawDebugGridAndAxes() override {}
-    void drawDebugLine(engine::Vec3, engine::Vec3, engine::Color) override {}
-    void drawDebugSolidBox(engine::Vec3, engine::Vec3, engine::Color) override {}
+    void drawDebugLine(engine::Vec3 from, engine::Vec3 to, engine::Color color) override { lineCalls.push_back({from, to, color}); }
+    void drawDebugSolidBox(engine::Vec3 center, engine::Vec3 halfExtents, engine::Color color) override { solidBoxCalls.push_back({center, halfExtents, color}); }
     void drawDebugFlatTriangles(std::span<const engine::Vec3>, engine::Color) override { ++flatTriangleDrawCount; }
-    void drawDebugBox(engine::Vec3, engine::Vec3, engine::Color) override {}
+    void drawDebugBox(engine::Vec3 center, engine::Vec3 halfExtents, engine::Color color) override { boxCalls.push_back({center, halfExtents, color}); }
     void drawDebugText(std::string_view) override {}
     void endFrame() override {}
     void shutdown() override {}
     std::string name() const override { return "counting-test-renderer"; }
 
     unsigned int flatTriangleDrawCount = 0;
+    std::vector<LineCall> lineCalls;
+    std::vector<BoxCall> solidBoxCalls;
+    std::vector<BoxCall> boxCalls;
 };
+
+bool ColorNear(engine::Color actual, engine::Color expected, float tolerance = 0.001f)
+{
+    return std::abs(actual.r - expected.r) <= tolerance
+        && std::abs(actual.g - expected.g) <= tolerance
+        && std::abs(actual.b - expected.b) <= tolerance
+        && std::abs(actual.a - expected.a) <= tolerance;
+}
+
+std::size_t CountLinesWithColor(const CountingRenderer& renderer, engine::Color color)
+{
+    std::size_t count = 0;
+    for (const CountingRenderer::LineCall& line : renderer.lineCalls) {
+        if (ColorNear(line.color, color)) {
+            ++count;
+        }
+    }
+    return count;
+}
+
+std::size_t CountRouteMarkerSegments(const SceneDefinition& scene)
+{
+    std::size_t count = 0;
+    for (const SceneRouteMarkerDefinition& route : scene.routeMarkers) {
+        if (route.points.size() >= 2) {
+            count += route.points.size() - 1;
+        }
+    }
+    return count;
+}
 
 const SceneMeshAssetDefinition* FindMeshAsset(const SceneDefinition& scene, std::string_view id)
 {
@@ -1337,6 +1382,82 @@ void TestSandboxLayerPlaytestTextPrioritizesObjectiveAndPrompt()
     Expect(text.find("worldState={") == std::string::npos,
         "TestSandboxLayerPlaytestTextPrioritizesObjectiveAndPrompt",
         "Playtest UI should not expose the raw world-state dump.");
+    Expect(text.find("phase=") == std::string::npos,
+        "TestSandboxLayerPlaytestTextPrioritizesObjectiveAndPrompt",
+        "Playtest UI should describe job progress without raw phase telemetry.");
+}
+
+void TestSandboxLayerPlaytestDefersFutureRouteGuidanceAtStart()
+{
+    SandboxLayer layer(DefaultScenePathForTests(), engine::UiMode::Playtest);
+    layer.onAttach();
+
+    engine::InputState input;
+    layer.onUpdate(0.016, input);
+    CountingRenderer renderer;
+    renderer.initialize({});
+    renderer.beginFrame(1);
+    layer.onRender(renderer);
+    renderer.endFrame();
+    layer.onDetach();
+
+    const engine::Color routeColor {0.70f, 0.92f, 1.0f, 1.0f};
+    Expect(CountLinesWithColor(renderer, routeColor) == 0,
+        "TestSandboxLayerPlaytestDefersFutureRouteGuidanceAtStart",
+        "Playtest mode should not draw future route guidance before the Ferry Manifest starts the job loop.");
+}
+
+void TestSandboxLayerDebugPreservesFullRouteGuidanceAtStart()
+{
+    const SceneLoadResult result = LoadSceneDefinition(DefaultScenePathForTests());
+    Expect(result.ok(),
+        "TestSandboxLayerDebugPreservesFullRouteGuidanceAtStart",
+        "Default scene should load before counting authored route guidance.");
+    if (!result.ok()) {
+        return;
+    }
+
+    SandboxLayer layer(DefaultScenePathForTests(), engine::UiMode::Debug);
+    layer.onAttach();
+
+    engine::InputState input;
+    layer.onUpdate(0.016, input);
+    CountingRenderer renderer;
+    renderer.initialize({});
+    renderer.beginFrame(1);
+    layer.onRender(renderer);
+    renderer.endFrame();
+    layer.onDetach();
+
+    const engine::Color routeColor {0.70f, 0.92f, 1.0f, 1.0f};
+    Expect(CountLinesWithColor(renderer, routeColor) == CountRouteMarkerSegments(result.scene),
+        "TestSandboxLayerDebugPreservesFullRouteGuidanceAtStart",
+        "Debug mode should keep every authored route marker visible for validation.");
+}
+
+void TestSandboxLayerPlaytestRevealsNextRouteAfterManifest()
+{
+    SandboxLayer layer(DefaultScenePathForTests(), engine::UiMode::Playtest);
+    layer.onAttach();
+
+    engine::InputState input;
+    layer.onUpdate(0.016, input);
+    input.interactPressed = true;
+    layer.onUpdate(0.016, input);
+    input.interactPressed = false;
+    layer.onUpdate(0.016, input);
+
+    CountingRenderer renderer;
+    renderer.initialize({});
+    renderer.beginFrame(1);
+    layer.onRender(renderer);
+    renderer.endFrame();
+    layer.onDetach();
+
+    const engine::Color routeColor {0.70f, 0.92f, 1.0f, 1.0f};
+    Expect(CountLinesWithColor(renderer, routeColor) == 1,
+        "TestSandboxLayerPlaytestRevealsNextRouteAfterManifest",
+        "After collecting the manifest, playtest mode should reveal only the immediate route toward the Service Barrier Vault.");
 }
 
 void TestSandboxLayerDebugTextPreservesFullTelemetry()
@@ -2755,6 +2876,9 @@ int main()
     TestSandboxLayerDebugTextIncludesDockRoadTelemetry();
     TestSandboxLayerDrawsEveryLoadedSceneMeshInstance();
     TestSandboxLayerPlaytestTextPrioritizesObjectiveAndPrompt();
+    TestSandboxLayerPlaytestDefersFutureRouteGuidanceAtStart();
+    TestSandboxLayerDebugPreservesFullRouteGuidanceAtStart();
+    TestSandboxLayerPlaytestRevealsNextRouteAfterManifest();
     TestSandboxLayerDebugTextPreservesFullTelemetry();
     TestSandboxLayerMinimalTextStaysSmallButUseful();
     TestSandboxLayerF1TogglesBetweenPlaytestAndDebugText();

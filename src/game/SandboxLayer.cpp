@@ -52,6 +52,30 @@ engine::Color ScaleColor(engine::Color color, float scale)
     return {color.r * scale, color.g * scale, color.b * scale, color.a};
 }
 
+std::string_view PresentationJobStepText(FerryOfficeJobPhase phase)
+{
+    switch (phase) {
+    case FerryOfficeJobPhase::CollectManifest:
+        return "Collect manifest";
+    case FerryOfficeJobPhase::UseServiceRoute:
+        return "Use service route";
+    case FerryOfficeJobPhase::RestorePower:
+        return "Restore power";
+    case FerryOfficeJobPhase::OpenServiceGate:
+        return "Open service gate";
+    case FerryOfficeJobPhase::UseServiceVehicle:
+        return "Enter service vehicle";
+    case FerryOfficeJobPhase::ReachDockRoad:
+        return "Reach dock-road checkpoint";
+    case FerryOfficeJobPhase::ConfirmServiceRun:
+        return "Confirm service run";
+    case FerryOfficeJobPhase::Complete:
+        return "Complete";
+    default:
+        return "Unknown";
+    }
+}
+
 std::filesystem::path ResolveProjectPath(const std::filesystem::path& path)
 {
     if (path.empty() || path.is_absolute() || std::filesystem::exists(path)) {
@@ -531,6 +555,7 @@ std::string SandboxLayer::buildPresentationText(bool minimal) const
     const VehicleFocus& vehicleFocus = m_vehicle.focus();
     const InteractionFocus& focus = m_scene.interactions().focus();
     const TraversalFocus& traversalFocus = m_scene.traversal().focus();
+    const FerryOfficeJobPhase phase = m_scene.job().phase(m_scene.worldState());
 
     std::ostringstream output;
     output << std::fixed << std::setprecision(1)
@@ -556,12 +581,12 @@ std::string SandboxLayer::buildPresentationText(bool minimal) const
         output << "Prompt: Move near highlighted markers, then press E or Space.\n";
     }
 
-    output << "Job: phase=" << FerryOfficeJobPhaseName(m_scene.job().phase(m_scene.worldState()))
-           << " complete=" << (m_scene.isJobComplete() ? "yes" : "no");
+    output << "Job: " << PresentationJobStepText(phase)
+           << " | " << (m_scene.isJobComplete() ? "complete" : "in progress");
     if (!minimal) {
-        output << " | vehicle=" << (m_scene.worldState().isFlagSet(WorldFlag::ServiceVehicleUsed) ? "used" : "needed")
-               << " | checkpoint=" << (m_scene.worldState().isFlagSet(WorldFlag::DockRoadReached) ? "reached" : "needed")
-               << " | confirm=" << (m_scene.worldState().isFlagSet(WorldFlag::ServiceRunConfirmed) ? "done" : "needed");
+        output << " | vehicle=" << (m_scene.worldState().isFlagSet(WorldFlag::ServiceVehicleUsed) ? "used" : "later")
+               << " | checkpoint=" << (m_scene.worldState().isFlagSet(WorldFlag::DockRoadReached) ? "reached" : "later")
+               << " | confirm=" << (m_scene.worldState().isFlagSet(WorldFlag::ServiceRunConfirmed) ? "done" : "later");
     }
     output << "\n";
 
@@ -671,10 +696,135 @@ void SandboxLayer::toggleDebugUiMode()
     engine::Logger::info("UI mode: debug");
 }
 
+bool SandboxLayer::shouldDrawFullGuidance() const
+{
+    return m_uiMode == engine::UiMode::Debug;
+}
+
+bool SandboxLayer::shouldDrawRouteMarker(std::string_view routeId) const
+{
+    if (shouldDrawFullGuidance()) {
+        return true;
+    }
+
+    switch (m_scene.job().phase(m_scene.worldState())) {
+    case FerryOfficeJobPhase::UseServiceRoute:
+        return routeId == "route-manifest-to-vault";
+    case FerryOfficeJobPhase::RestorePower:
+        return routeId == "route-vault-to-maintenance";
+    case FerryOfficeJobPhase::OpenServiceGate:
+        return routeId == "route-maintenance-to-button";
+    case FerryOfficeJobPhase::ReachDockRoad:
+        return routeId == "route-service-yard-to-dock-road";
+    case FerryOfficeJobPhase::ConfirmServiceRun:
+    case FerryOfficeJobPhase::Complete:
+        return routeId == "route-dock-road-to-service-confirm";
+    default:
+        return false;
+    }
+}
+
+bool SandboxLayer::shouldDrawObjectiveMarker(std::string_view markerId) const
+{
+    if (shouldDrawFullGuidance()) {
+        return true;
+    }
+
+    const FerryOfficeJobPhase phase = m_scene.job().phase(m_scene.worldState());
+    if (markerId == "dock-start-marker" || markerId == "office-marker") {
+        return phase == FerryOfficeJobPhase::CollectManifest
+            || phase == FerryOfficeJobPhase::UseServiceRoute
+            || phase == FerryOfficeJobPhase::RestorePower
+            || phase == FerryOfficeJobPhase::OpenServiceGate;
+    }
+    if (markerId == "service-yard-marker") {
+        return phase == FerryOfficeJobPhase::UseServiceVehicle
+            || phase == FerryOfficeJobPhase::ReachDockRoad
+            || phase == FerryOfficeJobPhase::ConfirmServiceRun
+            || phase == FerryOfficeJobPhase::Complete;
+    }
+    if (markerId == "dock-road-marker" || markerId == "service-run-checkpoint-marker") {
+        return phase == FerryOfficeJobPhase::ReachDockRoad
+            || phase == FerryOfficeJobPhase::ConfirmServiceRun
+            || phase == FerryOfficeJobPhase::Complete;
+    }
+
+    return false;
+}
+
+bool SandboxLayer::shouldDrawInteractableMarker(const Interactable& interactable) const
+{
+    if (shouldDrawFullGuidance()) {
+        return true;
+    }
+
+    const InteractionFocus& focus = m_scene.interactions().focus();
+    if (focus.hasFocus && focus.interactableId == interactable.id) {
+        return true;
+    }
+    if (!interactable.enabled || interactable.consumed) {
+        return false;
+    }
+    if (interactable.name == FerryOffice::Names::FerryManifest || interactable.name == FerryOffice::Names::FerryOfficeNotice) {
+        return true;
+    }
+    if (interactable.name == FerryOffice::Names::MaintenanceBox) {
+        return m_scene.worldState().isFlagSet(WorldFlag::ServiceRouteUsed)
+            || m_scene.worldState().isFlagSet(WorldFlag::PowerRestored);
+    }
+    if (interactable.name == FerryOffice::Names::WallButton) {
+        return m_scene.worldState().isFlagSet(WorldFlag::PowerRestored)
+            || m_scene.worldState().isFlagSet(WorldFlag::RouteOpened);
+    }
+    if (interactable.name == FerryOffice::Names::ExitMarker) {
+        return m_scene.isSliceReadyForExit() || m_scene.isSliceComplete();
+    }
+    if (interactable.name == FerryOffice::Names::ServiceRunMarker) {
+        const FerryOfficeJobPhase phase = m_scene.job().phase(m_scene.worldState());
+        return phase == FerryOfficeJobPhase::ReachDockRoad
+            || phase == FerryOfficeJobPhase::ConfirmServiceRun
+            || phase == FerryOfficeJobPhase::Complete;
+    }
+
+    return true;
+}
+
+bool SandboxLayer::shouldDrawTraversalMarker(const TraversalAffordance& affordance) const
+{
+    if (shouldDrawFullGuidance()) {
+        return true;
+    }
+
+    const TraversalFocus& focus = m_scene.traversal().focus();
+    const PlayerState& player = m_player.state();
+    if ((focus.hasFocus && focus.affordanceId == affordance.id) || player.activeTraversalId == affordance.id) {
+        return true;
+    }
+
+    return m_scene.job().phase(m_scene.worldState()) == FerryOfficeJobPhase::UseServiceRoute;
+}
+
+bool SandboxLayer::shouldDrawVehicleGuidance() const
+{
+    if (shouldDrawFullGuidance() || m_vehicle.state().occupied) {
+        return true;
+    }
+
+    const FerryOfficeJobPhase phase = m_scene.job().phase(m_scene.worldState());
+    return phase == FerryOfficeJobPhase::UseServiceVehicle
+        || phase == FerryOfficeJobPhase::ReachDockRoad
+        || phase == FerryOfficeJobPhase::ConfirmServiceRun
+        || phase == FerryOfficeJobPhase::Complete;
+}
+
 void SandboxLayer::drawInteractionDebug(engine::IRenderer& renderer)
 {
     const InteractionFocus& focus = m_scene.interactions().focus();
     for (const Interactable& interactable : m_scene.interactions().interactables()) {
+        if (!shouldDrawInteractableMarker(interactable)) {
+            continue;
+        }
+
         const bool isFocused = focus.hasFocus && focus.interactableId == interactable.id;
         engine::Color color {0.35f, 0.75f, 1.0f, 1.0f};
         float markerSize = 0.16f;
@@ -808,6 +958,10 @@ void SandboxLayer::drawSliceDebug(engine::IRenderer& renderer)
 
     if (m_sceneDefinitionLoaded) {
         for (const SceneObjectiveMarkerDefinition& marker : m_sceneDefinition.objectiveMarkers) {
+            if (!shouldDrawObjectiveMarker(marker.id)) {
+                continue;
+            }
+
             engine::Color color = dockColor;
             engine::Vec3 halfExtents {0.20f, 0.08f, 0.20f};
             if (marker.id.find("office") != std::string::npos) {
@@ -827,6 +981,10 @@ void SandboxLayer::drawSliceDebug(engine::IRenderer& renderer)
         }
 
         for (const SceneRouteMarkerDefinition& marker : m_sceneDefinition.routeMarkers) {
+            if (!shouldDrawRouteMarker(marker.id)) {
+                continue;
+            }
+
             for (std::size_t index = 1; index < marker.points.size(); ++index) {
                 renderer.drawDebugLine(marker.points[index - 1], marker.points[index], routeColor);
             }
@@ -864,6 +1022,10 @@ void SandboxLayer::drawTraversalDebug(engine::IRenderer& renderer)
     const TraversalFocus& focus = m_scene.traversal().focus();
     const PlayerState& player = m_player.state();
     for (const TraversalAffordance& affordance : m_scene.traversal().affordances()) {
+        if (!shouldDrawTraversalMarker(affordance)) {
+            continue;
+        }
+
         const bool isFocused = focus.hasFocus && focus.affordanceId == affordance.id;
         const bool isActive = player.activeTraversalId == affordance.id;
         engine::Color color {0.55f, 0.85f, 1.0f, 1.0f};
@@ -915,6 +1077,10 @@ void SandboxLayer::drawVehicleDebug(engine::IRenderer& renderer)
     renderer.drawDebugBox(bodyCenter, m_vehicleProxyHalfExtents, vehicleColor);
     renderer.drawDebugSolidBox(vehicle.position + engine::Vec3 {0.0f, 0.86f, 0.0f}, m_vehicleCabinHalfExtents, ScaleColor(vehicleColor, 0.38f));
     renderer.drawDebugBox(vehicle.position + engine::Vec3 {0.0f, 0.86f, 0.0f}, m_vehicleCabinHalfExtents, vehicleColor);
+
+    if (!shouldDrawVehicleGuidance()) {
+        return;
+    }
 
     const engine::Vec3 forward = m_vehicle.forward();
     renderer.drawDebugLine(vehicle.position + engine::Vec3 {0.0f, 0.75f, 0.0f},

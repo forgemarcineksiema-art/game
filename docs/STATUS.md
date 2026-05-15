@@ -4466,3 +4466,48 @@ Result:
 
 - Debug primitives should no longer pop out just because their endpoints/corners are offscreen or crossing the near plane.
 - This is still debug rendering, not a full production camera/depth pipeline.
+
+## v0.24 Ferry Office Playable Presentation Polish - Progressive Guidance (2026-05-15)
+
+Scope:
+
+- Use bounded `scripts/play.ps1` visual evidence because a full human keyboard/mouse playthrough was not available in-session.
+- Reduce first-frame playtest clutter without changing the Ferry Office Service Call, scene data, movement, collision, vehicle behavior, renderer backend, or asset pipeline.
+- Keep `--ui-mode debug` as the full validation/workbench view.
+
+Observations:
+
+- `build\captures\v0.24-default-playtest-start.png` showed the default playtest start still exposing future route lines, vehicle/checkpoint guidance, service-run markers, and raw job phase text before the player had collected the Ferry Manifest.
+- `build\captures\v0.24-debug-start.png` and `build\captures\v0.24-minimal-start.png` confirmed the issue was in shared marker/guidance rendering, not just overlay verbosity.
+- The work remains bounded visual evidence, not a completed manual checklist.
+
+Focused TDD result:
+
+- Added route-guidance counting to the test renderer in `tests\EngineCoreTests.cpp`.
+- Added regression coverage that playtest mode draws no future route guidance before the manifest, debug mode preserves all authored route segments, playtest mode reveals only the immediate route after manifest collection, and player-facing playtest text avoids raw `phase=` telemetry.
+- `ctest --preset windows-vs2022-debug --output-on-failure -R EngineCoreTests` initially failed on the new expectations, then passed after implementation.
+
+Implementation notes:
+
+- `SandboxLayer` now gates playtest/minimal route markers, objective markers, interactable markers, traversal markers, and vehicle guidance by the current `FerryOfficeJobPhase`.
+- `--ui-mode debug` bypasses those gates and still draws the full authored route/objective/guidance set for validation.
+- The playtest/minimal job line now uses player-facing step labels such as `Collect manifest` instead of raw `phase=collectManifest`.
+- The service-yard vehicle body remains visible as world geometry, while enter radius, exit guidance, bounds, and heading guidance wait until the vehicle phase, active driving, or debug mode.
+
+Visual evidence:
+
+- Before: `build\captures\v0.24-default-playtest-start.png`.
+- After: `build\captures\v0.24-progressive-playtest-start.png`.
+- Debug comparison: `build\captures\v0.24-progressive-debug-start.png`.
+
+Validation:
+
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: passed.
+- `ctest --preset windows-vs2022-debug --output-on-failure -R EngineCoreTests`: passed.
+- `powershell -ExecutionPolicy Bypass -File scripts\build.ps1`: passed.
+- `powershell -ExecutionPolicy Bypass -File scripts\verify.ps1`: passed; CTest 4/4 passed, scene validation passed, asset validation passed, mesh report passed, and smoke output showed the new player-facing job line.
+
+Remaining limitations:
+
+- A full human keyboard/mouse playthrough is still needed for braking distance, reverse steering, checkpoint approach, exit placement, cursor/camera comfort, and full checklist confidence.
+- The UI is still debug text and immediate debug geometry, not a production HUD, depth-aware renderer, authored level composition pass, or final art presentation.

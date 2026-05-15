@@ -301,6 +301,18 @@ Status: implemented as a narrow vehicle-control polish pass. The vehicle camera 
 
 Status: implemented as a local run UX milestone. `scripts/play.ps1` now launches the current Ferry Office Service Call with GDI, playtest UI, and the authored Ferry Office scene by default, while tests cover defaults, overrides, passthrough args, and missing-executable guidance. This is not an installer, release packaging system, or gameplay expansion.
 
+## v0.24 - Ferry Office Playable Presentation Polish
+
+- Keep the existing Ferry Office Service Call as the only job.
+- Start from bounded/default `scripts/play.ps1` evidence when a full human playthrough is not available.
+- Make playtest/minimal presentation progressively reveal route, objective, traversal, interaction, and vehicle guidance based on the current job phase.
+- Keep `--ui-mode debug` as the full validation/workbench view with all authored route markers and telemetry.
+- Make player-facing job status less raw while preserving debug telemetry.
+- Preserve scene loading, static mesh rendering, current vehicle behavior, default validation, and Jolt opt-in boundaries.
+- Avoid Job #2, a mission framework, renderer rewrite, material/texture pipeline, new assets, packaging, save/settings persistence, or broad refactors.
+
+Status: implemented as a bounded-evidence presentation polish pass. Playtest/minimal modes now defer future route guidance and late markers until the current Ferry Office job phase needs them, while debug mode keeps the complete authored guidance set for validation. The overlay job line now uses player-facing step text instead of raw phase telemetry.
+
 ## Recommended Next Goal
 
-Build v0.24 Ferry Office Playable Presentation Polish if v0.23 confirms the launch path is no longer the main blocker.
+Run a full human keyboard/mouse Ferry Office playthrough on the target laptop and choose the next narrow pass from actual hand-play feedback.
