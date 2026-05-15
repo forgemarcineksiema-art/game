@@ -181,6 +181,16 @@ Status: implemented as a narrow static mesh/render spike. `assets/models/unit_bo
 
 Status: implemented as a small mesh-backed prop/scale pass using the existing original `unit_box.gltf`. Scene data now references 10 mesh instances, runtime mirrors them explicitly in `SandboxLayer`, and a new GDI screenshot reference records the v0.12.1 presentation.
 
+## v0.13 - Vehicle Feel + Service Yard Road Test Polish
+
+- Tune the existing deterministic service-yard vehicle for a compact road-test area.
+- Improve acceleration, braking, reverse, drag/coast, low-speed steering, and vehicle camera readability without adding wheels, suspension, traffic, or Jolt VehicleConstraint.
+- Widen and clarify the service-yard pad/bounds while keeping scene JSON and runtime constants synchronized.
+- Add coverage for vehicle focus, bounds clamping, drag timestep clamping, exit placement, reverse steering, and scene vehicle bounds.
+- Preserve the Ferry Office micro-slice, static mesh path, scene tools, default validation, and Jolt opt-in validation.
+
+Status: implemented as a small feel/readability polish pass. The vehicle remains deterministic and game-layer scoped; it is better suited for the current service-yard road test, but still needs human playtest tuning before deeper vehicle physics or a larger road loop.
+
 ## Recommended Next Goal
 
-Build v0.13 Vehicle Feel + Service Yard Road Test Polish.
+Build v0.13.1 Vehicle Manual Playtest + Control Polish.

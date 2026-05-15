@@ -159,29 +159,29 @@
     {
       "id": "service-yard-driving-pad",
       "role": "vehicle-test-pad",
-      "center": [6.25, -0.045, -2.1],
-      "halfExtents": [2.85, 0.045, 2.65],
+      "center": [6.3, -0.045, -2.2],
+      "halfExtents": [3.05, 0.045, 2.95],
       "colorKey": "dark-service-asphalt"
     },
     {
       "id": "service-yard-west-rail",
       "role": "vehicle-yard-bound",
-      "center": [3.45, 0.35, -2.1],
-      "halfExtents": [0.12, 0.35, 2.55],
+      "center": [3.25, 0.35, -2.2],
+      "halfExtents": [0.12, 0.35, 2.85],
       "colorKey": "weathered-yard-rail"
     },
     {
       "id": "service-yard-east-rail",
       "role": "vehicle-yard-bound",
-      "center": [9.05, 0.35, -2.1],
-      "halfExtents": [0.12, 0.35, 2.55],
+      "center": [9.35, 0.35, -2.2],
+      "halfExtents": [0.12, 0.35, 2.85],
       "colorKey": "weathered-yard-rail"
     },
     {
       "id": "service-yard-back-stop",
       "role": "vehicle-yard-bound",
-      "center": [6.25, 0.18, -4.7],
-      "halfExtents": [2.25, 0.18, 0.12],
+      "center": [6.3, 0.18, -5.15],
+      "halfExtents": [2.55, 0.18, 0.12],
       "colorKey": "weathered-yard-rail"
     },
     {
@@ -379,8 +379,8 @@
       "proxyHalfExtents": [0.58, 0.53, 0.92],
       "enterRadius": 1.8,
       "bounds": {
-        "min": [3.55, -4.55],
-        "max": [8.95, 0.35]
+        "min": [3.35, -5.05],
+        "max": [9.25, 0.65]
       },
       "controls": {
         "enterExit": "E",
@@ -430,7 +430,7 @@
     {
       "id": "service-yard-marker",
       "label": "Service-yard vehicle test pad",
-      "position": [6.25, 0.08, -2.1]
+      "position": [6.3, 0.08, -2.2]
     }
   ],
   "authoringNotes": [

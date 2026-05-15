@@ -112,9 +112,13 @@ python tools/mesh_report.py
 - [ ] Holding `E` does not rapidly enter/exit on repeated frames.
 - [ ] While driving, `W` accelerates forward.
 - [ ] While driving, `S` brakes when moving forward and reverses after stopping.
+- [ ] Releasing `W/S` lets drag settle the vehicle instead of coasting forever.
 - [ ] `A/D` steer the vehicle and the heading marker turns with it.
+- [ ] At low speed, the vehicle can turn around within the service-yard bounds without feeling twitchy.
+- [ ] Reverse steering is understandable when backing up.
 - [ ] The vehicle camera follows the vehicle without obvious jitter.
 - [ ] The service-yard bounds prevent the vehicle from drifting far outside the test pad.
+- [ ] The service-yard pad/rails/back-stop visually communicate the tiny road-test area.
 - [ ] Pressing `E` exits only when the side exit marker is clear.
 - [ ] After exit, on-foot movement, camera, traversal, and Ferry Office interactions still work.
 - [ ] Debug text reports vehicle occupancy, speed, throttle/brake/steer, camera mode, and physics backend status.

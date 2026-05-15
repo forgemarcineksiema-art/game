@@ -131,7 +131,7 @@ v0.12 adds `IRenderer::drawDebugFlatTriangles` as a narrow immediate-mode static
 
 `src/game/ThirdPersonCamera.*` implements yaw/pitch orbit, distance, height offset, pitch clamp, and exponential follow smoothing. The update order is player first, camera second, render third to avoid frame-order jitter.
 
-`src/game/VehicleController.*` is the v0.10 narrow vehicle feel spike. It owns a deterministic arcade-style placeholder vehicle state: position, yaw, speed, velocity, throttle/brake/steer telemetry, occupied state, focus range, pressed-edge enter/exit, safe exit checks, and simple yard-bound clamping. It deliberately does not expose Jolt, vehicle constraints, wheels, suspension, damage, doors, seats, cargo, traffic, or tuning data files.
+`src/game/VehicleController.*` is the v0.10 narrow vehicle feel spike, tuned in v0.13 for the compact service-yard road test. It owns a deterministic arcade-style placeholder vehicle state: position, yaw, speed, velocity, throttle/brake/steer telemetry, occupied state, focus range, pressed-edge enter/exit, safe exit checks, drag/coast behavior, and simple yard-bound clamping. It deliberately does not expose Jolt, vehicle constraints, wheels, suspension, damage, doors, seats, cargo, traffic, or tuning data files.
 
 `src/game/PrototypeWorld.*` is the v0.3 static world/collision boundary. It owns named static AABB colliders, a floor height, player proxy resolution, overlap checks, ground checks, and a simple raycast query for future camera obstruction or interaction work. v0.7 adds a Ferry Office prototype layout builder and lets the scene toggle whether a named collider blocks the player.
 
@@ -156,6 +156,8 @@ v0.12 adds `IRenderer::drawDebugFlatTriangles` as a narrow immediate-mode static
 `src/game/SandboxLayer.*` integrates player/camera/world/traversal/interaction update order. On foot, it updates traversal focus first from the current player position/facing, gives a focused traversal activation to the player, updates interaction focus from the corrected player position/facing, lets the vehicle take `E` only when no Ferry Office interactable is focused, executes normal `E` interactions, updates the camera, then renders world collision, traversal, interaction, world-state, vehicle, and Ferry Office slice debug markers.
 
 When the vehicle is occupied, `SandboxLayer` skips on-foot player movement, traversal activation, and Ferry Office interactions for that frame. `W/S/A/D` drive the vehicle, `E` exits only when the computed side exit position is clear, and the existing third-person camera follows the vehicle target with separate distance/height/smoothing settings. Exiting places the player beside the vehicle and returns the next frame to the normal on-foot flow.
+
+v0.13 keeps service-yard vehicle placement explicit but reduces local drift by grouping spawn, bounds, pad, rail, back-stop, crate, body, and cabin constants at the top of `SandboxLayer.cpp`. These constants still mirror `data/scenes/ferry_office.scene.json`; they are not yet loaded from scene data at runtime.
 
 In v0.5.1, traversal activation uses the player's current position as the runtime traversal start while keeping the authored affordance target fixed. This avoids a visible snap to the start marker when the player presses `Space` inside the focus radius. The authored start marker remains a focus/debug marker, not a mandatory teleport point.
 

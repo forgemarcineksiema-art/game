@@ -2576,3 +2576,136 @@ Known limitations after v0.12.1:
 Recommended next goal:
 
 Run v0.13 Vehicle Feel + Service Yard Road Test Polish.
+
+## v0.13 Baseline - 2026-05-15
+
+Goal: polish the existing deterministic service-yard vehicle feel and tiny road-test area on top of v0.12.1. This goal must preserve the Ferry Office micro-slice, scene/mesh tooling, default validation, and Jolt opt-in validation. It must not add Jolt VehicleConstraint, wheel simulation, traffic, NPC AI, missions, inventory, save/load, new asset pipeline work, new renderer scope, or other major gameplay systems.
+
+Required context read before coding:
+
+- `AGENTS.md`
+- `docs/STATUS.md`
+- `docs/ARCHITECTURE.md`
+- `docs/ROADMAP.md`
+- `docs/GAME_DIRECTION.md`
+- `docs/VERTICAL_SLICE.md`
+- `docs/TECH_DEBT.md`
+- `docs/MANUAL_TEST_CHECKLIST.md`
+- `docs/DECISIONS.md`
+- `docs/PHYSICS_DECISION.md`
+- `docs/SCENE_AUTHORING.md`
+- `docs/ASSET_GUIDE.md`
+- `docs/MESH_RENDERING.md`
+
+Baseline commands:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+cmake --preset windows-vs2022-debug-jolt
+cmake --build --preset windows-vs2022-debug-jolt
+ctest --preset windows-vs2022-debug-jolt --output-on-failure
+python tools/scene_report.py
+python tools/validate_scene.py
+python tools/scale_audit.py
+python tools/mesh_report.py
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --frames 300
+```
+
+Baseline results:
+
+- Git state before v0.13 work: `main...origin/main`, clean working tree.
+- `scripts/verify.ps1`: passed. Default doctor/configure/build/test, scene validation, mesh report, and null smoke all completed.
+- Default CTest passed 3/3 tests: `EngineCoreTests`, `EngineSmokeTest`, and `SceneToolTests`.
+- Null smoke reported engine `v0.12.1`, loaded `unit-box-mesh`, and preserved the Ferry Office start state.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed; built `Jolt.lib`, `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 3/3 tests green.
+- `python tools/scene_report.py`: completed; reported 1 mesh asset and 10 mesh instances.
+- `python tools/validate_scene.py`: passed.
+- `python tools/scale_audit.py`: completed; no suspicious scale issues found.
+- `python tools/mesh_report.py`: completed; reported `unit-box-mesh`, 10 uses, 8 vertices, and 36 indices.
+- GDI bounded vehicle review: passed; window created, `unit-box-mesh` loaded, `gdi-fallback` renderer ran for 300 frames, clean shutdown.
+
+Baseline vehicle/readability observations:
+
+- The current vehicle is deterministic and testable, but the default forward speed (`12 m/s`) is high for the very small service-yard bounds.
+- Vehicle tuning currently lives mostly in `VehicleControllerSettings`, while `SandboxLayer` only overrides yard bounds and camera settings.
+- The current GDI review confirms vehicle telemetry, spawn, and debug markers are visible at rest, but it does not prove hands-on driving feel in this environment.
+- Manual driving on the target laptop is still needed after this goal; v0.13 can improve deterministic feel and validation confidence, not replace human feel testing.
+- Scene/C++ drift risk is high around service-yard constants: spawn, yaw, bounds, pad, rails, road-test lines, vehicle mesh body/cabin, and physics debug rails are mirrored by hand.
+
+Read-only subagent notes:
+
+- Vehicle coverage gaps: focus facing/radius behavior, drag/coast behavior, large-delta clamp, bounds-hit behavior, exit-position geometry, reverse steering direction, stationary steering no-op, and scene/runtime vehicle constant sync.
+- Scene drift risks: service-yard pad/rails/bounds/spawn are duplicated in JSON and `SandboxLayer`; the road-test center lines are C++ only and should be derived from shared local constants if touched.
+
+## v0.13 Short Implementation Plan
+
+1. Add failing tests first for vehicle focus/fallback, drag/delta clamp, bounds clamp, exit-position geometry, reverse steering behavior, and initial SandboxLayer vehicle telemetry.
+2. Add small scene-tool tests for exact service-yard vehicle spawn/bounds/proxy dimensions so JSON changes stay guarded.
+3. Keep the live vehicle deterministic and game-layer scoped. Do not move it to Jolt or add wheel/suspension simulation.
+4. Tune vehicle settings conservatively for the small yard: lower max speed/reverse speed, smoother acceleration/braking, stronger drag, and readable low-speed steering.
+5. Tune vehicle camera settings only through existing distance/height/smoothing controls.
+6. Introduce a small `ServiceYardLayout` constants block in `SandboxLayer.cpp` to reduce hardcoded drift for spawn, bounds, pad/rail visuals, and physics debug rails.
+7. If service-yard bounds or visuals change, update `data/scenes/ferry_office.scene.json` in the same change and rerun scene tools.
+8. Update docs with exact tuning decisions, what remains deterministic, and why Jolt VehicleConstraint remains deferred.
+9. Run the full default/Jolt/tool/windowed validation matrix and capture/update GDI screenshot evidence if practical.
+
+## v0.13 Implementation Notes - 2026-05-15
+
+Red/green checks:
+
+- Added a scene-tool regression test requiring the service-yard vehicle spawn/proxy and widened bounds `[3.35, -5.05]..[9.25, 0.65]`.
+- `python tests\test_scene_tools.py` failed first because scene data still had old bounds `[3.55, -4.55]..[8.95, 0.35]`.
+- Added vehicle tests for default small-yard tuning, focus facing/close fallback, bounds clamp telemetry, drag timestep clamp, exit-position offsets, reverse steering, and SandboxLayer vehicle debug telemetry.
+- `ctest --preset windows-vs2022-debug --output-on-failure` failed first on the default vehicle tuning expectations and the scene bounds regression.
+- After implementation, `python tests\test_scene_tools.py` and `ctest --preset windows-vs2022-debug --output-on-failure` both passed.
+
+Changed:
+
+- Updated project version to `0.13.0`.
+- Tuned the deterministic vehicle controller defaults for the compact service-yard road test: `maxForwardSpeed=7.5`, `maxReverseSpeed=2.75`, `acceleration=6.5`, `braking=10.0`, `drag=2.4`, and `steeringRate=2.05`.
+- Tuned vehicle camera mode to a closer/firmer debug chase view: distance `7.25`, height offset `2.05`, smoothing `10.5`.
+- Grouped service-yard runtime constants in `SandboxLayer.cpp` for spawn, yaw, bounds, pad, rails, back-stop, crate, vehicle body, and vehicle cabin.
+- Widened the service-yard pad/bounds and mirrored the changes in `data/scenes/ferry_office.scene.json`.
+- Added a physics debug back-stop box to match the visible service-yard back-stop.
+- Updated roadmap, architecture, decisions, runbook, scene-authoring notes, tech debt, and manual test checklist for v0.13.
+
+Visual/manual observations:
+
+- Bounded GDI at-rest review showed the Ferry Office scene, service-yard vehicle telemetry, mesh placeholders, and debug markers still visible.
+- The v0.13 screenshot at `docs/images/v0.13-gdi-screenshot.png` shows the larger service-yard pad/rails/back-stop area on the right and the vehicle proxy still readable.
+- This environment can run bounded windows but does not replace a hands-on laptop driving playtest. Manual feel testing remains the next recommended step.
+
+## v0.13 Final Validation - 2026-05-15
+
+Commands and results:
+
+- `powershell -ExecutionPolicy Bypass -File scripts\doctor.ps1`: passed. Same environment warnings remain: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg` are not on PATH, but CMake/VS preset builds work.
+- `powershell -ExecutionPolicy Bypass -File scripts\configure.ps1`: passed for `windows-vs2022-debug`.
+- `powershell -ExecutionPolicy Bypass -File scripts\build.ps1`: passed; built `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 3/3 tests.
+- `powershell -ExecutionPolicy Bypass -File scripts\verify.ps1`: passed; repeated doctor/configure/build/CTest, scene validation, mesh report, and null smoke. Null smoke reported engine `v0.13.0`.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed; built Jolt and project targets.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 3/3 tests.
+- `python tools\scene_report.py`: passed; vehicle bounds now report `[3.35, -5.05]..[9.25, 0.65]`.
+- `python tools\validate_scene.py`: passed.
+- `python tools\scale_audit.py`: passed; no suspicious scale issues found.
+- `python tools\mesh_report.py`: passed; `unit-box-mesh` has 10 uses, 8 vertices, and 36 indices.
+- `python tools\status_report.py`: completed and reported the expected v0.13 modified files before cleanup/commit.
+- `build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --frames 300`: passed; GDI window created, `unit-box-mesh` loaded, ran 300 frames, clean shutdown.
+- `build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 300`: passed; hardware DX11 device failed and WARP was used, then the DX11 run completed cleanly.
+- Captured and visually checked `docs/images/v0.13-gdi-screenshot.png`.
+
+Known limitations after v0.13:
+
+- The vehicle is still deterministic placeholder code. No Jolt VehicleConstraint, wheel colliders, suspension, tire model, gearbox, damage, vehicle entity system, or traffic exists.
+- Vehicle collision is still bounds clamp plus safe exit checks, not full physical collision against the world.
+- Service-yard scene data is still mirrored manually in C++ constants. Runtime scene loading/source-of-truth migration remains deferred.
+- Manual driving feel must be tested on the target laptop; bounded frame runs only prove startup, rendering, and deterministic state.
+- DX11 still falls back to WARP in this environment.
+
+Recommended next goal:
+
+Run v0.13.1 Vehicle Manual Playtest + Control Polish.

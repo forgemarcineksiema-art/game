@@ -11,8 +11,23 @@
 
 namespace {
 
-const engine::Vec3 VehicleSpawnPosition {6.2f, 0.0f, -2.2f};
-const float VehicleSpawnYawRadians = engine::Radians(88.0f);
+const engine::Vec3 ServiceYardVehicleSpawnPosition {6.2f, 0.0f, -2.2f};
+const float ServiceYardVehicleSpawnYawRadians = engine::Radians(88.0f);
+const float ServiceYardBoundsMinX = 3.35f;
+const float ServiceYardBoundsMaxX = 9.25f;
+const float ServiceYardBoundsMinZ = -5.05f;
+const float ServiceYardBoundsMaxZ = 0.65f;
+const engine::Vec3 ServiceYardPadCenter {6.30f, -0.045f, -2.20f};
+const engine::Vec3 ServiceYardPadHalfExtents {3.05f, 0.045f, 2.95f};
+const engine::Vec3 ServiceYardWestRailCenter {3.25f, 0.35f, -2.20f};
+const engine::Vec3 ServiceYardEastRailCenter {9.35f, 0.35f, -2.20f};
+const engine::Vec3 ServiceYardRailHalfExtents {0.12f, 0.35f, 2.85f};
+const engine::Vec3 ServiceYardBackStopCenter {6.30f, 0.18f, -5.15f};
+const engine::Vec3 ServiceYardBackStopHalfExtents {2.55f, 0.18f, 0.12f};
+const engine::Vec3 ServiceYardCrateCenter {8.15f, 0.45f, 0.45f};
+const engine::Vec3 ServiceYardCrateHalfExtents {0.55f, 0.45f, 0.45f};
+const engine::Vec3 VehicleBodyHalfExtents {0.58f, 0.34f, 0.92f};
+const engine::Vec3 VehicleCabinHalfExtents {0.42f, 0.20f, 0.46f};
 
 engine::Color ScaleColor(engine::Color color, float scale)
 {
@@ -80,14 +95,34 @@ void DrawFerryOfficeMoodBase(engine::IRenderer& renderer, float floor)
 
 void DrawVehicleServiceYardBase(engine::IRenderer& renderer, float floor)
 {
-    renderer.drawDebugSolidBox({6.25f, floor - 0.045f, -2.1f}, {2.85f, 0.045f, 2.65f}, {0.16f, 0.18f, 0.17f, 1.0f});
-    renderer.drawDebugBox({6.25f, floor + 0.02f, -2.1f}, {2.85f, 0.02f, 2.65f}, {0.50f, 0.72f, 0.62f, 1.0f});
-    renderer.drawDebugLine({3.9f, floor + 0.04f, -2.1f}, {8.6f, floor + 0.04f, -2.1f}, {0.85f, 0.78f, 0.45f, 1.0f});
-    renderer.drawDebugLine({6.25f, floor + 0.04f, -4.35f}, {6.25f, floor + 0.04f, 0.15f}, {0.85f, 0.78f, 0.45f, 1.0f});
-    renderer.drawDebugSolidBox({3.45f, floor + 0.35f, -2.1f}, {0.12f, 0.35f, 2.55f}, {0.42f, 0.30f, 0.13f, 1.0f});
-    renderer.drawDebugSolidBox({9.05f, floor + 0.35f, -2.1f}, {0.12f, 0.35f, 2.55f}, {0.42f, 0.30f, 0.13f, 1.0f});
-    renderer.drawDebugSolidBox({6.25f, floor + 0.18f, -4.7f}, {2.25f, 0.18f, 0.12f}, {0.42f, 0.30f, 0.13f, 1.0f});
-    renderer.drawDebugSolidBox({8.15f, floor + 0.45f, 0.45f}, {0.55f, 0.45f, 0.45f}, {0.27f, 0.30f, 0.22f, 1.0f});
+    const engine::Vec3 padCenter {ServiceYardPadCenter.x, floor + ServiceYardPadCenter.y, ServiceYardPadCenter.z};
+    const engine::Vec3 padOutlineCenter {ServiceYardPadCenter.x, floor + 0.02f, ServiceYardPadCenter.z};
+    renderer.drawDebugSolidBox(padCenter, ServiceYardPadHalfExtents, {0.16f, 0.18f, 0.17f, 1.0f});
+    renderer.drawDebugBox(padOutlineCenter, {ServiceYardPadHalfExtents.x, 0.02f, ServiceYardPadHalfExtents.z}, {0.50f, 0.72f, 0.62f, 1.0f});
+    renderer.drawDebugLine(
+        {ServiceYardPadCenter.x - ServiceYardPadHalfExtents.x + 0.65f, floor + 0.04f, ServiceYardPadCenter.z},
+        {ServiceYardPadCenter.x + ServiceYardPadHalfExtents.x - 0.65f, floor + 0.04f, ServiceYardPadCenter.z},
+        {0.85f, 0.78f, 0.45f, 1.0f});
+    renderer.drawDebugLine(
+        {ServiceYardPadCenter.x, floor + 0.04f, ServiceYardPadCenter.z - ServiceYardPadHalfExtents.z + 0.65f},
+        {ServiceYardPadCenter.x, floor + 0.04f, ServiceYardPadCenter.z + ServiceYardPadHalfExtents.z - 0.65f},
+        {0.85f, 0.78f, 0.45f, 1.0f});
+    renderer.drawDebugSolidBox(
+        {ServiceYardWestRailCenter.x, floor + ServiceYardWestRailCenter.y, ServiceYardWestRailCenter.z},
+        ServiceYardRailHalfExtents,
+        {0.42f, 0.30f, 0.13f, 1.0f});
+    renderer.drawDebugSolidBox(
+        {ServiceYardEastRailCenter.x, floor + ServiceYardEastRailCenter.y, ServiceYardEastRailCenter.z},
+        ServiceYardRailHalfExtents,
+        {0.42f, 0.30f, 0.13f, 1.0f});
+    renderer.drawDebugSolidBox(
+        {ServiceYardBackStopCenter.x, floor + ServiceYardBackStopCenter.y, ServiceYardBackStopCenter.z},
+        ServiceYardBackStopHalfExtents,
+        {0.42f, 0.30f, 0.13f, 1.0f});
+    renderer.drawDebugSolidBox(
+        {ServiceYardCrateCenter.x, floor + ServiceYardCrateCenter.y, ServiceYardCrateCenter.z},
+        ServiceYardCrateHalfExtents,
+        {0.27f, 0.30f, 0.22f, 1.0f});
 }
 
 void DrawMeshInstance(engine::IRenderer& renderer, const engine::StaticMeshAsset& mesh, const engine::StaticMeshInstance& instance)
@@ -121,18 +156,18 @@ void SandboxLayer::onAttach()
     m_player.setWorld(&m_scene.world());
     m_onFootCameraSettings = m_camera.settings();
     m_vehicleCameraSettings = m_onFootCameraSettings;
-    m_vehicleCameraSettings.distance = 8.25f;
-    m_vehicleCameraSettings.heightOffset = 2.35f;
-    m_vehicleCameraSettings.smoothing = 9.5f;
+    m_vehicleCameraSettings.distance = 7.25f;
+    m_vehicleCameraSettings.heightOffset = 2.05f;
+    m_vehicleCameraSettings.smoothing = 10.5f;
 
     VehicleControllerSettings vehicleSettings;
-    vehicleSettings.boundsMinX = 3.55f;
-    vehicleSettings.boundsMaxX = 8.95f;
-    vehicleSettings.boundsMinZ = -4.55f;
-    vehicleSettings.boundsMaxZ = 0.35f;
+    vehicleSettings.boundsMinX = ServiceYardBoundsMinX;
+    vehicleSettings.boundsMaxX = ServiceYardBoundsMaxX;
+    vehicleSettings.boundsMinZ = ServiceYardBoundsMinZ;
+    vehicleSettings.boundsMaxZ = ServiceYardBoundsMaxZ;
     m_vehicle.setSettings(vehicleSettings);
-    m_vehicle.setPosition(VehicleSpawnPosition);
-    m_vehicle.setYawRadians(VehicleSpawnYawRadians);
+    m_vehicle.setPosition(ServiceYardVehicleSpawnPosition);
+    m_vehicle.setYawRadians(ServiceYardVehicleSpawnYawRadians);
     setupVehiclePhysicsWorld();
     loadStaticMeshAssets();
     updateDebugText();
@@ -530,10 +565,10 @@ void SandboxLayer::drawVehicleDebug(engine::IRenderer& renderer)
         ? engine::Color {0.25f, 0.72f, 1.0f, 1.0f}
         : engine::Color {0.75f, 0.78f, 0.58f, 1.0f};
     const engine::Vec3 bodyCenter = vehicle.position + engine::Vec3 {0.0f, 0.42f, 0.0f};
-    renderer.drawDebugSolidBox(bodyCenter, {0.58f, 0.34f, 0.92f}, ScaleColor(vehicleColor, 0.50f));
-    renderer.drawDebugBox(bodyCenter, {0.58f, 0.34f, 0.92f}, vehicleColor);
-    renderer.drawDebugSolidBox(vehicle.position + engine::Vec3 {0.0f, 0.86f, 0.0f}, {0.42f, 0.20f, 0.46f}, ScaleColor(vehicleColor, 0.38f));
-    renderer.drawDebugBox(vehicle.position + engine::Vec3 {0.0f, 0.86f, 0.0f}, {0.42f, 0.20f, 0.46f}, vehicleColor);
+    renderer.drawDebugSolidBox(bodyCenter, VehicleBodyHalfExtents, ScaleColor(vehicleColor, 0.50f));
+    renderer.drawDebugBox(bodyCenter, VehicleBodyHalfExtents, vehicleColor);
+    renderer.drawDebugSolidBox(vehicle.position + engine::Vec3 {0.0f, 0.86f, 0.0f}, VehicleCabinHalfExtents, ScaleColor(vehicleColor, 0.38f));
+    renderer.drawDebugBox(vehicle.position + engine::Vec3 {0.0f, 0.86f, 0.0f}, VehicleCabinHalfExtents, vehicleColor);
 
     const engine::Vec3 forward = m_vehicle.forward();
     renderer.drawDebugLine(vehicle.position + engine::Vec3 {0.0f, 0.75f, 0.0f},
@@ -598,19 +633,19 @@ void SandboxLayer::drawStaticMeshDebug(engine::IRenderer& renderer)
     DrawUnitBoxMeshInstance(renderer, m_unitBoxMesh, {2.8f, 0.65f, 1.9f}, {0.48f, 0.48f, 0.48f}, maintenanceTint);
     DrawUnitBoxMeshInstance(renderer, m_unitBoxMesh, {-1.25f, 0.32f, -1.65f}, {0.20f, 0.64f, 0.20f}, {0.38f, 0.30f, 0.14f, 1.0f});
     DrawUnitBoxMeshInstance(renderer, m_unitBoxMesh, {1.25f, 0.32f, -1.65f}, {0.20f, 0.64f, 0.20f}, {0.38f, 0.30f, 0.14f, 1.0f});
-    DrawUnitBoxMeshInstance(renderer, m_unitBoxMesh, {8.15f, 0.45f, 0.45f}, {1.10f, 0.90f, 0.90f}, {0.24f, 0.32f, 0.22f, 1.0f});
+    DrawUnitBoxMeshInstance(renderer, m_unitBoxMesh, ServiceYardCrateCenter, ServiceYardCrateHalfExtents * 2.0f, {0.24f, 0.32f, 0.22f, 1.0f});
     DrawUnitBoxMeshInstance(
         renderer,
         m_unitBoxMesh,
         m_vehicle.state().position + engine::Vec3 {0.0f, 0.42f, 0.0f},
-        {1.16f, 0.68f, 1.84f},
+        VehicleBodyHalfExtents * 2.0f,
         vehicleTint,
         m_vehicle.state().yawRadians);
     DrawUnitBoxMeshInstance(
         renderer,
         m_unitBoxMesh,
         m_vehicle.state().position + engine::Vec3 {0.0f, 0.86f, 0.0f},
-        {0.84f, 0.40f, 0.92f},
+        VehicleCabinHalfExtents * 2.0f,
         ScaleColor(vehicleTint, 0.78f),
         m_vehicle.state().yawRadians);
 }
@@ -647,19 +682,25 @@ void SandboxLayer::setupVehiclePhysicsWorld()
 
     engine::physics::BoxColliderDesc westRail;
     westRail.name = "vehicle-yard-west-rail";
-    westRail.center = {3.45f, 0.35f, -2.1f};
-    westRail.halfExtents = {0.12f, 0.35f, 2.55f};
+    westRail.center = ServiceYardWestRailCenter;
+    westRail.halfExtents = ServiceYardRailHalfExtents;
     m_vehiclePhysicsWorld->addStaticBox(westRail);
 
     engine::physics::BoxColliderDesc eastRail = westRail;
     eastRail.name = "vehicle-yard-east-rail";
-    eastRail.center.x = 9.05f;
+    eastRail.center = ServiceYardEastRailCenter;
     m_vehiclePhysicsWorld->addStaticBox(eastRail);
+
+    engine::physics::BoxColliderDesc backStop;
+    backStop.name = "vehicle-yard-back-stop";
+    backStop.center = ServiceYardBackStopCenter;
+    backStop.halfExtents = ServiceYardBackStopHalfExtents;
+    m_vehiclePhysicsWorld->addStaticBox(backStop);
 
     engine::physics::DynamicBoxDesc vehicleProxy;
     vehicleProxy.name = "service-yard-vehicle-proxy";
-    vehicleProxy.center = VehicleSpawnPosition + engine::Vec3 {0.0f, 0.42f, 0.0f};
-    vehicleProxy.halfExtents = {0.58f, 0.34f, 0.92f};
+    vehicleProxy.center = ServiceYardVehicleSpawnPosition + engine::Vec3 {0.0f, 0.42f, 0.0f};
+    vehicleProxy.halfExtents = VehicleBodyHalfExtents;
     vehicleProxy.mass = 900.0f;
     m_vehiclePhysicsWorld->addDynamicBox(vehicleProxy);
 }

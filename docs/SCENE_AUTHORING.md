@@ -167,6 +167,8 @@ Required fields:
 
 Vehicle movement is still deterministic placeholder code. Jolt VehicleConstraint and real vehicle collision are deferred.
 
+For v0.13, the service-yard vehicle bounds should remain slightly inside the visible pad/rail/back-stop layout so the vehicle center clamps before crossing the debug rails. Any bounds or pad edit must stay synchronized with the grouped service-yard constants in `src/game/SandboxLayer.cpp`.
+
 ## Avoiding Layout Drift
 
 Until runtime scene loading exists, any change to these areas must update both the scene data and matching C++:

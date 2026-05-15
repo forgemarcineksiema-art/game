@@ -7,12 +7,12 @@
 #include <string>
 
 struct VehicleControllerSettings {
-    float maxForwardSpeed = 12.0f;
-    float maxReverseSpeed = 4.0f;
-    float acceleration = 8.0f;
-    float braking = 12.0f;
-    float drag = 1.8f;
-    float steeringRate = 1.65f;
+    float maxForwardSpeed = 7.5f;
+    float maxReverseSpeed = 2.75f;
+    float acceleration = 6.5f;
+    float braking = 10.0f;
+    float drag = 2.4f;
+    float steeringRate = 2.05f;
     float enterRadius = 1.8f;
     float closeEnterRadius = 0.8f;
     float requiredFacingDot = 0.15f;

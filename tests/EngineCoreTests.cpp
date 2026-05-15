@@ -489,6 +489,198 @@ void TestVehicleCameraTargetFollowsVehicle()
         "Vehicle camera target should use vehicle yaw.");
 }
 
+void TestVehicleDefaultTuningFitsSmallServiceYard()
+{
+    const VehicleControllerSettings settings;
+
+    Expect(settings.maxForwardSpeed <= 8.0f,
+        "TestVehicleDefaultTuningFitsSmallServiceYard",
+        "Default forward speed should fit the compact service-yard road test.");
+    Expect(settings.maxReverseSpeed <= 3.0f,
+        "TestVehicleDefaultTuningFitsSmallServiceYard",
+        "Default reverse speed should stay readable in the compact service yard.");
+    Expect(settings.acceleration <= 7.0f,
+        "TestVehicleDefaultTuningFitsSmallServiceYard",
+        "Default acceleration should avoid launching across the service yard.");
+    Expect(settings.braking <= 10.5f,
+        "TestVehicleDefaultTuningFitsSmallServiceYard",
+        "Default braking should be firm but not abrupt for the prototype yard.");
+    Expect(settings.drag >= 2.2f,
+        "TestVehicleDefaultTuningFitsSmallServiceYard",
+        "Default drag should settle the placeholder vehicle quickly when input stops.");
+    Expect(settings.steeringRate >= 1.9f,
+        "TestVehicleDefaultTuningFitsSmallServiceYard",
+        "Default steering should support a tight low-speed turn-around test.");
+}
+
+void TestVehicleFocusUsesFacingAndCloseFallback()
+{
+    VehicleController vehicle;
+    VehicleControllerSettings settings;
+    settings.enterRadius = 1.5f;
+    settings.closeEnterRadius = 0.4f;
+    settings.requiredFacingDot = 0.5f;
+    vehicle.setSettings(settings);
+    vehicle.setPosition({0.0f, 0.0f, 0.0f});
+
+    VehicleFocus focus = vehicle.updateFocus({0.0f, 0.0f, -1.0f}, {0.0f, 0.0f, 1.0f});
+    Expect(focus.canEnter,
+        "TestVehicleFocusUsesFacingAndCloseFallback",
+        "Facing the nearby vehicle should allow entry focus.");
+
+    focus = vehicle.updateFocus({0.0f, 0.0f, -1.0f}, {0.0f, 0.0f, -1.0f});
+    Expect(!focus.canEnter,
+        "TestVehicleFocusUsesFacingAndCloseFallback",
+        "A player outside close fallback and facing away should not focus the vehicle.");
+
+    focus = vehicle.updateFocus({0.0f, 0.0f, -0.25f}, {0.0f, 0.0f, -1.0f});
+    Expect(focus.canEnter,
+        "TestVehicleFocusUsesFacingAndCloseFallback",
+        "Close fallback should still allow entry when the player is very near the vehicle.");
+
+    vehicle.setOccupiedForTesting(true);
+    focus = vehicle.updateFocus({0.0f, 0.0f, -0.25f}, {0.0f, 0.0f, 1.0f});
+    Expect(!focus.canEnter,
+        "TestVehicleFocusUsesFacingAndCloseFallback",
+        "An occupied vehicle should not expose an enter focus prompt.");
+}
+
+void TestVehicleBoundsClampStopsVehicle()
+{
+    VehicleController vehicle;
+    VehicleControllerSettings settings;
+    settings.boundsMinX = -1.0f;
+    settings.boundsMaxX = 1.0f;
+    settings.boundsMinZ = -0.2f;
+    settings.boundsMaxZ = 0.2f;
+    settings.maxForwardSpeed = 10.0f;
+    settings.acceleration = 10.0f;
+    vehicle.setSettings(settings);
+    vehicle.setPosition({0.0f, 0.0f, 0.18f});
+    vehicle.setOccupiedForTesting(true);
+
+    engine::InputState input;
+    input.moveForward = 1.0f;
+    vehicle.beginFrame();
+    vehicle.updateDriving(0.2f, input);
+
+    ExpectNear(vehicle.state().position.z, 0.2f, 0.001f,
+        "TestVehicleBoundsClampStopsVehicle",
+        "Vehicle should clamp to the authored service-yard Z bound.");
+    ExpectNear(vehicle.state().speed, 0.0f, 0.001f,
+        "TestVehicleBoundsClampStopsVehicle",
+        "Vehicle speed should reset after hitting service-yard bounds.");
+    Expect(vehicle.state().hitBoundsThisFrame,
+        "TestVehicleBoundsClampStopsVehicle",
+        "Vehicle should expose bounds-hit telemetry for debug text.");
+}
+
+void TestVehicleDragUsesDeltaClamp()
+{
+    VehicleController vehicle;
+    VehicleControllerSettings settings;
+    settings.acceleration = 10.0f;
+    settings.maxForwardSpeed = 10.0f;
+    settings.drag = 2.0f;
+    vehicle.setSettings(settings);
+    vehicle.setPosition({0.0f, 0.0f, 0.0f});
+    vehicle.setOccupiedForTesting(true);
+
+    engine::InputState input;
+    input.moveForward = 1.0f;
+    vehicle.beginFrame();
+    vehicle.updateDriving(0.1f, input);
+    const float speedBeforeDrag = vehicle.state().speed;
+
+    input = {};
+    vehicle.beginFrame();
+    vehicle.updateDriving(1.0f, input);
+
+    ExpectNear(speedBeforeDrag, 1.0f, 0.001f,
+        "TestVehicleDragUsesDeltaClamp",
+        "Initial acceleration setup should create a known speed before drag.");
+    ExpectNear(vehicle.state().speed, 0.8f, 0.001f,
+        "TestVehicleDragUsesDeltaClamp",
+        "Drag should use the same clamped timestep as vehicle movement.");
+}
+
+void TestVehicleExitPositionUsesSideAndBackOffsets()
+{
+    VehicleController vehicle;
+    VehicleControllerSettings settings;
+    settings.exitSideOffset = 1.65f;
+    settings.exitBackOffset = 0.35f;
+    vehicle.setSettings(settings);
+    vehicle.setPosition({0.0f, 0.0f, 0.0f});
+    vehicle.setYawRadians(0.0f);
+
+    const engine::Vec3 exit = vehicle.exitPosition();
+
+    ExpectNear(exit.x, -1.65f, 0.001f,
+        "TestVehicleExitPositionUsesSideAndBackOffsets",
+        "Vehicle exit should be placed to the left side at zero yaw.");
+    ExpectNear(exit.z, -0.35f, 0.001f,
+        "TestVehicleExitPositionUsesSideAndBackOffsets",
+        "Vehicle exit should be slightly behind the vehicle at zero yaw.");
+}
+
+void TestVehicleReverseSteeringIsPredictable()
+{
+    VehicleController vehicle;
+    VehicleControllerSettings settings;
+    settings.maxForwardSpeed = 8.0f;
+    settings.maxReverseSpeed = 3.0f;
+    settings.acceleration = 8.0f;
+    settings.steeringRate = 2.0f;
+    vehicle.setSettings(settings);
+    vehicle.setPosition({0.0f, 0.0f, 0.0f});
+    vehicle.setOccupiedForTesting(true);
+
+    engine::InputState input;
+    input.moveRight = 1.0f;
+    vehicle.beginFrame();
+    vehicle.updateDriving(0.1f, input);
+    ExpectNear(vehicle.state().yawRadians, 0.0f, 0.001f,
+        "TestVehicleReverseSteeringIsPredictable",
+        "Steering input at a standstill should not rotate the vehicle.");
+
+    input.moveForward = -1.0f;
+    for (int i = 0; i < 8; ++i) {
+        vehicle.beginFrame();
+        vehicle.updateDriving(0.05f, input);
+    }
+    const float yawBeforeReverseSteer = vehicle.state().yawRadians;
+
+    vehicle.beginFrame();
+    vehicle.updateDriving(0.05f, input);
+
+    Expect(vehicle.state().speed < 0.0f,
+        "TestVehicleReverseSteeringIsPredictable",
+        "Reverse input should put the vehicle into reverse speed.");
+    Expect(vehicle.state().yawRadians < yawBeforeReverseSteer,
+        "TestVehicleReverseSteeringIsPredictable",
+        "Steering right while reversing should turn the placeholder vehicle predictably backward.");
+}
+
+void TestSandboxLayerVehicleDebugTextIncludesRoadTestTelemetry()
+{
+    SandboxLayer layer;
+    layer.onAttach();
+
+    const std::string debug = layer.debugText();
+    layer.onDetach();
+
+    Expect(debug.find("vehicle=(6.20,0.00,-2.20)") != std::string::npos,
+        "TestSandboxLayerVehicleDebugTextIncludesRoadTestTelemetry",
+        "Sandbox debug text should expose the service-yard vehicle position.");
+    Expect(debug.find("cameraMode=on-foot") != std::string::npos,
+        "TestSandboxLayerVehicleDebugTextIncludesRoadTestTelemetry",
+        "Sandbox debug text should expose current camera mode.");
+    Expect(debug.find("physics=simple") != std::string::npos,
+        "TestSandboxLayerVehicleDebugTextIncludesRoadTestTelemetry",
+        "Sandbox debug text should expose the vehicle physics debug backend.");
+}
+
 void TestGameCodeDoesNotReferenceJoltVendorApi()
 {
 #ifdef ENGINE_SOURCE_ROOT
@@ -1656,6 +1848,13 @@ int main()
     TestVehicleControllerSteeringChangesYawWhileMoving();
     TestVehicleEnterExitUsesPressedEdgeAndSafeExit();
     TestVehicleCameraTargetFollowsVehicle();
+    TestVehicleDefaultTuningFitsSmallServiceYard();
+    TestVehicleFocusUsesFacingAndCloseFallback();
+    TestVehicleBoundsClampStopsVehicle();
+    TestVehicleDragUsesDeltaClamp();
+    TestVehicleExitPositionUsesSideAndBackOffsets();
+    TestVehicleReverseSteeringIsPredictable();
+    TestSandboxLayerVehicleDebugTextIncludesRoadTestTelemetry();
     TestGameCodeDoesNotReferenceJoltVendorApi();
     TestVec3NormalizationKeepsDiagonalMovementAtUnitLength();
     TestPlayerMovementIsCameraRelativeAndNormalized();

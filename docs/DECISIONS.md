@@ -396,3 +396,15 @@ Reason: v0.12.1 is about visual scale, placement, and scene-data consistency. Re
 Decision: Keep v0.12.1 mesh placement mirrored in `SandboxLayer` with a small local helper and a synchronization comment, rather than introducing runtime scene JSON loading.
 
 Reason: A runtime loader would be a separate architecture milestone touching error handling, asset lookup, scene ownership, and gameplay setup. The current goal only needed a safer prop/scale pass; explicit C++ keeps behavior predictable while scene tools validate the authored mirror.
+
+## v0.13 Deterministic Vehicle Tuning Before Physics Migration
+
+Decision: Retune the existing deterministic `VehicleController` for the compact service-yard road test instead of migrating to Jolt VehicleConstraint or adding wheel simulation.
+
+Reason: The current milestone is about clarity, control feel, enter/exit safety, and service-yard readability. Lower forward/reverse speed, smoother acceleration/braking, stronger drag, tighter low-speed steering, and a slightly closer vehicle camera provide a better playtest baseline while preserving the engine-owned physics boundary and avoiding a premature full vehicle physics framework.
+
+## v0.13 Service-Yard Constants Stay Local But Grouped
+
+Decision: Keep service-yard runtime placement explicit in `SandboxLayer.cpp`, but group the vehicle spawn, bounds, pad, rails, back-stop, crate, and vehicle proxy constants near the top of the file and mirror them in `data/scenes/ferry_office.scene.json`.
+
+Reason: v0.13 needs safer iteration without adding runtime scene loading. Grouped constants reduce accidental drift and make future Codex edits easier to audit, while the JSON scene tools continue to validate the authoring mirror.

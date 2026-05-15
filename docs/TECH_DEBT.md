@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-15
 
-This file lists known foundation issues after v0.12.1. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
+This file lists known foundation issues after v0.13. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
 
 ## Build / Toolchain
 
@@ -58,13 +58,13 @@ This file lists known foundation issues after v0.12.1. It is not a mandate to fi
 
 ## Vehicle
 
-- v0.10 vehicle movement is arcade-style and deterministic: no wheel colliders, suspension, tire friction model, gearbox, engine curve, brake balance, or Jolt VehicleConstraint.
+- v0.13 vehicle movement is still arcade-style and deterministic after a compact service-yard tuning pass: no wheel colliders, suspension, tire friction model, gearbox, engine curve, brake balance, or Jolt VehicleConstraint.
 - The vehicle is game-layer scoped in `VehicleController`; there is no vehicle entity/component system.
 - Vehicle collision is only safe yard-bound clamping plus a safe exit overlap check. It does not collide physically with all Ferry Office AABBs or dynamic bodies.
 - Enter/exit has no animation, doors, seats, mount offsets per vehicle, or obstruction sweeps.
-- Vehicle camera uses the existing third-person camera with alternate settings. There is no camera collision, chase-camera lag tuning, or reset-behind-vehicle command.
+- Vehicle camera uses the existing third-person camera with alternate settings. v0.13 retunes distance/height/smoothing for the small yard, but there is no camera collision, chase-camera lag tuning, or reset-behind-vehicle command.
 - The service-yard road area is debug geometry only, not final art or a real road/terrain system.
-- Full Jolt vehicle integration is intentionally deferred until the placeholder feel is playtested.
+- Full Jolt vehicle integration is intentionally deferred until the placeholder feel is playtested. The next vehicle goal should still focus on manual feel/control polish rather than wheel physics.
 
 ## Interaction
 
@@ -132,7 +132,7 @@ This file lists known foundation issues after v0.12.1. It is not a mandate to fi
 
 1. Run a full human keyboard/mouse playthrough of the Ferry Office loop and service-yard vehicle on the target laptop.
 2. Keep scene JSON and C++ layout synchronized until runtime loading or generation exists.
-3. Tune vehicle acceleration, braking, reverse speed, steering rate, service-yard bounds, and camera distance before adding more vehicle features.
+3. Manually playtest the v0.13 vehicle acceleration, braking, reverse, steering, service-yard bounds, and camera settings on the target laptop before adding more vehicle features.
 4. Decide whether glTF coverage should grow through cgltf/tinygltf before adding textures/materials.
 5. Validate captured cursor feel on the target laptop/touchpad and use `--free-cursor` if a remote session behaves badly.
 6. Decide whether the first Jolt gameplay promotion should be vehicle-only, world queries-only, or player collision-only after vehicle tuning.

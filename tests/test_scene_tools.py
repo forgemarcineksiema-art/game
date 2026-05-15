@@ -91,6 +91,17 @@ class SceneToolTests(unittest.TestCase):
         ]:
             self.assertIn(required_id, ids)
 
+    def test_v013_service_yard_vehicle_bounds_are_authoritative(self) -> None:
+        vehicle = self.scene["vehicles"][0]
+
+        self.assertEqual("service-yard-vehicle", vehicle["id"])
+        self.assertEqual([6.2, 0.0, -2.2], vehicle["spawn"]["position"])
+        self.assertEqual(88.0, vehicle["spawn"]["yawDegrees"])
+        self.assertEqual([0.58, 0.53, 0.92], vehicle["proxyHalfExtents"])
+        self.assertEqual(1.8, vehicle["enterRadius"])
+        self.assertEqual([3.35, -5.05], vehicle["bounds"]["min"])
+        self.assertEqual([9.25, 0.65], vehicle["bounds"]["max"])
+
     def test_valid_mesh_reference_scene_validates(self) -> None:
         scene = copy.deepcopy(self.scene)
         scene["meshAssets"] = [
