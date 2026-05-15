@@ -181,6 +181,18 @@ Mesh asset/reference report:
 python tools/mesh_report.py
 ```
 
+Blender workflow check and first procedural prop export:
+
+```powershell
+python tools/check_blender.py --require
+blender --version
+blender --background --python tools\blender\create_tidebreak_notice_board.py
+python tools/validate_assets.py
+python tools/mesh_report.py
+```
+
+Blender is not required for normal gameplay runs, but v0.20.1 proves it works locally from PATH with Blender 5.1.1.
+
 Use an explicit scene path when experimenting with a copy:
 
 ```powershell

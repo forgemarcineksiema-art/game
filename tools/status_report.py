@@ -61,6 +61,7 @@ def main() -> int:
         "data/scenes/ferry_office.scene.json",
         "assets/models/unit_box.gltf",
         "assets/models/ferry_notice_board.gltf",
+        "assets/models/blender_ferry_notice_board.gltf",
         "scripts/doctor.ps1",
         "scripts/configure.ps1",
         "scripts/build.ps1",
@@ -74,6 +75,7 @@ def main() -> int:
         "tools/mesh_report.py",
         "tools/check_blender.py",
         "tools/create_simple_prop_gltf.py",
+        "tools/blender/create_tidebreak_notice_board.py",
     ]:
         print(f"  {path}: {exists(path)}")
 

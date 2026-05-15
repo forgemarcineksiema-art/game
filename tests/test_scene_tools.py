@@ -128,6 +128,15 @@ class SceneToolTests(unittest.TestCase):
         self.assertIn("fallback", mesh_assets["ferry-notice-board-mesh"]["provenance"].lower())
         self.assertIn("not a blender export", mesh_assets["ferry-notice-board-mesh"]["provenance"].lower())
 
+    def test_v0201_blender_notice_board_asset_and_instance_exist(self) -> None:
+        ids = scene_data.collect_ids(self.scene)
+        mesh_assets = {asset["id"]: asset for asset in self.scene["meshAssets"]}
+
+        self.assertIn("blender-ferry-notice-board-mesh", mesh_assets)
+        self.assertIn("mesh-blender-ferry-notice-board", ids)
+        self.assertIn("blender", mesh_assets["blender-ferry-notice-board-mesh"]["provenance"].lower())
+        self.assertIn("5.1.1", mesh_assets["blender-ferry-notice-board-mesh"]["provenance"])
+
     def test_duplicate_mesh_replacement_links_are_reported(self) -> None:
         scene = copy.deepcopy(self.scene)
         first = copy.deepcopy(scene["meshInstances"][0])
@@ -308,16 +317,22 @@ class SceneToolTests(unittest.TestCase):
         self.assertIn("assets/models/unit_box.gltf", files_by_path)
         self.assertIn("assets/models/service_road_sign.gltf", files_by_path)
         self.assertIn("assets/models/ferry_notice_board.gltf", files_by_path)
+        self.assertIn("assets/models/blender_ferry_notice_board.gltf", files_by_path)
         self.assertTrue(files_by_path["assets/models/unit_box.gltf"].referenced)
         self.assertTrue(files_by_path["assets/models/ferry_notice_board.gltf"].referenced)
+        self.assertTrue(files_by_path["assets/models/blender_ferry_notice_board.gltf"].referenced)
         self.assertGreater(files_by_path["assets/models/unit_box.gltf"].vertex_count or 0, 0)
         self.assertGreater(files_by_path["assets/models/unit_box.gltf"].index_count or 0, 0)
         self.assertGreater(files_by_path["assets/models/ferry_notice_board.gltf"].vertex_count or 0, 0)
         self.assertGreater(files_by_path["assets/models/ferry_notice_board.gltf"].index_count or 0, 0)
+        self.assertGreater(files_by_path["assets/models/blender_ferry_notice_board.gltf"].vertex_count or 0, 0)
+        self.assertGreater(files_by_path["assets/models/blender_ferry_notice_board.gltf"].index_count or 0, 0)
         self.assertIsNotNone(files_by_path["assets/models/unit_box.gltf"].bounds_min)
         self.assertIsNotNone(files_by_path["assets/models/unit_box.gltf"].bounds_max)
         self.assertIsNotNone(files_by_path["assets/models/ferry_notice_board.gltf"].bounds_min)
         self.assertIsNotNone(files_by_path["assets/models/ferry_notice_board.gltf"].bounds_max)
+        self.assertIsNotNone(files_by_path["assets/models/blender_ferry_notice_board.gltf"].bounds_min)
+        self.assertIsNotNone(files_by_path["assets/models/blender_ferry_notice_board.gltf"].bounds_max)
         self.assertEqual([], [file.relative_path for file in report.files if file.suffix == ".gltf" and not file.referenced])
 
     def test_blender_check_reports_missing_command_without_throwing(self) -> None:
@@ -339,6 +354,16 @@ class SceneToolTests(unittest.TestCase):
         self.assertIsNotNone(metadata.bounds_min)
         self.assertIsNotNone(metadata.bounds_max)
         self.assertEqual([], metadata.errors)
+
+    def test_blender_notice_board_script_exists_and_documents_export_contract(self) -> None:
+        script_path = ROOT / "tools" / "blender" / "create_tidebreak_notice_board.py"
+
+        self.assertTrue(script_path.exists())
+        script_text = script_path.read_text(encoding="utf-8")
+        self.assertIn("blender_ferry_notice_board.gltf", script_text)
+        self.assertIn("export_scene.gltf", script_text)
+        self.assertIn("GLTF_SEPARATE", script_text)
+        self.assertIn("data:application/octet-stream;base64", script_text)
 
     def test_asset_workflow_reports_unreferenced_gltf_files(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:

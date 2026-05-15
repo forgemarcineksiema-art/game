@@ -501,3 +501,11 @@ Decision: Add an optional Blender availability checker and a tiny fallback `.glt
 Reason: The project needs a practical DCC workflow, but pretending success would poison the asset pipeline. The fallback generator keeps one small original prop moving through scene data, validation, runtime loading, and rendering while preserving the truth that real Blender export remains blocked.
 
 Dependency impact: no new third-party dependency was added. Blender remains an optional local tool until a future goal installs/configures it and verifies export compatibility. If Blender output immediately exceeds the current tiny `.gltf` subset, cgltf remains the preferred loader stabilization path.
+
+## v0.20.1 Blender 5.1 Headless Export With Post-Embedded Buffer
+
+Decision: Use a headless Blender 5.1.1 script to create one original procedural notice-board prop, export `GLTF_SEPARATE`, then post-embed the generated buffer into `assets/models/blender_ferry_notice_board.gltf` for the current tiny loader subset.
+
+Reason: Blender is now available from PATH, but its exporter in this environment does not offer direct embedded `.gltf`. A deterministic one-buffer post-embed step proves the DCC workflow without adding cgltf/tinygltf, materials, GLB support, resource caching, or a broad asset pipeline.
+
+Dependency impact: no new third-party dependency was added. Blender remains an optional local DCC tool and is not required for default validation on machines without it. If future Blender assets require broader output handling, cgltf remains the preferred next loader candidate.

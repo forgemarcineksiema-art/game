@@ -307,6 +307,17 @@
       "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v0.20 fallback static prop because Blender was unavailable; not a Blender export.",
       "authoringBoundsHalfExtents": [0.58, 0.70, 0.16],
       "notes": "Small original ferry notice board silhouette for route readability. No textures, logos, text, or final signage."
+    },
+    {
+      "id": "blender-ferry-notice-board-mesh",
+      "path": "assets/models/blender_ferry_notice_board.gltf",
+      "format": "gltf",
+      "units": "meter",
+      "upAxis": "Y",
+      "license": "project-original",
+      "provenance": "Authored procedurally by tools/blender/create_tidebreak_notice_board.py and exported headlessly by Blender 5.1.1 during v0.20.1.",
+      "authoringBoundsHalfExtents": [0.62, 0.705, 0.16],
+      "notes": "First real Blender-exported Tidebreak static prop. It remains low-detail placeholder geometry with no textures, materials, or final signage."
     }
   ],
   "meshInstances": [
@@ -418,6 +429,15 @@
       "scale": [1.0, 1.0, 1.0],
       "colorKey": "dock-muted-sign-yellow",
       "notes": "v0.20 fallback-generated prop placed near the office approach; this is not a Blender export."
+    },
+    {
+      "id": "mesh-blender-ferry-notice-board",
+      "assetId": "blender-ferry-notice-board-mesh",
+      "position": [-2.15, 0.0, 2.85],
+      "yawDegrees": 18.0,
+      "scale": [1.0, 1.0, 1.0],
+      "colorKey": "ferry-route-sign-blue",
+      "notes": "v0.20.1 Blender-exported prop placed near the Ferry Office notice/entrance approach."
     },
     {
       "id": "mesh-dock-road-edge-post-a",

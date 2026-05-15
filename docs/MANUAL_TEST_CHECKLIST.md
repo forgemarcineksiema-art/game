@@ -111,7 +111,7 @@ python tools/mesh_report.py
 - [ ] `python tools/scene_report.py` reports scene id `ferry-office`.
 - [ ] Scene report lists 9 colliders, 6 interactables, 1 traversal affordance, 1 vehicle, 6 route markers, and 5 objective markers.
 - [ ] `python tools/scale_audit.py` reports no suspicious scale issues, or any issue is documented.
-- [ ] `python tools/mesh_report.py` reports 6 mesh assets, 16 Ferry Office/service-yard/dock-road mesh instances, and 6 referenced `.gltf` model files.
+- [ ] `python tools/mesh_report.py` reports 7 mesh assets, 17 Ferry Office/service-yard/dock-road mesh instances, and 7 referenced `.gltf` model files.
 - [ ] `data/scenes/ferry_office.scene.json` contains the service gate, manifest, maintenance box, wall button, exit marker, service vault, player start, and service-yard vehicle ids.
 - [ ] `data/scenes/ferry_office.scene.json` contains `service-run-confirm-marker`, `service-run-checkpoint-marker`, and `route-dock-road-to-service-confirm`.
 - [ ] `data/scenes/ferry_office.scene.json` contains `meshAssets` and `meshInstances` for the current static mesh spike.
@@ -123,10 +123,10 @@ python tools/mesh_report.py
 - [ ] GDI run still shows debug text and all old gameplay markers.
 - [ ] GDI run shows flat mesh placeholders for the ferry office roof cap, facade/sign cue, service gate, maintenance box, dock bollards, service-yard crate, vehicle body, and vehicle cabin.
 - [ ] GDI run shows the v0.18 original prop-kit silhouettes: service road sign, road-edge posts, service-yard barrier cue, and maintenance utility box.
-- [ ] GDI run shows the v0.20 fallback-generated ferry notice board near the office approach, and this is understood as not a Blender export.
+- [ ] GDI run shows the v0.20 fallback-generated ferry notice board and the v0.20.1 Blender-exported notice-board prop near the office approach.
 - [ ] DX11 bounded run exits cleanly with mesh submissions enabled.
 - [ ] Mesh placeholders do not hide route, interaction, traversal, collision, or vehicle debug markers.
-- [ ] `assets/models/unit_box.gltf`, the v0.18 prop-kit meshes, and `assets/models/ferry_notice_board.gltf` remain small original placeholder assets with scene-data license/provenance.
+- [ ] `assets/models/unit_box.gltf`, the v0.18 prop-kit meshes, `assets/models/ferry_notice_board.gltf`, and `assets/models/blender_ferry_notice_board.gltf` remain small original placeholder assets with scene-data license/provenance.
 - [ ] No `.glb`, external-buffer `.gltf`, unreferenced `.gltf`, or undocumented mesh asset appears in `assets/models`.
 
 ## Vehicle Spike

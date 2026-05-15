@@ -127,3 +127,7 @@ v0.19 intentionally does not change the visual composition. It stabilizes the pa
 ## v0.20 Blender Workflow Observation
 
 v0.20 adds one small fallback-generated ferry notice board near the office approach. It supports the dock/ferry-service identity, but it is explicitly not a Blender export because Blender was not available in the current environment. Treat it as a workflow placeholder: useful for route readability and validation, not a proof that real DCC art is flowing yet.
+
+## v0.20.1 Blender Export Observation
+
+v0.20.1 adds a second notice-board style prop, this time generated through a real headless Blender 5.1.1 script. It is still low-detail flat placeholder geometry, but it proves the first DCC-authored prop path and gives the ferry-office approach a more intentional service-location cue without adding textures, materials, lighting, or final art.

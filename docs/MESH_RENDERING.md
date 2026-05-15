@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-15
 
-v0.12 adds the first narrow static mesh path. v0.19 stabilizes the surrounding asset workflow, and v0.20 proves the current Blender gap plus a small fallback prop workflow. This remains a render spike and authoring bridge, not a full asset pipeline.
+v0.12 adds the first narrow static mesh path. v0.19 stabilizes the surrounding asset workflow, v0.20 proves the Blender gap plus a small fallback prop workflow, and v0.20.1 proves one real headless Blender export. This remains a render spike and authoring bridge, not a full asset pipeline.
 
 ## What Exists
 
@@ -20,10 +20,12 @@ v0.12 adds the first narrow static mesh path. v0.19 stabilizes the surrounding a
 - `assets/models/unit_box.gltf` is a tiny original project-owned placeholder mesh.
 - v0.18 adds four more original tiny static prop meshes: `service_road_sign.gltf`, `road_edge_post.gltf`, `service_barrier.gltf`, and `utility_box.gltf`.
 - v0.20 adds `ferry_notice_board.gltf` through a project fallback generator because Blender is not available in the current environment.
+- v0.20.1 adds `blender_ferry_notice_board.gltf` through a real headless Blender 5.1.1 script.
 - `data/scenes/ferry_office.scene.json` now has `meshAssets` and `meshInstances`.
 - v0.12.1 uses that single unit-box asset for a small prop kit: Ferry Office roof/facade/sign, service gate, maintenance box, dock bollards, service-yard crate, and service-yard vehicle body/cabin.
 - v0.18 uses multiple scene-authored mesh asset ids for the first service-road prop style pass. `SandboxLayer` loads the authored mesh assets into a local `assetId -> StaticMeshAsset` map before drawing mesh instances.
 - v0.19 adds `tools/validate_assets.py` and expands `tools/mesh_report.py` so Codex can audit every committed `.gltf`, reference status, vertex/index counts, bounds, license/provenance, and unsupported file errors.
+- v0.20.1 proves that Blender's `GLTF_SEPARATE` output can be post-embedded into the current one-buffer loader subset for one controlled procedural prop.
 
 ## Supported glTF Subset
 
@@ -73,7 +75,7 @@ This is not a production renderer yet. DX11 has no depth buffer, no real world/v
 
 Keep wire/debug markers visible until a later overlay and asset pipeline exist.
 
-The v0.12.1, v0.18, and v0.20 mesh instances are still flat-tinted composition placeholders. They improve scale/readability and prop language, but they are not final art, material assets, or collision sources.
+The v0.12.1, v0.18, v0.20, and v0.20.1 mesh instances are still flat-tinted composition placeholders. They improve scale/readability and prop language, but they are not final art, material assets, or collision sources.
 
 ## How To Add A Simple Mesh
 
@@ -95,7 +97,7 @@ Every `.gltf` under `assets/models` should be referenced by scene data. Keep exp
 
 ## Loader Decision
 
-See `docs/ASSET_PIPELINE_DECISION.md` for the v0.19 decision and `docs/BLENDER_WORKFLOW.md` for the v0.20 workflow spike. Short version: keep the tiny custom loader briefly, stabilize tools and provenance first, and move to cgltf or tinygltf when real Blender-authored assets, GLB, external buffers, normals, UVs, or materials become necessary.
+See `docs/ASSET_PIPELINE_DECISION.md` for the v0.19 decision and `docs/BLENDER_WORKFLOW.md` for the v0.20/v0.20.1 workflow spikes. Short version: keep the tiny custom loader briefly, allow only controlled embedded-buffer Blender props, and move to cgltf or tinygltf when real Blender-authored assets, GLB, external buffers, normals, UVs, or materials become necessary.
 
 ## Deferred
 

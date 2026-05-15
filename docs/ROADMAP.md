@@ -259,8 +259,18 @@ Status: implemented as a workflow-stabilization milestone. The project keeps the
 - Preserve the tiny static mesh subset, asset validation, scene data, runtime loading, default validation, and Jolt opt-in validation.
 - Avoid final art, textures/materials, animation, editor, asset registry, resource cache, and new gameplay systems.
 
-Status: in progress. Blender is not available in PATH in this environment, so v0.20 adds an optional Blender checker, a documented fallback generator, and one fallback-generated original notice-board prop without claiming Blender export success.
+Status: complete. Blender was not available in PATH during the v0.20 run, so v0.20 added an optional Blender checker, a documented fallback generator, and one fallback-generated original notice-board prop without claiming Blender export success.
 
 ## Recommended Next Goal
 
 Build v0.20.1 Blender Export / Loader Compatibility Stabilization if Blender remains unavailable or export compatibility is still unproven.
+
+## v0.20.1 - Blender Export / Loader Compatibility Stabilization
+
+- Verify Blender from PATH after the laptop restart.
+- Run Blender headlessly to create one original procedural Tidebreak static prop.
+- Export a constrained `.gltf` that remains compatible with the current tiny static mesh loader.
+- Keep the v0.20 fallback prop honestly labeled.
+- Preserve asset validation, scene validation, runtime loading, default validation, and Jolt opt-in validation.
+
+Status: implemented. Blender 5.1.1 is available from PATH, `tools/blender/create_tidebreak_notice_board.py` exports `assets/models/blender_ferry_notice_board.gltf`, and the script post-embeds Blender's separate buffer so the current custom loader remains acceptable for this narrow prop workflow.

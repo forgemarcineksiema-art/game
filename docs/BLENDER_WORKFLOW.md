@@ -2,11 +2,11 @@
 
 Last updated: 2026-05-15
 
-This document records the v0.20 Blender-to-Tidebreak static prop workflow spike.
+This document records the v0.20 and v0.20.1 Blender-to-Tidebreak static prop workflow spikes.
 
 ## Current Result
 
-Blender is not available in the current Codex environment:
+v0.20 result: Blender was not available in the Codex environment:
 
 ```powershell
 blender --version
@@ -15,6 +15,21 @@ blender --version
 Result: `blender` was not recognized as a command in PATH.
 
 Because of that, v0.20 does not claim a successful Blender export. The milestone adds an optional Blender checker, a documented fallback generator, one fallback-generated original prop, and validation coverage so the next Blender attempt has a clear path.
+
+v0.20.1 result: Blender is available from PATH after the laptop restart:
+
+```text
+C:\Program Files\Blender Foundation\Blender 5.1\blender.EXE
+Blender 5.1.1
+```
+
+The real headless workflow now exists:
+
+```powershell
+blender --background --python tools\blender\create_tidebreak_notice_board.py
+```
+
+It creates `assets/models/blender_ferry_notice_board.gltf`, a project-original procedural notice-board prop.
 
 ## Check Blender
 
@@ -36,9 +51,9 @@ If Blender is installed outside PATH, pass the executable name or path:
 python tools/check_blender.py --command "C:\Program Files\Blender Foundation\Blender 4.3\blender.exe"
 ```
 
-## Intended Blender Path
+## Current Blender Path
 
-Future Blender-authored static props should follow this discipline:
+Blender-authored static props should follow this discipline:
 
 1. Model a simple original prop in meters.
 2. Use Y-up and keep +Z as the meaningful forward direction where relevant.
@@ -49,13 +64,13 @@ Future Blender-authored static props should follow this discipline:
 7. Add one or more `meshInstances`.
 8. Run the full asset validation commands.
 
-The expected future command shape is:
+The first real command is:
 
 ```powershell
-blender --background --python tools\blender\create_tidebreak_prop.py
+blender --background --python tools\blender\create_tidebreak_notice_board.py
 ```
 
-That script does not exist yet because Blender was unavailable in v0.20. Do not add it until Blender is installed and the exporter behavior can be tested honestly.
+Blender 5.1.1 does not expose direct `GLTF_EMBEDDED` export in this environment. The script uses `GLTF_SEPARATE`, embeds the generated `.bin` buffer into the `.gltf`, and deletes the temporary `.bin`. Keep that post-export step small and deterministic; move to cgltf/tinygltf if broader Blender output is needed.
 
 ## v0.20 Fallback Helper
 
@@ -68,6 +83,8 @@ python tools/create_simple_prop_gltf.py --output assets/models/ferry_notice_boar
 This creates a tiny original `ferry_notice_board.gltf` in the current embedded-buffer `.gltf` subset. It is useful for keeping Codex prop iteration repeatable while Blender is unavailable.
 
 Important: this fallback file is not a Blender export. Its scene provenance says so explicitly.
+
+The fallback remains useful as a known-good generator, but the preferred proof prop after v0.20.1 is `assets/models/blender_ferry_notice_board.gltf`.
 
 ## Validate Assets
 

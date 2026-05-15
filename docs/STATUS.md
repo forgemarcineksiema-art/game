@@ -3818,3 +3818,154 @@ Known remaining issues:
 Recommended next goal:
 
 Build v0.20.1 Blender Export / Loader Compatibility Stabilization.
+
+## v0.20.1 Baseline - 2026-05-15
+
+Goal: prove a real Blender-to-Tidebreak static prop workflow after the laptop restart, using one original Blender-authored procedural static prop and preserving the existing Ferry Office Service Call, v0.20 fallback prop, scene tooling, default validation, and Jolt opt-in validation. No Job #2, gameplay system, broad asset registry, material pipeline, animation, or renderer rewrite should be added.
+
+Required context read before implementation:
+
+- `AGENTS.md`
+- `docs/STATUS.md`
+- `docs/ROADMAP.md`
+- `docs/ARCHITECTURE.md`
+- `docs/TECH_DEBT.md`
+- `docs/ASSET_GUIDE.md`
+- `docs/SCENE_AUTHORING.md`
+- `docs/MESH_RENDERING.md`
+- `docs/ASSET_PIPELINE_DECISION.md`
+- `docs/BLENDER_WORKFLOW.md`
+- `docs/ART_DIRECTION.md`
+- `docs/DECISIONS.md`
+- `docs/MANUAL_TEST_CHECKLIST.md`
+
+Baseline results:
+
+- Git state before v0.20.1 work: `main...origin/main`, clean working tree.
+- `scripts\verify.ps1`: passed. Default doctor/configure/build/CTest, scene validation, asset validation, mesh report, and null smoke all completed. Null smoke reported engine `v0.20.0` and loaded all six scene-authored static mesh assets.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 3/3 tests.
+- `python tools\scene_report.py`: passed; scene reports 9 colliders, 21 visual placeholders, 6 mesh assets, 16 mesh instances, 6 interactables, 1 traversal affordance, 1 vehicle, 6 route markers, and 5 objective markers.
+- `python tools\validate_scene.py`: passed.
+- `python tools\validate_assets.py`: passed.
+- `python tools\scale_audit.py`: passed.
+- `python tools\mesh_report.py`: passed; reports all 6 model files as referenced with bounds and provenance.
+- `python tools\check_blender.py`: passed and reported Blender available from PATH at `C:\Program Files\Blender Foundation\Blender 5.1\blender.EXE`, version `Blender 5.1.1`.
+- `python tools\check_blender.py --require`: passed.
+- `blender --version`: passed and reported `Blender 5.1.1`.
+- Note: an earlier exploratory `blender --version | Select-Object -First 8` returned exit code 1 because the output stream was truncated by the pipe; the proper unpiped `blender --version` command passed.
+
+## v0.20.1 Short Implementation Plan
+
+1. Add failing tests first for the real Blender script path, scene-authored Blender-exported prop ids, mesh reporting for the exported file, and continued fallback-prop honesty.
+2. Add `tools\blender\create_tidebreak_notice_board.py` as a real headless Blender script that creates one original procedural notice-board/sign prop, applies transforms, and exports a constrained `.gltf`.
+3. Run the Blender script through `blender --background --python ...` and inspect whether the exported `.gltf` stays inside the current tiny loader subset.
+4. If the export is compatible, add it under `assets\models`, reference it in `data\scenes\ferry_office.scene.json`, and update tests/tools/docs. If it is not compatible, document the exact blocker and avoid broad parser work.
+5. Preserve the v0.20 fallback prop with explicit provenance; the new Blender prop should prove real DCC export, not replace history.
+6. Run the full default/Jolt/tool/windowed validation matrix, record exact results, then commit and push only after successful validation.
+
+## v0.20.1 Implementation Notes - 2026-05-15
+
+Changes made:
+
+- Added failing scene-tool tests first for the Blender script path, the expected Blender-exported mesh asset id, the expected scene mesh instance id, and mesh-report visibility for the new file.
+- Added `tools\blender\create_tidebreak_notice_board.py`.
+- Verified Blender 5.1.1 runs headlessly from PATH.
+- Exported `assets\models\blender_ferry_notice_board.gltf` as project-original procedural Blender geometry.
+- Kept `assets\models\ferry_notice_board.gltf` as the v0.20 fallback-generated proof prop with explicit fallback provenance.
+- Added scene data entries:
+  - `blender-ferry-notice-board-mesh`
+  - `mesh-blender-ferry-notice-board`
+- Updated `scripts\doctor.ps1`, `tools\status_report.py`, and documentation so future Codex runs know about the new Blender script and asset.
+
+Exporter compatibility result:
+
+- Blender 5.1.1 does not expose direct `GLTF_EMBEDDED` export in this environment.
+- The script uses `GLTF_SEPARATE`, embeds the generated `.bin` into the `.gltf` as a base64 data URI, updates `byteLength`, and removes the temporary `.bin`.
+- The resulting asset stays inside the current tiny loader subset: one embedded buffer, one primitive, `POSITION` float `VEC3`, indexed triangles.
+- Mesh metadata after export: 96 vertices, 144 indices, bounds approximately `(-0.62, 0.00, -0.16)` to `(0.62, 1.41, 0.16)`.
+
+Focused validation while implementing:
+
+- `python tests\test_scene_tools.py`: first failed as expected before implementation, then passed after script/asset/scene integration.
+- `blender --background --python tools\blender\create_tidebreak_notice_board.py`: passed and generated `assets\models\blender_ferry_notice_board.gltf`.
+- `python tools\validate_scene.py`: passed.
+- `python tools\validate_assets.py`: passed; reports 7 model files.
+- `python tools\scale_audit.py`: passed.
+- `python tools\mesh_report.py`: passed; reports 7 mesh assets, 17 mesh instances, and 7 referenced model files.
+
+Known implementation limitations:
+
+- The Blender post-embed step is intentionally tiny and should not grow into a broad custom importer/cooker. If future Blender assets need GLB, multiple buffers, materials, UVs, nodes, or broader exporter variance, prefer a cgltf/tinygltf loader goal.
+- The new Blender notice board is still placeholder art. It proves the DCC workflow; it is not final art, a material workflow, or collision geometry.
+
+## v0.20.1 Final Validation - 2026-05-15
+
+Commands run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\doctor.ps1
+powershell -ExecutionPolicy Bypass -File scripts\configure.ps1
+powershell -ExecutionPolicy Bypass -File scripts\build.ps1
+ctest --preset windows-vs2022-debug --output-on-failure
+powershell -ExecutionPolicy Bypass -File scripts\verify.ps1
+cmake --preset windows-vs2022-debug-jolt
+cmake --build --preset windows-vs2022-debug-jolt
+ctest --preset windows-vs2022-debug-jolt --output-on-failure
+python tools\scene_report.py
+python tools\validate_scene.py
+python tools\validate_assets.py
+python tools\scale_audit.py
+python tools\mesh_report.py
+python tools\status_report.py
+python tools\check_blender.py
+python tools\check_blender.py --require
+blender --version
+blender --background --python tools\blender\create_tidebreak_notice_board.py
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --ui-mode playtest --frames 360
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --ui-mode debug --frames 360
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 360
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --scene data\scenes\ferry_office.scene.json --ui-mode playtest --frames 360
+```
+
+Results:
+
+- `scripts\doctor.ps1`: passed. Expected PATH warnings remain for `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- `scripts\configure.ps1`: passed with preset `windows-vs2022-debug`.
+- `scripts\build.ps1`: passed.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 3/3 tests.
+- `scripts\verify.ps1`: passed. Null smoke reported engine `v0.20.1` and loaded all seven scene-authored static mesh assets, including `blender-ferry-notice-board-mesh`.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 3/3 tests.
+- `python tools\scene_report.py`: passed; scene reports 9 colliders, 21 visual placeholders, 7 mesh assets, 17 mesh instances, 6 interactables, 1 traversal affordance, 1 vehicle, 6 route markers, and 5 objective markers.
+- `python tools\validate_scene.py`: passed.
+- `python tools\validate_assets.py`: passed; 7 model files under `assets\models`.
+- `python tools\scale_audit.py`: passed; no suspicious scale issues found.
+- `python tools\mesh_report.py`: passed; all seven `.gltf` files are referenced with license/provenance, vertex/index counts, and bounds.
+- `python tools\status_report.py`: passed and reports the new Blender asset/script as important files.
+- `python tools\check_blender.py`: passed and reported Blender available at `C:\Program Files\Blender Foundation\Blender 5.1\blender.EXE`, version `Blender 5.1.1`.
+- `python tools\check_blender.py --require`: passed.
+- `blender --version`: passed and reported `Blender 5.1.1`.
+- `blender --background --python tools\blender\create_tidebreak_notice_board.py`: passed, regenerated `assets\models\blender_ferry_notice_board.gltf`, and kept the asset compatible with validation/reporting.
+- GDI playtest bounded run: passed, loaded the Blender-exported mesh asset, and exited cleanly.
+- GDI debug bounded run: passed, loaded the Blender-exported mesh asset, preserved debug telemetry, and exited cleanly.
+- DX11 bounded run: passed; hardware DX11 device creation still falls back to WARP in this environment, then loads all seven mesh assets and exits cleanly.
+- Explicit `--scene data\scenes\ferry_office.scene.json` GDI playtest run: passed and exited cleanly.
+
+Visual / workflow evidence:
+
+- No screenshot was replaced in v0.20.1 because this goal primarily proves a repeatable Blender export and loader compatibility path. Bounded GDI/DX11 runs confirm that the runtime loads the new scene-authored Blender mesh asset.
+- The v0.20 fallback notice board remains in the scene and remains explicitly labeled as fallback-generated, not Blender output.
+
+Known remaining issues:
+
+- The Blender workflow is proven only for one simple procedural static prop. Future hand-authored Blender props may still reveal loader gaps.
+- The post-embed step is intentionally narrow. If it needs to handle broader Blender output, prefer a cgltf/tinygltf loader spike.
+- The current renderer still has no materials, textures, depth buffer, lighting, shadows, or final art path.
+- DX11 still falls back to WARP in this environment and still does not render text overlays.
+
+Recommended next goal:
+
+Build v0.21 Ferry Office Playable Build Polish / Bug Bash.

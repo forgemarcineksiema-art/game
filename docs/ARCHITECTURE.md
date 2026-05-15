@@ -96,15 +96,16 @@ Scene tools live under `tools`:
 - `validate_assets.py`: asset workflow validation for mesh files, scene references, provenance, unsupported formats, and unsupported buffers.
 - `mesh_report.py`: static mesh file/reference summary with vertex/index counts, bounds, usage, and provenance.
 - `check_blender.py`: optional local Blender availability check; Blender is not required for default validation yet.
+- `tools/blender/create_tidebreak_notice_board.py`: headless Blender script that creates one original procedural Tidebreak notice-board prop and post-embeds Blender's exported buffer for the current loader subset.
 - `create_simple_prop_gltf.py`: fallback generator for tiny original static props when Blender is unavailable; it is not a Blender exporter.
 
-v0.12 extends the scene file with `meshAssets` and `meshInstances`. These are validated scene entries, not a full asset registry. v0.12.1 grows the Ferry Office prop set to 10 mesh instances for roof/facade/sign, service gate, maintenance box, dock props, service-yard crate, and vehicle body/cabin. v0.15 submits those mesh instances from loaded scene data. v0.18 adds four original service-road prop meshes and 15 total mesh instances; `SandboxLayer` now loads scene mesh assets by id instead of assuming only `unit-box-mesh`. v0.19 keeps that runtime boundary and improves tooling around it rather than adding a resource manager. v0.20 adds one fallback-generated ferry notice board, raising the current scene to 6 mesh assets and 16 mesh instances, while documenting that real Blender export is still blocked.
+v0.12 extends the scene file with `meshAssets` and `meshInstances`. These are validated scene entries, not a full asset registry. v0.12.1 grows the Ferry Office prop set to 10 mesh instances for roof/facade/sign, service gate, maintenance box, dock props, service-yard crate, and vehicle body/cabin. v0.15 submits those mesh instances from loaded scene data. v0.18 adds four original service-road prop meshes and 15 total mesh instances; `SandboxLayer` now loads scene mesh assets by id instead of assuming only `unit-box-mesh`. v0.19 keeps that runtime boundary and improves tooling around it rather than adding a resource manager. v0.20 adds one fallback-generated ferry notice board. v0.20.1 adds one real Blender-exported notice-board prop, raising the current scene to 7 mesh assets and 17 mesh instances.
 
 ## Static Mesh Assets
 
 `src/engine/assets/StaticMesh.*` is the first engine-owned static mesh boundary. It defines `StaticMeshAsset`, `StaticMeshVertex`, `StaticMeshInstance`, local bounds, a minimal glTF loader, and a helper that expands indexed mesh data into flat triangle lists for the current immediate renderer path.
 
-The v0.12 loader supports only a tiny `.gltf` subset: one embedded base64 buffer, one primitive with `POSITION` float `VEC3`, and indexed triangle lists. v0.19 documents the decision to keep this tiny custom loader briefly while validating the workflow around it. It intentionally does not support materials, textures, node hierarchy, GLB, external buffers, animation, skinning, mesh collision, or an asset registry.
+The v0.12 loader supports only a tiny `.gltf` subset: one embedded base64 buffer, one primitive with `POSITION` float `VEC3`, and indexed triangle lists. v0.19 documents the decision to keep this tiny custom loader briefly while validating the workflow around it. v0.20.1 proves that a Blender 5.1 `GLTF_SEPARATE` export can be post-normalized into this embedded-buffer subset for one simple procedural prop. The loader intentionally does not support materials, textures, node hierarchy, GLB, external buffers, animation, skinning, mesh collision, or an asset registry.
 
 ## Physics
 

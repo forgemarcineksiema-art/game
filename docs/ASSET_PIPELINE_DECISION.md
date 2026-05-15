@@ -157,3 +157,11 @@ v0.20 adds:
 - `docs/BLENDER_WORKFLOW.md` with the exact current blocker and next intended workflow.
 
 This does not change the v0.19 recommendation. Keep the tiny loader briefly, but the first real Blender install/export pass should happen soon. If Blender produces `.gltf` files that require external buffers, GLB, multiple primitives, normals/UVs, or material dependencies, prefer stabilizing cgltf next instead of growing a fragile custom parser.
+
+## v0.20.1 Blender Export Update
+
+After the laptop restart, Blender 5.1.1 is available from PATH and can run headlessly. v0.20.1 adds `tools/blender/create_tidebreak_notice_board.py`, which creates one original procedural notice-board prop and exports `assets/models/blender_ferry_notice_board.gltf`.
+
+Blender 5.1.1 exposes `GLB` and `GLTF_SEPARATE` export modes, not the direct embedded `.gltf` mode expected by the current loader. The v0.20.1 script therefore exports `GLTF_SEPARATE`, embeds the generated `.bin` as a base64 data URI, updates `byteLength`, and deletes the temporary `.bin`.
+
+Recommendation remains: keep the tiny custom loader for a short phase. The post-embed normalizer is acceptable for one controlled procedural prop. Switch to cgltf or tinygltf if this normalizer starts handling multiple buffers, external resources, materials, UVs, node hierarchy, or broader Blender output.

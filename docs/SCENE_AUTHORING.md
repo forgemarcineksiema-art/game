@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-15
 
-v0.11 introduced scene data for Codex-friendly inspection and validation. v0.12 added mesh asset and mesh instance references. v0.12.1 expanded the Ferry Office mesh set for a focused prop/scale pass. v0.14 added the first dock road segment as authored placeholders and route markers. v0.15 makes `data/scenes/ferry_office.scene.json` the runtime source of truth for current layout data while keeping Tidebreak-specific behavior in C++. v0.18 adds the first original service-road prop-kit meshes and keeps them scene-authored. v0.20 adds one fallback-generated ferry notice board because Blender was unavailable; its provenance must stay explicit.
+v0.11 introduced scene data for Codex-friendly inspection and validation. v0.12 added mesh asset and mesh instance references. v0.12.1 expanded the Ferry Office mesh set for a focused prop/scale pass. v0.14 added the first dock road segment as authored placeholders and route markers. v0.15 makes `data/scenes/ferry_office.scene.json` the runtime source of truth for current layout data while keeping Tidebreak-specific behavior in C++. v0.18 adds the first original service-road prop-kit meshes and keeps them scene-authored. v0.20 adds one fallback-generated ferry notice board because Blender was unavailable; its provenance must stay explicit. v0.20.1 adds one real Blender-exported notice-board prop and keeps it scene-authored too.
 
 ## Scene Data Location
 
@@ -151,7 +151,7 @@ Optional fields can link the instance to existing debug data:
 - `linkedColliderId`,
 - `colorKey`.
 
-v0.12-v0.20 supports only tiny original `.gltf` placeholder assets through the static mesh spike. The current Ferry Office prop set uses `unit_box.gltf`, the v0.18 service-road prop kit (`service_road_sign.gltf`, `road_edge_post.gltf`, `service_barrier.gltf`, `utility_box.gltf`), and the v0.20 fallback-generated `ferry_notice_board.gltf`. Do not add `.glb`, external buffers, materials, textures, animation, mesh collision, or imported third-party art through this scene format yet.
+v0.12-v0.20.1 supports only tiny original `.gltf` placeholder assets through the static mesh spike. The current Ferry Office prop set uses `unit_box.gltf`, the v0.18 service-road prop kit (`service_road_sign.gltf`, `road_edge_post.gltf`, `service_barrier.gltf`, `utility_box.gltf`), the v0.20 fallback-generated `ferry_notice_board.gltf`, and the v0.20.1 Blender-exported `blender_ferry_notice_board.gltf`. Do not add `.glb`, external buffers, materials, textures, animation, mesh collision, or imported third-party art through this scene format yet.
 
 Asset workflow validation now expects every committed `.gltf` under `assets/models` to be referenced by scene data and documented with license/provenance. Use `python tools/validate_assets.py` before and after adding mesh files.
 
