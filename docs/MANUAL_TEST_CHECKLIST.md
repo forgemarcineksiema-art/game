@@ -45,6 +45,7 @@ Optional scene authoring checks:
 python tools/scene_report.py
 python tools/validate_scene.py
 python tools/scale_audit.py
+python tools/mesh_report.py
 ```
 
 ## Player
@@ -90,8 +91,18 @@ python tools/scale_audit.py
 - [ ] `python tools/scene_report.py` reports scene id `ferry-office`.
 - [ ] Scene report lists 9 colliders, 5 interactables, 1 traversal affordance, and 1 vehicle.
 - [ ] `python tools/scale_audit.py` reports no suspicious scale issues, or any issue is documented.
+- [ ] `python tools/mesh_report.py` reports mesh asset `unit-box-mesh` and the expected Ferry Office/service-yard mesh instances.
 - [ ] `data/scenes/ferry_office.scene.json` contains the service gate, manifest, maintenance box, wall button, exit marker, service vault, player start, and service-yard vehicle ids.
+- [ ] `data/scenes/ferry_office.scene.json` contains `meshAssets` and `meshInstances` for the current static mesh spike.
 - [ ] Any manual movement of scene objects is reflected in both C++ runtime data and scene JSON until runtime loading exists.
+
+## Static Mesh Rendering
+
+- [ ] GDI run still shows debug text and all old gameplay markers.
+- [ ] GDI run shows flat mesh placeholders for the ferry office roof cap, service gate, maintenance box, and vehicle body.
+- [ ] DX11 bounded run exits cleanly with mesh submissions enabled.
+- [ ] Mesh placeholders do not hide route, interaction, traversal, collision, or vehicle debug markers.
+- [ ] `assets/models/unit_box.gltf` remains a small original placeholder asset with scene-data license/provenance.
 
 ## Vehicle Spike
 

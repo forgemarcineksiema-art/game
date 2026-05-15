@@ -161,6 +161,17 @@ Status: implemented as a first vehicle feel spike. The service-yard vehicle can 
 
 Status: implemented as a tooling/data foundation. The runtime still uses the existing C++ prototype setup, but `data/scenes/ferry_office.scene.json` now mirrors the scene and is validated by Python tools and CTest/verify.
 
+## v0.12 - Static Mesh + glTF Render Spike
+
+- Add a minimal engine-owned static mesh data boundary.
+- Prove a tiny original glTF placeholder asset can load and compute bounds.
+- Add scene-data mesh asset and mesh instance references.
+- Extend Codex scene tools to validate/report mesh references.
+- Render flat-tinted mesh triangles through the existing renderer abstraction where practical.
+- Preserve debug visibility and avoid materials, textures, lighting, animation, editor work, or a full asset pipeline.
+
+Status: implemented as a narrow static mesh/render spike. `assets/models/unit_box.gltf` is project-original, `data/scenes/ferry_office.scene.json` now references four mesh instances, GDI/DX11/null accept flat triangle submissions, and runtime mirrors a few mesh instances explicitly in `SandboxLayer`.
+
 ## Recommended Next Goal
 
-Build v0.12 Static Mesh + glTF Render Spike.
+Build v0.12.1 Ferry Office Prop Replacement + Visual Scale Pass.

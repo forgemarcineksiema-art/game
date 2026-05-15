@@ -68,6 +68,106 @@ class SceneToolTests(unittest.TestCase):
         self.assertEqual(1, summary.traversal_count)
         self.assertEqual(1, summary.vehicle_count)
 
+    def test_scene_summary_reports_mesh_assets_and_instances(self) -> None:
+        summary = scene_data.build_summary(self.scene)
+
+        self.assertGreaterEqual(summary.mesh_asset_count, 1)
+        self.assertGreaterEqual(summary.mesh_instance_count, 3)
+
+    def test_valid_mesh_reference_scene_validates(self) -> None:
+        scene = copy.deepcopy(self.scene)
+        scene["meshAssets"] = [
+            {
+                "id": "test-unit-box-mesh",
+                "path": "assets/models/unit_box.gltf",
+                "format": "gltf",
+                "units": "meter",
+                "upAxis": "Y",
+                "license": "project-original",
+                "provenance": "Created in-repo for validation.",
+                "authoringBoundsHalfExtents": [0.5, 0.5, 0.5],
+            }
+        ]
+        scene["meshInstances"] = [
+            {
+                "id": "test-unit-box-instance",
+                "assetId": "test-unit-box-mesh",
+                "position": [0.0, 0.5, 0.0],
+                "yawDegrees": 0.0,
+                "scale": [1.0, 1.0, 1.0],
+                "colorKey": "office-muted-concrete",
+                "replacesVisualPlaceholderId": "ferry-office-floor-slab",
+                "linkedColliderId": "service-gate",
+            }
+        ]
+
+        result = scene_data.validate_scene(scene)
+
+        self.assertEqual([], result.errors)
+
+    def test_mesh_asset_unsafe_path_is_reported(self) -> None:
+        scene = copy.deepcopy(self.scene)
+        scene["meshAssets"] = [
+            {
+                "id": "unsafe-mesh",
+                "path": "../outside.gltf",
+                "format": "gltf",
+                "units": "meter",
+                "upAxis": "Y",
+                "license": "project-original",
+                "provenance": "Created in-repo for validation.",
+            }
+        ]
+        scene["meshInstances"] = []
+
+        result = scene_data.validate_scene(scene)
+
+        self.assertTrue(any("path" in error and "assets/" in error for error in result.errors))
+
+    def test_mesh_instance_missing_asset_is_reported(self) -> None:
+        scene = copy.deepcopy(self.scene)
+        scene["meshAssets"] = []
+        scene["meshInstances"] = [
+            {
+                "id": "missing-asset-instance",
+                "assetId": "does-not-exist",
+                "position": [0.0, 0.5, 0.0],
+                "yawDegrees": 0.0,
+                "scale": [1.0, 1.0, 1.0],
+            }
+        ]
+
+        result = scene_data.validate_scene(scene)
+
+        self.assertTrue(any("unknown mesh asset" in error for error in result.errors))
+
+    def test_non_positive_mesh_instance_scale_is_reported(self) -> None:
+        scene = copy.deepcopy(self.scene)
+        scene["meshAssets"] = [
+            {
+                "id": "test-unit-box-mesh",
+                "path": "assets/models/unit_box.gltf",
+                "format": "gltf",
+                "units": "meter",
+                "upAxis": "Y",
+                "license": "project-original",
+                "provenance": "Created in-repo for validation.",
+            }
+        ]
+        scene["meshInstances"] = [
+            {
+                "id": "bad-scale-instance",
+                "assetId": "test-unit-box-mesh",
+                "position": [0.0, 0.5, 0.0],
+                "yawDegrees": 0.0,
+                "scale": [1.0, 0.0, 1.0],
+            }
+        ]
+
+        result = scene_data.validate_scene(scene)
+
+        self.assertTrue(any("scale" in error and "positive" in error for error in result.errors))
+
 
 if __name__ == "__main__":
     unittest.main()

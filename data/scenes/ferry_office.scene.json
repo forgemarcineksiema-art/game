@@ -1,8 +1,8 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "ferry-office",
   "name": "The Ferry Office",
-  "description": "Authoring snapshot for the current Ferry Office and service-yard prototype scene. Runtime still uses the existing C++ setup in v0.11.",
+  "description": "Authoring snapshot for the current Ferry Office and service-yard prototype scene. Runtime still uses explicit C++ setup, with v0.12 mesh instances mirrored here.",
   "units": {
     "linear": "meter",
     "upAxis": "Y",
@@ -192,6 +192,57 @@
       "colorKey": "mossy-service-crate"
     }
   ],
+  "meshAssets": [
+    {
+      "id": "unit-box-mesh",
+      "path": "assets/models/unit_box.gltf",
+      "format": "gltf",
+      "units": "meter",
+      "upAxis": "Y",
+      "license": "project-original",
+      "provenance": "Created in-repo for the v0.12 static mesh render spike.",
+      "authoringBoundsHalfExtents": [0.5, 0.5, 0.5],
+      "notes": "Simple original cube placeholder used to prove mesh instances before final art."
+    }
+  ],
+  "meshInstances": [
+    {
+      "id": "mesh-ferry-office-roof-cap",
+      "assetId": "unit-box-mesh",
+      "position": [0.0, 1.68, 5.18],
+      "yawDegrees": 0.0,
+      "scale": [5.9, 0.24, 1.1],
+      "colorKey": "rusted-roof-trim",
+      "replacesVisualPlaceholderId": "ferry-office-roof-cap"
+    },
+    {
+      "id": "mesh-service-gate",
+      "assetId": "unit-box-mesh",
+      "position": [0.0, 0.75, 2.35],
+      "yawDegrees": 0.0,
+      "scale": [4.9, 1.5, 0.32],
+      "colorKey": "service-gate-state",
+      "linkedColliderId": "service-gate"
+    },
+    {
+      "id": "mesh-maintenance-box",
+      "assetId": "unit-box-mesh",
+      "position": [2.8, 0.65, 1.9],
+      "yawDegrees": 0.0,
+      "scale": [0.48, 0.48, 0.48],
+      "colorKey": "oxidized-service-green",
+      "replacesVisualPlaceholderId": "maintenance-box-visual-post"
+    },
+    {
+      "id": "mesh-service-yard-vehicle-body",
+      "assetId": "unit-box-mesh",
+      "position": [6.2, 0.42, -2.2],
+      "yawDegrees": 88.0,
+      "scale": [1.16, 0.68, 1.84],
+      "colorKey": "service-vehicle-placeholder",
+      "linkedColliderId": "service-yard-vehicle"
+    }
+  ],
   "interactables": [
     {
       "id": "ferry-manifest",
@@ -329,7 +380,7 @@
     }
   ],
   "authoringNotes": [
-    "Runtime behavior is still driven by C++ in v0.11; this file is the source-of-truth candidate and tool contract.",
+    "Runtime behavior is still driven by explicit C++ setup; mesh instances are mirrored here for validation and future loading/code generation.",
     "When moving a Ferry Office object in C++, update this data file in the same change until runtime loading exists.",
     "Keep ids stable and lowercase-kebab-case so Codex tools can compare scene data against code/docs."
   ]

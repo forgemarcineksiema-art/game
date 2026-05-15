@@ -25,6 +25,7 @@ public:
     void drawDebugGridAndAxes() override;
     void drawDebugLine(Vec3 from, Vec3 to, Color color) override;
     void drawDebugSolidBox(Vec3 center, Vec3 halfExtents, Color color) override;
+    void drawDebugFlatTriangles(std::span<const Vec3> triangleVertices, Color color) override;
     void drawDebugBox(Vec3 center, Vec3 halfExtents, Color color) override;
     void drawDebugText(std::string_view text) override;
     void endFrame() override;

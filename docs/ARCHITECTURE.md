@@ -77,6 +77,15 @@ Scene tools live under `tools`:
 - `validate_scene.py`: hard validation for required ids, numeric vectors, uniqueness, radii/extents, traversal data, vehicle bounds, and scale sanity.
 - `scene_report.py`: compact Codex-readable scene summary.
 - `scale_audit.py`: suspicious-scale report for object sizes and vehicle dimensions.
+- `mesh_report.py`: static mesh asset/reference summary.
+
+v0.12 extends the scene file with `meshAssets` and `meshInstances`. These are validated authoring/runtime-candidate entries, not a full asset registry. Runtime still mirrors the important mesh instances explicitly in `SandboxLayer` until scene loading or code generation exists.
+
+## Static Mesh Assets
+
+`src/engine/assets/StaticMesh.*` is the first engine-owned static mesh boundary. It defines `StaticMeshAsset`, `StaticMeshVertex`, `StaticMeshInstance`, local bounds, a minimal glTF loader, and a helper that expands indexed mesh data into flat triangle lists for the current immediate renderer path.
+
+The v0.12 loader supports only a tiny `.gltf` subset: one embedded base64 buffer, one primitive with `POSITION` float `VEC3`, and indexed triangle lists. It intentionally does not support materials, textures, node hierarchy, GLB, animation, skinning, mesh collision, or an asset registry.
 
 ## Physics
 
@@ -111,6 +120,8 @@ Backends:
 Renderer selection defaults to `auto`, which attempts DirectX 11 on Windows when a native window exists. If the primary renderer fails during startup, the application attempts the GDI fallback before giving up.
 
 v0.2 adds debug primitive drawing to the renderer interface: debug camera, lines, boxes, grid/axes, and best-effort text. This is not a mesh/material pipeline.
+
+v0.12 adds `IRenderer::drawDebugFlatTriangles` as a narrow immediate-mode static mesh submission path. DX11 and GDI use the same CPU debug projection model as solid boxes; the null renderer accepts the call for smoke/test safety. This is still not a real material or GPU mesh-resource system.
 
 ## Game Layer
 

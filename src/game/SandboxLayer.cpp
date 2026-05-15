@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include <vector>
 
 namespace {
 
@@ -89,6 +90,12 @@ void DrawVehicleServiceYardBase(engine::IRenderer& renderer, float floor)
     renderer.drawDebugSolidBox({8.15f, floor + 0.45f, 0.45f}, {0.55f, 0.45f, 0.45f}, {0.27f, 0.30f, 0.22f, 1.0f});
 }
 
+void DrawMeshInstance(engine::IRenderer& renderer, const engine::StaticMeshAsset& mesh, const engine::StaticMeshInstance& instance)
+{
+    const std::vector<engine::Vec3> triangles = engine::BuildFlatTriangleList(mesh, instance);
+    renderer.drawDebugFlatTriangles(triangles, instance.tint);
+}
+
 } // namespace
 
 void SandboxLayer::onAttach()
@@ -110,6 +117,7 @@ void SandboxLayer::onAttach()
     m_vehicle.setPosition(VehicleSpawnPosition);
     m_vehicle.setYawRadians(VehicleSpawnYawRadians);
     setupVehiclePhysicsWorld();
+    loadStaticMeshAssets();
     updateDebugText();
 }
 
@@ -196,6 +204,7 @@ void SandboxLayer::onRender(engine::IRenderer& renderer)
     renderer.drawDebugGridAndAxes();
     DrawFerryOfficeMoodBase(renderer, m_scene.world().floorHeight());
     DrawVehicleServiceYardBase(renderer, m_scene.world().floorHeight());
+    drawStaticMeshDebug(renderer);
     renderer.drawDebugLine({-12.0f, m_scene.world().floorHeight(), -12.0f}, {12.0f, m_scene.world().floorHeight(), -12.0f}, {0.35f, 0.9f, 0.55f, 1.0f});
     renderer.drawDebugLine({12.0f, m_scene.world().floorHeight(), -12.0f}, {12.0f, m_scene.world().floorHeight(), 12.0f}, {0.35f, 0.9f, 0.55f, 1.0f});
     renderer.drawDebugLine({12.0f, m_scene.world().floorHeight(), 12.0f}, {-12.0f, m_scene.world().floorHeight(), 12.0f}, {0.35f, 0.9f, 0.55f, 1.0f});
@@ -545,6 +554,49 @@ void SandboxLayer::drawVehicleDebug(engine::IRenderer& renderer)
     }
 }
 
+void SandboxLayer::drawStaticMeshDebug(engine::IRenderer& renderer)
+{
+    if (!m_unitBoxMeshLoaded) {
+        return;
+    }
+
+    const bool routeOpened = m_scene.worldState().isFlagSet(WorldFlag::RouteOpened);
+    engine::StaticMeshInstance roof;
+    roof.assetId = "unit-box-mesh";
+    roof.position = {0.0f, 1.68f, 5.18f};
+    roof.scale = {5.9f, 0.24f, 1.1f};
+    roof.tint = {0.44f, 0.24f, 0.15f, 1.0f};
+    DrawMeshInstance(renderer, m_unitBoxMesh, roof);
+
+    engine::StaticMeshInstance serviceGate;
+    serviceGate.assetId = "unit-box-mesh";
+    serviceGate.position = {0.0f, 0.75f, 2.35f};
+    serviceGate.scale = {4.9f, 1.5f, 0.32f};
+    serviceGate.tint = routeOpened
+        ? engine::Color {0.12f, 0.36f, 0.20f, 1.0f}
+        : engine::Color {0.42f, 0.12f, 0.08f, 1.0f};
+    DrawMeshInstance(renderer, m_unitBoxMesh, serviceGate);
+
+    engine::StaticMeshInstance maintenanceBox;
+    maintenanceBox.assetId = "unit-box-mesh";
+    maintenanceBox.position = {2.8f, 0.65f, 1.9f};
+    maintenanceBox.scale = {0.48f, 0.48f, 0.48f};
+    maintenanceBox.tint = m_scene.worldState().isFlagSet(WorldFlag::PowerRestored)
+        ? engine::Color {0.18f, 0.74f, 0.62f, 1.0f}
+        : engine::Color {0.11f, 0.40f, 0.36f, 1.0f};
+    DrawMeshInstance(renderer, m_unitBoxMesh, maintenanceBox);
+
+    engine::StaticMeshInstance vehicleBody;
+    vehicleBody.assetId = "unit-box-mesh";
+    vehicleBody.position = m_vehicle.state().position + engine::Vec3 {0.0f, 0.42f, 0.0f};
+    vehicleBody.scale = {1.16f, 0.68f, 1.84f};
+    vehicleBody.yawRadians = m_vehicle.state().yawRadians;
+    vehicleBody.tint = m_vehicle.state().occupied
+        ? engine::Color {0.18f, 0.58f, 0.95f, 1.0f}
+        : engine::Color {0.62f, 0.66f, 0.48f, 1.0f};
+    DrawMeshInstance(renderer, m_unitBoxMesh, vehicleBody);
+}
+
 void SandboxLayer::recordWorldStateChange(bool changed)
 {
     if (!changed) {
@@ -622,4 +674,19 @@ void SandboxLayer::applyCameraSettingsForMode(bool vehicleMode)
 
     m_camera.setSettings(vehicleMode ? m_vehicleCameraSettings : m_onFootCameraSettings);
     m_cameraInVehicleMode = vehicleMode;
+}
+
+void SandboxLayer::loadStaticMeshAssets()
+{
+    const engine::StaticMeshLoadResult unitBox = engine::LoadStaticMeshFromGltf("assets/models/unit_box.gltf");
+    if (!unitBox.ok()) {
+        engine::Logger::warning("Static mesh load failed: " + unitBox.error);
+        m_unitBoxMeshLoaded = false;
+        return;
+    }
+
+    m_unitBoxMesh = unitBox.mesh;
+    m_unitBoxMesh.id = "unit-box-mesh";
+    m_unitBoxMeshLoaded = true;
+    engine::Logger::info("Loaded static mesh asset: unit-box-mesh from assets/models/unit_box.gltf");
 }

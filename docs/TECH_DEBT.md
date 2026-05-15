@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-15
 
-This file lists known foundation issues after v0.11. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
+This file lists known foundation issues after v0.12. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
 
 ## Build / Toolchain
 
@@ -14,9 +14,11 @@ This file lists known foundation issues after v0.11. It is not a mandate to fix 
 
 - DX11 hardware/debug device creation fails in this environment and falls back to WARP.
 - DX11 debug text is currently a no-op; GDI shows debug text.
-- Debug boxes/lines/solid boxes are enough for prototypes but not a mesh/material pipeline.
-- v0.9 solid debug boxes are projected placeholder geometry with no depth buffer, sorting, lighting, textures, materials, or transparency.
+- Debug boxes/lines/solid boxes and v0.12 flat mesh triangles are enough for prototypes but not a real mesh/material pipeline.
+- v0.9 solid debug boxes and v0.12 mesh triangles are projected placeholder geometry with no depth buffer, sorting, lighting, textures, materials, or transparency.
 - There is no resize handling, depth buffer, camera clip tuning, or resource lifetime stress testing.
+- `IRenderer::drawDebugFlatTriangles` is immediate-mode and creates transient renderer data; it is not a GPU static mesh resource path.
+- DX11 mesh rendering still uses CPU debug projection, not world/view/projection matrices.
 
 ## Input
 
@@ -100,27 +102,38 @@ This file lists known foundation issues after v0.11. It is not a mandate to fix 
 
 - `data/scenes/ferry_office.scene.json` is a validated authoring mirror, not a runtime-loaded source of truth yet.
 - Scene facts are still duplicated between JSON and C++ in `FerryOfficeData`, `PrototypeWorld`, `PrototypeScene`, and `SandboxLayer`.
+- Mesh instance facts are also duplicated between scene JSON and explicit `SandboxLayer` runtime setup.
 - There is no generated C++ data path from scene JSON.
 - There is no schema file beyond the Python validator.
-- Scene tools validate ids, vectors, radii, extents, vehicle bounds, and scale sanity, but they do not compare every JSON value against C++ constants yet.
+- Scene tools validate ids, vectors, radii, extents, vehicle bounds, mesh references, and scale sanity, but they do not compare every JSON value against C++ constants yet.
 - There is no editor, gizmo, visual placement tool, asset registry, prefab system, or scene diff tool.
+
+## Static Mesh / Assets
+
+- v0.12 supports only a tiny `.gltf` subset: embedded base64 buffer, float position vertices, indexed triangle list.
+- `.glb`, external buffers, materials, textures, normals in the renderer, UVs, node hierarchy, animation, skinning, and morph targets are not supported.
+- `assets/models/unit_box.gltf` is a placeholder proof asset, not production art.
+- There is no asset registry, mesh resource cache, file watcher, importer/cooker, mesh optimizer, LOD, or material assignment.
+- Mesh instances render visually but do not define collision or physics shapes.
+- The current loader is intentionally narrow and should be replaced or backed by cgltf/tinygltf when real glTF coverage is needed.
 
 ## Visual Readability
 
 - v0.9 improves the Ferry Office read with solid placeholder color, but it is still a debug scene. It is not final art and should not be mistaken for the target commercial visual quality.
 - v0.9.1 adds a route polyline, stronger marker hierarchy, and clearer objective wording, but the space still needs a real human playthrough on the target laptop.
-- v0.11 documents art direction and placeholder color keys, but it still does not add final art, lighting, textures, materials, or model loading.
+- v0.11 documents art direction and placeholder color keys. v0.12 adds first static mesh rendering, but it still does not add final art, lighting, textures, materials, or model loading beyond a tiny proof subset.
 - GDI debug text is now ordered around objective/focus first, but it remains functional debug text rather than a polished UI.
 - DX11 has no debug text overlay, so visual playtesting still favors GDI until a real overlay or text path exists.
 - There is no authored composition pass for camera start angle, signposting, silhouettes, or route readability beyond simple colored volumes.
 
-## Recommended Debt After v0.11
+## Recommended Debt After v0.12
 
 1. Run a full human keyboard/mouse playthrough of the Ferry Office loop and service-yard vehicle on the target laptop.
 2. Keep scene JSON and C++ layout synchronized until runtime loading or generation exists.
-3. In v0.12, add static mesh/glTF rendering narrowly without replacing the scene data contract.
-4. Tune vehicle acceleration, braking, reverse speed, steering rate, and camera distance before adding more vehicle features.
-5. Validate captured cursor feel on the target laptop/touchpad and use `--free-cursor` if a remote session behaves badly.
-6. Decide whether the first Jolt gameplay promotion should be vehicle-only, world queries-only, or player collision-only after vehicle tuning.
-7. Keep `WorldState` runtime-only unless a later goal explicitly asks for persistence.
-8. Avoid adding a mission scripting system before the micro-slice proves its minimal state flow.
+3. Replace a few more Ferry Office debug boxes with authored mesh instances only after checking visual scale in GDI/DX11.
+4. Decide whether glTF coverage should grow through cgltf/tinygltf before adding textures/materials.
+5. Tune vehicle acceleration, braking, reverse speed, steering rate, and camera distance before adding more vehicle features.
+6. Validate captured cursor feel on the target laptop/touchpad and use `--free-cursor` if a remote session behaves badly.
+7. Decide whether the first Jolt gameplay promotion should be vehicle-only, world queries-only, or player collision-only after vehicle tuning.
+8. Keep `WorldState` runtime-only unless a later goal explicitly asks for persistence.
+9. Avoid adding a mission scripting system before the micro-slice proves its minimal state flow.

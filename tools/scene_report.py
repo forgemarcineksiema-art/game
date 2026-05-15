@@ -42,6 +42,8 @@ def main() -> int:
     print("counts:")
     print(f"  colliders: {summary.collider_count}")
     print(f"  visualPlaceholders: {summary.visual_count}")
+    print(f"  meshAssets: {summary.mesh_asset_count}")
+    print(f"  meshInstances: {summary.mesh_instance_count}")
     print(f"  interactables: {summary.interactable_count}")
     print(f"  traversalAffordances: {summary.traversal_count}")
     print(f"  vehicles: {summary.vehicle_count}")
@@ -59,6 +61,27 @@ def main() -> int:
             "  vehicle: "
             f"{vehicle.get('id')} at {scene_data.format_vec(spawn.get('position', [0, 0, 0]))} "
             f"yaw={spawn.get('yawDegrees', 0)} bounds={bounds.get('min')}..{bounds.get('max')}"
+        )
+
+    print()
+    print("meshes:")
+    mesh_usage = {asset.get("id"): 0 for asset in scene.get("meshAssets", [])}
+    for instance in scene.get("meshInstances", []):
+        asset_id = instance.get("assetId")
+        if asset_id in mesh_usage:
+            mesh_usage[asset_id] += 1
+    for asset in scene.get("meshAssets", []):
+        print(
+            "  asset: "
+            f"{asset.get('id')} path={asset.get('path')} format={asset.get('format')} "
+            f"uses={mesh_usage.get(asset.get('id'), 0)}"
+        )
+    for instance in scene.get("meshInstances", []):
+        print(
+            "  instance: "
+            f"{instance.get('id')} asset={instance.get('assetId')} "
+            f"pos={scene_data.format_vec(instance.get('position', [0, 0, 0]))} "
+            f"yaw={instance.get('yawDegrees', 0)} scale={instance.get('scale')}"
         )
 
     print()

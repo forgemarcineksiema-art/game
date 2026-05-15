@@ -413,6 +413,26 @@ void Dx11Renderer::drawDebugSolidBox(Vec3 center, Vec3 halfExtents, Color color)
     drawTriangleVertices(vertices);
 }
 
+void Dx11Renderer::drawDebugFlatTriangles(std::span<const Vec3> triangleVertices, Color color)
+{
+    if (triangleVertices.size() < 3) {
+        return;
+    }
+
+    std::vector<Vertex> vertices;
+    const float aspectRatio = AspectRatio(m_config);
+    for (std::size_t index = 0; index + 2 < triangleVertices.size(); index += 3) {
+        AddProjectedTriangle(vertices,
+            m_debugCamera,
+            aspectRatio,
+            triangleVertices[index],
+            triangleVertices[index + 1],
+            triangleVertices[index + 2],
+            color);
+    }
+    drawTriangleVertices(vertices);
+}
+
 void Dx11Renderer::drawDebugBox(Vec3 center, Vec3 halfExtents, Color color)
 {
     const Vec3 corners[] = {

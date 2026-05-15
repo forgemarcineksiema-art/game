@@ -64,15 +64,29 @@ Future authored assets should come from Blender or another legal DCC tool and ex
 - Include simple collision helper names only when the engine has a loader for them.
 - Do not export copyrighted meshes, brands, maps, logos, or ripped game assets.
 
-## glTF / GLB Direction
+## glTF Direction
 
-v0.12 is expected to test static mesh rendering through glTF/GLB. Until then:
+v0.12 supports a tiny static `.gltf` subset through `src/engine/assets/StaticMesh.*`.
 
-- Do not import runtime models.
-- Do not add a broad asset registry.
+- Current committed proof asset: `assets/models/unit_box.gltf`.
+- Use meters, Y-up, +Z forward.
+- Keep placeholder meshes small, original, and clearly documented.
+- Add `license` and `provenance` for every scene `meshAssets` entry.
+- Run `python tools/mesh_report.py` after adding or moving mesh references.
+
+Still deferred:
+
+- `.glb`,
+- external buffers,
+- textures/materials/PBR,
+- broad asset registry,
+- mesh collision import,
+- skeletal animation assets.
+
+Do not add a broad asset registry.
 - Do not add skeletal animation assets.
 - Do not add PBR/material complexity.
-- Keep scene JSON and debug geometry as the active authoring bridge.
+- Keep scene JSON, mesh instances, and debug geometry as the active authoring bridge.
 
 ## What Not To Add Yet
 

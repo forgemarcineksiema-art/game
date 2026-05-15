@@ -37,6 +37,7 @@ Before scene layout, map, object placement, asset, model, scale, or art-directio
 - `docs/SCENE_AUTHORING.md`
 - `docs/ASSET_GUIDE.md`
 - `docs/ART_DIRECTION.md`
+- `docs/MESH_RENDERING.md`
 
 ## Run Commands
 
@@ -57,6 +58,7 @@ Scene authoring tools:
 python tools/scene_report.py
 python tools/validate_scene.py
 python tools/scale_audit.py
+python tools/mesh_report.py
 ```
 
 ## Architecture Rules

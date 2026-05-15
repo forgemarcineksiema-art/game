@@ -1,6 +1,7 @@
 #pragma once
 
 #include "engine/application/Application.h"
+#include "engine/assets/StaticMesh.h"
 #include "engine/physics/PhysicsWorld.h"
 #include "game/PlayerController.h"
 #include "game/PrototypeScene.h"
@@ -23,17 +24,20 @@ private:
     void drawInteractionDebug(engine::IRenderer& renderer);
     void drawTraversalDebug(engine::IRenderer& renderer);
     void drawVehicleDebug(engine::IRenderer& renderer);
+    void drawStaticMeshDebug(engine::IRenderer& renderer);
     void drawWorldStateDebug(engine::IRenderer& renderer);
     void drawSliceDebug(engine::IRenderer& renderer);
     void recordWorldStateChange(bool changed);
     void setupVehiclePhysicsWorld();
     bool isVehicleExitPositionClear(engine::Vec3 position) const;
     void applyCameraSettingsForMode(bool vehicleMode);
+    void loadStaticMeshAssets();
 
     PrototypeScene m_scene;
     PlayerController m_player;
     ThirdPersonCamera m_camera;
     VehicleController m_vehicle;
+    engine::StaticMeshAsset m_unitBoxMesh;
     ThirdPersonCameraSettings m_onFootCameraSettings;
     ThirdPersonCameraSettings m_vehicleCameraSettings;
     std::unique_ptr<engine::physics::IPhysicsWorld> m_vehiclePhysicsWorld;
@@ -46,5 +50,6 @@ private:
     bool m_traversalPressedThisFrame = false;
     bool m_worldStateChangedThisFrame = false;
     bool m_cameraInVehicleMode = false;
+    bool m_unitBoxMeshLoaded = false;
     unsigned long long m_frameIndex = 0;
 };

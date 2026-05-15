@@ -30,6 +30,7 @@ For scene layout, object placement, scale, asset, model, or art-direction work, 
 - `docs/SCENE_AUTHORING.md`
 - `docs/ASSET_GUIDE.md`
 - `docs/ART_DIRECTION.md`
+- `docs/MESH_RENDERING.md`
 
 For scene work, run:
 
@@ -37,6 +38,7 @@ For scene work, run:
 python tools/scene_report.py
 python tools/validate_scene.py
 python tools/scale_audit.py
+python tools/mesh_report.py
 ```
 
 ## 2. Pick One Safe Milestone

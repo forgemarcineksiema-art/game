@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.24)
 
 project(GameEngineFoundation
-    VERSION 0.11.0
+    VERSION 0.12.0
     DESCRIPTION "AI-native C++ action/adventure engine foundation"
     LANGUAGES CXX
 )
@@ -18,6 +18,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_library(EngineCore STATIC
     src/engine/application/Application.cpp
+    src/engine/assets/StaticMesh.cpp
     src/engine/application/Engine.cpp
     src/engine/core/Clock.cpp
     src/engine/core/Config.cpp

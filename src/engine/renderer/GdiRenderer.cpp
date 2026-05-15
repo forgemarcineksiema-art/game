@@ -176,6 +176,47 @@ void GdiRenderer::drawDebugSolidBox(Vec3 center, Vec3 halfExtents, Color color)
     DeleteObject(brush);
 }
 
+void GdiRenderer::drawDebugFlatTriangles(std::span<const Vec3> triangleVertices, Color color)
+{
+    if (!m_deviceContext || triangleVertices.size() < 3) {
+        return;
+    }
+
+    RECT rect {};
+    GetClientRect(m_window, &rect);
+    const int width = rect.right - rect.left;
+    const int height = rect.bottom - rect.top;
+    if (width <= 0 || height <= 0) {
+        return;
+    }
+
+    HBRUSH brush = CreateSolidBrush(ToColorRef(color));
+    HPEN pen = CreatePen(PS_SOLID, 1, ToColorRef(color));
+    HGDIOBJ oldBrush = SelectObject(m_deviceContext, brush);
+    HGDIOBJ oldPen = SelectObject(m_deviceContext, pen);
+
+    for (std::size_t index = 0; index + 2 < triangleVertices.size(); index += 3) {
+        POINT points[3] {};
+        bool projectedAll = true;
+        for (std::size_t corner = 0; corner < 3; ++corner) {
+            ProjectedPoint projected;
+            if (!ProjectWorldPoint(m_debugCamera, AspectRatio(m_config), triangleVertices[index + corner], projected)) {
+                projectedAll = false;
+                break;
+            }
+            points[corner] = ToScreen(projected, width, height);
+        }
+        if (projectedAll) {
+            Polygon(m_deviceContext, points, 3);
+        }
+    }
+
+    SelectObject(m_deviceContext, oldPen);
+    SelectObject(m_deviceContext, oldBrush);
+    DeleteObject(pen);
+    DeleteObject(brush);
+}
+
 void GdiRenderer::drawDebugBox(Vec3 center, Vec3 halfExtents, Color color)
 {
     const Vec3 corners[] = {

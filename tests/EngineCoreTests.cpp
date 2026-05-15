@@ -3,6 +3,7 @@
 #include "engine/core/FileSystem.h"
 #include "engine/math/Math.h"
 #include "engine/physics/PhysicsWorld.h"
+#include "engine/assets/StaticMesh.h"
 #include "engine/renderer/NullRenderer.h"
 #include "game/InteractionSystem.h"
 #include "game/PlayerController.h"
@@ -18,6 +19,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <array>
 #include <string>
 #include <utility>
 #include <vector>
@@ -138,11 +140,79 @@ void TestNullRendererRecordsFrameAndDebugDraw()
     renderer.beginFrame(7);
     renderer.drawDebugGridAndAxes();
     renderer.drawDebugSolidBox({0.0f, 0.5f, 0.0f}, {1.0f, 0.5f, 1.0f}, {0.4f, 0.6f, 0.8f, 1.0f});
+    const std::array<engine::Vec3, 3> triangle {{
+        {-0.5f, 0.0f, 0.0f},
+        {0.5f, 0.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f},
+    }};
+    renderer.drawDebugFlatTriangles(triangle, {0.4f, 0.6f, 0.8f, 1.0f});
     renderer.endFrame();
 
     Expect(renderer.frameCount() == 7, "TestNullRendererRecordsFrameAndDebugDraw", "Null renderer should record frame index.");
-    Expect(renderer.debugDrawCount() == 2, "TestNullRendererRecordsFrameAndDebugDraw", "Null renderer should count grid and solid debug draw calls.");
+    Expect(renderer.debugDrawCount() == 3, "TestNullRendererRecordsFrameAndDebugDraw", "Null renderer should count grid, solid box, and flat mesh draw calls.");
     renderer.shutdown();
+}
+
+void TestStaticMeshLoaderLoadsCommittedUnitBox()
+{
+    const std::filesystem::path meshPath = std::filesystem::path(ENGINE_SOURCE_ROOT) / "assets" / "models" / "unit_box.gltf";
+    const engine::StaticMeshLoadResult result = engine::LoadStaticMeshFromGltf(meshPath);
+
+    Expect(result.ok(),
+        "TestStaticMeshLoaderLoadsCommittedUnitBox",
+        "Committed unit box glTF should load successfully.");
+    Expect(result.mesh.vertices.size() == 8,
+        "TestStaticMeshLoaderLoadsCommittedUnitBox",
+        "Unit box should expose eight unique position vertices.");
+    Expect(result.mesh.indices.size() == 36,
+        "TestStaticMeshLoaderLoadsCommittedUnitBox",
+        "Unit box should expose twelve indexed triangles.");
+    ExpectNear(result.mesh.bounds.min.x, -0.5f, 0.001f,
+        "TestStaticMeshLoaderLoadsCommittedUnitBox",
+        "Unit box min x should be -0.5m.");
+    ExpectNear(result.mesh.bounds.max.y, 0.5f, 0.001f,
+        "TestStaticMeshLoaderLoadsCommittedUnitBox",
+        "Unit box max y should be 0.5m.");
+}
+
+void TestStaticMeshLoaderReportsMissingAsset()
+{
+    const std::filesystem::path meshPath = std::filesystem::path(ENGINE_SOURCE_ROOT) / "assets" / "models" / "missing_mesh.gltf";
+    const engine::StaticMeshLoadResult result = engine::LoadStaticMeshFromGltf(meshPath);
+
+    Expect(!result.ok(),
+        "TestStaticMeshLoaderReportsMissingAsset",
+        "Missing glTF asset should fail clearly.");
+    Expect(result.error.find("not found") != std::string::npos,
+        "TestStaticMeshLoaderReportsMissingAsset",
+        "Missing glTF asset failure should mention not found.");
+}
+
+void TestStaticMeshBuildsTransformedTriangleList()
+{
+    engine::StaticMeshAsset mesh;
+    mesh.vertices = {
+        {{-0.5f, 0.0f, 0.0f}},
+        {{0.5f, 0.0f, 0.0f}},
+        {{0.0f, 1.0f, 0.0f}},
+    };
+    mesh.indices = {0, 1, 2};
+    mesh.bounds = engine::ComputeBounds(mesh.vertices);
+
+    engine::StaticMeshInstance instance;
+    instance.position = {2.0f, 0.0f, 3.0f};
+    instance.scale = {2.0f, 1.0f, 1.0f};
+    const std::vector<engine::Vec3> triangles = engine::BuildFlatTriangleList(mesh, instance);
+
+    Expect(triangles.size() == 3,
+        "TestStaticMeshBuildsTransformedTriangleList",
+        "One indexed triangle should expand to three renderer vertices.");
+    ExpectNear(triangles[0].x, 1.0f, 0.001f,
+        "TestStaticMeshBuildsTransformedTriangleList",
+        "Instance scale and translation should affect x position.");
+    ExpectNear(triangles[2].y, 1.0f, 0.001f,
+        "TestStaticMeshBuildsTransformedTriangleList",
+        "Instance transform should preserve local y after scale.");
 }
 
 void TestPhysicsWorldCreatesAndShutsDownThroughVendorFreeInterface()
@@ -1575,6 +1645,9 @@ int main()
     TestNormalizePathKeepsAssetPathsInsideBase();
     TestClockStartsAtFrameZeroAndTicksForward();
     TestNullRendererRecordsFrameAndDebugDraw();
+    TestStaticMeshLoaderLoadsCommittedUnitBox();
+    TestStaticMeshLoaderReportsMissingAsset();
+    TestStaticMeshBuildsTransformedTriangleList();
     TestPhysicsWorldCreatesAndShutsDownThroughVendorFreeInterface();
     TestPhysicsWorldRaycastHitsStaticBox();
     TestPhysicsWorldDebugLinesExposeStaticBoxes();

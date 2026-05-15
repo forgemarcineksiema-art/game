@@ -44,6 +44,8 @@ class SceneSummary:
     floor_height: float
     collider_count: int
     visual_count: int
+    mesh_asset_count: int
+    mesh_instance_count: int
     interactable_count: int
     traversal_count: int
     vehicle_count: int
@@ -71,6 +73,8 @@ def collect_ids(scene: dict[str, Any]) -> set[str]:
     for section in [
         "colliders",
         "visualPlaceholders",
+        "meshAssets",
+        "meshInstances",
         "interactables",
         "traversalAffordances",
         "vehicles",
@@ -89,6 +93,8 @@ def build_summary(scene: dict[str, Any]) -> SceneSummary:
         floor_height=float(scene.get("floorHeight", 0.0)),
         collider_count=len(_as_list(scene.get("colliders"))),
         visual_count=len(_as_list(scene.get("visualPlaceholders"))),
+        mesh_asset_count=len(_as_list(scene.get("meshAssets"))),
+        mesh_instance_count=len(_as_list(scene.get("meshInstances"))),
         interactable_count=len(_as_list(scene.get("interactables"))),
         traversal_count=len(_as_list(scene.get("traversalAffordances"))),
         vehicle_count=len(_as_list(scene.get("vehicles"))),
@@ -190,6 +196,43 @@ def validate_scene(scene: dict[str, Any]) -> ValidationResult:
         _require_string(item, "label", label, result)
         _validate_vec3(item.get("position"), f"{label}.position", result)
 
+    asset_ids: set[str] = set()
+    for asset in _as_list(scene.get("meshAssets")):
+        item = _as_dict(asset)
+        label = f"meshAsset {item.get('id', '<missing-id>')}"
+        asset_id = item.get("id")
+        _record_id(asset_id, label, seen, result)
+        if isinstance(asset_id, str) and asset_id:
+            asset_ids.add(asset_id)
+        for key in ["path", "format", "units", "upAxis", "license", "provenance"]:
+            _require_string(item, key, label, result)
+        _validate_mesh_asset_path(item.get("path"), label, result)
+        if item.get("format") not in ("gltf", "glb", None):
+            result.errors.append(f"{label}.format must be 'gltf' or 'glb'.")
+        if item.get("units") not in ("meter", None):
+            result.warnings.append(f"{label}.units should remain 'meter'.")
+        if item.get("upAxis") not in ("Y", None):
+            result.warnings.append(f"{label}.upAxis should remain 'Y'.")
+        if "authoringBoundsHalfExtents" in item:
+            _validate_positive_vec3(item.get("authoringBoundsHalfExtents"), f"{label}.authoringBoundsHalfExtents", result)
+
+    known_ids = set(seen)
+    for instance in _as_list(scene.get("meshInstances")):
+        item = _as_dict(instance)
+        label = f"meshInstance {item.get('id', '<missing-id>')}"
+        _record_id(item.get("id"), label, seen, result)
+        _require_string(item, "assetId", label, result)
+        asset_id = item.get("assetId")
+        if isinstance(asset_id, str) and asset_id and asset_id not in asset_ids:
+            result.errors.append(f"{label}.assetId references unknown mesh asset '{asset_id}'.")
+        _validate_vec3(item.get("position"), f"{label}.position", result)
+        _require_number(item, "yawDegrees", label, result)
+        _validate_positive_scale(item.get("scale"), f"{label}.scale", result)
+        for reference_key in ["replacesVisualPlaceholderId", "linkedColliderId"]:
+            reference = item.get(reference_key)
+            if reference is not None and (not isinstance(reference, str) or reference not in known_ids):
+                result.errors.append(f"{label}.{reference_key} references unknown id '{reference}'.")
+
     ids = set(seen)
     for required_id in sorted(REQUIRED_IDS):
         if required_id not in ids:
@@ -234,6 +277,39 @@ def scale_warnings(scene: dict[str, Any]) -> list[str]:
             warnings.append(f"{item.get('id', '<vehicle>')} height {height:.2f}m looks suspicious.")
         if not 1.5 <= length <= 6.5:
             warnings.append(f"{item.get('id', '<vehicle>')} length {length:.2f}m looks suspicious.")
+
+    asset_bounds: dict[str, tuple[float, float, float]] = {}
+    for asset in _as_list(scene.get("meshAssets")):
+        item = _as_dict(asset)
+        extents = _vec3_or_none(item.get("authoringBoundsHalfExtents"))
+        if extents is None:
+            continue
+        asset_id = item.get("id", "<mesh>")
+        if max(extents) > 8.0:
+            warnings.append(f"{asset_id} has very large authored mesh bounds; verify units are meters.")
+        if min(extents) < 0.01:
+            warnings.append(f"{asset_id} has very small authored mesh bounds; verify export scale.")
+        if isinstance(asset_id, str):
+            asset_bounds[asset_id] = extents
+
+    for instance in _as_list(scene.get("meshInstances")):
+        item = _as_dict(instance)
+        scale = _scale3_or_none(item.get("scale"))
+        if scale is None:
+            continue
+        instance_id = item.get("id", "<meshInstance>")
+        if max(scale) > 12.0:
+            warnings.append(f"{instance_id} mesh scale is very large; verify meters and placeholder intent.")
+        if min(scale) < 0.05:
+            warnings.append(f"{instance_id} mesh scale is very small; verify it is intentional.")
+        position = _vec3_or_none(item.get("position"))
+        if position is not None and max(abs(component) for component in position) > 40.0:
+            warnings.append(f"{instance_id} is far from the prototype origin; verify placement.")
+        asset_id = item.get("assetId")
+        if isinstance(asset_id, str) and asset_id in asset_bounds:
+            world_half = tuple(asset_bounds[asset_id][i] * scale[i] for i in range(3))
+            if max(world_half) > 12.0:
+                warnings.append(f"{instance_id} world bounds look large after scale; verify instance scale.")
 
     return warnings
 
@@ -307,6 +383,29 @@ def _validate_bounds2(bounds: dict[str, Any], label: str, result: ValidationResu
         result.errors.append(f"{label} min must be less than max for both x and z.")
 
 
+def _validate_mesh_asset_path(value: Any, label: str, result: ValidationResult) -> None:
+    if not isinstance(value, str) or not value:
+        return
+    path = pathlib.PurePosixPath(value.replace("\\", "/"))
+    suffix = path.suffix.lower()
+    if suffix not in {".gltf", ".glb"}:
+        result.errors.append(f"{label}.path must end in .gltf or .glb.")
+    if path.is_absolute() or ".." in path.parts or not value.replace("\\", "/").startswith("assets/"):
+        result.errors.append(f"{label}.path must be a repo-relative path under assets/.")
+        return
+    if not (ROOT / pathlib.Path(*path.parts)).exists():
+        result.errors.append(f"{label}.path does not exist: {value}")
+
+
+def _validate_positive_scale(value: Any, label: str, result: ValidationResult) -> None:
+    scale = _scale3_or_none(value)
+    if scale is None:
+        result.errors.append(f"{label} must be a positive number or numeric [x, y, z] vector.")
+        return
+    if any(component <= 0.0 for component in scale):
+        result.errors.append(f"{label} must contain positive values.")
+
+
 def _number_or_none(value: Any) -> float | None:
     if isinstance(value, bool):
         return None
@@ -333,6 +432,13 @@ def _vec2_or_none(value: Any) -> tuple[float, float] | None:
     return (numbers[0], numbers[1])  # type: ignore[return-value]
 
 
+def _scale3_or_none(value: Any) -> tuple[float, float, float] | None:
+    scalar = _number_or_none(value)
+    if scalar is not None:
+        return (scalar, scalar, scalar)
+    return _vec3_or_none(value)
+
+
 def ids_by_section(scene: dict[str, Any]) -> dict[str, list[str]]:
     sections: dict[str, list[str]] = {
         "scene": [str(scene.get("id", ""))],
@@ -341,6 +447,8 @@ def ids_by_section(scene: dict[str, Any]) -> dict[str, list[str]]:
     for section in [
         "colliders",
         "visualPlaceholders",
+        "meshAssets",
+        "meshInstances",
         "interactables",
         "traversalAffordances",
         "vehicles",

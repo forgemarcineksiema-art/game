@@ -364,3 +364,23 @@ Reason: Future Codex runs need dependable commands on the current Windows setup.
 Decision: Document Blender/glTF direction but do not add model loading or an asset pipeline in v0.11.
 
 Reason: Scale, naming, scene data, and validation need to be stable before imported meshes enter the renderer. The next narrow goal can test static mesh/glTF rendering against this authoring foundation.
+
+## v0.12 Minimal Custom glTF Subset Loader
+
+Decision: Implement a tiny engine-owned `.gltf` subset loader for original embedded-buffer placeholder assets instead of adding cgltf, tinygltf, or Assimp in v0.12.
+
+Reason: v0.12 only needs to prove static mesh entry, scene references, bounds, and flat triangle rendering for a tiny project-owned asset. Assimp is too broad for this milestone, tinygltf would add a larger JSON/STB dependency surface, and cgltf is attractive but would still introduce third-party dependency management before the renderer has depth, matrices, materials, or real mesh resources. The custom loader is deliberately narrow and documented as a spike: embedded `.gltf`, `POSITION` float `VEC3`, indexed triangle list, no materials/textures/animations. Revisit cgltf or tinygltf when glTF coverage grows beyond this subset.
+
+Dependency impact: no new third-party dependency was added.
+
+## v0.12 Immediate Flat Triangle Rendering
+
+Decision: Add `IRenderer::drawDebugFlatTriangles` rather than a renderer-owned static mesh resource system.
+
+Reason: The current GDI and DX11 renderers are immediate debug renderers using CPU projection. A flat triangle call lets mesh instances render through the same safe path as solid debug boxes while avoiding premature GPU resource lifetime, materials, depth-buffer, shader, and asset registry decisions.
+
+## v0.12 Scene Mesh References Remain A Mirror
+
+Decision: Add `meshAssets` and `meshInstances` to `data/scenes/ferry_office.scene.json`, but keep runtime integration explicit in C++ for now.
+
+Reason: v0.11 scene data is still an authoring mirror. Loading full scene data at runtime would combine two milestones: mesh rendering and scene source-of-truth migration. v0.12 keeps gameplay behavior stable while giving tools and future Codex runs validated mesh references.

@@ -2203,3 +2203,185 @@ Known limitations after v0.11:
 Recommended next goal:
 
 Run v0.12 Static Mesh + glTF Render Spike.
+
+## v0.12 Baseline - 2026-05-15
+
+Goal: add the first narrow static mesh / glTF render spike on top of v0.11. This should prove an engine-owned static mesh data path, a minimal glTF loading subset, scene-data mesh references, Codex-friendly asset validation, and safe renderer fallback behavior while preserving the existing Ferry Office, service-yard vehicle, physics, scene tools, and validation. This goal must not add NPC AI, traffic, combat, missions, inventory, save/load, online/multiplayer, animation runtime, skeletal meshes, physics gameplay migration, Jolt vehicle constraints, textures/materials, PBR, lighting/shadows/post-processing, terrain, an editor, full ECS, final art, or marketplace/copied assets.
+
+Required context read before coding:
+
+- `AGENTS.md`
+- `docs/STATUS.md`
+- `docs/ARCHITECTURE.md`
+- `docs/ROADMAP.md`
+- `docs/GAME_DIRECTION.md`
+- `docs/VERTICAL_SLICE.md`
+- `docs/TECH_DEBT.md`
+- `docs/MANUAL_TEST_CHECKLIST.md`
+- `docs/DECISIONS.md`
+- `docs/PHYSICS_DECISION.md`
+- `docs/ASSET_GUIDE.md`
+- `docs/SCENE_AUTHORING.md`
+- `docs/ART_DIRECTION.md`
+
+Baseline commands:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+cmake --preset windows-vs2022-debug-jolt
+cmake --build --preset windows-vs2022-debug-jolt
+ctest --preset windows-vs2022-debug-jolt --output-on-failure
+python tools/scene_report.py
+python tools/validate_scene.py
+python tools/scale_audit.py
+```
+
+Baseline results:
+
+- `scripts/verify.ps1`: passed.
+- Doctor found all expected v0.11 docs, scene data, and tools. Existing warnings remain for tools not visible in the plain PATH: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- Default configure/build/test path passed with preset `windows-vs2022-debug`.
+- Default CTest passed 3/3 tests: `EngineCoreTests`, `EngineSmokeTest`, and `SceneToolTests`.
+- Scene validation ran inside `verify.ps1` and passed.
+- Null smoke run passed and reported engine `v0.11.0`, app `Tidebreak Prototype`, initial Ferry Manifest focus, service-yard vehicle state `empty`, `cameraMode=on-foot`, and `physics=simple`.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed; built `Jolt.lib`, `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 3/3 tests green.
+- `python tools/scene_report.py`: completed; reported `ferry-office`, 9 colliders, 14 visual placeholders, 5 interactables, 1 traversal affordance, 1 vehicle, 4 route markers, and 3 objective markers.
+- `python tools/validate_scene.py`: passed.
+- `python tools/scale_audit.py`: completed; no suspicious scale issues found.
+
+## v0.12 Short Implementation Plan
+
+1. Add tests first for the static mesh data boundary, minimal glTF loader behavior, scene mesh references, missing asset validation, and mesh bounds computation.
+2. Add a small engine-owned mesh module with `StaticMeshAsset`, `StaticMeshVertex`, `StaticMeshInstance`, bounds, and a minimal glTF/static mesh loader that keeps any parser details private.
+3. Choose and document the v0.12 loader strategy. Prefer a tiny permissive glTF parser only if integration stays clean; otherwise implement a narrow documented loader subset for the original test assets.
+4. Add original small placeholder mesh assets under `assets/models`, aligned with the v0.11 meter/Y-up/+Z-forward conventions.
+5. Extend `data/scenes/ferry_office.scene.json` with `meshAssets` and `meshInstances`, and extend `tools/scene_data.py`, `validate_scene.py`, `scene_report.py`, and `scale_audit.py` for mesh reference checks.
+6. Add a narrow renderer submission path so DX11 can draw flat-tinted static mesh triangles if practical, while GDI/null remain safe through bounds/proxy handling.
+7. Integrate a few mesh instances into the Ferry Office/service-yard presentation without removing debug collision, route, traversal, interaction, vehicle, or world-state visibility.
+8. Update architecture, decisions, roadmap, runbook, manual checklist, asset/scene/art docs, technical debt, and this status file.
+9. Run the full default/Jolt/tool/windowed validation matrix, then commit and push if validation passes.
+
+## v0.12 Implementation Notes - 2026-05-15
+
+Changed:
+
+- Updated project version to `0.12.0`.
+- Added `src/engine/assets/StaticMesh.h`.
+- Added `src/engine/assets/StaticMesh.cpp`.
+- Added `IRenderer::drawDebugFlatTriangles`.
+- Implemented flat triangle submission in the null, GDI, and DX11 renderers.
+- Added original placeholder asset `assets/models/unit_box.gltf`.
+- Extended `data/scenes/ferry_office.scene.json` to schema version 2 with `meshAssets` and `meshInstances`.
+- Extended `tools/scene_data.py` with mesh asset and mesh instance validation.
+- Extended `tools/scene_report.py` and `tools/scale_audit.py` coverage through shared scene validation helpers.
+- Added `tools/mesh_report.py`.
+- Updated `scripts/doctor.ps1`, `scripts/verify.ps1`, and `tools/status_report.py` for mesh artifacts/tools.
+- Updated `SandboxLayer` to load the unit-box mesh and render a few explicit mesh instances that mirror scene data: ferry-office roof cap, service gate, maintenance box, and vehicle body.
+- Added `docs/MESH_RENDERING.md`.
+- Updated architecture, runbook, roadmap, decisions, technical debt, manual checklist, AI workflow, asset guide, scene authoring, and art direction docs.
+
+Loader decision:
+
+- v0.12 does not add cgltf, tinygltf, or Assimp.
+- A tiny project-owned `.gltf` subset loader was added because this spike only needs embedded-buffer original placeholder meshes.
+- Supported subset: `.gltf`, embedded `data:application/octet-stream;base64` buffer, `POSITION` float `VEC3`, indexed triangle list, unsigned-short or unsigned-int indices.
+- Deferred: `.glb`, external buffers, materials, textures, normals in renderer input, UVs, node hierarchy, skeletal meshes, animations, mesh collision, and a real asset registry.
+
+Test-first notes:
+
+```powershell
+python tests\test_scene_tools.py
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+```
+
+Results before implementation:
+
+- Python scene tests failed as expected because `SceneSummary` did not yet expose `mesh_asset_count` / `mesh_instance_count`, and mesh asset/path/instance validation did not exist.
+- C++ build failed as expected because `engine/assets/StaticMesh.h` did not exist.
+
+Focused checks after implementation:
+
+```powershell
+python tests\test_scene_tools.py
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+ctest --preset windows-vs2022-debug --output-on-failure
+python tools\scene_report.py
+python tools\validate_scene.py
+python tools\scale_audit.py
+python tools\mesh_report.py
+```
+
+Results:
+
+- `tests\test_scene_tools.py`: passed, 10/10 tests.
+- `scripts/build.ps1`: passed after CMake regenerated the Visual Studio build.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 3/3 tests green.
+- `tools\scene_report.py`: completed; reported 1 mesh asset and 4 mesh instances.
+- `tools\validate_scene.py`: passed.
+- `tools\scale_audit.py`: completed; no suspicious scale issues found.
+- `tools\mesh_report.py`: completed; reported `unit-box-mesh`, 4 uses, 8 vertices, and 36 indices.
+
+Known limitations after implementation:
+
+- Runtime still mirrors mesh instances explicitly in C++; scene JSON is not loaded at runtime.
+- The mesh loader is intentionally narrow and should not be mistaken for a production glTF importer.
+- DX11/GDI mesh rendering uses the existing CPU debug projection path and has no depth buffer, materials, textures, lighting, or true 3D resource lifetime.
+- `assets/models/unit_box.gltf` is original placeholder geometry, not final art.
+
+## v0.12 Final Validation - 2026-05-15
+
+Commands run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/doctor.ps1
+powershell -ExecutionPolicy Bypass -File scripts/configure.ps1
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+ctest --preset windows-vs2022-debug --output-on-failure
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+cmake --preset windows-vs2022-debug-jolt
+cmake --build --preset windows-vs2022-debug-jolt
+ctest --preset windows-vs2022-debug-jolt --output-on-failure
+python tools\scene_report.py
+python tools\validate_scene.py
+python tools\scale_audit.py
+python tools\mesh_report.py
+python tools\status_report.py
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --frames 300
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 300
+```
+
+Results:
+
+- `scripts/doctor.ps1`: completed. It now checks `docs/MESH_RENDERING.md`, `assets\models\unit_box.gltf`, and `tools\mesh_report.py`. Existing warnings remain: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg` are not in the plain PowerShell PATH.
+- `scripts/configure.ps1`: passed with preset `windows-vs2022-debug`.
+- `scripts/build.ps1`: passed; built `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 3/3 tests green.
+- `scripts/verify.ps1`: passed; repeated doctor/configure/build/test, ran scene validation, ran mesh report, and completed null smoke. Smoke log reported engine `v0.12.0` and loaded `unit-box-mesh`.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed; built `Jolt.lib`, `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 3/3 tests green.
+- `python tools\scene_report.py`: completed; reported 1 mesh asset and 4 mesh instances.
+- `python tools\validate_scene.py`: passed.
+- `python tools\scale_audit.py`: completed; no suspicious scale issues found.
+- `python tools\mesh_report.py`: completed; reported `unit-box-mesh`, 4 uses, 8 vertices, and 36 indices.
+- `python tools\status_report.py`: completed and showed the expected v0.12 modified/new files before commit.
+- GDI bounded run: passed; window created, mesh asset loaded, `gdi-fallback` renderer ran for 300 frames, clean shutdown, cursor released.
+- DX11 bounded run: passed; hardware DX11 device failed and fell back to WARP, mesh asset loaded, `dx11` renderer ran for 300 frames, clean shutdown, cursor released.
+
+Visual evidence:
+
+- No screenshot was captured in this run. The current native-window workbench does not yet have a reliable built-in screenshot helper for bounded GDI/DX11 captures. Runtime logs confirm both renderers ran with mesh loading enabled; visual screenshot capture remains a future tooling improvement.
+
+Known limitations after v0.12:
+
+- Mesh instances are rendered explicitly from C++ and mirrored in scene JSON; full runtime scene loading is still deferred.
+- The glTF loader is intentionally tiny and supports only original embedded-buffer `.gltf` placeholder assets.
+- DX11/GDI flat mesh rendering is still debug-projection rendering with no depth buffer, material system, texture sampling, lighting, shadows, or real mesh resource cache.
+- GDI can show debug text; DX11 debug text remains a no-op.
+- The unit-box asset is a proof placeholder, not final art.
+
+Recommended next goal:
+
+Run v0.12.1 Ferry Office Prop Replacement + Visual Scale Pass.

@@ -54,7 +54,7 @@ Future rendering should aim for:
 - readable silhouettes,
 - gentle contrast rather than harsh action-game lighting.
 
-In v0.11 this remains documentation only. Do not add lighting, shadows, post-processing, or weather systems yet.
+In v0.12 this remains documentation plus tiny static mesh placeholders only. Do not add lighting, shadows, post-processing, or weather systems yet.
 
 ## Prop Language
 
@@ -89,6 +89,7 @@ These remain debug/prototype-only:
 
 - wire outlines,
 - solid debug boxes,
+- flat-tinted unit-box mesh placeholders,
 - GDI debug text,
 - route polylines,
 - interactable cubes/beacons,
@@ -101,7 +102,7 @@ They should stay useful until a later goal replaces them with real authored asse
 ## Near-Term Visual Priorities
 
 1. Keep the Ferry Office readable as a place.
-2. Introduce static mesh rendering through a narrow glTF/GLB spike.
+2. Use the v0.12 static mesh spike to replace only a few purposeful placeholders at a time.
 3. Preserve debug visibility while real assets are added.
 4. Build a small original prop kit before expanding the map.
 5. Keep screenshots as visual evidence after major presentation changes.

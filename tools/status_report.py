@@ -55,7 +55,9 @@ def main() -> int:
         "docs/ASSET_GUIDE.md",
         "docs/SCENE_AUTHORING.md",
         "docs/ART_DIRECTION.md",
+        "docs/MESH_RENDERING.md",
         "data/scenes/ferry_office.scene.json",
+        "assets/models/unit_box.gltf",
         "scripts/doctor.ps1",
         "scripts/configure.ps1",
         "scripts/build.ps1",
@@ -64,6 +66,7 @@ def main() -> int:
         "tools/scene_report.py",
         "tools/validate_scene.py",
         "tools/scale_audit.py",
+        "tools/mesh_report.py",
     ]:
         print(f"  {path}: {exists(path)}")
 

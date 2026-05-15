@@ -65,7 +65,9 @@ foreach ($Path in @(
     "docs\ASSET_GUIDE.md",
     "docs\SCENE_AUTHORING.md",
     "docs\ART_DIRECTION.md",
+    "docs\MESH_RENDERING.md",
     "data\scenes\ferry_office.scene.json",
+    "assets\models\unit_box.gltf",
     "src\engine",
     "src\game",
     "tests",
@@ -74,7 +76,8 @@ foreach ($Path in @(
     "tools\scene_data.py",
     "tools\scene_report.py",
     "tools\validate_scene.py",
-    "tools\scale_audit.py"
+    "tools\scale_audit.py",
+    "tools\mesh_report.py"
 )) {
     Test-PathRequired $Path
 }

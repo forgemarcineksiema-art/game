@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-15
 
-v0.11 introduces scene data for Codex-friendly inspection and validation. Runtime behavior still comes from the existing C++ prototype setup. Keep scene data and C++ layout changes in sync until a later goal adds runtime loading or generation.
+v0.11 introduces scene data for Codex-friendly inspection and validation. v0.12 adds mesh asset and mesh instance references. Runtime behavior still comes from explicit C++ prototype setup. Keep scene data and C++ layout changes in sync until a later goal adds runtime loading or generation.
 
 ## Scene Data Location
 
@@ -18,6 +18,7 @@ Required tools:
 python tools/scene_report.py
 python tools/validate_scene.py
 python tools/scale_audit.py
+python tools/mesh_report.py
 ```
 
 ## Scene Data Contract
@@ -31,6 +32,7 @@ The Ferry Office scene file describes:
 - scale reference values,
 - static box colliders,
 - visual placeholder boxes,
+- static mesh assets and mesh instances,
 - interactable markers,
 - traversal affordances,
 - vehicle spawn and service-yard bounds,
@@ -49,6 +51,7 @@ Use stable lowercase kebab-case ids. Do not rely on runtime add-order numeric id
 python tools/validate_scene.py
 python tools/scene_report.py
 python tools/scale_audit.py
+python tools/mesh_report.py
 ```
 
 4. Run `scripts/verify.ps1` before claiming success.
@@ -80,6 +83,38 @@ Required fields:
 - `colorKey`.
 
 Do not treat these as final meshes. They are authoring markers and visual composition placeholders.
+
+## Mesh Assets And Instances
+
+Use `meshAssets` for source files and legal/provenance metadata.
+
+Required fields:
+
+- `id`,
+- `path`,
+- `format`,
+- `units`,
+- `upAxis`,
+- `license`,
+- `provenance`.
+
+Use `meshInstances` for scene placement.
+
+Required fields:
+
+- `id`,
+- `assetId`,
+- `position`,
+- `yawDegrees`,
+- `scale`.
+
+Optional fields can link the instance to existing debug data:
+
+- `replacesVisualPlaceholderId`,
+- `linkedColliderId`,
+- `colorKey`.
+
+v0.12 supports only tiny original `.gltf` placeholder assets through the static mesh spike. Do not add materials, textures, animation, mesh collision, or imported third-party art through this scene format yet.
 
 ## Interactables
 
@@ -148,5 +183,6 @@ Future goals should reduce this duplication by either loading scene data at runt
 - `python tools/validate_scene.py` passes.
 - `python tools/scene_report.py` summarizes the expected ids/counts.
 - `python tools/scale_audit.py` reports no surprising scale issues, or the issue is documented.
+- `python tools/mesh_report.py` reports expected mesh asset usage when mesh references are involved.
 - `scripts/verify.ps1` passes.
 - `docs/STATUS.md` records commands and results.
