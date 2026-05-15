@@ -32,6 +32,15 @@ private:
     DebugCamera m_debugCamera;
     HWND m_window = nullptr;
     HDC m_deviceContext = nullptr;
+    HDC m_windowDeviceContext = nullptr;
+    HDC m_backBufferContext = nullptr;
+    HBITMAP m_backBufferBitmap = nullptr;
+    HBITMAP m_previousBackBufferBitmap = nullptr;
+    int m_backBufferWidth = 0;
+    int m_backBufferHeight = 0;
+
+    bool ensureBackBuffer(int width, int height);
+    void releaseBackBuffer();
 };
 
 } // namespace engine

@@ -1,3 +1,4 @@
+#include "engine/application/Application.h"
 #include "engine/core/Clock.h"
 #include "engine/core/Config.h"
 #include "engine/core/FileSystem.h"
@@ -679,6 +680,29 @@ void TestSandboxLayerVehicleDebugTextIncludesRoadTestTelemetry()
     Expect(debug.find("physics=simple") != std::string::npos,
         "TestSandboxLayerVehicleDebugTextIncludesRoadTestTelemetry",
         "Sandbox debug text should expose the vehicle physics debug backend.");
+    Expect(debug.find("exitClear=") != std::string::npos,
+        "TestSandboxLayerVehicleDebugTextIncludesRoadTestTelemetry",
+        "Sandbox debug text should expose whether the vehicle side exit marker is currently safe.");
+}
+
+void TestDebugWindowTitleUsesStableSingleLine()
+{
+    const std::string debugText =
+        "objective=\"Collect the Ferry Manifest at the dock-side office approach.\" readyForExit=no sliceComplete=no\n"
+        "focus=Ferry Manifest prompt=\"Press E: Collect Ferry Manifest\" travFocus=none\n"
+        "vehicle=(6.20,0.00,-2.20) empty speed=0.00";
+
+    const std::string title = engine::BuildDebugWindowTitle("Tidebreak Prototype", debugText);
+
+    Expect(title.find('\n') == std::string::npos,
+        "TestDebugWindowTitleUsesStableSingleLine",
+        "Window title should never include the full multi-line debug UI.");
+    Expect(title.size() <= 140,
+        "TestDebugWindowTitleUsesStableSingleLine",
+        "Window title should stay short enough to avoid title-bar repaint noise.");
+    Expect(title.find("focus=") == std::string::npos,
+        "TestDebugWindowTitleUsesStableSingleLine",
+        "Window title should keep only the first debug summary line.");
 }
 
 void TestGameCodeDoesNotReferenceJoltVendorApi()
@@ -1855,6 +1879,7 @@ int main()
     TestVehicleExitPositionUsesSideAndBackOffsets();
     TestVehicleReverseSteeringIsPredictable();
     TestSandboxLayerVehicleDebugTextIncludesRoadTestTelemetry();
+    TestDebugWindowTitleUsesStableSingleLine();
     TestGameCodeDoesNotReferenceJoltVendorApi();
     TestVec3NormalizationKeepsDiagonalMovementAtUnitLength();
     TestPlayerMovementIsCameraRelativeAndNormalized();

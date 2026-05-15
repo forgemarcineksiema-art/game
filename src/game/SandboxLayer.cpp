@@ -352,6 +352,7 @@ void SandboxLayer::updateDebugText()
            << "brake=" << vehicle.brake << " "
            << "steer=" << vehicle.steer << " "
            << "focus=" << (vehicleFocus.canEnter ? "yes" : "no") << " "
+           << "exitClear=" << (isVehicleExitPositionClear(m_vehicle.exitPosition()) ? "yes" : "no") << " "
            << "exitBlocked=" << (vehicle.exitBlockedThisFrame ? "yes" : "no") << " "
            << "boundsHit=" << (vehicle.hitBoundsThisFrame ? "yes" : "no") << " "
            << "physics=" << m_vehiclePhysicsBackendText << "\n"
@@ -581,11 +582,18 @@ void SandboxLayer::drawVehicleDebug(engine::IRenderer& renderer)
     renderer.drawDebugBox({vehicle.position.x, floor + 0.04f, vehicle.position.z}, {settings.enterRadius, 0.03f, settings.enterRadius}, focusColor);
 
     const engine::Vec3 exitPosition = m_vehicle.exitPosition();
-    const engine::Color exitColor = vehicle.exitBlockedThisFrame
+    const bool exitClear = isVehicleExitPositionClear(exitPosition);
+    const engine::Color exitColor = exitClear
+        ? engine::Color {0.30f, 1.0f, 0.65f, 1.0f}
+        : engine::Color {1.0f, 0.25f, 0.20f, 1.0f};
+    const engine::Color exitCoreColor = vehicle.exitBlockedThisFrame
         ? engine::Color {1.0f, 0.25f, 0.20f, 1.0f}
-        : engine::Color {0.30f, 1.0f, 0.65f, 1.0f};
-    renderer.drawDebugSolidBox(exitPosition + engine::Vec3 {0.0f, 0.18f, 0.0f}, {0.16f, 0.16f, 0.16f}, ScaleColor(exitColor, 0.45f));
-    renderer.drawDebugBox(exitPosition + engine::Vec3 {0.0f, 0.18f, 0.0f}, {0.16f, 0.16f, 0.16f}, exitColor);
+        : exitColor;
+    renderer.drawDebugLine(vehicle.position + engine::Vec3 {0.0f, 0.20f, 0.0f}, exitPosition + engine::Vec3 {0.0f, 0.20f, 0.0f}, exitColor);
+    renderer.drawDebugLine(exitPosition + engine::Vec3 {0.0f, 0.05f, 0.0f}, exitPosition + engine::Vec3 {0.0f, 1.15f, 0.0f}, exitColor);
+    renderer.drawDebugBox({exitPosition.x, floor + 0.04f, exitPosition.z}, {m_player.settings().radius * 1.25f, 0.03f, m_player.settings().radius * 1.25f}, exitColor);
+    renderer.drawDebugSolidBox(exitPosition + engine::Vec3 {0.0f, 0.25f, 0.0f}, {0.20f, 0.20f, 0.20f}, ScaleColor(exitCoreColor, 0.45f));
+    renderer.drawDebugBox(exitPosition + engine::Vec3 {0.0f, 0.25f, 0.0f}, {0.20f, 0.20f, 0.20f}, exitCoreColor);
 
     const engine::Vec3 boundsCenter {
         (settings.boundsMinX + settings.boundsMaxX) * 0.5f,

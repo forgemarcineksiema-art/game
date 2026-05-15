@@ -10,6 +10,37 @@
 #include <thread>
 
 namespace engine {
+namespace {
+
+std::string FirstDebugLine(std::string_view text)
+{
+    const std::size_t lineEnd = text.find('\n');
+    if (lineEnd == std::string_view::npos) {
+        return std::string(text);
+    }
+    return std::string(text.substr(0, lineEnd));
+}
+
+} // namespace
+
+std::string BuildDebugWindowTitle(std::string_view appName, std::string_view debugText)
+{
+    std::string title(appName);
+    if (debugText.empty()) {
+        return title;
+    }
+
+    std::string summary = FirstDebugLine(debugText);
+    constexpr std::size_t MaxSummaryLength = 112;
+    if (summary.size() > MaxSummaryLength) {
+        summary.resize(MaxSummaryLength - 3);
+        summary += "...";
+    }
+
+    title += " | ";
+    title += summary;
+    return title;
+}
 
 int Application::run(AppConfig config, std::unique_ptr<IGameLayer> layer)
 {
@@ -62,6 +93,7 @@ int Application::run(AppConfig config, std::unique_ptr<IGameLayer> layer)
     layer->onAttach();
 
     bool running = true;
+    std::string lastWindowTitle;
     while (running) {
         if (window) {
             window->processEvents();
@@ -81,10 +113,14 @@ int Application::run(AppConfig config, std::unique_ptr<IGameLayer> layer)
         input.quitRequested = input.quitRequested || !running;
 
         layer->onUpdate(deltaSeconds, input);
-        if (window && engine.clock().frameIndex() % 10 == 0) {
+        if (window && engine.clock().frameIndex() % 30 == 0) {
             const std::string debugText = layer->debugText();
             if (!debugText.empty()) {
-                window->setTitle(config.appName + " | " + debugText);
+                const std::string nextTitle = BuildDebugWindowTitle(config.appName, debugText);
+                if (nextTitle != lastWindowTitle) {
+                    window->setTitle(nextTitle);
+                    lastWindowTitle = nextTitle;
+                }
             }
         }
         renderer->beginFrame(engine.clock().frameIndex());

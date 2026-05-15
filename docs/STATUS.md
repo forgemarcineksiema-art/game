@@ -2709,3 +2709,32 @@ Known limitations after v0.13:
 Recommended next goal:
 
 Run v0.13.1 Vehicle Manual Playtest + Control Polish.
+
+## v0.13.1 Playtest Feedback Patch - 2026-05-15
+
+User playtest notes after v0.13:
+
+- Vehicle feel is strong enough to continue polishing.
+- Vehicle exit marker needs clearer safe/blocked feedback.
+- Scene/readability can still improve around the vehicle/service-yard UI cues.
+- GDI/debug UI flickers during play.
+
+Root-cause notes:
+
+- GDI was rendering directly to the window device context and clearing the window every frame, which can make debug text/UI visibly flicker.
+- Win32 default background erase could also contribute to flicker between immediate GDI frames.
+- The window title was updated regularly with the full multi-line debug text, which could repaint the title bar noisily.
+- Vehicle exit marker color only turned red on a failed exit press, so the player could not tell in advance whether the exit point was safe.
+
+Patch:
+
+- Added a GDI memory backbuffer and blits once at end of frame to reduce UI/debug text flicker.
+- Suppressed `WM_ERASEBKGND` for the Win32 game window.
+- Added `BuildDebugWindowTitle` so the title bar uses a short single-line debug summary and updates only when the title changes.
+- Added `exitClear=yes/no` to vehicle debug text.
+- Made the vehicle exit marker show clear/blocked state before pressing `E`, with a larger ground ring, vertical beacon, and link line from the vehicle.
+
+Validation:
+
+- `powershell -ExecutionPolicy Bypass -File scripts\build.ps1`: passed.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 3/3 tests.

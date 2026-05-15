@@ -186,6 +186,8 @@ private:
                 self->m_shouldClose = true;
                 self->releaseCursor();
                 return 0;
+            case WM_ERASEBKGND:
+                return 1;
             case WM_ACTIVATE:
                 self->m_hasFocus = LOWORD(wParam) != WA_INACTIVE;
                 self->updateCursorState();

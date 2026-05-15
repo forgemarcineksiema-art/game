@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 
 namespace engine {
 
@@ -24,5 +25,7 @@ class Application {
 public:
     int run(AppConfig config, std::unique_ptr<IGameLayer> layer);
 };
+
+std::string BuildDebugWindowTitle(std::string_view appName, std::string_view debugText);
 
 } // namespace engine

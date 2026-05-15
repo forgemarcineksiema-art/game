@@ -57,13 +57,22 @@ void GdiRenderer::setDebugCamera(const DebugCamera& camera)
 
 void GdiRenderer::beginFrame(unsigned long long)
 {
-    m_deviceContext = GetDC(m_window);
-    if (!m_deviceContext) {
+    m_windowDeviceContext = GetDC(m_window);
+    if (!m_windowDeviceContext) {
         return;
     }
 
     RECT rect {};
     GetClientRect(m_window, &rect);
+    const int width = rect.right - rect.left;
+    const int height = rect.bottom - rect.top;
+    if (width <= 0 || height <= 0 || !ensureBackBuffer(width, height)) {
+        ReleaseDC(m_window, m_windowDeviceContext);
+        m_windowDeviceContext = nullptr;
+        return;
+    }
+
+    m_deviceContext = m_backBufferContext;
     HBRUSH brush = CreateSolidBrush(ToColorRef(m_config.clearColor));
     FillRect(m_deviceContext, &rect, brush);
     DeleteObject(brush);
@@ -257,20 +266,71 @@ void GdiRenderer::drawDebugText(std::string_view text)
 
 void GdiRenderer::endFrame()
 {
-    if (m_deviceContext) {
-        ReleaseDC(m_window, m_deviceContext);
-        m_deviceContext = nullptr;
+    if (m_windowDeviceContext && m_backBufferContext) {
+        BitBlt(m_windowDeviceContext, 0, 0, m_backBufferWidth, m_backBufferHeight, m_backBufferContext, 0, 0, SRCCOPY);
     }
+
+    if (m_windowDeviceContext) {
+        ReleaseDC(m_window, m_windowDeviceContext);
+        m_windowDeviceContext = nullptr;
+    }
+    m_deviceContext = nullptr;
 }
 
 void GdiRenderer::shutdown()
 {
+    releaseBackBuffer();
     Logger::info("GDI fallback renderer shutdown.");
 }
 
 std::string GdiRenderer::name() const
 {
     return "gdi-fallback";
+}
+
+bool GdiRenderer::ensureBackBuffer(int width, int height)
+{
+    if (m_backBufferContext && m_backBufferBitmap && m_backBufferWidth == width && m_backBufferHeight == height) {
+        return true;
+    }
+
+    releaseBackBuffer();
+
+    m_backBufferContext = CreateCompatibleDC(m_windowDeviceContext);
+    if (!m_backBufferContext) {
+        return false;
+    }
+
+    m_backBufferBitmap = CreateCompatibleBitmap(m_windowDeviceContext, width, height);
+    if (!m_backBufferBitmap) {
+        DeleteDC(m_backBufferContext);
+        m_backBufferContext = nullptr;
+        return false;
+    }
+
+    m_previousBackBufferBitmap = static_cast<HBITMAP>(SelectObject(m_backBufferContext, m_backBufferBitmap));
+    m_backBufferWidth = width;
+    m_backBufferHeight = height;
+    return true;
+}
+
+void GdiRenderer::releaseBackBuffer()
+{
+    if (m_backBufferContext && m_previousBackBufferBitmap) {
+        SelectObject(m_backBufferContext, m_previousBackBufferBitmap);
+    }
+    if (m_backBufferBitmap) {
+        DeleteObject(m_backBufferBitmap);
+    }
+    if (m_backBufferContext) {
+        DeleteDC(m_backBufferContext);
+    }
+
+    m_backBufferContext = nullptr;
+    m_backBufferBitmap = nullptr;
+    m_previousBackBufferBitmap = nullptr;
+    m_backBufferWidth = 0;
+    m_backBufferHeight = 0;
 }
 
 } // namespace engine
