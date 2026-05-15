@@ -4434,3 +4434,35 @@ Result:
 - The DX11 debug text overlay is no longer the active Fix Soon blocker.
 - `scripts\play.ps1 -Dx11` is now a usable bounded playtest/check path, though the overlay remains a stopgap and not a production UI renderer.
 - Cleanup items from the audit were addressed except unrelated lower-priority items such as Release preset, ASCII-only `ToWide`, STATUS.md size, Jolt raycast normals, and broader manual checklist execution.
+
+## Debug Projection Clipping Fix (2026-05-15)
+
+Scope:
+
+- Fix player-reported debug geometry popping where world markers, ground, route lines, and other debug primitives appeared or disappeared as the camera turned.
+- Keep the fix in the shared debug projection path so both GDI and DX11 use the same behavior.
+
+Root cause:
+
+- `ProjectWorldPoint` treated points outside the screen-margin as failed projections.
+- `drawDebugLine`, `drawDebugSolidBox`, and debug triangle drawing then rejected entire primitives when any endpoint or corner was outside the view or behind the near plane.
+- Large ground boxes and long route/grid lines were especially vulnerable because one corner/endpoint often leaves the camera view while the primitive should still be partially visible.
+
+Implementation notes:
+
+- Added shared debug projection helpers for clipped lines and clipped triangles.
+- GDI and DX11 debug line rendering now clip line segments against the near plane.
+- GDI and DX11 debug solid/flat triangle rendering now clip triangles against the near plane and allow renderer clipping for offscreen projected points.
+- Added regression coverage for long visible debug lines with offscreen endpoints and for debug lines/triangles crossing the near plane.
+
+Validation:
+
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: initially failed as expected before implementation because `ProjectWorldLine`, `ProjectedPolygon`, and `ProjectWorldTriangle` did not exist.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: passed after implementation.
+- `ctest --preset windows-vs2022-debug --output-on-failure -R EngineCoreTests`: passed.
+- `powershell -ExecutionPolicy Bypass -File scripts\verify.ps1`: passed; doctor warnings for compiler/tool binaries not being in plain `PATH` remain expected.
+
+Result:
+
+- Debug primitives should no longer pop out just because their endpoints/corners are offscreen or crossing the near plane.
+- This is still debug rendering, not a full production camera/depth pipeline.

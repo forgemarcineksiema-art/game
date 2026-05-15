@@ -5,6 +5,7 @@
 #include "engine/math/Math.h"
 #include "engine/physics/PhysicsWorld.h"
 #include "engine/assets/StaticMesh.h"
+#include "engine/renderer/DebugProjection.h"
 #include "engine/renderer/Renderer.h"
 #include "engine/renderer/NullRenderer.h"
 #include "game/InteractionSystem.h"
@@ -340,6 +341,64 @@ void TestNullRendererRecordsFrameAndDebugDraw()
     Expect(renderer.frameCount() == 7, "TestNullRendererRecordsFrameAndDebugDraw", "Null renderer should record frame index.");
     Expect(renderer.debugDrawCount() == 3, "TestNullRendererRecordsFrameAndDebugDraw", "Null renderer should count grid, solid box, and flat mesh draw calls.");
     renderer.shutdown();
+}
+
+void TestDebugProjectionKeepsLongVisibleLinesWhenEndpointsAreOffscreen()
+{
+    engine::DebugCamera camera;
+    camera.position = {0.0f, 1.0f, -4.0f};
+    camera.target = {0.0f, 1.0f, 0.0f};
+
+    engine::ProjectedPoint from;
+    engine::ProjectedPoint to;
+    const bool projected = engine::ProjectWorldLine(
+        camera,
+        16.0f / 9.0f,
+        {-20.0f, 1.0f, 5.0f},
+        {20.0f, 1.0f, 5.0f},
+        from,
+        to);
+
+    Expect(projected,
+        "TestDebugProjectionKeepsLongVisibleLinesWhenEndpointsAreOffscreen",
+        "Debug projection should keep long ground and route lines if the segment crosses the camera view.");
+    Expect(from.x < -1.0f && to.x > 1.0f,
+        "TestDebugProjectionKeepsLongVisibleLinesWhenEndpointsAreOffscreen",
+        "Projected debug line endpoints should be allowed to sit outside the viewport for renderer clipping.");
+}
+
+void TestDebugProjectionClipsLinesAndTrianglesAgainstNearPlane()
+{
+    engine::DebugCamera camera;
+    camera.position = {0.0f, 1.0f, 0.0f};
+    camera.target = {0.0f, 1.0f, 1.0f};
+
+    engine::ProjectedPoint lineFrom;
+    engine::ProjectedPoint lineTo;
+    const bool lineProjected = engine::ProjectWorldLine(
+        camera,
+        16.0f / 9.0f,
+        {-1.0f, 1.0f, -1.0f},
+        {1.0f, 1.0f, 5.0f},
+        lineFrom,
+        lineTo);
+
+    Expect(lineProjected,
+        "TestDebugProjectionClipsLinesAndTrianglesAgainstNearPlane",
+        "Debug lines crossing the near plane should be clipped instead of disappearing.");
+
+    engine::ProjectedPolygon triangle;
+    const bool triangleProjected = engine::ProjectWorldTriangle(
+        camera,
+        16.0f / 9.0f,
+        {-3.0f, 0.0f, -1.0f},
+        {3.0f, 0.0f, 4.0f},
+        {-3.0f, 0.0f, 4.0f},
+        triangle);
+
+    Expect(triangleProjected && triangle.pointCount >= 3,
+        "TestDebugProjectionClipsLinesAndTrianglesAgainstNearPlane",
+        "Debug solid ground triangles crossing the near plane should still produce a visible clipped polygon.");
 }
 
 void TestStaticMeshLoaderLoadsCommittedUnitBox()
@@ -2663,6 +2722,8 @@ int main()
     TestNormalizePathKeepsAssetPathsInsideBase();
     TestClockStartsAtFrameZeroAndTicksForward();
     TestNullRendererRecordsFrameAndDebugDraw();
+    TestDebugProjectionKeepsLongVisibleLinesWhenEndpointsAreOffscreen();
+    TestDebugProjectionClipsLinesAndTrianglesAgainstNearPlane();
     TestStaticMeshLoaderLoadsCommittedUnitBox();
     TestStaticMeshLoaderLoadsV018PropKit();
     TestStaticMeshLoaderReportsMissingAsset();

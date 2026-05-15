@@ -75,8 +75,7 @@ void AddProjectedLine(
 {
     ProjectedPoint a;
     ProjectedPoint b;
-    if (!ProjectWorldPoint(camera, aspectRatio, from, a)
-        || !ProjectWorldPoint(camera, aspectRatio, to, b)) {
+    if (!ProjectWorldLine(camera, aspectRatio, from, to, a, b)) {
         return;
     }
 
@@ -93,18 +92,19 @@ void AddProjectedTriangle(
     Vec3 c,
     Color color)
 {
-    ProjectedPoint pa;
-    ProjectedPoint pb;
-    ProjectedPoint pc;
-    if (!ProjectWorldPoint(camera, aspectRatio, a, pa)
-        || !ProjectWorldPoint(camera, aspectRatio, b, pb)
-        || !ProjectWorldPoint(camera, aspectRatio, c, pc)) {
+    ProjectedPolygon polygon;
+    if (!ProjectWorldTriangle(camera, aspectRatio, a, b, c, polygon)) {
         return;
     }
 
-    vertices.push_back({pa.x, pa.y, 0.0f, color.r, color.g, color.b, color.a});
-    vertices.push_back({pb.x, pb.y, 0.0f, color.r, color.g, color.b, color.a});
-    vertices.push_back({pc.x, pc.y, 0.0f, color.r, color.g, color.b, color.a});
+    for (std::size_t index = 1; index + 1 < polygon.pointCount; ++index) {
+        const ProjectedPoint& pa = polygon.points[0];
+        const ProjectedPoint& pb = polygon.points[index];
+        const ProjectedPoint& pc = polygon.points[index + 1];
+        vertices.push_back({pa.x, pa.y, 0.0f, color.r, color.g, color.b, color.a});
+        vertices.push_back({pb.x, pb.y, 0.0f, color.r, color.g, color.b, color.a});
+        vertices.push_back({pc.x, pc.y, 0.0f, color.r, color.g, color.b, color.a});
+    }
 }
 
 } // namespace

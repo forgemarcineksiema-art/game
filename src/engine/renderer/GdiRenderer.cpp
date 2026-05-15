@@ -108,8 +108,7 @@ void GdiRenderer::drawDebugLine(Vec3 from, Vec3 to, Color color)
 
     ProjectedPoint a;
     ProjectedPoint b;
-    if (!ProjectWorldPoint(m_debugCamera, AspectRatio(m_config), from, a)
-        || !ProjectWorldPoint(m_debugCamera, AspectRatio(m_config), to, b)) {
+    if (!ProjectWorldLine(m_debugCamera, AspectRatio(m_config), from, to, a, b)) {
         return;
     }
 
@@ -148,36 +147,36 @@ void GdiRenderer::drawDebugSolidBox(Vec3 center, Vec3 halfExtents, Color color)
         center + Vec3 {-halfExtents.x,  halfExtents.y,  halfExtents.z},
     };
 
-    POINT screenCorners[8] {};
-    for (int index = 0; index < 8; ++index) {
-        ProjectedPoint projected;
-        if (!ProjectWorldPoint(m_debugCamera, AspectRatio(m_config), corners[index], projected)) {
-            return;
-        }
-        screenCorners[index] = ToScreen(projected, width, height);
-    }
-
-    const int faces[][4] = {
-        {0, 1, 2, 3},
-        {4, 5, 6, 7},
-        {0, 1, 5, 4},
-        {1, 2, 6, 5},
-        {2, 3, 7, 6},
-        {3, 0, 4, 7},
+    const int triangles[][3] = {
+        {0, 1, 2}, {0, 2, 3},
+        {4, 5, 6}, {4, 6, 7},
+        {0, 1, 5}, {0, 5, 4},
+        {1, 2, 6}, {1, 6, 5},
+        {2, 3, 7}, {2, 7, 6},
+        {3, 0, 4}, {3, 4, 7},
     };
 
     HBRUSH brush = acquireBrush(ToColorRef(color));
     HPEN pen = acquirePen(ToColorRef(color), 1);
     HGDIOBJ oldBrush = SelectObject(m_deviceContext, brush);
     HGDIOBJ oldPen = SelectObject(m_deviceContext, pen);
-    for (const auto& face : faces) {
-        POINT points[] = {
-            screenCorners[face[0]],
-            screenCorners[face[1]],
-            screenCorners[face[2]],
-            screenCorners[face[3]],
-        };
-        Polygon(m_deviceContext, points, 4);
+    const float aspectRatio = AspectRatio(m_config);
+    for (const auto& triangle : triangles) {
+        ProjectedPolygon projected;
+        if (!ProjectWorldTriangle(m_debugCamera,
+                aspectRatio,
+                corners[triangle[0]],
+                corners[triangle[1]],
+                corners[triangle[2]],
+                projected)) {
+            continue;
+        }
+
+        POINT points[4] {};
+        for (std::size_t pointIndex = 0; pointIndex < projected.pointCount; ++pointIndex) {
+            points[pointIndex] = ToScreen(projected.points[pointIndex], width, height);
+        }
+        Polygon(m_deviceContext, points, static_cast<int>(projected.pointCount));
     }
     SelectObject(m_deviceContext, oldPen);
     SelectObject(m_deviceContext, oldBrush);
@@ -202,19 +201,20 @@ void GdiRenderer::drawDebugFlatTriangles(std::span<const Vec3> triangleVertices,
     HGDIOBJ oldBrush = SelectObject(m_deviceContext, brush);
     HGDIOBJ oldPen = SelectObject(m_deviceContext, pen);
 
+    const float aspectRatio = AspectRatio(m_config);
     for (std::size_t index = 0; index + 2 < triangleVertices.size(); index += 3) {
-        POINT points[3] {};
-        bool projectedAll = true;
-        for (std::size_t corner = 0; corner < 3; ++corner) {
-            ProjectedPoint projected;
-            if (!ProjectWorldPoint(m_debugCamera, AspectRatio(m_config), triangleVertices[index + corner], projected)) {
-                projectedAll = false;
-                break;
+        ProjectedPolygon projected;
+        if (ProjectWorldTriangle(m_debugCamera,
+                aspectRatio,
+                triangleVertices[index],
+                triangleVertices[index + 1],
+                triangleVertices[index + 2],
+                projected)) {
+            POINT points[4] {};
+            for (std::size_t pointIndex = 0; pointIndex < projected.pointCount; ++pointIndex) {
+                points[pointIndex] = ToScreen(projected.points[pointIndex], width, height);
             }
-            points[corner] = ToScreen(projected, width, height);
-        }
-        if (projectedAll) {
-            Polygon(m_deviceContext, points, 3);
+            Polygon(m_deviceContext, points, static_cast<int>(projected.pointCount));
         }
     }
 
