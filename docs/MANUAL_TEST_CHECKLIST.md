@@ -137,6 +137,7 @@ python tools/mesh_report.py
 - [ ] GDI run shows the v0.27 Blender cable reel in the service yard.
 - [ ] Solid debug boxes and flat mesh triangles read with stable back-to-front painter ordering instead of obvious arbitrary face overlap.
 - [ ] DX11 bounded run exits cleanly with mesh submissions enabled.
+- [ ] DX11 bounded run shows solid debug boxes and flat mesh triangles with real depth ordering, while route/debug lines, wire boxes, and text remain readable.
 - [ ] Mesh placeholders do not hide route, interaction, traversal, collision, or vehicle debug markers.
 - [ ] `assets/models/unit_box.gltf`, the v0.18 prop-kit meshes, `assets/models/ferry_notice_board.gltf`, `assets/models/blender_ferry_notice_board.gltf`, and `assets/models/blender_cable_reel.gltf` remain small original placeholder assets with scene-data license/provenance.
 - [ ] No `.glb`, external-buffer `.gltf`, unreferenced `.gltf`, or undocumented mesh asset appears in `assets/models`.

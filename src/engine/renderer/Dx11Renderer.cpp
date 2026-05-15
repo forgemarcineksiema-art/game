@@ -4,6 +4,7 @@
 
 #include "engine/core/Logger.h"
 #include "engine/math/BoxEdges.h"
+#include "engine/renderer/DebugCameraMatrices.h"
 #include "engine/renderer/DebugProjection.h"
 
 #include <d3dcompiler.h>
@@ -17,7 +18,7 @@
 namespace engine {
 namespace {
 
-const char* VertexShaderSource = R"(
+const char* NdcVertexShaderSource = R"(
 struct VSInput {
     float3 position : POSITION;
     float4 color : COLOR;
@@ -31,6 +32,31 @@ struct PSInput {
 PSInput main(VSInput input) {
     PSInput output;
     output.position = float4(input.position, 1.0);
+    output.color = input.color;
+    return output;
+}
+)";
+
+const char* WorldVertexShaderSource = R"(
+#pragma pack_matrix(row_major)
+
+cbuffer MatrixConstants : register(b0) {
+    row_major float4x4 worldViewProjection;
+};
+
+struct VSInput {
+    float3 position : POSITION;
+    float4 color : COLOR;
+};
+
+struct PSInput {
+    float4 position : SV_POSITION;
+    float4 color : COLOR;
+};
+
+PSInput main(VSInput input) {
+    PSInput output;
+    output.position = mul(float4(input.position, 1.0), worldViewProjection);
     output.color = input.color;
     return output;
 }
@@ -83,33 +109,16 @@ void AddProjectedLine(
     vertices.push_back({b.x, b.y, 0.0f, color.r, color.g, color.b, color.a});
 }
 
-void AddProjectedTriangle(
-    std::vector<ProjectedTriangle>& triangles,
-    const DebugCamera& camera,
-    float aspectRatio,
+void AddWorldTriangle(
+    std::vector<Dx11Renderer::Vertex>& vertices,
     Vec3 a,
     Vec3 b,
-    Vec3 c)
-{
-    ProjectedTriangle triangle;
-    if (ProjectWorldTriangleWithDepth(camera, aspectRatio, a, b, c, triangle)) {
-        triangles.push_back(triangle);
-    }
-}
-
-void AddProjectedTriangleVertices(
-    std::vector<Dx11Renderer::Vertex>& vertices,
-    const ProjectedTriangle& triangle,
+    Vec3 c,
     Color color)
 {
-    for (std::size_t index = 1; index + 1 < triangle.polygon.pointCount; ++index) {
-        const ProjectedPoint& pa = triangle.polygon.points[0];
-        const ProjectedPoint& pb = triangle.polygon.points[index];
-        const ProjectedPoint& pc = triangle.polygon.points[index + 1];
-        vertices.push_back({pa.x, pa.y, 0.0f, color.r, color.g, color.b, color.a});
-        vertices.push_back({pb.x, pb.y, 0.0f, color.r, color.g, color.b, color.a});
-        vertices.push_back({pc.x, pc.y, 0.0f, color.r, color.g, color.b, color.a});
-    }
+    vertices.push_back({a.x, a.y, a.z, color.r, color.g, color.b, color.a});
+    vertices.push_back({b.x, b.y, b.z, color.r, color.g, color.b, color.a});
+    vertices.push_back({c.x, c.y, c.z, color.r, color.g, color.b, color.a});
 }
 
 } // namespace
@@ -123,7 +132,12 @@ bool Dx11Renderer::initialize(const RendererConfig& config)
         return false;
     }
 
-    if (!createDeviceAndSwapChain() || !createRenderTarget() || !createShaders() || !createDebugGeometry()) {
+    if (!createDeviceAndSwapChain()
+        || !createRenderTarget()
+        || !createDepthResources()
+        || !createPipelineStates()
+        || !createShaders()
+        || !createDebugGeometry()) {
         shutdown();
         return false;
     }
@@ -218,15 +232,82 @@ bool Dx11Renderer::createRenderTarget()
     return true;
 }
 
+bool Dx11Renderer::createDepthResources()
+{
+    D3D11_TEXTURE2D_DESC depthDesc {};
+    depthDesc.Width = static_cast<UINT>(std::max(m_config.width, 1));
+    depthDesc.Height = static_cast<UINT>(std::max(m_config.height, 1));
+    depthDesc.MipLevels = 1;
+    depthDesc.ArraySize = 1;
+    depthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    depthDesc.SampleDesc.Count = 1;
+    depthDesc.SampleDesc.Quality = 0;
+    depthDesc.Usage = D3D11_USAGE_DEFAULT;
+    depthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+
+    HRESULT result = m_device->CreateTexture2D(&depthDesc, nullptr, m_depthStencilBuffer.GetAddressOf());
+    if (FAILED(result)) {
+        Logger::error("DX11 depth buffer creation failed.");
+        return false;
+    }
+
+    result = m_device->CreateDepthStencilView(m_depthStencilBuffer.Get(), nullptr, m_depthStencilView.GetAddressOf());
+    if (FAILED(result)) {
+        Logger::error("DX11 depth stencil view creation failed.");
+        return false;
+    }
+
+    return true;
+}
+
+bool Dx11Renderer::createPipelineStates()
+{
+    D3D11_DEPTH_STENCIL_DESC depthEnabled {};
+    depthEnabled.DepthEnable = TRUE;
+    depthEnabled.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+    depthEnabled.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+
+    HRESULT result = m_device->CreateDepthStencilState(&depthEnabled, m_depthEnabledState.GetAddressOf());
+    if (FAILED(result)) {
+        Logger::error("DX11 depth-enabled state creation failed.");
+        return false;
+    }
+
+    D3D11_DEPTH_STENCIL_DESC depthDisabled {};
+    depthDisabled.DepthEnable = FALSE;
+    depthDisabled.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+    depthDisabled.DepthFunc = D3D11_COMPARISON_ALWAYS;
+
+    result = m_device->CreateDepthStencilState(&depthDisabled, m_depthDisabledState.GetAddressOf());
+    if (FAILED(result)) {
+        Logger::error("DX11 depth-disabled state creation failed.");
+        return false;
+    }
+
+    D3D11_RASTERIZER_DESC rasterizerDesc {};
+    rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+    rasterizerDesc.CullMode = D3D11_CULL_NONE;
+    rasterizerDesc.DepthClipEnable = TRUE;
+
+    result = m_device->CreateRasterizerState(&rasterizerDesc, m_debugRasterizerState.GetAddressOf());
+    if (FAILED(result)) {
+        Logger::error("DX11 debug rasterizer state creation failed.");
+        return false;
+    }
+
+    return true;
+}
+
 bool Dx11Renderer::createShaders()
 {
-    Microsoft::WRL::ComPtr<ID3DBlob> vertexBlob;
+    Microsoft::WRL::ComPtr<ID3DBlob> ndcVertexBlob;
+    Microsoft::WRL::ComPtr<ID3DBlob> worldVertexBlob;
     Microsoft::WRL::ComPtr<ID3DBlob> pixelBlob;
     Microsoft::WRL::ComPtr<ID3DBlob> errors;
 
     HRESULT result = D3DCompile(
-        VertexShaderSource,
-        strlen(VertexShaderSource),
+        NdcVertexShaderSource,
+        strlen(NdcVertexShaderSource),
         nullptr,
         nullptr,
         nullptr,
@@ -234,11 +315,29 @@ bool Dx11Renderer::createShaders()
         "vs_4_0",
         0,
         0,
-        vertexBlob.GetAddressOf(),
+        ndcVertexBlob.GetAddressOf(),
         errors.GetAddressOf());
 
     if (FAILED(result)) {
-        Logger::error("DX11 vertex shader compilation failed.");
+        Logger::error("DX11 NDC vertex shader compilation failed.");
+        return false;
+    }
+
+    result = D3DCompile(
+        WorldVertexShaderSource,
+        strlen(WorldVertexShaderSource),
+        nullptr,
+        nullptr,
+        nullptr,
+        "main",
+        "vs_4_0",
+        0,
+        0,
+        worldVertexBlob.GetAddressOf(),
+        errors.ReleaseAndGetAddressOf());
+
+    if (FAILED(result)) {
+        Logger::error("DX11 world vertex shader compilation failed.");
         return false;
     }
 
@@ -260,9 +359,15 @@ bool Dx11Renderer::createShaders()
         return false;
     }
 
-    result = m_device->CreateVertexShader(vertexBlob->GetBufferPointer(), vertexBlob->GetBufferSize(), nullptr, m_vertexShader.GetAddressOf());
+    result = m_device->CreateVertexShader(ndcVertexBlob->GetBufferPointer(), ndcVertexBlob->GetBufferSize(), nullptr, m_vertexShader.GetAddressOf());
     if (FAILED(result)) {
-        Logger::error("DX11 vertex shader creation failed.");
+        Logger::error("DX11 NDC vertex shader creation failed.");
+        return false;
+    }
+
+    result = m_device->CreateVertexShader(worldVertexBlob->GetBufferPointer(), worldVertexBlob->GetBufferSize(), nullptr, m_worldVertexShader.GetAddressOf());
+    if (FAILED(result)) {
+        Logger::error("DX11 world vertex shader creation failed.");
         return false;
     }
 
@@ -280,12 +385,23 @@ bool Dx11Renderer::createShaders()
     result = m_device->CreateInputLayout(
         layout,
         static_cast<UINT>(std::size(layout)),
-        vertexBlob->GetBufferPointer(),
-        vertexBlob->GetBufferSize(),
+        ndcVertexBlob->GetBufferPointer(),
+        ndcVertexBlob->GetBufferSize(),
         m_inputLayout.GetAddressOf());
 
     if (FAILED(result)) {
         Logger::error("DX11 input layout creation failed.");
+        return false;
+    }
+
+    D3D11_BUFFER_DESC matrixDesc {};
+    matrixDesc.Usage = D3D11_USAGE_DEFAULT;
+    matrixDesc.ByteWidth = 64;
+    matrixDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+
+    result = m_device->CreateBuffer(&matrixDesc, nullptr, m_matrixConstantBuffer.GetAddressOf());
+    if (FAILED(result)) {
+        Logger::error("DX11 matrix constant buffer creation failed.");
         return false;
     }
 
@@ -344,8 +460,12 @@ void Dx11Renderer::beginFrame(unsigned long long)
         m_config.clearColor.a,
     };
 
-    m_context->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), nullptr);
+    ID3D11RenderTargetView* renderTargets[] = {m_renderTargetView.Get()};
+    m_context->OMSetRenderTargets(1, renderTargets, m_depthStencilView.Get());
     m_context->ClearRenderTargetView(m_renderTargetView.Get(), color);
+    if (m_depthStencilView) {
+        m_context->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+    }
 
     D3D11_VIEWPORT viewport {};
     viewport.TopLeftX = 0.0f;
@@ -355,6 +475,7 @@ void Dx11Renderer::beginFrame(unsigned long long)
     viewport.MinDepth = 0.0f;
     viewport.MaxDepth = 1.0f;
     m_context->RSSetViewports(1, &viewport);
+    m_context->RSSetState(m_debugRasterizerState.Get());
 }
 
 void Dx11Renderer::setDebugCamera(const DebugCamera& camera)
@@ -406,21 +527,13 @@ void Dx11Renderer::drawDebugSolidBox(Vec3 center, Vec3 halfExtents, Color color)
         {3, 0, 4}, {3, 4, 7},
     };
 
-    std::vector<ProjectedTriangle> projectedTriangles;
-    const float aspectRatio = AspectRatio(m_config);
+    std::vector<Vertex> vertices;
     for (const auto& triangle : triangles) {
-        AddProjectedTriangle(projectedTriangles,
-            m_debugCamera,
-            aspectRatio,
+        AddWorldTriangle(vertices,
             corners[triangle[0]],
             corners[triangle[1]],
-            corners[triangle[2]]);
-    }
-
-    SortProjectedTrianglesBackToFront(projectedTriangles);
-    std::vector<Vertex> vertices;
-    for (const ProjectedTriangle& triangle : projectedTriangles) {
-        AddProjectedTriangleVertices(vertices, triangle, color);
+            corners[triangle[2]],
+            color);
     }
     drawTriangleVertices(vertices);
 }
@@ -431,21 +544,13 @@ void Dx11Renderer::drawDebugFlatTriangles(std::span<const Vec3> triangleVertices
         return;
     }
 
-    std::vector<ProjectedTriangle> projectedTriangles;
-    const float aspectRatio = AspectRatio(m_config);
+    std::vector<Vertex> vertices;
     for (std::size_t index = 0; index + 2 < triangleVertices.size(); index += 3) {
-        AddProjectedTriangle(projectedTriangles,
-            m_debugCamera,
-            aspectRatio,
+        AddWorldTriangle(vertices,
             triangleVertices[index],
             triangleVertices[index + 1],
-            triangleVertices[index + 2]);
-    }
-
-    SortProjectedTrianglesBackToFront(projectedTriangles);
-    std::vector<Vertex> vertices;
-    for (const ProjectedTriangle& triangle : projectedTriangles) {
-        AddProjectedTriangleVertices(vertices, triangle, color);
+            triangleVertices[index + 2],
+            color);
     }
     drawTriangleVertices(vertices);
 }
@@ -500,6 +605,17 @@ bool Dx11Renderer::ensureDynamicBuffer(unsigned int vertexCount)
     return true;
 }
 
+bool Dx11Renderer::updateWorldMatrixConstants()
+{
+    DebugWorldToClipMatrix matrix;
+    if (!BuildDebugWorldToClipMatrix(m_debugCamera, AspectRatio(m_config), matrix)) {
+        return false;
+    }
+
+    m_context->UpdateSubresource(m_matrixConstantBuffer.Get(), 0, nullptr, matrix.values.data(), 0, 0);
+    return true;
+}
+
 void Dx11Renderer::drawLineVertices(const std::vector<Vertex>& vertices)
 {
     if (vertices.empty()) {
@@ -522,6 +638,7 @@ void Dx11Renderer::drawLineVertices(const std::vector<Vertex>& vertices)
     const UINT stride = sizeof(Vertex);
     const UINT offset = 0;
     ID3D11Buffer* vertexBuffer = m_dynamicVertexBuffer.Get();
+    m_context->OMSetDepthStencilState(m_depthDisabledState.Get(), 0);
     m_context->IASetInputLayout(m_inputLayout.Get());
     m_context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
     m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
@@ -533,6 +650,9 @@ void Dx11Renderer::drawLineVertices(const std::vector<Vertex>& vertices)
 void Dx11Renderer::drawTriangleVertices(const std::vector<Vertex>& vertices)
 {
     if (vertices.empty()) {
+        return;
+    }
+    if (!updateWorldMatrixConstants()) {
         return;
     }
 
@@ -552,10 +672,13 @@ void Dx11Renderer::drawTriangleVertices(const std::vector<Vertex>& vertices)
     const UINT stride = sizeof(Vertex);
     const UINT offset = 0;
     ID3D11Buffer* vertexBuffer = m_dynamicVertexBuffer.Get();
+    ID3D11Buffer* constantBuffer = m_matrixConstantBuffer.Get();
+    m_context->OMSetDepthStencilState(m_depthEnabledState.Get(), 0);
     m_context->IASetInputLayout(m_inputLayout.Get());
     m_context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
     m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    m_context->VSSetShader(m_vertexShader.Get(), nullptr, 0);
+    m_context->VSSetShader(m_worldVertexShader.Get(), nullptr, 0);
+    m_context->VSSetConstantBuffers(0, 1, &constantBuffer);
     m_context->PSSetShader(m_pixelShader.Get(), nullptr, 0);
     m_context->Draw(vertexCount, 0);
 }
@@ -572,9 +695,16 @@ void Dx11Renderer::shutdown()
     m_gridBuffer.Reset();
     m_dynamicVertexBuffer.Reset();
     m_dynamicBufferCapacity = 0;
+    m_matrixConstantBuffer.Reset();
     m_inputLayout.Reset();
     m_pixelShader.Reset();
+    m_worldVertexShader.Reset();
     m_vertexShader.Reset();
+    m_debugRasterizerState.Reset();
+    m_depthDisabledState.Reset();
+    m_depthEnabledState.Reset();
+    m_depthStencilView.Reset();
+    m_depthStencilBuffer.Reset();
     m_renderTargetView.Reset();
     m_swapChain.Reset();
     m_context.Reset();

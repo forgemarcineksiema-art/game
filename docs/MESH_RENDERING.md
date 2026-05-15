@@ -14,7 +14,7 @@ v0.12 adds the first narrow static mesh path. v0.19 stabilizes the surrounding a
   - `LoadStaticMeshFromGltf`,
   - `BuildFlatTriangleList`.
 - `IRenderer::drawDebugFlatTriangles` submits immediate flat-colored triangle lists.
-- DX11 renders those triangles with the same CPU projection path used by solid debug boxes.
+- DX11 now renders debug solid boxes and flat mesh triangles through a real world-to-clip matrix path with a depth buffer. Lines, wire boxes, grid/axes, and debug text still use the existing debug projection / overlay path.
 - GDI renders projected triangle polygons as a fallback.
 - Null renderer accepts the call and counts it for smoke/test visibility.
 - `assets/models/unit_box.gltf` is a tiny original project-owned placeholder mesh.
@@ -72,7 +72,9 @@ v0.15 loads these mesh asset and mesh instance records through the runtime scene
 
 ## Renderer Notes
 
-This is not a production renderer yet. DX11 has no depth buffer, no real world/view/projection matrix, no material system, and no texture path. v0.27 sorts projected solid-box and flat-mesh triangle batches back-to-front using camera depth, but separate debug draw calls still use the current immediate debug path. That is acceptable for small placeholder props and visual proof, but not for final art.
+This is not a production renderer yet. v0.28 gives DX11 a first real depth-buffered world-to-clip matrix path for debug solid boxes and flat-mesh triangle submissions. GDI remains on the v0.27 projected painter-depth fallback. DX11 wire/debug lines, grid/axes, and the Win32 text overlay intentionally remain overlay-style debug rendering so validation markers stay readable.
+
+There is still no material system, texture path, lighting, shader file pipeline, renderer-owned static mesh resource lifetime, resize handling, transparency sorting, or production HUD/font renderer. The current DX11 matrix/depth work is a narrow presentation and architecture spike for existing immediate debug geometry.
 
 Keep wire/debug markers visible until a later overlay and asset pipeline exist.
 
@@ -106,7 +108,8 @@ See `docs/ASSET_PIPELINE_DECISION.md` for the v0.19 decision and `docs/BLENDER_W
 - Runtime scene hot reload or editing.
 - Mesh/material asset registry.
 - Texture/material/PBR work.
-- Depth buffer and camera matrices.
+- GDI depth buffer or world-matrix rendering.
+- DX11 resize-safe depth resources and broader resource lifetime stress tests.
 - glTF node hierarchy and GLB support.
 - Animation and skeletal mesh support.
 - Mesh collision or physics import.

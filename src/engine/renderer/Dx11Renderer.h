@@ -47,10 +47,13 @@ public:
 private:
     bool createDeviceAndSwapChain();
     bool createRenderTarget();
+    bool createDepthResources();
+    bool createPipelineStates();
     bool createShaders();
     bool createDebugGeometry();
     bool createBuffer(const Vertex* vertices, unsigned int vertexCount, Microsoft::WRL::ComPtr<ID3D11Buffer>& buffer);
     bool ensureDynamicBuffer(unsigned int vertexCount);
+    bool updateWorldMatrixConstants();
     void drawLineVertices(const std::vector<Vertex>& vertices);
     void drawTriangleVertices(const std::vector<Vertex>& vertices);
     void drawDebugTextOverlay();
@@ -63,9 +66,16 @@ private:
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_context;
     Microsoft::WRL::ComPtr<IDXGISwapChain> m_swapChain;
     Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_renderTargetView;
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> m_depthStencilBuffer;
+    Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_depthStencilView;
+    Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_depthEnabledState;
+    Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_depthDisabledState;
+    Microsoft::WRL::ComPtr<ID3D11RasterizerState> m_debugRasterizerState;
     Microsoft::WRL::ComPtr<ID3D11VertexShader> m_vertexShader;
+    Microsoft::WRL::ComPtr<ID3D11VertexShader> m_worldVertexShader;
     Microsoft::WRL::ComPtr<ID3D11PixelShader> m_pixelShader;
     Microsoft::WRL::ComPtr<ID3D11InputLayout> m_inputLayout;
+    Microsoft::WRL::ComPtr<ID3D11Buffer> m_matrixConstantBuffer;
     Microsoft::WRL::ComPtr<ID3D11Buffer> m_gridBuffer;
     Microsoft::WRL::ComPtr<ID3D11Buffer> m_triangleBuffer;
     Microsoft::WRL::ComPtr<ID3D11Buffer> m_dynamicVertexBuffer;

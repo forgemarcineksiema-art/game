@@ -13,8 +13,8 @@ This file lists known foundation issues during the current playable-build phase.
 
 ### Fix Soon
 
-1. Run a short human v0.27 visual/playability pass through `scripts/play.ps1` and capture any issues with triangle painter-depth readability, cable reel placement, marker visibility, route readability, or remaining vehicle feel.
-2. Decide whether the next non-packaging pass should be a true depth-buffer/world-matrix renderer spike, a small vehicle-feel follow-up, or one more tiny authored prop. Do not expand all three at once.
+1. Run a short human v0.28 visual/playability pass through `scripts/play.ps1 -Dx11`, checking whether depth-tested solid boxes/mesh props improve overlap readability without hiding prompts, route lines, interaction markers, or vehicle guidance.
+2. Decide whether the next non-packaging pass should be a small vehicle-feel follow-up, a second renderer polish pass around resize/overlay ordering, or one more tiny authored prop. Do not expand all three at once.
 3. Keep the Blender/static mesh path narrow and honest. v0.27 adds one controlled original Blender prop; avoid more quantity until the hand pass proves prop language, not renderer readability or vehicle feel, is the blocker.
 
 ### Acceptable For Now
@@ -38,10 +38,11 @@ This file lists known foundation issues during the current playable-build phase.
 - DX11 hardware/debug device creation fails in this environment and falls back to WARP.
 - DX11 debug text now uses a small Win32 text overlay after `Present`. This makes `scripts/play.ps1 -Dx11` usable for playtest checks, but it is not a production HUD/text renderer.
 - Debug boxes/lines/solid boxes and v0.12 flat mesh triangles are enough for prototypes but not a real mesh/material pipeline.
-- v0.9 solid debug boxes and v0.12 mesh triangles are projected placeholder geometry with no depth buffer, lighting, textures, materials, or transparency. v0.27 adds only a small painter-depth sort for projected solid-box and flat-mesh triangle batches.
-- There is no resize handling, depth buffer, camera clip tuning, or resource lifetime stress testing.
+- v0.9 solid debug boxes and v0.12 mesh triangles remain placeholder geometry. v0.27 adds a small painter-depth sort for projected solid-box and flat-mesh triangle batches; v0.28 adds a DX11-only real world-to-clip matrix and depth-buffer path for solid boxes and flat mesh triangles.
+- GDI remains on CPU projection/painter-depth. DX11 lines, wire boxes, grid, route/debug lines, and Win32 text overlay are still overlay/debug-projection rendering rather than fully depth-aware renderer primitives.
+- There is no resize handling, camera clip tuning, or resource lifetime stress testing for the new DX11 depth resources.
 - `IRenderer::drawDebugFlatTriangles` is immediate-mode and creates transient renderer data; it is not a GPU static mesh resource path.
-- DX11 mesh rendering still uses CPU debug projection, not world/view/projection matrices.
+- DX11 mesh rendering is still immediate-mode; v0.28 adds matrix/depth presentation, not GPU static mesh resources, batching, materials, textures, or asset residency.
 
 ## Input
 
@@ -166,9 +167,9 @@ This file lists known foundation issues during the current playable-build phase.
 - v0.24 adds a first progressive-guidance pass for playtest/minimal modes so future route, traversal, vehicle, checkpoint, and service-run markers wait for the relevant Ferry Office job phase. Debug mode still keeps the full authored guidance set for validation.
 - v0.25 adds a first authored composition pass: scene-authored player-start yaw now drives initial facing/camera composition, and existing placeholder assets add office approach, service-yard threshold, dock-road rhythm, and Service Run confirmation cues.
 - v0.26 adds a controlled existing-asset prop/identity pass around the manifest, Ferry Office controls side, dock edge, service yard, and Service Run endpoint. It improves authored read but is still built from placeholder flat-tinted meshes.
-- v0.27 adds painter-depth ordering for projected debug triangles and one Blender cable reel prop. This should make overlapping solid boxes/flat meshes less arbitrary, but it is still not a real depth-buffered renderer.
+- v0.27 adds painter-depth ordering for projected debug triangles and one Blender cable reel prop. v0.28 follows with the first DX11 real depth-buffer/world-matrix path for solid boxes and flat mesh triangles, while keeping debug lines/text overlay-style.
 - DX11 now has a simple debug text overlay, so bounded DX11 playtest checks are useful. GDI still remains the simpler renderer for overlay debugging, and a real renderer-owned text/HUD path is deferred.
-- The v0.27 presentation spike is still prototype presentation: there is no final art-quality signage, real depth buffer, renderer-owned world/view/projection path, lighting, materials, textures, authored terrain, or production HUD.
+- The v0.28 presentation spike is still prototype presentation: there is no final art-quality signage, renderer-owned mesh resource path, lighting, materials, textures, authored terrain, resize-safe depth handling, or production HUD.
 
 ## Deprecated Priority Lists
 

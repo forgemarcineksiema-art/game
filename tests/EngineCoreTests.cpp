@@ -5,6 +5,7 @@
 #include "engine/math/Math.h"
 #include "engine/physics/PhysicsWorld.h"
 #include "engine/assets/StaticMesh.h"
+#include "engine/renderer/DebugCameraMatrices.h"
 #include "engine/renderer/DebugProjection.h"
 #include "engine/renderer/Renderer.h"
 #include "engine/renderer/NullRenderer.h"
@@ -501,6 +502,63 @@ void TestDebugProjectionSortsProjectedTrianglesBackToFront()
     Expect(triangles.front().cameraDepth == farTriangle.cameraDepth,
         "TestDebugProjectionSortsProjectedTrianglesBackToFront",
         "Painter ordering should place farther projected debug triangles before nearer ones.");
+}
+
+void TestDebugWorldToClipMatrixMatchesCpuProjection()
+{
+    engine::DebugCamera camera;
+    camera.position = {1.0f, 2.0f, -4.0f};
+    camera.target = {0.0f, 1.0f, 3.0f};
+    camera.nearPlane = 0.1f;
+
+    engine::DebugWorldToClipMatrix matrix;
+    const bool built = engine::BuildDebugWorldToClipMatrix(camera, 16.0f / 9.0f, matrix, 120.0f);
+
+    const engine::Vec3 point {0.4f, 1.6f, 5.5f};
+    engine::ProjectedPoint projected;
+    const bool cpuProjected = engine::ProjectWorldPoint(camera, 16.0f / 9.0f, point, projected);
+    const engine::DebugClipPoint clipPoint = engine::TransformWorldPoint(matrix, point);
+
+    Expect(built,
+        "TestDebugWorldToClipMatrixMatchesCpuProjection",
+        "Debug world-to-clip matrix should build for a valid camera.");
+    Expect(cpuProjected && clipPoint.w > camera.nearPlane,
+        "TestDebugWorldToClipMatrixMatchesCpuProjection",
+        "The chosen world point should be in front of the debug camera.");
+    ExpectNear(clipPoint.x / clipPoint.w, projected.x, 0.0005f,
+        "TestDebugWorldToClipMatrixMatchesCpuProjection",
+        "Matrix projection X should match the existing CPU debug projection.");
+    ExpectNear(clipPoint.y / clipPoint.w, projected.y, 0.0005f,
+        "TestDebugWorldToClipMatrixMatchesCpuProjection",
+        "Matrix projection Y should match the existing CPU debug projection.");
+}
+
+void TestDebugWorldToClipMatrixMapsDepthIntoDx11Range()
+{
+    engine::DebugCamera camera;
+    camera.position = {0.0f, 1.0f, 0.0f};
+    camera.target = {0.0f, 1.0f, 1.0f};
+    camera.nearPlane = 0.1f;
+
+    engine::DebugWorldToClipMatrix matrix;
+    const bool built = engine::BuildDebugWorldToClipMatrix(camera, 1.0f, matrix, 100.0f);
+
+    const engine::DebugClipPoint nearPoint = engine::TransformWorldPoint(matrix, {0.0f, 1.0f, 0.1f});
+    const engine::DebugClipPoint midPoint = engine::TransformWorldPoint(matrix, {0.0f, 1.0f, 10.0f});
+    const engine::DebugClipPoint farPoint = engine::TransformWorldPoint(matrix, {0.0f, 1.0f, 100.0f});
+
+    Expect(built,
+        "TestDebugWorldToClipMatrixMapsDepthIntoDx11Range",
+        "Debug world-to-clip matrix should build for a forward-facing camera.");
+    ExpectNear(nearPoint.z / nearPoint.w, 0.0f, 0.0005f,
+        "TestDebugWorldToClipMatrixMapsDepthIntoDx11Range",
+        "The near plane should map to DirectX NDC depth 0.");
+    Expect(midPoint.z / midPoint.w > 0.0f && midPoint.z / midPoint.w < 1.0f,
+        "TestDebugWorldToClipMatrixMapsDepthIntoDx11Range",
+        "A point between near and far should map inside DirectX NDC depth 0..1.");
+    ExpectNear(farPoint.z / farPoint.w, 1.0f, 0.0005f,
+        "TestDebugWorldToClipMatrixMapsDepthIntoDx11Range",
+        "The far plane should map to DirectX NDC depth 1.");
 }
 
 void TestStaticMeshLoaderLoadsCommittedUnitBox()
@@ -2931,6 +2989,8 @@ int main()
     TestDebugProjectionKeepsLongVisibleLinesWhenEndpointsAreOffscreen();
     TestDebugProjectionClipsLinesAndTrianglesAgainstNearPlane();
     TestDebugProjectionSortsProjectedTrianglesBackToFront();
+    TestDebugWorldToClipMatrixMatchesCpuProjection();
+    TestDebugWorldToClipMatrixMapsDepthIntoDx11Range();
     TestStaticMeshLoaderLoadsCommittedUnitBox();
     TestStaticMeshLoaderLoadsV018PropKit();
     TestStaticMeshLoaderReportsMissingAsset();

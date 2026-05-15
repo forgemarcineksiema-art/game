@@ -4670,3 +4670,59 @@ Remaining limitations:
 - v0.27 improves draw ordering inside projected triangle batches, but it is not a real depth-buffered renderer and cannot solve every overlap between separate debug draw calls.
 - The cable reel is a low-detail flat-tinted placeholder prop with no material, texture, collision, animation, or final art treatment.
 - A short human v0.27 pass should check that painter-depth ordering and the cable reel improve readability without hiding prompts, markers, route/debug geometry, or the service-yard vehicle route.
+
+## v0.28 DX11 Real Depth / Matrix Spike (2026-05-15)
+
+Scope:
+
+- Proceeded directly to v0.28 because the user completed the v0.27 hand pass and reported no notes.
+- Kept the existing Ferry Office Service Call as the only job.
+- Focused on a narrow DX11 renderer spike: real world-to-clip matrix constants and a depth buffer for existing debug solid boxes and flat mesh triangles.
+- Preserved the `IRenderer` public surface, GDI v0.27 painter-depth fallback, null renderer behavior, progressive playtest/debug UI behavior, current scene data, vehicle behavior, and validation scripts.
+- Avoided Job #2, new missions, NPCs, combat, Jolt VehicleConstraint, material/texture pipeline, asset registry, editor, packaging, save/settings persistence, and broad renderer/resource rewrites.
+
+Focused TDD result:
+
+- Added `TestDebugWorldToClipMatrixMatchesCpuProjection` before implementation.
+- Added `TestDebugWorldToClipMatrixMapsDepthIntoDx11Range` before implementation.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests` failed as expected before implementation because `engine/renderer/DebugCameraMatrices.h` did not exist.
+- After implementation, `cmake --build --preset windows-vs2022-debug --target EngineCoreTests` passed and `ctest --preset windows-vs2022-debug --output-on-failure -R EngineCoreTests` passed.
+
+Implementation notes:
+
+- Added `src\engine\renderer\DebugCameraMatrices.h` with `DebugWorldToClipMatrix`, `DebugClipPoint`, `BuildDebugWorldToClipMatrix`, and `TransformWorldPoint`.
+- The new matrix helper uses the same `DebugCamera` basis as the existing CPU debug projection and maps depth to DirectX NDC `0..1`.
+- `Dx11Renderer` now creates a depth-stencil texture/view and depth-enabled/depth-disabled states.
+- `Dx11Renderer` now has a separate world-space vertex shader and matrix constant buffer for debug solid boxes and flat mesh triangles.
+- DX11 lines, grid/axes, wire boxes, and Win32 debug text remain on the depth-disabled overlay/debug-projection path.
+- GDI remains unchanged on the v0.27 painter-depth projected triangle path.
+
+Validation so far:
+
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: failed as expected before implementation because `engine/renderer/DebugCameraMatrices.h` was missing.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: passed after implementation.
+- `ctest --preset windows-vs2022-debug --output-on-failure -R EngineCoreTests`: passed.
+- `powershell -ExecutionPolicy Bypass -File scripts\play.ps1 -Dx11 -Frames 30`: passed; hardware DX11 still falls back to WARP, renderer initialized, loaded all 8 static mesh assets, and exited cleanly.
+- `git diff --check`: passed; line-ending warnings remain expected on this Windows checkout.
+- `powershell -ExecutionPolicy Bypass -File scripts\doctor.ps1`: passed; expected warnings remain for compiler/tool binaries outside plain `PATH`.
+- `powershell -ExecutionPolicy Bypass -File scripts\configure.ps1`: passed for `windows-vs2022-debug`.
+- `powershell -ExecutionPolicy Bypass -File scripts\build.ps1`: passed.
+- `powershell -ExecutionPolicy Bypass -File scripts\verify.ps1`: passed; CTest 4/4 passed, scene validation passed, asset validation passed, mesh report passed, and null smoke loaded all 8 static mesh assets.
+- `powershell -ExecutionPolicy Bypass -File scripts\play.ps1 -Frames 30`: passed; GDI fallback launched playtest mode, loaded all 8 static mesh assets, rendered debug text, and exited cleanly.
+
+Command notes:
+
+- The first inline PowerShell screenshot capture rewrite using `Add-Type` with `using System.Drawing.Imaging;` failed with `Nazwa typu lub przestrzeni nazw "Imaging" nie istnieje w przestrzeni nazw "System.Drawing"`. It was corrected by passing `-ReferencedAssemblies @('System.Drawing')` and using `System.Drawing.Imaging.ImageFormat.Png` directly.
+- The first inline PowerShell crop attempt saved the source PNG over itself and failed with `W interfejsie GDI+ wystąpił błąd rodzajowy.` It was corrected by writing a temporary crop PNG and moving it over `build\captures\v0.28-dx11-depth-start.png`.
+
+Visual evidence:
+
+- Captured bounded DX11 playtest start screenshot at `build\captures\v0.28-dx11-depth-start.png`.
+
+Remaining limitations:
+
+- This is a DX11-only real depth/matrix spike for immediate debug solid/mesh triangles, not a full renderer rewrite.
+- GDI is still a CPU-projected painter-depth fallback.
+- DX11 route/debug lines, wire boxes, grid/axes, and text are intentionally overlay-style rather than depth-tested.
+- There is still no resize-safe depth-resource handling, material/texture pipeline, lighting, static GPU mesh resource lifetime, transparency handling, or production HUD/text renderer.
+- A short human v0.28 DX11 pass should check whether real depth improves overlap readability without hiding prompts, route/debug lines, interaction markers, or the service-yard vehicle route.

@@ -549,3 +549,11 @@ Decision: Add camera-depth metadata and back-to-front sorting for projected debu
 Reason: v0.26 increased the number of flat mesh props enough that arbitrary triangle order became a presentation liability, but the current prototype still benefits from GDI/DX11 parity and simple debug visibility. Painter-depth sorting improves face/mesh readability inside solid-box and flat-mesh batches with low risk, while leaving a future real renderer/depth-buffer milestone explicit.
 
 Dependency impact: no dependency was added. The v0.27 cable reel uses the existing optional Blender 5.1.1 headless workflow and the current embedded-buffer `.gltf` subset.
+
+## v0.28 DX11 Real Depth/Matrix Spike, Not Full Renderer Rewrite
+
+Decision: Add a DX11-only world-to-clip matrix shader path and depth-stencil buffer for existing debug solid boxes and flat mesh triangle submissions, while preserving the `IRenderer` interface, GDI painter-depth fallback, null renderer behavior, and overlay-style debug lines/text.
+
+Reason: v0.27 reduced arbitrary-looking overlap, but DX11 still flattened solid/mesh triangles to NDC with `z=0`, so a real depth buffer could not help until triangles reached the GPU in world space. v0.28 proves that the existing `DebugCamera` can drive a compact matrix constant buffer and depth test without introducing materials, textures, lighting, static GPU mesh resources, scene renderer ownership, or a broad renderer rewrite. Lines, wire boxes, grid/axes, and text intentionally stay depth-disabled/overlay-style so route, prompt, collision, and validation markers remain readable.
+
+Dependency impact: no new dependency was added. This uses only the existing Windows SDK DX11/D3DCompiler path.

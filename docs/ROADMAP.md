@@ -346,6 +346,18 @@ Status: implemented as a scene-data prop/identity pass. The Ferry Office scene n
 
 Status: implemented as a narrow presentation/readability spike. Debug projection now exposes camera depth for projected triangles, GDI/DX11 sort solid boxes and flat mesh triangle batches back-to-front, and the service yard gained one Blender-authored `blender_cable_reel.gltf` prop for 8 mesh assets and 32 mesh instances total.
 
+## v0.28 - DX11 Real Depth / Matrix Spike
+
+- Keep the existing Ferry Office Service Call as the only job.
+- Add a narrow DX11 real world/view/projection-style matrix path and depth buffer for existing debug solid boxes and flat static mesh triangles.
+- Preserve GDI as the v0.27 painter-depth fallback and keep null rendering safe for smoke tests.
+- Keep route/debug lines, wire boxes, grid/axes, and debug text usable as overlay-style diagnostics.
+- Add focused matrix/depth regression coverage that proves the matrix matches the current debug camera projection and maps depth into DirectX NDC `0..1`.
+- Preserve progressive playtest guidance, debug validation mode, current vehicle behavior, scene loading, static mesh tooling, default validation, and Jolt opt-in boundaries.
+- Avoid Job #2, new missions, NPCs, combat, Jolt VehicleConstraint, material/texture pipeline, asset registry, editor, packaging, save/settings persistence, or broad renderer/resource rewrites.
+
+Status: implemented as a DX11-only renderer architecture spike. DX11 now creates a depth-stencil target, uses depth-enabled state for debug solid boxes and flat mesh triangles, updates a world-to-clip matrix constant buffer from the existing `DebugCamera`, and keeps lines/text on the readable debug overlay path.
+
 ## Recommended Next Goal
 
-Run a short human v0.27 visual/playability pass through `scripts/play.ps1`, checking whether painter-depth sorting reduces distracting mesh/solid-box overlap and whether the cable reel improves service-yard identity without hiding prompts, markers, route/debug geometry, or the vehicle route. Use that feedback to choose between a focused renderer depth-buffer/matrix spike, a small vehicle-feel pass, or a second tiny authored prop only if the prop language is now the clearest blocker.
+Run a short human v0.28 DX11 visual/playability pass through `scripts/play.ps1 -Dx11`, checking whether real depth improves solid/mesh overlap without hiding prompts, route/debug lines, interaction markers, or the vehicle route. Use that feedback to choose between a small vehicle-feel pass, a renderer follow-up around resize/overlay ordering, or one more tiny authored prop only if prop language is now the clearest blocker.
