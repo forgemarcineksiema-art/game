@@ -71,8 +71,8 @@ scripts/play.ps1 -DebugUi
 scripts/play.ps1 -MinimalUi
 scripts/play.ps1 -Dx11 -Frames 360
 scripts/play.ps1 -FreeCursor
-scripts/play.ps1 -Frames 6 -CaptureFrame build\captures\v0.29-gdi.bmp
-scripts/play.ps1 -Dx11 -Frames 6 -CaptureFrame build\captures\v0.29-dx11.bmp
+scripts/play.ps1 -Frames 6 -CaptureFrame build\captures\v0.30-gdi.bmp
+scripts/play.ps1 -Dx11 -Frames 6 -CaptureFrame build\captures\v0.30-dx11.bmp
 scripts/play.ps1 -Args @("--frames", "360")
 scripts/play.ps1 -DryRun
 ```
@@ -141,9 +141,12 @@ scripts/play.ps1 -Frames 6 -CaptureFrame build\captures\gdi-frame.bmp
 scripts/play.ps1 -Dx11 -Frames 6 -CaptureFrame build\captures\dx11-frame.bmp
 scripts/play.ps1 -Frames 6 -CaptureDir build\captures
 python tools\capture_visual_smoke.py
+python tools\capture_visual_smoke.py --report-json build\captures\v0.30-visual-report.json
 ```
 
 `--capture-frame <path>` writes one 32-bit BMP to the exact path. `--capture-dir <path>` writes one generated `capture-<renderer>.bmp` file into the directory. Capture occurs after a stable frame, or on the last bounded frame if the run is shorter than the stable-frame threshold. GDI captures the back buffer including the GDI debug text. DX11 captures the swap-chain back buffer before `Present`, so it validates geometry/depth presentation but does not include the temporary Win32 text overlay.
+
+`tools\capture_visual_smoke.py` is the preferred bounded visual evidence path. It launches GDI and DX11, checks expected dimensions, BMP validity, non-flat color diversity, luminance range, and broad Ferry Office start-view color signals for dark background, warm markers, green/teal markers, and cool geometry. It also compares renderer capture dimensions and writes `build\captures\capture_visual_smoke_report.json` by default. This is intentionally not a pixel-perfect golden-image test.
 
 Headless smoke mode:
 

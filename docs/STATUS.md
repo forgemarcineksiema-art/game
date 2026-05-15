@@ -4775,3 +4775,46 @@ Remaining limitations:
 - DX11 capture validates rendered back-buffer geometry/depth presentation but does not include the temporary Win32 debug text overlay because that overlay is drawn after `Present`.
 - DX11 hardware device creation still falls back to WARP in this environment.
 - This is a validation harness, not a production screenshot UX, photo mode, HUD renderer, or asset-rendering upgrade.
+
+## v0.30 Capture Parity / Visual QA Assertions Pass (2026-05-15)
+
+Scope:
+
+- Built on v0.29's renderer-owned BMP capture path.
+- Kept gameplay, scene data, renderer output, movement, interactions, and vehicle behavior unchanged.
+- Strengthened `tools\capture_visual_smoke.py` from a capture-exists/non-blank smoke check into a broader visual QA harness.
+- Avoided brittle pixel-perfect golden-image testing.
+
+Focused TDD result:
+
+- Added `tests\test_capture_visual_smoke.py` before implementation.
+- Added tests for visual stat buckets, flat-capture rejection, Tidebreak green/teal marker detection, GDI/DX11 dimension parity rejection, and JSON report writing.
+- `python tests\test_capture_visual_smoke.py` failed as expected before implementation because `VisualThresholds`, `compare_capture_parity`, and `write_report` did not exist.
+- After implementation, `python tests\test_capture_visual_smoke.py` passed.
+- A first real `python tools\capture_visual_smoke.py` run failed because the initial green-bucket threshold was too strict for the actual Tidebreak teal/green marker color. Root cause: real captures include colors like `B=91, G=102, R=28`, where green dominates red but is close to blue. Added a focused unit test for that color and relaxed the green bucket to match the real authored palette.
+
+Implementation notes:
+
+- Added `VisualThresholds`, BMP pixel parsing, full capture stat analysis, stat validation, GDI/DX11 parity comparison, and JSON report writing to `tools\capture_visual_smoke.py`.
+- The harness now validates expected 1280x720 dimensions, 32-bit BMP structure, unique-color count, non-flat pixel variation, luminance range, and broad Ferry Office start-view scene signals: dark background, warm markers, green/teal markers, and cool geometry.
+- The harness now writes `build\captures\capture_visual_smoke_report.json` by default and supports `--report-json`.
+- Added `CaptureVisualSmokeTests` to CTest.
+- Updated `docs\RUNBOOK.md`, `docs\MANUAL_TEST_CHECKLIST.md`, `docs\TECH_DEBT.md`, and `docs\ROADMAP.md`.
+
+Validation so far:
+
+- `python tests\test_capture_visual_smoke.py`: failed as expected before implementation because the new API did not exist.
+- `python tests\test_capture_visual_smoke.py`: failed once after implementation on the too-strict green-bucket check, then passed after the focused Tidebreak teal marker test/fix.
+- `python tools\capture_visual_smoke.py`: passed; created `build\captures\v0.30-gdi-capture.bmp`, `build\captures\v0.30-dx11-capture.bmp`, and `build\captures\capture_visual_smoke_report.json`. GDI reported 1280x720, 32 colors, luminance range 227, warm/green/cool counts 5926/8256/20339. DX11 reported 1280x720, 36 colors, luminance range 227, warm/green/cool counts 2770/6203/17855.
+- `scripts\doctor.ps1`: passed; expected warnings remain for compiler/tool binaries outside plain `PATH`.
+- `scripts\configure.ps1`: passed for `windows-vs2022-debug`.
+- `scripts\build.ps1`: passed.
+- `scripts\verify.ps1`: passed; CTest 5/5 passed including new `CaptureVisualSmokeTests`, scene validation passed, asset validation passed, mesh report passed, and null smoke loaded all 8 static mesh assets.
+- `python tools\capture_visual_smoke.py`: passed after full verify; recreated the GDI/DX11 v0.30 captures and JSON report with the same broad visual-stat checks.
+- `git diff --check`: passed; expected line-ending warnings remain on this Windows checkout.
+
+Remaining limitations:
+
+- The harness is still heuristic smoke coverage, not a human-quality visual judgment.
+- There is still no PNG encoder, pixel-perfect or thresholded visual diff, golden-image approval flow, semantic object detection, renderer-owned DX11 text capture, or resize matrix for alternate capture dimensions.
+- DX11 capture still excludes the temporary Win32 debug text overlay because it reads the swap-chain back buffer before `Present`.

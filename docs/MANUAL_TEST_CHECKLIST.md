@@ -45,9 +45,10 @@ Optional renderer-owned visual capture:
 scripts/play.ps1 -Frames 6 -CaptureFrame build\captures\gdi-frame.bmp
 scripts/play.ps1 -Dx11 -Frames 6 -CaptureFrame build\captures\dx11-frame.bmp
 python tools\capture_visual_smoke.py
+python tools\capture_visual_smoke.py --report-json build\captures\v0.30-visual-report.json
 ```
 
-The BMP capture path is for bounded local validation. GDI captures the frame including GDI overlay text; DX11 captures the rendered back buffer before its temporary Win32 text overlay.
+The BMP capture path is for bounded local validation. GDI captures the frame including GDI overlay text; DX11 captures the rendered back buffer before its temporary Win32 text overlay. The smoke harness checks dimensions, non-flat color/luminance diversity, broad Ferry Office start-view color signals, and writes a JSON report; it is not a pixel-perfect golden-image approval test.
 
 Optional physics dependency spike:
 
@@ -74,7 +75,7 @@ python tools/mesh_report.py
 - [ ] `scripts/play.ps1 -DryRun` prints the exact command without launching a window.
 - [ ] `scripts/play.ps1 -Frames 6 -CaptureFrame build\captures\gdi-frame.bmp` creates a non-empty BMP capture.
 - [ ] `scripts/play.ps1 -Dx11 -Frames 6 -CaptureFrame build\captures\dx11-frame.bmp` creates a non-empty BMP capture.
-- [ ] `python tools\capture_visual_smoke.py` passes for GDI and DX11 when a Debug build exists.
+- [ ] `python tools\capture_visual_smoke.py` passes for GDI and DX11 when a Debug build exists and writes `build\captures\capture_visual_smoke_report.json`.
 - [ ] Default windowed play or `--ui-mode playtest` shows objective, focused prompt, job status, vehicle/checkpoint hints, completion state, and `F1` help without raw telemetry dominating the screen.
 - [ ] `--ui-mode debug` shows full development telemetry: player/camera, traversal, vehicle, world state, scene, physics, and job details.
 - [ ] `--ui-mode minimal` shows only objective, prompt, and job status.

@@ -369,6 +369,17 @@ Status: implemented as a DX11-only renderer architecture spike. DX11 now creates
 
 Status: implemented as a local visual-validation harness. `--capture-frame` and `--capture-dir` request one renderer-owned BMP capture after a stable frame, GDI reads its back buffer, DX11 reads the swap-chain back buffer, `scripts/play.ps1` forwards capture options, and `tools/capture_visual_smoke.py` validates GDI/DX11 BMP existence and non-blank output.
 
+## v0.30 - Capture Parity / Visual QA Assertions Pass
+
+- Keep gameplay unchanged.
+- Build on v0.29's engine-owned BMP capture path.
+- Strengthen `tools/capture_visual_smoke.py` with expected dimensions, color/luminance diversity, broad Ferry Office start-view scene-presence heuristics, and GDI/DX11 parity checks without brittle pixel-perfect golden tests.
+- Add optional JSON report output under `build\captures`.
+- Add focused tests for BMP parsing/stat logic, scene-presence buckets, parity, and report writing.
+- Document what the harness can and cannot prove, especially that DX11 capture still excludes the temporary Win32 text overlay.
+
+Status: implemented as a capture QA hardening pass. The visual smoke harness now validates 1280x720 32-bit BMP captures for non-flat output, luminance range, warm/green-teal/cool/dark scene signals, matching GDI/DX11 dimensions, and writes a JSON report alongside the captures.
+
 ## Recommended Next Goal
 
 Use `python tools\capture_visual_smoke.py` as the bounded evidence path before asking for manual play. If captures stay clean, choose the next small goal from actual risk: vehicle feel if driving still lacks confidence, renderer-owned DX11 text/resize handling if capture/overlay gaps block validation, or one tiny authored prop only if scene language is now the clearest blocker.

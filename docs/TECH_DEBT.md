@@ -38,11 +38,12 @@ This file lists known foundation issues during the current playable-build phase.
 - DX11 hardware/debug device creation fails in this environment and falls back to WARP.
 - DX11 debug text now uses a small Win32 text overlay after `Present`. This makes `scripts/play.ps1 -Dx11` usable for playtest checks, but it is not a production HUD/text renderer.
 - v0.29 adds renderer-owned 32-bit BMP capture for bounded local validation. GDI capture includes the GDI text overlay; DX11 capture reads the swap-chain back buffer before `Present`, so it does not include the temporary Win32 text overlay.
+- v0.30 strengthens the capture harness with dimension, color-diversity, luminance, broad scene-presence, GDI/DX11 dimension parity, and JSON report checks.
 - Debug boxes/lines/solid boxes and v0.12 flat mesh triangles are enough for prototypes but not a real mesh/material pipeline.
 - v0.9 solid debug boxes and v0.12 mesh triangles remain placeholder geometry. v0.27 adds a small painter-depth sort for projected solid-box and flat-mesh triangle batches; v0.28 adds a DX11-only real world-to-clip matrix and depth-buffer path for solid boxes and flat mesh triangles.
 - GDI remains on CPU projection/painter-depth. DX11 lines, wire boxes, grid, route/debug lines, and Win32 text overlay are still overlay/debug-projection rendering rather than fully depth-aware renderer primitives.
 - There is no resize handling, camera clip tuning, or resource lifetime stress testing for the new DX11 depth resources.
-- There is no PNG encoder, screenshot comparison thresholding, golden-image approval flow, or renderer-owned DX11 HUD/text capture yet. The v0.29 harness only proves capture existence, BMP validity, and non-blank presentation.
+- There is no PNG encoder, pixel-perfect screenshot comparison, golden-image approval flow, semantic object detection, or renderer-owned DX11 HUD/text capture yet. The v0.30 harness remains a broad smoke/heuristic check rather than visual proof that the playable composition is good.
 - `IRenderer::drawDebugFlatTriangles` is immediate-mode and creates transient renderer data; it is not a GPU static mesh resource path.
 - DX11 mesh rendering is still immediate-mode; v0.28 adds matrix/depth presentation, not GPU static mesh resources, batching, materials, textures, or asset residency.
 

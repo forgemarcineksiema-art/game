@@ -4,15 +4,32 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import asdict, dataclass
+import json
 import pathlib
 import struct
 import subprocess
 import sys
+from typing import Any
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DEFAULT_EXE = ROOT / "build" / "windows-vs2022-debug" / "Debug" / "EngineApp.exe"
 DEFAULT_SCENE = ROOT / "data" / "scenes" / "ferry_office.scene.json"
+
+
+@dataclass(frozen=True)
+class VisualThresholds:
+    expected_width: int | None = 1280
+    expected_height: int | None = 720
+    min_unique_colors: int = 12
+    min_different_pixels: int = 500
+    min_luminance_range: int = 55
+    min_dark_pixels: int = 500
+    min_bright_pixels: int = 0
+    min_warm_pixels: int = 4
+    min_green_pixels: int = 4
+    min_cool_pixels: int = 4
 
 
 def resolve_repo_path(value: str | pathlib.Path) -> pathlib.Path:
@@ -22,7 +39,7 @@ def resolve_repo_path(value: str | pathlib.Path) -> pathlib.Path:
     return ROOT / path
 
 
-def read_bmp_stats(path: pathlib.Path) -> dict[str, int]:
+def read_bmp_pixels(path: pathlib.Path) -> tuple[int, int, bytes, int]:
     data = path.read_bytes()
     if len(data) < 54:
         raise ValueError(f"{path} is too small to be a BMP capture.")
@@ -51,29 +68,182 @@ def read_bmp_stats(path: pathlib.Path) -> dict[str, int]:
         raise ValueError(f"{path} pixel data is truncated.")
 
     pixels = data[pixel_offset : pixel_offset + expected_pixel_bytes]
-    unique_colors: set[bytes] = set()
-    colored_pixels = 0
-    for index in range(0, len(pixels), 4):
-        pixel = pixels[index : index + 4]
-        unique_colors.add(pixel)
-        if pixel[:3] != pixels[:3]:
-            colored_pixels += 1
-        if len(unique_colors) > 256 and colored_pixels > 1000:
-            break
+    if height_signed > 0:
+        row_bytes = width * 4
+        rows = [pixels[index : index + row_bytes] for index in range(0, len(pixels), row_bytes)]
+        pixels = b"".join(reversed(rows))
 
-    if len(unique_colors) < 2 or colored_pixels < 100:
-        raise ValueError(f"{path} looks blank: only {len(unique_colors)} sampled color(s).")
+    return width, height, pixels, len(data)
 
-    return {
-        "width": width,
-        "height": height,
-        "bytes": len(data),
-        "unique_colors": len(unique_colors),
-        "colored_pixels": colored_pixels,
+
+def analyze_bmp_capture(path: pathlib.Path, thresholds: VisualThresholds | None = None) -> dict[str, Any]:
+    width, height, pixels, byte_count = read_bmp_pixels(path)
+    unique_colors: set[tuple[int, int, int]] = set()
+    different_pixels = 0
+    luminance_min = 255
+    luminance_max = 0
+    luminance_total = 0
+    red_min = green_min = blue_min = 255
+    red_max = green_max = blue_max = 0
+    scene_presence = {
+        "dark_pixels": 0,
+        "bright_pixels": 0,
+        "warm_pixels": 0,
+        "green_pixels": 0,
+        "cool_pixels": 0,
+        "neutral_pixels": 0,
     }
 
+    first_bgr = pixels[:3]
+    for index in range(0, len(pixels), 4):
+        pixel = pixels[index : index + 4]
+        blue = pixel[0]
+        green = pixel[1]
+        red = pixel[2]
+        unique_colors.add((blue, green, red))
+        if pixel[:3] != first_bgr:
+            different_pixels += 1
 
-def run_capture(exe: pathlib.Path, scene: pathlib.Path, renderer: str, output_path: pathlib.Path, frames: int) -> dict[str, int]:
+        luminance = int((0.2126 * red) + (0.7152 * green) + (0.0722 * blue))
+        luminance_min = min(luminance_min, luminance)
+        luminance_max = max(luminance_max, luminance)
+        luminance_total += luminance
+
+        red_min = min(red_min, red)
+        red_max = max(red_max, red)
+        green_min = min(green_min, green)
+        green_max = max(green_max, green)
+        blue_min = min(blue_min, blue)
+        blue_max = max(blue_max, blue)
+
+        if luminance <= 55:
+            scene_presence["dark_pixels"] += 1
+        if luminance >= 200:
+            scene_presence["bright_pixels"] += 1
+        if red >= 145 and red >= green + 35 and red >= blue + 35:
+            scene_presence["warm_pixels"] += 1
+        if green >= 95 and green >= red + 25 and green >= blue - 15:
+            scene_presence["green_pixels"] += 1
+        if blue >= 130 and blue >= red + 25 and blue >= green + 10:
+            scene_presence["cool_pixels"] += 1
+        if max(red, green, blue) - min(red, green, blue) <= 24 and luminance >= 70:
+            scene_presence["neutral_pixels"] += 1
+
+    pixel_count = width * height
+    stats: dict[str, Any] = {
+        "path": str(path),
+        "width": width,
+        "height": height,
+        "bytes": byte_count,
+        "pixel_count": pixel_count,
+        "unique_colors": len(unique_colors),
+        "different_pixels": different_pixels,
+        "luminance_min": luminance_min,
+        "luminance_max": luminance_max,
+        "luminance_range": luminance_max - luminance_min,
+        "luminance_average": round(luminance_total / pixel_count, 2),
+        "channels": {
+            "red_range": red_max - red_min,
+            "green_range": green_max - green_min,
+            "blue_range": blue_max - blue_min,
+        },
+        "scene_presence": scene_presence,
+    }
+
+    if thresholds is not None:
+        stats["thresholds"] = asdict(thresholds)
+
+    return stats
+
+
+def validate_capture_stats(stats: dict[str, Any], thresholds: VisualThresholds, renderer: str) -> None:
+    if thresholds.expected_width is not None and stats["width"] != thresholds.expected_width:
+        raise ValueError(f"{renderer} capture width {stats['width']} did not match expected {thresholds.expected_width}.")
+    if thresholds.expected_height is not None and stats["height"] != thresholds.expected_height:
+        raise ValueError(f"{renderer} capture height {stats['height']} did not match expected {thresholds.expected_height}.")
+    if stats["unique_colors"] < thresholds.min_unique_colors:
+        raise ValueError(f"{renderer} capture has only {stats['unique_colors']} unique colors.")
+    if stats["different_pixels"] < thresholds.min_different_pixels:
+        raise ValueError(f"{renderer} capture looks flat: only {stats['different_pixels']} pixels differ from the first pixel.")
+    if stats["luminance_range"] < thresholds.min_luminance_range:
+        raise ValueError(f"{renderer} capture luminance range {stats['luminance_range']} is too small.")
+
+    scene_presence = stats["scene_presence"]
+    required_scene_buckets = {
+        "dark_pixels": thresholds.min_dark_pixels,
+        "bright_pixels": thresholds.min_bright_pixels,
+        "warm_pixels": thresholds.min_warm_pixels,
+        "green_pixels": thresholds.min_green_pixels,
+        "cool_pixels": thresholds.min_cool_pixels,
+    }
+    for bucket, minimum in required_scene_buckets.items():
+        if minimum > 0 and scene_presence[bucket] < minimum:
+            raise ValueError(f"{renderer} capture is missing expected scene signal {bucket}: {scene_presence[bucket]} < {minimum}.")
+
+
+def compare_capture_parity(captures: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    if len(captures) < 2:
+        return {
+            "compared": False,
+            "reason": "Only one renderer was requested.",
+        }
+
+    ordered = sorted(captures)
+    baseline_name = ordered[0]
+    baseline = captures[baseline_name]
+    parity: dict[str, Any] = {
+        "compared": True,
+        "baseline": baseline_name,
+        "dimensions_match": True,
+        "renderers": ordered,
+    }
+    for renderer in ordered[1:]:
+        stats = captures[renderer]
+        if stats["width"] != baseline["width"] or stats["height"] != baseline["height"]:
+            raise ValueError(
+                f"Capture dimension mismatch: {baseline_name}={baseline['width']}x{baseline['height']}, "
+                f"{renderer}={stats['width']}x{stats['height']}."
+            )
+
+    if "gdi" in captures and "dx11" in captures:
+        gdi = captures["gdi"]
+        dx11 = captures["dx11"]
+        parity.update(
+            {
+                "unique_color_delta": abs(gdi["unique_colors"] - dx11["unique_colors"]),
+                "luminance_range_delta": abs(gdi["luminance_range"] - dx11["luminance_range"]),
+                "dark_pixel_delta": abs(gdi["scene_presence"]["dark_pixels"] - dx11["scene_presence"]["dark_pixels"]),
+                "warm_pixel_delta": abs(gdi["scene_presence"]["warm_pixels"] - dx11["scene_presence"]["warm_pixels"]),
+                "green_pixel_delta": abs(gdi["scene_presence"]["green_pixels"] - dx11["scene_presence"]["green_pixels"]),
+                "cool_pixel_delta": abs(gdi["scene_presence"]["cool_pixels"] - dx11["scene_presence"]["cool_pixels"]),
+            }
+        )
+
+    return parity
+
+
+def write_report(report_path: pathlib.Path, captures: dict[str, dict[str, Any]], parity: dict[str, Any]) -> None:
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report = {
+        "schema": "v0.30-capture-visual-smoke",
+        "captures": captures,
+        "parity": parity,
+    }
+    report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def read_bmp_stats(path: pathlib.Path) -> dict[str, Any]:
+    return analyze_bmp_capture(path)
+
+
+def run_capture(
+    exe: pathlib.Path,
+    scene: pathlib.Path,
+    renderer: str,
+    output_path: pathlib.Path,
+    frames: int,
+    thresholds: VisualThresholds,
+) -> dict[str, Any]:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     if output_path.exists():
         output_path.unlink()
@@ -100,10 +270,17 @@ def run_capture(exe: pathlib.Path, scene: pathlib.Path, renderer: str, output_pa
     if not output_path.exists():
         raise FileNotFoundError(f"{renderer} capture did not create {output_path}.")
 
-    stats = read_bmp_stats(output_path)
+    stats = analyze_bmp_capture(output_path, thresholds)
+    stats["renderer"] = renderer
+    validate_capture_stats(stats, thresholds, renderer)
     print(
         f"{renderer}: {stats['width']}x{stats['height']}, "
-        f"{stats['bytes']} bytes, sampled colors={stats['unique_colors']}"
+        f"{stats['bytes']} bytes, colors={stats['unique_colors']}, "
+        f"lumaRange={stats['luminance_range']}, "
+        f"warm/green/cool="
+        f"{stats['scene_presence']['warm_pixels']}/"
+        f"{stats['scene_presence']['green_pixels']}/"
+        f"{stats['scene_presence']['cool_pixels']}"
     )
     return stats
 
@@ -113,7 +290,10 @@ def main() -> int:
     parser.add_argument("--exe", default=str(DEFAULT_EXE), help="Path to EngineApp.exe.")
     parser.add_argument("--scene", default=str(DEFAULT_SCENE), help="Runtime scene JSON path.")
     parser.add_argument("--output-dir", default=str(ROOT / "build" / "captures"), help="Directory for BMP captures.")
+    parser.add_argument("--report-json", default="", help="Optional JSON report path. Defaults into --output-dir.")
     parser.add_argument("--frames", type=int, default=6, help="Bounded run length; capture occurs after a stable frame.")
+    parser.add_argument("--expected-width", type=int, default=1280, help="Expected capture width.")
+    parser.add_argument("--expected-height", type=int, default=720, help="Expected capture height.")
     parser.add_argument(
         "--renderer",
         action="append",
@@ -125,7 +305,9 @@ def main() -> int:
     exe = resolve_repo_path(args.exe)
     scene = resolve_repo_path(args.scene)
     output_dir = resolve_repo_path(args.output_dir)
+    report_path = resolve_repo_path(args.report_json) if args.report_json else output_dir / "capture_visual_smoke_report.json"
     renderers = args.renderer or ["gdi", "dx11"]
+    thresholds = VisualThresholds(expected_width=args.expected_width, expected_height=args.expected_height)
 
     if not exe.exists():
         print(f"EngineApp executable was not found: {exe}", file=sys.stderr)
@@ -135,8 +317,19 @@ def main() -> int:
         return 2
 
     try:
+        captures: dict[str, dict[str, Any]] = {}
         for renderer in renderers:
-            run_capture(exe, scene, renderer, output_dir / f"v0.29-{renderer}-capture.bmp", args.frames)
+            captures[renderer] = run_capture(
+                exe,
+                scene,
+                renderer,
+                output_dir / f"v0.30-{renderer}-capture.bmp",
+                args.frames,
+                thresholds,
+            )
+        parity = compare_capture_parity(captures)
+        write_report(report_path, captures, parity)
+        print(f"Wrote visual smoke report: {report_path}")
     except Exception as exc:
         print(f"Capture visual smoke failed: {exc}", file=sys.stderr)
         return 1
