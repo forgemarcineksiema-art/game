@@ -13,9 +13,9 @@ This file lists known foundation issues during the current playable-build phase.
 
 ### Fix Soon
 
-1. Run a short human v0.28 visual/playability pass through `scripts/play.ps1 -Dx11`, checking whether depth-tested solid boxes/mesh props improve overlap readability without hiding prompts, route lines, interaction markers, or vehicle guidance.
-2. Decide whether the next non-packaging pass should be a small vehicle-feel follow-up, a second renderer polish pass around resize/overlay ordering, or one more tiny authored prop. Do not expand all three at once.
-3. Keep the Blender/static mesh path narrow and honest. v0.27 adds one controlled original Blender prop; avoid more quantity until the hand pass proves prop language, not renderer readability or vehicle feel, is the blocker.
+1. Use `python tools\capture_visual_smoke.py` as the default bounded visual evidence path for GDI/DX11 presentation before asking for a manual pass.
+2. Decide whether the next non-packaging pass should be a small vehicle-feel follow-up, a second renderer polish pass around resize/renderer-owned overlay text, or one more tiny authored prop. Do not expand all three at once.
+3. Keep the Blender/static mesh path narrow and honest. v0.27 adds one controlled original Blender prop; avoid more quantity until visual evidence proves prop language, not renderer readability or vehicle feel, is the blocker.
 
 ### Acceptable For Now
 
@@ -37,10 +37,12 @@ This file lists known foundation issues during the current playable-build phase.
 
 - DX11 hardware/debug device creation fails in this environment and falls back to WARP.
 - DX11 debug text now uses a small Win32 text overlay after `Present`. This makes `scripts/play.ps1 -Dx11` usable for playtest checks, but it is not a production HUD/text renderer.
+- v0.29 adds renderer-owned 32-bit BMP capture for bounded local validation. GDI capture includes the GDI text overlay; DX11 capture reads the swap-chain back buffer before `Present`, so it does not include the temporary Win32 text overlay.
 - Debug boxes/lines/solid boxes and v0.12 flat mesh triangles are enough for prototypes but not a real mesh/material pipeline.
 - v0.9 solid debug boxes and v0.12 mesh triangles remain placeholder geometry. v0.27 adds a small painter-depth sort for projected solid-box and flat-mesh triangle batches; v0.28 adds a DX11-only real world-to-clip matrix and depth-buffer path for solid boxes and flat mesh triangles.
 - GDI remains on CPU projection/painter-depth. DX11 lines, wire boxes, grid, route/debug lines, and Win32 text overlay are still overlay/debug-projection rendering rather than fully depth-aware renderer primitives.
 - There is no resize handling, camera clip tuning, or resource lifetime stress testing for the new DX11 depth resources.
+- There is no PNG encoder, screenshot comparison thresholding, golden-image approval flow, or renderer-owned DX11 HUD/text capture yet. The v0.29 harness only proves capture existence, BMP validity, and non-blank presentation.
 - `IRenderer::drawDebugFlatTriangles` is immediate-mode and creates transient renderer data; it is not a GPU static mesh resource path.
 - DX11 mesh rendering is still immediate-mode; v0.28 adds matrix/depth presentation, not GPU static mesh resources, batching, materials, textures, or asset residency.
 

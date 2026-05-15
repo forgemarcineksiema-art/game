@@ -71,6 +71,8 @@ scripts/play.ps1 -DebugUi
 scripts/play.ps1 -MinimalUi
 scripts/play.ps1 -Dx11 -Frames 360
 scripts/play.ps1 -FreeCursor
+scripts/play.ps1 -Frames 6 -CaptureFrame build\captures\v0.29-gdi.bmp
+scripts/play.ps1 -Dx11 -Frames 6 -CaptureFrame build\captures\v0.29-dx11.bmp
 scripts/play.ps1 -Args @("--frames", "360")
 scripts/play.ps1 -DryRun
 ```
@@ -131,6 +133,17 @@ build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --ui-mode minimal
 Normal windowed play defaults to `playtest`, which keeps objective, prompt, job state, vehicle/checkpoint hints, and completion status visible without the raw telemetry wall. Use `--ui-mode debug` or `--debug-ui` for full development telemetry. Use `--ui-mode minimal` or `--playtest-ui --ui-mode minimal` only when you want the smallest objective/prompt/status readout. `F1` toggles from playtest/minimal to debug and back during a windowed run.
 
 GDI remains the simplest renderer for overlay debugging. DX11 now draws a small Win32 debug text overlay after presenting, so `scripts/play.ps1 -Dx11` is usable for bounded playtest checks too; it is still not a production HUD/text renderer.
+
+Renderer-owned frame capture:
+
+```powershell
+scripts/play.ps1 -Frames 6 -CaptureFrame build\captures\gdi-frame.bmp
+scripts/play.ps1 -Dx11 -Frames 6 -CaptureFrame build\captures\dx11-frame.bmp
+scripts/play.ps1 -Frames 6 -CaptureDir build\captures
+python tools\capture_visual_smoke.py
+```
+
+`--capture-frame <path>` writes one 32-bit BMP to the exact path. `--capture-dir <path>` writes one generated `capture-<renderer>.bmp` file into the directory. Capture occurs after a stable frame, or on the last bounded frame if the run is shorter than the stable-frame threshold. GDI captures the back buffer including the GDI debug text. DX11 captures the swap-chain back buffer before `Present`, so it validates geometry/depth presentation but does not include the temporary Win32 text overlay.
 
 Headless smoke mode:
 

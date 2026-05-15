@@ -36,6 +36,7 @@ add_library(EngineCore STATIC
     src/engine/core/Logger.cpp
     src/engine/platform/Window.cpp
     src/engine/physics/PhysicsWorld.cpp
+    src/engine/renderer/BmpWriter.cpp
     src/engine/renderer/NullRenderer.cpp
     src/engine/renderer/RendererFactory.cpp
 )

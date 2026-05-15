@@ -66,6 +66,31 @@ class RunScriptTests(unittest.TestCase):
         self.assertIn("--frames 42", result.stdout)
         self.assertIn("--free-cursor", result.stdout)
 
+    def test_play_script_capture_frame_option_is_forwarded(self) -> None:
+        result = run_play_script(
+            "-DryRun",
+            "-Frames",
+            "6",
+            "-CaptureFrame",
+            "build\\captures\\v0.29-gdi.bmp",
+        )
+
+        self.assertEqual(0, result.returncode, result.stdout)
+        self.assertIn("--frames 6", result.stdout)
+        self.assertIn("--capture-frame build\\captures\\v0.29-gdi.bmp", result.stdout)
+
+    def test_play_script_capture_dir_option_is_forwarded(self) -> None:
+        result = run_play_script(
+            "-DryRun",
+            "-Dx11",
+            "-CaptureDir",
+            "build\\captures",
+        )
+
+        self.assertEqual(0, result.returncode, result.stdout)
+        self.assertIn("--renderer dx11", result.stdout)
+        self.assertIn("--capture-dir build\\captures", result.stdout)
+
     def test_play_script_passthrough_args_replace_default_renderer_and_ui(self) -> None:
         result = run_play_script_command(
             f"& '{PLAY_SCRIPT}' -DryRun -Args @('--renderer', 'null', '--ui-mode', 'minimal', '--frames', '3')"

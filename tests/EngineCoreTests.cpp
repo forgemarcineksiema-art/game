@@ -5,6 +5,7 @@
 #include "engine/math/Math.h"
 #include "engine/physics/PhysicsWorld.h"
 #include "engine/assets/StaticMesh.h"
+#include "engine/renderer/BmpWriter.h"
 #include "engine/renderer/DebugCameraMatrices.h"
 #include "engine/renderer/DebugProjection.h"
 #include "engine/renderer/Renderer.h"
@@ -27,6 +28,7 @@
 #include <fstream>
 #include <iostream>
 #include <array>
+#include <cstdint>
 #include <iterator>
 #include <nlohmann/json.hpp>
 #include <string>
@@ -127,6 +129,33 @@ void ExpectNear(float actual, float expected, float tolerance, const std::string
     if (std::abs(actual - expected) > tolerance) {
         failures.push_back({name, message});
     }
+}
+
+std::vector<std::uint8_t> ReadBinaryFile(const std::filesystem::path& path)
+{
+    std::ifstream input(path, std::ios::binary);
+    return std::vector<std::uint8_t>(
+        std::istreambuf_iterator<char>(input),
+        std::istreambuf_iterator<char>());
+}
+
+std::uint16_t ReadLittleEndianU16(const std::vector<std::uint8_t>& bytes, std::size_t offset)
+{
+    return static_cast<std::uint16_t>(bytes[offset])
+        | (static_cast<std::uint16_t>(bytes[offset + 1]) << 8);
+}
+
+std::uint32_t ReadLittleEndianU32(const std::vector<std::uint8_t>& bytes, std::size_t offset)
+{
+    return static_cast<std::uint32_t>(bytes[offset])
+        | (static_cast<std::uint32_t>(bytes[offset + 1]) << 8)
+        | (static_cast<std::uint32_t>(bytes[offset + 2]) << 16)
+        | (static_cast<std::uint32_t>(bytes[offset + 3]) << 24);
+}
+
+std::int32_t ReadLittleEndianI32(const std::vector<std::uint8_t>& bytes, std::size_t offset)
+{
+    return static_cast<std::int32_t>(ReadLittleEndianU32(bytes, offset));
 }
 
 class CountingRenderer final : public engine::IRenderer {
@@ -246,6 +275,56 @@ void TestInvalidRendererIsRejected()
     const auto result = engine::ParseArguments(3, argv);
 
     Expect(!result.errors.empty(), "TestInvalidRendererIsRejected", "Invalid renderer should emit an error.");
+}
+
+void TestCaptureArgumentsSelectOutputPath()
+{
+    const char* argv[] = {"EngineApp", "--capture-frame", "build/captures/frame.bmp"};
+    const auto result = engine::ParseArguments(3, argv);
+
+    Expect(result.errors.empty(), "TestCaptureArgumentsSelectOutputPath", "Capture frame argument should parse cleanly.");
+    Expect(result.config.captureFramePath.generic_string() == "build/captures/frame.bmp",
+        "TestCaptureArgumentsSelectOutputPath",
+        "Capture frame argument should preserve the requested output file.");
+    Expect(result.config.captureDir.empty(),
+        "TestCaptureArgumentsSelectOutputPath",
+        "Capture frame argument should not also set a generated capture directory.");
+}
+
+void TestCaptureDirArgumentsSelectOutputDirectory()
+{
+    const char* argv[] = {"EngineApp", "--capture-dir=build/captures"};
+    const auto result = engine::ParseArguments(2, argv);
+
+    Expect(result.errors.empty(), "TestCaptureDirArgumentsSelectOutputDirectory", "Capture dir argument should parse cleanly.");
+    Expect(result.config.captureDir.generic_string() == "build/captures",
+        "TestCaptureDirArgumentsSelectOutputDirectory",
+        "Capture dir argument should preserve the requested output directory.");
+    Expect(result.config.captureFramePath.empty(),
+        "TestCaptureDirArgumentsSelectOutputDirectory",
+        "Capture dir argument should not also set an exact capture path.");
+}
+
+void TestCaptureArgumentsRejectAmbiguousDestination()
+{
+    const char* argv[] = {"EngineApp", "--capture-frame", "a.bmp", "--capture-dir", "build/captures"};
+    const auto result = engine::ParseArguments(5, argv);
+
+    Expect(!result.errors.empty(),
+        "TestCaptureArgumentsRejectAmbiguousDestination",
+        "Capture frame and capture dir should be mutually exclusive.");
+}
+
+void TestHelpTextMentionsCaptureFlags()
+{
+    const std::string help = engine::BuildHelpText();
+
+    Expect(help.find("--capture-frame") != std::string::npos,
+        "TestHelpTextMentionsCaptureFlags",
+        "Help text should document exact frame capture output.");
+    Expect(help.find("--capture-dir") != std::string::npos,
+        "TestHelpTextMentionsCaptureFlags",
+        "Help text should document generated capture output.");
 }
 
 void TestCursorCaptureArguments()
@@ -407,6 +486,45 @@ void TestNullRendererRecordsFrameAndDebugDraw()
     Expect(renderer.frameCount() == 7, "TestNullRendererRecordsFrameAndDebugDraw", "Null renderer should record frame index.");
     Expect(renderer.debugDrawCount() == 3, "TestNullRendererRecordsFrameAndDebugDraw", "Null renderer should count grid, solid box, and flat mesh draw calls.");
     renderer.shutdown();
+}
+
+void TestBmpWriterCreatesTopDown32BitBmp()
+{
+    const std::filesystem::path outputPath = std::filesystem::temp_directory_path() / "tidebreak-v029-bmp-writer-test.bmp";
+    std::filesystem::remove(outputPath);
+
+    const std::array<std::uint8_t, 8> bgraPixels {{
+        0, 0, 255, 255,
+        0, 255, 0, 255,
+    }};
+
+    const bool written = engine::WriteBgraBmp(outputPath, 2, 1, bgraPixels);
+    const std::vector<std::uint8_t> bytes = ReadBinaryFile(outputPath);
+
+    Expect(written, "TestBmpWriterCreatesTopDown32BitBmp", "BMP writer should report success for valid BGRA pixels.");
+    Expect(bytes.size() == 62, "TestBmpWriterCreatesTopDown32BitBmp", "2x1 32-bit BMP should contain a 54-byte header plus 8 bytes of pixels.");
+    if (bytes.size() >= 62) {
+        Expect(bytes[0] == 'B' && bytes[1] == 'M',
+            "TestBmpWriterCreatesTopDown32BitBmp",
+            "BMP file should start with the BM signature.");
+        Expect(ReadLittleEndianU32(bytes, 2) == 62,
+            "TestBmpWriterCreatesTopDown32BitBmp",
+            "BMP file size should be written into the file header.");
+        Expect(ReadLittleEndianU32(bytes, 10) == 54,
+            "TestBmpWriterCreatesTopDown32BitBmp",
+            "BMP pixel data offset should point after the file and info headers.");
+        Expect(ReadLittleEndianI32(bytes, 18) == 2 && ReadLittleEndianI32(bytes, 22) == -1,
+            "TestBmpWriterCreatesTopDown32BitBmp",
+            "BMP info header should store width and a negative top-down height.");
+        Expect(ReadLittleEndianU16(bytes, 28) == 32,
+            "TestBmpWriterCreatesTopDown32BitBmp",
+            "BMP writer should emit 32-bit BGRA pixels.");
+        Expect(std::equal(bgraPixels.begin(), bgraPixels.end(), bytes.begin() + 54),
+            "TestBmpWriterCreatesTopDown32BitBmp",
+            "BMP payload should preserve the input top-down BGRA pixels.");
+    }
+
+    std::filesystem::remove(outputPath);
 }
 
 void TestDebugProjectionKeepsLongVisibleLinesWhenEndpointsAreOffscreen()
@@ -2979,6 +3097,10 @@ int main()
     TestSmokeArgumentsEnableBoundedHeadlessRun();
     TestFramesArgumentOverridesSmokeDefault();
     TestInvalidRendererIsRejected();
+    TestCaptureArgumentsSelectOutputPath();
+    TestCaptureDirArgumentsSelectOutputDirectory();
+    TestCaptureArgumentsRejectAmbiguousDestination();
+    TestHelpTextMentionsCaptureFlags();
     TestCursorCaptureArguments();
     TestUiModeArguments();
     TestInputStateTracksDebugOverlayToggleEdge();
@@ -2986,6 +3108,7 @@ int main()
     TestNormalizePathKeepsAssetPathsInsideBase();
     TestClockStartsAtFrameZeroAndTicksForward();
     TestNullRendererRecordsFrameAndDebugDraw();
+    TestBmpWriterCreatesTopDown32BitBmp();
     TestDebugProjectionKeepsLongVisibleLinesWhenEndpointsAreOffscreen();
     TestDebugProjectionClipsLinesAndTrianglesAgainstNearPlane();
     TestDebugProjectionSortsProjectedTrianglesBackToFront();

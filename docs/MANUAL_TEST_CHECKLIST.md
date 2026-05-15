@@ -39,6 +39,16 @@ scripts/play.ps1 -Dx11 -Frames 120
 
 DX11 should show the same playtest/debug text overlay content as GDI for bounded checks. GDI remains the simpler renderer for overlay troubleshooting.
 
+Optional renderer-owned visual capture:
+
+```powershell
+scripts/play.ps1 -Frames 6 -CaptureFrame build\captures\gdi-frame.bmp
+scripts/play.ps1 -Dx11 -Frames 6 -CaptureFrame build\captures\dx11-frame.bmp
+python tools\capture_visual_smoke.py
+```
+
+The BMP capture path is for bounded local validation. GDI captures the frame including GDI overlay text; DX11 captures the rendered back buffer before its temporary Win32 text overlay.
+
 Optional physics dependency spike:
 
 ```powershell
@@ -62,6 +72,9 @@ python tools/mesh_report.py
 - [ ] `scripts/play.ps1` launches the current Ferry Office Service Call in GDI playtest mode without needing long arguments.
 - [ ] `scripts/play.ps1 -DebugUi`, `scripts/play.ps1 -MinimalUi`, `scripts/play.ps1 -Dx11 -Frames 120`, and `scripts/play.ps1 -FreeCursor` do what their names imply.
 - [ ] `scripts/play.ps1 -DryRun` prints the exact command without launching a window.
+- [ ] `scripts/play.ps1 -Frames 6 -CaptureFrame build\captures\gdi-frame.bmp` creates a non-empty BMP capture.
+- [ ] `scripts/play.ps1 -Dx11 -Frames 6 -CaptureFrame build\captures\dx11-frame.bmp` creates a non-empty BMP capture.
+- [ ] `python tools\capture_visual_smoke.py` passes for GDI and DX11 when a Debug build exists.
 - [ ] Default windowed play or `--ui-mode playtest` shows objective, focused prompt, job status, vehicle/checkpoint hints, completion state, and `F1` help without raw telemetry dominating the screen.
 - [ ] `--ui-mode debug` shows full development telemetry: player/camera, traversal, vehicle, world state, scene, physics, and job details.
 - [ ] `--ui-mode minimal` shows only objective, prompt, and job status.
@@ -138,6 +151,7 @@ python tools/mesh_report.py
 - [ ] Solid debug boxes and flat mesh triangles read with stable back-to-front painter ordering instead of obvious arbitrary face overlap.
 - [ ] DX11 bounded run exits cleanly with mesh submissions enabled.
 - [ ] DX11 bounded run shows solid debug boxes and flat mesh triangles with real depth ordering, while route/debug lines, wire boxes, and text remain readable.
+- [ ] DX11 renderer-owned BMP capture shows non-blank geometry/depth presentation; do not treat missing overlay text in that capture as a failure until DX11 has renderer-owned text.
 - [ ] Mesh placeholders do not hide route, interaction, traversal, collision, or vehicle debug markers.
 - [ ] `assets/models/unit_box.gltf`, the v0.18 prop-kit meshes, `assets/models/ferry_notice_board.gltf`, `assets/models/blender_ferry_notice_board.gltf`, and `assets/models/blender_cable_reel.gltf` remain small original placeholder assets with scene-data license/provenance.
 - [ ] No `.glb`, external-buffer `.gltf`, unreferenced `.gltf`, or undocumented mesh asset appears in `assets/models`.

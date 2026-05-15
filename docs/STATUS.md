@@ -4726,3 +4726,52 @@ Remaining limitations:
 - DX11 route/debug lines, wire boxes, grid/axes, and text are intentionally overlay-style rather than depth-tested.
 - There is still no resize-safe depth-resource handling, material/texture pipeline, lighting, static GPU mesh resource lifetime, transparency handling, or production HUD/text renderer.
 - A short human v0.28 DX11 pass should check whether real depth improves overlap readability without hiding prompts, route/debug lines, interaction markers, or the service-yard vehicle route.
+
+## v0.29 Built-in Screenshot / Automated Visual QA Harness (2026-05-15)
+
+Scope:
+
+- Added a small engine-owned frame capture path for bounded local validation of GDI and DX11 presentation.
+- Kept gameplay, scene data, movement, interactions, vehicle behavior, and renderer presentation behavior unchanged.
+- Chose dependency-free 32-bit BMP output instead of adding a PNG/image library.
+- Added exact file capture (`--capture-frame <path>`) and generated directory capture (`--capture-dir <path>`) paths.
+- Added wrapper support and a local visual smoke harness so future Codex runs can verify capture file existence and non-blank renderer output without desktop-level screenshot hacks.
+
+Focused TDD result:
+
+- Added parser/help tests for `--capture-frame` and `--capture-dir` before implementation.
+- Added a 32-bit top-down BMP writer test before implementation.
+- Added `scripts\play.ps1` dry-run forwarding tests for `-CaptureFrame` and `-CaptureDir` before implementation.
+- `scripts\build.ps1` failed as expected before implementation because `engine/renderer/BmpWriter.h` did not exist.
+- After implementation, CTest passed 4/4.
+
+Implementation notes:
+
+- Added `src\engine\renderer\BmpWriter.h/.cpp` with a tiny dependency-free 32-bit BGRA BMP writer.
+- `AppConfig` now stores capture output options and rejects ambiguous `--capture-frame` plus `--capture-dir` requests.
+- `IRenderer` now exposes a narrow optional `captureFrame()` hook.
+- `Application` captures once after a stable frame, or on the last bounded frame if the run is shorter, and returns a nonzero code if a requested capture fails.
+- `GdiRenderer` captures its memory back buffer, including GDI debug text.
+- `Dx11Renderer` copies the swap-chain back buffer to a staging texture, converts RGBA/BGRA rows to BMP-compatible BGRA, and writes the capture before `Present`.
+- `scripts\play.ps1` forwards `-CaptureFrame` and `-CaptureDir`.
+- Added `tools\capture_visual_smoke.py`, which launches bounded GDI/DX11 runs and validates BMP signature, dimensions, 32-bit format, file size, existence, and non-blank sampled output.
+- Updated `docs\RUNBOOK.md`, `docs\MANUAL_TEST_CHECKLIST.md`, `docs\TECH_DEBT.md`, and `docs\ROADMAP.md`.
+
+Validation:
+
+- `scripts\build.ps1`: failed as expected before implementation because `engine/renderer/BmpWriter.h` was missing.
+- `scripts\build.ps1`: passed after implementation.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 4/4 tests.
+- `python tools\capture_visual_smoke.py`: passed; created `build\captures\v0.29-gdi-capture.bmp` and `build\captures\v0.29-dx11-capture.bmp`, both 1280x720, 3686454 bytes, non-blank sampled output.
+- `scripts\doctor.ps1`: passed; expected warnings remain for compiler/tool binaries outside plain `PATH`.
+- `scripts\configure.ps1`: passed for `windows-vs2022-debug`.
+- `scripts\build.ps1`: passed.
+- `scripts\verify.ps1`: passed; CTest 4/4 passed, scene validation passed, asset validation passed, mesh report passed, and null smoke loaded all 8 static mesh assets.
+- `git diff --check`: passed; expected line-ending warnings remain on this Windows checkout.
+
+Remaining limitations:
+
+- Capture output is BMP only; there is no PNG encoder, golden-image comparison, thresholded visual diff, or approval workflow.
+- DX11 capture validates rendered back-buffer geometry/depth presentation but does not include the temporary Win32 debug text overlay because that overlay is drawn after `Present`.
+- DX11 hardware device creation still falls back to WARP in this environment.
+- This is a validation harness, not a production screenshot UX, photo mode, HUD renderer, or asset-rendering upgrade.

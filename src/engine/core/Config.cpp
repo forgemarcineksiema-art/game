@@ -72,6 +72,11 @@ std::string_view UiModeName(UiMode mode)
     return "playtest";
 }
 
+bool AppConfig::captureRequested() const
+{
+    return !captureFramePath.empty() || !captureDir.empty();
+}
+
 ConfigParseResult ParseArguments(int argc, const char* const* argv)
 {
     ConfigParseResult result;
@@ -166,7 +171,29 @@ ConfigParseResult ParseArguments(int argc, const char* const* argv)
             continue;
         }
 
+        if (ReadValue(argc, argv, index, argument, "--capture-frame", value)) {
+            if (value.empty()) {
+                result.errors.push_back("--capture-frame requires a non-empty output path.");
+            } else {
+                result.config.captureFramePath = value;
+            }
+            continue;
+        }
+
+        if (ReadValue(argc, argv, index, argument, "--capture-dir", value)) {
+            if (value.empty()) {
+                result.errors.push_back("--capture-dir requires a non-empty output directory.");
+            } else {
+                result.config.captureDir = value;
+            }
+            continue;
+        }
+
         result.errors.push_back("Unknown argument: " + std::string(argument));
+    }
+
+    if (!result.config.captureFramePath.empty() && !result.config.captureDir.empty()) {
+        result.errors.push_back("--capture-frame and --capture-dir cannot be combined.");
     }
 
     return result;
@@ -191,6 +218,8 @@ std::string BuildHelpText()
         << "  --height <pixels>     Window height for windowed runs.\n"
         << "  --assets <path>       Asset root path.\n"
         << "  --scene <path>        Runtime scene JSON path.\n"
+        << "  --capture-frame <path> Write one renderer-owned BMP capture to the exact path.\n"
+        << "  --capture-dir <path>  Write one renderer-owned BMP capture into the directory.\n"
         << "  --help                Show this help.\n";
     return output.str();
 }

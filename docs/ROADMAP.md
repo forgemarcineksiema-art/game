@@ -358,6 +358,17 @@ Status: implemented as a narrow presentation/readability spike. Debug projection
 
 Status: implemented as a DX11-only renderer architecture spike. DX11 now creates a depth-stencil target, uses depth-enabled state for debug solid boxes and flat mesh triangles, updates a world-to-clip matrix constant buffer from the existing `DebugCamera`, and keeps lines/text on the readable debug overlay path.
 
+## v0.29 - Built-in Screenshot / Automated Visual QA Harness
+
+- Keep gameplay unchanged.
+- Add a small engine-owned frame capture path so bounded local validation can prove GDI/DX11 presentation without desktop-level screenshot hacks.
+- Prefer simple 32-bit BMP output and no new heavy dependency.
+- Support exact file output and generated directory output from CLI/wrapper paths.
+- Add tests/tooling around capture flag parsing, wrapper forwarding, BMP output validity, and bounded capture file existence.
+- Document GDI/DX11 capture limitations honestly, especially DX11's temporary Win32 text overlay.
+
+Status: implemented as a local visual-validation harness. `--capture-frame` and `--capture-dir` request one renderer-owned BMP capture after a stable frame, GDI reads its back buffer, DX11 reads the swap-chain back buffer, `scripts/play.ps1` forwards capture options, and `tools/capture_visual_smoke.py` validates GDI/DX11 BMP existence and non-blank output.
+
 ## Recommended Next Goal
 
-Run a short human v0.28 DX11 visual/playability pass through `scripts/play.ps1 -Dx11`, checking whether real depth improves solid/mesh overlap without hiding prompts, route/debug lines, interaction markers, or the vehicle route. Use that feedback to choose between a small vehicle-feel pass, a renderer follow-up around resize/overlay ordering, or one more tiny authored prop only if prop language is now the clearest blocker.
+Use `python tools\capture_visual_smoke.py` as the bounded evidence path before asking for manual play. If captures stay clean, choose the next small goal from actual risk: vehicle feel if driving still lacks confidence, renderer-owned DX11 text/resize handling if capture/overlay gaps block validation, or one tiny authored prop only if scene language is now the clearest blocker.

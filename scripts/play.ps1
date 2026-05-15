@@ -10,6 +10,8 @@ param(
     [switch]$Dx11,
     [switch]$FreeCursor,
     [int]$Frames = 0,
+    [string]$CaptureFrame = "",
+    [string]$CaptureDir = "",
     [string]$Scene = "data\scenes\ferry_office.scene.json",
     [string]$ExecutablePath = "",
     [switch]$DryRun
@@ -59,6 +61,10 @@ if ($MinimalUi) {
 if ($Dx11) {
     $Renderer = "dx11"
 }
+if (![string]::IsNullOrWhiteSpace($CaptureFrame) -and ![string]::IsNullOrWhiteSpace($CaptureDir)) {
+    Write-Host "Use either -CaptureFrame or -CaptureDir, not both."
+    exit 1
+}
 
 if ([string]::IsNullOrWhiteSpace($ExecutablePath)) {
     $ExecutablePath = "build\windows-vs2022-debug\Debug\EngineApp.exe"
@@ -93,6 +99,16 @@ if (!(Test-OptionPresent $AppArgs @("--scene"))) {
 if ($Frames -gt 0 -and !(Test-OptionPresent $AppArgs @("--frames"))) {
     $LaunchArgs.Add("--frames")
     $LaunchArgs.Add($Frames.ToString())
+}
+
+if (![string]::IsNullOrWhiteSpace($CaptureFrame) -and !(Test-OptionPresent $AppArgs @("--capture-frame"))) {
+    $LaunchArgs.Add("--capture-frame")
+    $LaunchArgs.Add($CaptureFrame)
+}
+
+if (![string]::IsNullOrWhiteSpace($CaptureDir) -and !(Test-OptionPresent $AppArgs @("--capture-dir"))) {
+    $LaunchArgs.Add("--capture-dir")
+    $LaunchArgs.Add($CaptureDir)
 }
 
 if ($FreeCursor -and !(Test-OptionPresent $AppArgs @("--free-cursor", "--show-cursor"))) {

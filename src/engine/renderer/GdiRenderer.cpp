@@ -4,10 +4,12 @@
 
 #include "engine/core/Logger.h"
 #include "engine/math/BoxEdges.h"
+#include "engine/renderer/BmpWriter.h"
 #include "engine/renderer/DebugProjection.h"
 
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -263,6 +265,54 @@ void GdiRenderer::drawDebugText(std::string_view text)
     std::string copy(text);
     RECT textRect {16, 16, rect.right - 16, rect.bottom - 16};
     DrawTextA(m_deviceContext, copy.c_str(), static_cast<int>(copy.size()), &textRect, DT_LEFT | DT_TOP | DT_WORDBREAK | DT_NOCLIP);
+}
+
+bool GdiRenderer::captureFrame(const std::filesystem::path& outputPath)
+{
+    if (!m_backBufferContext || !m_backBufferBitmap || m_backBufferWidth <= 0 || m_backBufferHeight <= 0) {
+        Logger::error("GDI frame capture requested before a valid back buffer was ready.");
+        return false;
+    }
+
+    std::vector<std::uint8_t> pixels(static_cast<std::size_t>(m_backBufferWidth) * static_cast<std::size_t>(m_backBufferHeight) * 4U);
+
+    BITMAPINFO bitmapInfo {};
+    bitmapInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bitmapInfo.bmiHeader.biWidth = m_backBufferWidth;
+    bitmapInfo.bmiHeader.biHeight = -m_backBufferHeight;
+    bitmapInfo.bmiHeader.biPlanes = 1;
+    bitmapInfo.bmiHeader.biBitCount = 32;
+    bitmapInfo.bmiHeader.biCompression = BI_RGB;
+
+    HGDIOBJ previousSelection = nullptr;
+    if (m_previousBackBufferBitmap) {
+        previousSelection = SelectObject(m_backBufferContext, m_previousBackBufferBitmap);
+    }
+
+    const int copiedRows = GetDIBits(
+        m_backBufferContext,
+        m_backBufferBitmap,
+        0,
+        static_cast<UINT>(m_backBufferHeight),
+        pixels.data(),
+        &bitmapInfo,
+        DIB_RGB_COLORS);
+
+    if (previousSelection) {
+        SelectObject(m_backBufferContext, m_backBufferBitmap);
+    }
+
+    if (copiedRows != m_backBufferHeight) {
+        Logger::error("GDI frame capture failed while reading the back buffer.");
+        return false;
+    }
+
+    if (!WriteBgraBmp(outputPath, m_backBufferWidth, m_backBufferHeight, pixels)) {
+        Logger::error("GDI frame capture failed while writing BMP output.");
+        return false;
+    }
+
+    return true;
 }
 
 void GdiRenderer::endFrame()

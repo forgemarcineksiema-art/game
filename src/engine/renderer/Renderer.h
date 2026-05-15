@@ -2,6 +2,7 @@
 
 #include "engine/renderer/RendererTypes.h"
 
+#include <filesystem>
 #include <span>
 #include <string>
 #include <string_view>
@@ -21,6 +22,7 @@ public:
     virtual void drawDebugFlatTriangles(std::span<const Vec3> triangleVertices, Color color) { (void)triangleVertices; (void)color; }
     virtual void drawDebugBox(Vec3 center, Vec3 halfExtents, Color color) { (void)center; (void)halfExtents; (void)color; }
     virtual void drawDebugText(std::string_view text) { (void)text; }
+    virtual bool captureFrame(const std::filesystem::path& outputPath) { (void)outputPath; return false; }
     virtual void endFrame() = 0;
     virtual void shutdown() = 0;
     virtual bool isFramePaced() const { return false; }

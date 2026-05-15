@@ -6,7 +6,9 @@
 #include "engine/renderer/RendererFactory.h"
 
 #include <chrono>
+#include <filesystem>
 #include <memory>
+#include <string>
 #include <thread>
 
 namespace engine {
@@ -19,6 +21,37 @@ std::string FirstDebugLine(std::string_view text)
         return std::string(text);
     }
     return std::string(text.substr(0, lineEnd));
+}
+
+bool IsCaptureFileNameCharacter(char value)
+{
+    return (value >= 'a' && value <= 'z')
+        || (value >= 'A' && value <= 'Z')
+        || (value >= '0' && value <= '9')
+        || value == '-'
+        || value == '_';
+}
+
+std::string CaptureFileNameForRenderer(std::string_view rendererName)
+{
+    std::string safeName;
+    for (char value : rendererName) {
+        safeName += IsCaptureFileNameCharacter(value) ? value : '-';
+    }
+    if (safeName.empty()) {
+        safeName = "renderer";
+    }
+
+    return "capture-" + safeName + ".bmp";
+}
+
+std::filesystem::path ResolveCapturePath(const AppConfig& config, std::string_view rendererName)
+{
+    if (!config.captureFramePath.empty()) {
+        return config.captureFramePath;
+    }
+
+    return config.captureDir / CaptureFileNameForRenderer(rendererName);
 }
 
 } // namespace
@@ -92,6 +125,9 @@ int Application::run(AppConfig config, std::unique_ptr<IGameLayer> layer)
     Logger::info("Runtime started with renderer: " + renderer->name());
     layer->onAttach();
 
+    constexpr unsigned long long StableCaptureFrame = 3;
+    bool captureComplete = false;
+    bool captureFailed = false;
     bool running = true;
     std::string lastWindowTitle;
     while (running) {
@@ -125,6 +161,21 @@ int Application::run(AppConfig config, std::unique_ptr<IGameLayer> layer)
         }
         renderer->beginFrame(engine.clock().frameIndex());
         layer->onRender(*renderer);
+        const bool lastBoundedFrame = config.maxFrames > 0
+            && engine.clock().frameIndex() >= static_cast<unsigned long long>(config.maxFrames);
+        if (config.captureRequested()
+            && !captureComplete
+            && (engine.clock().frameIndex() >= StableCaptureFrame || lastBoundedFrame)) {
+            const std::filesystem::path capturePath = ResolveCapturePath(config, renderer->name());
+            if (renderer->captureFrame(capturePath)) {
+                Logger::info("Captured renderer frame to: " + capturePath.string());
+            } else {
+                Logger::error("Renderer frame capture failed for: " + capturePath.string());
+                captureFailed = true;
+                running = false;
+            }
+            captureComplete = true;
+        }
         renderer->endFrame();
 
         if (config.maxFrames > 0 && engine.clock().frameIndex() >= static_cast<unsigned long long>(config.maxFrames)) {
@@ -138,6 +189,11 @@ int Application::run(AppConfig config, std::unique_ptr<IGameLayer> layer)
         }
     }
 
+    if (config.captureRequested() && !captureComplete) {
+        Logger::error("Frame capture was requested, but the application exited before a frame could be captured.");
+        captureFailed = true;
+    }
+
     layer->onDetach();
     renderer->shutdown();
     if (window) {
@@ -145,7 +201,7 @@ int Application::run(AppConfig config, std::unique_ptr<IGameLayer> layer)
     }
     engine.shutdown();
 
-    return 0;
+    return captureFailed ? 5 : 0;
 }
 
 } // namespace engine

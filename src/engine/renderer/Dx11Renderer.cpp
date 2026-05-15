@@ -4,6 +4,7 @@
 
 #include "engine/core/Logger.h"
 #include "engine/math/BoxEdges.h"
+#include "engine/renderer/BmpWriter.h"
 #include "engine/renderer/DebugCameraMatrices.h"
 #include "engine/renderer/DebugProjection.h"
 
@@ -11,6 +12,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cstdint>
 #include <cstring>
 #include <iterator>
 #include <vector>
@@ -578,6 +580,87 @@ void Dx11Renderer::drawDebugBox(Vec3 center, Vec3 halfExtents, Color color)
 void Dx11Renderer::drawDebugText(std::string_view text)
 {
     m_debugText = std::string(text);
+}
+
+bool Dx11Renderer::captureFrame(const std::filesystem::path& outputPath)
+{
+    if (!m_device || !m_context || !m_swapChain) {
+        Logger::error("DX11 frame capture requested before the renderer was ready.");
+        return false;
+    }
+
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> backBuffer;
+    HRESULT result = m_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(backBuffer.GetAddressOf()));
+    if (FAILED(result) || !backBuffer) {
+        Logger::error("DX11 frame capture failed while reading the swap-chain back buffer.");
+        return false;
+    }
+
+    D3D11_TEXTURE2D_DESC sourceDesc {};
+    backBuffer->GetDesc(&sourceDesc);
+    const bool sourceIsRgba = sourceDesc.Format == DXGI_FORMAT_R8G8B8A8_UNORM
+        || sourceDesc.Format == DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+    const bool sourceIsBgra = sourceDesc.Format == DXGI_FORMAT_B8G8R8A8_UNORM
+        || sourceDesc.Format == DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
+    if (!sourceIsRgba && !sourceIsBgra) {
+        Logger::error("DX11 frame capture only supports 32-bit RGBA/BGRA back buffers.");
+        return false;
+    }
+
+    D3D11_TEXTURE2D_DESC stagingDesc = sourceDesc;
+    stagingDesc.BindFlags = 0;
+    stagingDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+    stagingDesc.MiscFlags = 0;
+    stagingDesc.Usage = D3D11_USAGE_STAGING;
+
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> stagingTexture;
+    result = m_device->CreateTexture2D(&stagingDesc, nullptr, stagingTexture.GetAddressOf());
+    if (FAILED(result) || !stagingTexture) {
+        Logger::error("DX11 frame capture failed while creating a staging texture.");
+        return false;
+    }
+
+    m_context->CopyResource(stagingTexture.Get(), backBuffer.Get());
+
+    D3D11_MAPPED_SUBRESOURCE mapped {};
+    result = m_context->Map(stagingTexture.Get(), 0, D3D11_MAP_READ, 0, &mapped);
+    if (FAILED(result)) {
+        Logger::error("DX11 frame capture failed while mapping the staging texture.");
+        return false;
+    }
+
+    const auto width = static_cast<int>(sourceDesc.Width);
+    const auto height = static_cast<int>(sourceDesc.Height);
+    std::vector<std::uint8_t> bgraPixels(static_cast<std::size_t>(width) * static_cast<std::size_t>(height) * 4U);
+    const auto* sourcePixels = static_cast<const std::uint8_t*>(mapped.pData);
+    for (int y = 0; y < height; ++y) {
+        const std::uint8_t* sourceRow = sourcePixels + static_cast<std::size_t>(y) * mapped.RowPitch;
+        std::uint8_t* destinationRow = bgraPixels.data() + static_cast<std::size_t>(y) * static_cast<std::size_t>(width) * 4U;
+        for (int x = 0; x < width; ++x) {
+            const std::uint8_t* sourcePixel = sourceRow + static_cast<std::size_t>(x) * 4U;
+            std::uint8_t* destinationPixel = destinationRow + static_cast<std::size_t>(x) * 4U;
+            if (sourceIsBgra) {
+                destinationPixel[0] = sourcePixel[0];
+                destinationPixel[1] = sourcePixel[1];
+                destinationPixel[2] = sourcePixel[2];
+                destinationPixel[3] = sourcePixel[3];
+            } else {
+                destinationPixel[0] = sourcePixel[2];
+                destinationPixel[1] = sourcePixel[1];
+                destinationPixel[2] = sourcePixel[0];
+                destinationPixel[3] = sourcePixel[3];
+            }
+        }
+    }
+
+    m_context->Unmap(stagingTexture.Get(), 0);
+
+    if (!WriteBgraBmp(outputPath, width, height, bgraPixels)) {
+        Logger::error("DX11 frame capture failed while writing BMP output.");
+        return false;
+    }
+
+    return true;
 }
 
 bool Dx11Renderer::ensureDynamicBuffer(unsigned int vertexCount)

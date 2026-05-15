@@ -29,6 +29,7 @@ public:
     void drawDebugFlatTriangles(std::span<const Vec3> triangleVertices, Color color) override;
     void drawDebugBox(Vec3 center, Vec3 halfExtents, Color color) override;
     void drawDebugText(std::string_view text) override;
+    bool captureFrame(const std::filesystem::path& outputPath) override;
     void endFrame() override;
     void shutdown() override;
     bool isFramePaced() const override { return true; }
