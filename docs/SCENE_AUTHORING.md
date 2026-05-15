@@ -212,11 +212,13 @@ The service-yard vehicle bounds include the original yard plus the short dock ro
 
 v0.16 keeps job behavior in C++ while authoring the current job markers in scene data:
 
-- `service-run-confirm-marker`: an `interactables` entry used to confirm the Ferry Office Service Call after the required loop.
+- `service-run-confirm-marker`: an `interactables` entry used to review/confirm the Ferry Office Service Call after the required loop. Its authored prompt/message should stay status-neutral because job readiness is enforced by `FerryOfficeJob`, not by scene data alone.
 - `service-run-checkpoint-marker`: an `objectiveMarkers` entry used by `FerryOfficeJob` as the vehicle checkpoint position.
 - `route-dock-road-to-service-confirm`: a `routeMarkers` entry that makes the final dock-road-to-confirmation path visible to Codex tools and debug rendering.
 
 Do not turn these entries into a generic mission scripting format yet. New job beats should stay explicit, small, and backed by tests.
+
+Traversal affordance prompts should describe the action only, for example `Vault Service Barrier`. `SandboxLayer` adds the input prefix for playtest text, so scene data should not include `Press Space` in traversal prompt strings.
 
 ## Dock Road Segment
 

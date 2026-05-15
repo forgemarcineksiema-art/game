@@ -81,6 +81,22 @@ class SceneToolTests(unittest.TestCase):
         self.assertGreaterEqual(summary.mesh_asset_count, 1)
         self.assertGreaterEqual(summary.mesh_instance_count, 9)
 
+    def test_traversal_prompt_omits_input_prefix_for_playtest_ui_composition(self) -> None:
+        affordance = next(
+            item for item in self.scene["traversalAffordances"] if item["id"] == "service-barrier-vault"
+        )
+
+        self.assertEqual("Vault Service Barrier", affordance["prompt"])
+        self.assertNotIn("Press Space", affordance["prompt"])
+
+    def test_service_run_marker_copy_does_not_claim_completion_before_job_is_ready(self) -> None:
+        marker = next(
+            item for item in self.scene["interactables"] if item["id"] == "service-run-confirm-marker"
+        )
+
+        self.assertEqual("Review Service Run Marker", marker["prompt"])
+        self.assertNotIn("confirmed", marker["message"].lower())
+
     def test_v0121_readability_mesh_instances_exist(self) -> None:
         ids = scene_data.collect_ids(self.scene)
 

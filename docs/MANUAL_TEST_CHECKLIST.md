@@ -164,6 +164,7 @@ python tools/mesh_report.py
 - [ ] Driving the vehicle to the dock-road checkpoint records `dockRoadReached=true`.
 - [ ] The Service Run Marker is visible near the dock-road end/exit side.
 - [ ] Pressing `E` at the Service Run Marker before prerequisites does not complete the job.
+- [ ] The Service Run Marker prompt does not falsely claim the run is confirmed before prerequisites are complete.
 - [ ] Pressing `E` at the Service Run Marker after prerequisites records `serviceRunConfirmed=true` and `ferryOfficeJobComplete=true`.
 - [ ] Repeating the Service Run Marker after completion does not duplicate world events.
 - [ ] Ferry Office slice completion through the Exit Summary Marker still works separately from the driver/fixer job.
@@ -176,6 +177,7 @@ python tools/mesh_report.py
 - [ ] After pickup consumption, the pickup no longer regains focus.
 - [ ] Moving near and facing the Wall Button shows the service-gate prompt.
 - [ ] Pressing `E` on the Wall Button opens the service gate and changes its marker/debug result.
+- [ ] Moving near the Service Barrier Vault shows one clear Space prompt, not duplicated `Press Space` wording.
 - [ ] Moving near and facing the Ferry Office Notice shows the info prompt.
 - [ ] Pressing `E` on the Ferry Office Notice logs/records the info message.
 - [ ] The Exit Summary Marker does not complete the slice before required remembered flags are set.

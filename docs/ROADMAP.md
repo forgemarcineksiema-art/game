@@ -261,10 +261,6 @@ Status: implemented as a workflow-stabilization milestone. The project keeps the
 
 Status: complete. Blender was not available in PATH during the v0.20 run, so v0.20 added an optional Blender checker, a documented fallback generator, and one fallback-generated original notice-board prop without claiming Blender export success.
 
-## Recommended Next Goal
-
-Build v0.20.1 Blender Export / Loader Compatibility Stabilization if Blender remains unavailable or export compatibility is still unproven.
-
 ## v0.20.1 - Blender Export / Loader Compatibility Stabilization
 
 - Verify Blender from PATH after the laptop restart.
@@ -274,3 +270,17 @@ Build v0.20.1 Blender Export / Loader Compatibility Stabilization if Blender rem
 - Preserve asset validation, scene validation, runtime loading, default validation, and Jolt opt-in validation.
 
 Status: implemented. Blender 5.1.1 is available from PATH, `tools/blender/create_tidebreak_notice_board.py` exports `assets/models/blender_ferry_notice_board.gltf`, and the script post-embeds Blender's separate buffer so the current custom loader remains acceptable for this narrow prop workflow.
+
+## v0.21 - Ferry Office Playable Build Polish / Bug Bash
+
+- Keep the existing Ferry Office Service Call as the only job.
+- Review the current playable loop through bounded/manual GDI runs and code/scene inspection.
+- Fix only current-loop clarity or safety issues around prompts, marker wording, UI readability, interaction priority, vehicle enter/exit, or prop visibility.
+- Triage `docs/TECH_DEBT.md` into blocking playable build, fix soon, and acceptable-for-now categories.
+- Preserve runtime scene loading, playtest/debug/minimal UI modes, Blender/static mesh workflow, default validation, and Jolt opt-in validation.
+
+Status: implemented as a focused playable-build polish pass. The traversal prompt now avoids duplicated input wording, the Service Run Marker no longer claims completion before job prerequisites are met, v0.21 bumps the runtime version, and `TECH_DEBT.md` now highlights vehicle/control polish as the strongest near-term blocker.
+
+## Recommended Next Goal
+
+Build v0.22 Vehicle / Driving Control Polish.

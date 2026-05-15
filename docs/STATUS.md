@@ -3969,3 +3969,116 @@ Known remaining issues:
 Recommended next goal:
 
 Build v0.21 Ferry Office Playable Build Polish / Bug Bash.
+
+## v0.21 Baseline - 2026-05-15
+
+Goal: polish and stabilize the existing Ferry Office Service Call playable build without adding Job #2 or a new major system. This goal should use manual/bounded review, fix only current-loop clarity or bug issues, triage technical debt into useful priority categories, and preserve v0.20.1 validation.
+
+Required context read before implementation:
+
+- `AGENTS.md`
+- `docs/STATUS.md`
+- `docs/GAME_DIRECTION.md`
+- `docs/VERTICAL_SLICE.md`
+- `docs/ROADMAP.md`
+- `docs/ARCHITECTURE.md`
+- `docs/TECH_DEBT.md`
+- `docs/MANUAL_TEST_CHECKLIST.md`
+- `docs/SCENE_AUTHORING.md`
+- `docs/ASSET_GUIDE.md`
+- `docs/MESH_RENDERING.md`
+- `docs/ASSET_PIPELINE_DECISION.md`
+- `docs/BLENDER_WORKFLOW.md`
+- `docs/DECISIONS.md`
+
+Baseline results:
+
+- Git state before v0.21 work: `main...origin/main`, clean working tree.
+- `powershell -ExecutionPolicy Bypass -File scripts\verify.ps1`: passed. Default doctor/configure/build/CTest, scene validation, asset validation, mesh report, and null smoke all completed. Null smoke reported engine `v0.20.1` and loaded all seven scene-authored static mesh assets.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 3/3 tests.
+- `python tools\scene_report.py`: passed; scene reports 9 colliders, 21 visual placeholders, 7 mesh assets, 17 mesh instances, 6 interactables, 1 traversal affordance, 1 vehicle, 6 route markers, and 5 objective markers.
+- `python tools\validate_scene.py`: passed.
+- `python tools\validate_assets.py`: passed; 7 model files under `assets\models`.
+- `python tools\scale_audit.py`: passed.
+- `python tools\mesh_report.py`: passed; all seven `.gltf` files are referenced with license/provenance, vertex/index counts, and bounds.
+- `python tools\check_blender.py`: passed and reported Blender available at `C:\Program Files\Blender Foundation\Blender 5.1\blender.EXE`, version `Blender 5.1.1`.
+
+## v0.21 Short Implementation Plan
+
+1. Review the current Ferry Office Service Call flow through bounded GDI runs and code/scene inspection, then record what can and cannot be honestly verified without reliable native-window input automation.
+2. Add tests before any behavior changes for the smallest high-confidence playable-build fix found during review.
+3. Make only current-loop polish fixes: objective/prompt clarity, marker/readability, interaction priority, vehicle enter/exit safety, scene-data placement, or docs/tooling updates.
+4. Rework `docs\TECH_DEBT.md` into practical priority groups: blocking playable build, fix soon, and acceptable for now.
+5. Update manual checklist, roadmap, status, and any affected architecture/scene docs.
+6. Run the full validation matrix, record exact results, then commit and push only if validation passes and the worktree contains only v0.21 changes.
+
+## v0.21 Playable Review + Implementation Notes - 2026-05-15
+
+Review method:
+
+- Ran bounded GDI playtest mode: `build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --ui-mode playtest --frames 360`.
+- Ran bounded GDI debug mode: `build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --ui-mode debug --frames 360`.
+- Inspected scene data and current presentation composition around traversal, interaction prompts, job marker wording, and the Service Run Marker.
+- A full native-window keyboard/mouse completion playthrough was not automated in this session. The bounded runs confirm launch/load/presentation stability; the remaining hands-on completion checklist stays in `docs\MANUAL_TEST_CHECKLIST.md`.
+
+Observations:
+
+- Playtest mode starts on the expected Ferry Manifest objective and prompt, with the raw telemetry kept out of the player-facing view.
+- Debug mode still exposes full player/camera/scene/job/world-state details.
+- The traversal prompt data included enough wording to risk a duplicated `Press Space` prefix in player-facing text because `SandboxLayer` already adds that input cue.
+- The Service Run Marker scene text used confirmation wording even though `FerryOfficeJob` can reject the interaction until prerequisites are complete.
+- The v0.20 fallback notice board and v0.20.1 Blender notice board remain scene-authored mesh assets and do not require additional asset workflow changes for this bug-bash goal.
+
+Fixes:
+
+- Added a scene-tool regression test that traversal affordance prompt text omits input-prefix wording.
+- Changed the Service Barrier Vault authored prompt and C++ fallback prompt to `Vault Service Barrier`.
+- Added a scene-tool regression test that the Service Run Marker copy does not claim completion before the job is ready.
+- Changed the Service Run Marker prompt to `Review Service Run Marker` and changed its fallback/message copy to status-neutral wording.
+- Bumped the runtime version to `0.21.0`.
+- Reworked `docs\TECH_DEBT.md` into a v0.21 priority triage with `Blocking Playable Build`, `Fix Soon`, and `Acceptable For Now` categories.
+
+Focused test results:
+
+- `python tests\test_scene_tools.py`: first failed as expected on the new Service Run Marker wording test, then passed after the scene/fallback copy fix.
+- `python tools\validate_scene.py`: passed after scene data updates.
+
+Known limitations after the polish pass:
+
+- The current strongest near-term technical blocker is vehicle/control polish in the existing dock-road loop, not Job #2.
+- DX11 still lacks a text overlay and remains weaker for player-facing presentation review than GDI.
+- The vehicle remains deterministic placeholder movement with finite bounds clamping; Jolt VehicleConstraint remains intentionally deferred.
+
+## v0.21 Final Validation - 2026-05-15
+
+Commands run:
+
+- `powershell -ExecutionPolicy Bypass -File scripts\doctor.ps1`: passed. Doctor still warns that `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg` are not on plain PATH, but the Visual Studio CMake generator remains usable.
+- `powershell -ExecutionPolicy Bypass -File scripts\configure.ps1`: passed for `windows-vs2022-debug`.
+- `powershell -ExecutionPolicy Bypass -File scripts\build.ps1`: passed. Built `EngineCore`, `GamePrototype`, `EngineApp`, and `EngineCoreTests`.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 3/3 tests.
+- `powershell -ExecutionPolicy Bypass -File scripts\verify.ps1`: passed. Null smoke reported engine `v0.21.0` and loaded all seven scene-authored static mesh assets.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 3/3 tests.
+- `python tools\scene_report.py`: passed; scene reports 9 colliders, 21 visual placeholders, 7 mesh assets, 17 mesh instances, 6 interactables, 1 traversal affordance, 1 vehicle, 6 route markers, and 5 objective markers.
+- `python tools\validate_scene.py`: passed.
+- `python tools\validate_assets.py`: passed; 7 model files under `assets\models`.
+- `python tools\scale_audit.py`: passed with no suspicious scale issues.
+- `python tools\mesh_report.py`: passed; all seven `.gltf` files are referenced with license/provenance, vertex/index counts, and bounds.
+- `python tools\status_report.py`: passed.
+- `python tools\check_blender.py`: passed and reported Blender 5.1.1 available at `C:\Program Files\Blender Foundation\Blender 5.1\blender.EXE`.
+- `build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --ui-mode playtest --frames 360`: passed. Playtest text starts on the Ferry Manifest objective and prompt.
+- `build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --ui-mode debug --frames 360`: passed. Debug text still exposes player/camera/scene/job/world-state/vehicle telemetry.
+- `build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 360`: passed. Hardware DX11 still falls back to WARP in this environment.
+- `build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --scene data\scenes\ferry_office.scene.json --ui-mode playtest --frames 360`: passed.
+
+Result:
+
+- v0.21 validation passed.
+- No Job #2 or new major gameplay system was added.
+- Ferry Office Service Call remains the single playable job.
+- TECH_DEBT is now triaged for the next goal.
+- Recommended next goal: v0.22 Vehicle / Driving Control Polish.

@@ -21,10 +21,10 @@ namespace Prompts {
 inline constexpr std::string_view FerryManifest = "Collect Ferry Manifest";
 inline constexpr std::string_view FerryOfficeNotice = "Read Ferry Office Notice";
 inline constexpr std::string_view MaintenanceBox = "Inspect Maintenance Box";
-inline constexpr std::string_view ServiceVault = "Press Space: Vault Service Barrier";
+inline constexpr std::string_view ServiceVault = "Vault Service Barrier";
 inline constexpr std::string_view WallButton = "Open Service Gate";
 inline constexpr std::string_view ExitMarker = "Review Ferry Office Summary";
-inline constexpr std::string_view ServiceRunMarker = "Confirm Service Run";
+inline constexpr std::string_view ServiceRunMarker = "Review Service Run Marker";
 } // namespace Prompts
 
 namespace Messages {
@@ -34,7 +34,8 @@ inline constexpr std::string_view MaintenanceBox = "Maintenance box inspected: l
 inline constexpr std::string_view ServiceVault = "Service Barrier Vault";
 inline constexpr std::string_view WallButton = "Service gate opened.";
 inline constexpr std::string_view ExitMarker = "Ferry Office summary marker reached.";
-inline constexpr std::string_view ServiceRunMarker = "Service run confirmed at the dock-road marker.";
+inline constexpr std::string_view ServiceRunMarker =
+    "Service run marker checked. Complete the service route and vehicle checkpoint before final confirmation.";
 } // namespace Messages
 
 namespace Positions {

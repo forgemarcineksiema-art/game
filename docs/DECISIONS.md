@@ -509,3 +509,11 @@ Decision: Use a headless Blender 5.1.1 script to create one original procedural 
 Reason: Blender is now available from PATH, but its exporter in this environment does not offer direct embedded `.gltf`. A deterministic one-buffer post-embed step proves the DCC workflow without adding cgltf/tinygltf, materials, GLB support, resource caching, or a broad asset pipeline.
 
 Dependency impact: no new third-party dependency was added. Blender remains an optional local DCC tool and is not required for default validation on machines without it. If future Blender assets require broader output handling, cgltf remains the preferred next loader candidate.
+
+## v0.21 Playable Prompt Copy Stays Action/Status Oriented
+
+Decision: Keep authored scene prompt strings action/status oriented, and let runtime presentation code add input prefixes or job readiness context.
+
+Reason: v0.21 found two small playable-build clarity risks: the traversal affordance could duplicate `Press Space` wording because `SandboxLayer` already prefixes traversal prompts, and the Service Run Marker could imply confirmation before `FerryOfficeJob` prerequisites were actually satisfied. The fix keeps traversal prompt text as `Vault Service Barrier` and changes the Service Run Marker to status-neutral copy (`Review Service Run Marker`) without adding a mission scripting layer or dynamic prompt framework.
+
+Dependency impact: no dependency or new gameplay system was added.
