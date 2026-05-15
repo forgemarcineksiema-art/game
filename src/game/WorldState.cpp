@@ -18,6 +18,16 @@ std::string_view WorldFlagName(WorldFlag flag)
         return "routeOpened";
     case WorldFlag::ExitReached:
         return "exitReached";
+    case WorldFlag::FerryOfficeJobStarted:
+        return "ferryOfficeJobStarted";
+    case WorldFlag::ServiceVehicleUsed:
+        return "serviceVehicleUsed";
+    case WorldFlag::DockRoadReached:
+        return "dockRoadReached";
+    case WorldFlag::ServiceRunConfirmed:
+        return "serviceRunConfirmed";
+    case WorldFlag::FerryOfficeJobComplete:
+        return "ferryOfficeJobComplete";
     case WorldFlag::Count:
     default:
         return "unknown";
@@ -91,6 +101,11 @@ std::string WorldState::debugSummary() const
            << " " << WorldFlagName(WorldFlag::MaintenanceBoxInspected) << "=" << (isFlagSet(WorldFlag::MaintenanceBoxInspected) ? "true" : "false")
            << " " << WorldFlagName(WorldFlag::RouteOpened) << "=" << (isFlagSet(WorldFlag::RouteOpened) ? "true" : "false")
            << " " << WorldFlagName(WorldFlag::ExitReached) << "=" << (isFlagSet(WorldFlag::ExitReached) ? "true" : "false")
+           << " " << WorldFlagName(WorldFlag::FerryOfficeJobStarted) << "=" << (isFlagSet(WorldFlag::FerryOfficeJobStarted) ? "true" : "false")
+           << " " << WorldFlagName(WorldFlag::ServiceVehicleUsed) << "=" << (isFlagSet(WorldFlag::ServiceVehicleUsed) ? "true" : "false")
+           << " " << WorldFlagName(WorldFlag::DockRoadReached) << "=" << (isFlagSet(WorldFlag::DockRoadReached) ? "true" : "false")
+           << " " << WorldFlagName(WorldFlag::ServiceRunConfirmed) << "=" << (isFlagSet(WorldFlag::ServiceRunConfirmed) ? "true" : "false")
+           << " " << WorldFlagName(WorldFlag::FerryOfficeJobComplete) << "=" << (isFlagSet(WorldFlag::FerryOfficeJobComplete) ? "true" : "false")
            << " eventCount=" << eventCount()
            << " lastEvent=\"" << lastEventText() << "\"";
     return output.str();

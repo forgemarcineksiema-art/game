@@ -9,6 +9,7 @@
 #include "game/InteractionSystem.h"
 #include "game/PlayerController.h"
 #include "game/FerryOfficeData.h"
+#include "game/FerryOfficeJob.h"
 #include "game/PrototypeScene.h"
 #include "game/PrototypeWorld.h"
 #include "game/SandboxLayer.h"
@@ -69,6 +70,28 @@ const SceneVisualPlaceholderDefinition* FindVisualPlaceholder(const SceneDefinit
     for (const SceneVisualPlaceholderDefinition& placeholder : scene.visualPlaceholders) {
         if (placeholder.id == id) {
             return &placeholder;
+        }
+    }
+
+    return nullptr;
+}
+
+const SceneInteractableDefinition* FindSceneInteractable(const SceneDefinition& scene, std::string_view id)
+{
+    for (const SceneInteractableDefinition& interactable : scene.interactables) {
+        if (interactable.id == id) {
+            return &interactable;
+        }
+    }
+
+    return nullptr;
+}
+
+const SceneObjectiveMarkerDefinition* FindObjectiveMarker(const SceneDefinition& scene, std::string_view id)
+{
+    for (const SceneObjectiveMarkerDefinition& marker : scene.objectiveMarkers) {
+        if (marker.id == id) {
+            return &marker;
         }
     }
 
@@ -289,12 +312,46 @@ void TestSceneLoaderLoadsDefaultFerryOfficeScene()
     Expect(result.scene.meshInstances.size() == 10,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored mesh instances.");
-    Expect(result.scene.interactables.size() == 5,
+    Expect(result.scene.interactables.size() == 6,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored interactables.");
     Expect(result.scene.traversalAffordances.size() == 1,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored traversal affordances.");
+}
+
+void TestSceneLoaderLoadsFirstJobMarkers()
+{
+    const SceneLoadResult result = LoadSceneDefinition(DefaultScenePathForTests());
+    const SceneInteractableDefinition* confirm = FindSceneInteractable(result.scene, "service-run-confirm-marker");
+    const SceneObjectiveMarkerDefinition* checkpoint = FindObjectiveMarker(result.scene, "service-run-checkpoint-marker");
+    const SceneRouteMarkerDefinition* route = FindRouteMarker(result.scene, "route-dock-road-to-service-confirm");
+
+    Expect(result.ok(),
+        "TestSceneLoaderLoadsFirstJobMarkers",
+        "Default scene should load before querying first job markers.");
+    Expect(confirm != nullptr,
+        "TestSceneLoaderLoadsFirstJobMarkers",
+        "Scene data should include a service-run confirmation interactable.");
+    if (confirm != nullptr) {
+        Expect(confirm->name == FerryOffice::Names::ServiceRunMarker,
+            "TestSceneLoaderLoadsFirstJobMarkers",
+            "Service-run confirmation marker should preserve its stable gameplay name.");
+        Expect(confirm->radius >= 1.5f,
+            "TestSceneLoaderLoadsFirstJobMarkers",
+            "Service-run confirmation marker should have a usable focus radius.");
+    }
+    Expect(checkpoint != nullptr,
+        "TestSceneLoaderLoadsFirstJobMarkers",
+        "Scene data should include a vehicle service-run checkpoint marker.");
+    if (checkpoint != nullptr) {
+        ExpectNear(checkpoint->position.x, 19.35f, 0.01f,
+            "TestSceneLoaderLoadsFirstJobMarkers",
+            "Service-run checkpoint should be authored at the dock-road end.");
+    }
+    Expect(route != nullptr && route->points.size() >= 2,
+        "TestSceneLoaderLoadsFirstJobMarkers",
+        "Scene data should include a route from the dock road to the service confirmation marker.");
 }
 
 void TestSceneLoaderReportsMissingSceneFile()
@@ -1380,6 +1437,33 @@ void TestWorldStateSetsAndReadsFlags()
         "Debug summary should include the power flag.");
 }
 
+void TestWorldStateExposesFirstJobFlags()
+{
+    WorldState state;
+
+    Expect(!state.isFlagSet(WorldFlag::FerryOfficeJobStarted),
+        "TestWorldStateExposesFirstJobFlags",
+        "The first driver/fixer job should start inactive.");
+    Expect(state.setFlag(WorldFlag::FerryOfficeJobStarted, true, "Ferry Manifest"),
+        "TestWorldStateExposesFirstJobFlags",
+        "Starting the job should record a remembered event.");
+    Expect(state.setFlag(WorldFlag::ServiceVehicleUsed, true, "Service Yard Vehicle"),
+        "TestWorldStateExposesFirstJobFlags",
+        "Using the service vehicle should record a remembered event.");
+    Expect(state.setFlag(WorldFlag::DockRoadReached, true, "Service Run Checkpoint"),
+        "TestWorldStateExposesFirstJobFlags",
+        "Reaching the dock road checkpoint should record a remembered event.");
+    Expect(state.setFlag(WorldFlag::ServiceRunConfirmed, true, "Service Run Marker"),
+        "TestWorldStateExposesFirstJobFlags",
+        "Confirming the service run should record a remembered event.");
+    Expect(state.setFlag(WorldFlag::FerryOfficeJobComplete, true, "Ferry Office Service Call"),
+        "TestWorldStateExposesFirstJobFlags",
+        "Completing the first job should record a remembered event.");
+    Expect(state.debugSummary().find("ferryOfficeJobComplete=true") != std::string::npos,
+        "TestWorldStateExposesFirstJobFlags",
+        "Debug summary should expose first-job completion.");
+}
+
 void TestWorldStateRecordsEventsInOrder()
 {
     WorldState state;
@@ -1549,6 +1633,103 @@ void TestFerryOfficeSliceStartsIncomplete()
     Expect(scene.currentObjectiveText().find("Ferry Manifest") != std::string::npos,
         "TestFerryOfficeSliceStartsIncomplete",
         "Initial objective should guide the player toward the Ferry Manifest.");
+}
+
+void TestFerryOfficeJobStartsIncompleteAndOrdersObjectives()
+{
+    FerryOfficeJob job;
+    WorldState state;
+
+    Expect(!job.isComplete(state),
+        "TestFerryOfficeJobStartsIncompleteAndOrdersObjectives",
+        "First driver/fixer job should start incomplete.");
+    Expect(job.currentObjectiveText(state).find("manifest") != std::string::npos
+            || job.currentObjectiveText(state).find("Manifest") != std::string::npos,
+        "TestFerryOfficeJobStartsIncompleteAndOrdersObjectives",
+        "Initial job objective should guide the player toward the manifest or office call.");
+
+    job.recordJobStarted(state, "Ferry Manifest");
+    state.setFlag(WorldFlag::ManifestCollected, true, "Ferry Manifest");
+    Expect(job.currentObjectiveText(state).find("Service Barrier") != std::string::npos,
+        "TestFerryOfficeJobStartsIncompleteAndOrdersObjectives",
+        "After manifest collection, the job should guide the player toward the service route.");
+
+    state.setFlag(WorldFlag::ServiceRouteUsed, true, "Service Barrier Vault");
+    Expect(job.currentObjectiveText(state).find("Maintenance Box") != std::string::npos,
+        "TestFerryOfficeJobStartsIncompleteAndOrdersObjectives",
+        "After using the service route, the job should ask for maintenance/power work.");
+
+    state.setFlag(WorldFlag::MaintenanceBoxInspected, true, "Maintenance Box");
+    state.setFlag(WorldFlag::PowerRestored, true, "Maintenance Box");
+    Expect(job.currentObjectiveText(state).find("service gate") != std::string::npos
+            || job.currentObjectiveText(state).find("Wall Button") != std::string::npos,
+        "TestFerryOfficeJobStartsIncompleteAndOrdersObjectives",
+        "After power is restored, the job should ask the player to open the route.");
+
+    state.setFlag(WorldFlag::RouteOpened, true, "Wall Button");
+    Expect(job.currentObjectiveText(state).find("vehicle") != std::string::npos
+            || job.currentObjectiveText(state).find("Vehicle") != std::string::npos,
+        "TestFerryOfficeJobStartsIncompleteAndOrdersObjectives",
+        "After the route opens, the job should ask the player to use the service vehicle.");
+}
+
+void TestFerryOfficeJobVehicleCheckpointRequiresOccupiedVehicle()
+{
+    FerryOfficeJob job;
+    WorldState state;
+    FerryOfficeJobConfig config;
+    config.vehicleCheckpointPosition = {19.35f, 0.08f, -2.2f};
+    config.vehicleCheckpointRadius = 1.25f;
+    job.configure(config);
+
+    const bool ignoredOnFoot = job.updateVehicleCheckpoint(state, {19.35f, 0.0f, -2.2f}, false);
+    const bool reachedInVehicle = job.updateVehicleCheckpoint(state, {19.0f, 0.0f, -2.2f}, true);
+    const bool repeated = job.updateVehicleCheckpoint(state, {19.0f, 0.0f, -2.2f}, true);
+
+    Expect(!ignoredOnFoot,
+        "TestFerryOfficeJobVehicleCheckpointRequiresOccupiedVehicle",
+        "Dock road checkpoint should require the player to be in the vehicle.");
+    Expect(reachedInVehicle,
+        "TestFerryOfficeJobVehicleCheckpointRequiresOccupiedVehicle",
+        "Driving into the service checkpoint should update job world state.");
+    Expect(state.isFlagSet(WorldFlag::DockRoadReached),
+        "TestFerryOfficeJobVehicleCheckpointRequiresOccupiedVehicle",
+        "Vehicle checkpoint should set dockRoadReached.");
+    Expect(!repeated && state.eventCount() == 1,
+        "TestFerryOfficeJobVehicleCheckpointRequiresOccupiedVehicle",
+        "Repeated vehicle checkpoint overlap should not duplicate events.");
+}
+
+void TestFerryOfficeJobCompletionRequiresAllJobFlags()
+{
+    FerryOfficeJob job;
+    WorldState state;
+
+    job.recordJobStarted(state, "Ferry Manifest");
+    state.setFlag(WorldFlag::ManifestCollected, true, "Ferry Manifest");
+    state.setFlag(WorldFlag::ServiceRouteUsed, true, "Service Barrier Vault");
+    state.setFlag(WorldFlag::MaintenanceBoxInspected, true, "Maintenance Box");
+    state.setFlag(WorldFlag::PowerRestored, true, "Maintenance Box");
+    state.setFlag(WorldFlag::RouteOpened, true, "Wall Button");
+    job.recordServiceVehicleUsed(state);
+    state.setFlag(WorldFlag::DockRoadReached, true, "Service Run Checkpoint");
+
+    const bool earlyComplete = job.confirmServiceRun(state, "Service Run Marker");
+    Expect(earlyComplete,
+        "TestFerryOfficeJobCompletionRequiresAllJobFlags",
+        "Confirming at the service marker after all required steps should complete the job.");
+    Expect(state.isFlagSet(WorldFlag::ServiceRunConfirmed),
+        "TestFerryOfficeJobCompletionRequiresAllJobFlags",
+        "Confirmation should set serviceRunConfirmed.");
+    Expect(state.isFlagSet(WorldFlag::FerryOfficeJobComplete),
+        "TestFerryOfficeJobCompletionRequiresAllJobFlags",
+        "Confirmation should set ferryOfficeJobComplete.");
+
+    const std::size_t eventCount = state.eventCount();
+    const bool repeatedComplete = job.confirmServiceRun(state, "Service Run Marker");
+    Expect(!repeatedComplete && state.eventCount() == eventCount,
+        "TestFerryOfficeJobCompletionRequiresAllJobFlags",
+        "Repeating a completed service run should not duplicate job events.");
 }
 
 void TestFerryOfficeObjectiveTextGuidesRouteSteps()
@@ -2049,6 +2230,7 @@ int main()
     TestStaticMeshLoaderReportsMissingAsset();
     TestStaticMeshBuildsTransformedTriangleList();
     TestSceneLoaderLoadsDefaultFerryOfficeScene();
+    TestSceneLoaderLoadsFirstJobMarkers();
     TestSceneLoaderReportsMissingSceneFile();
     TestSceneLoaderLoadsVehicleBoundsAndRoadMarkers();
     TestPrototypeWorldBuildsFerryOfficeCollidersFromSceneData();
@@ -2089,12 +2271,16 @@ int main()
     TestNoFocusedInteractableMeansNoAction();
     TestFerryOfficeDataDefinesStableNamesAndPositions();
     TestWorldStateSetsAndReadsFlags();
+    TestWorldStateExposesFirstJobFlags();
     TestWorldStateRecordsEventsInOrder();
     TestWorldStateIgnoresRepeatedSameFlagValue();
     TestOneShotManifestPickupUpdatesWorldStateOnce();
     TestMaintenanceInteractionRestoresPower();
     TestWallButtonOpensRouteWithoutClosingItAgain();
     TestTraversalCompletionRecordsServiceRouteUsed();
+    TestFerryOfficeJobStartsIncompleteAndOrdersObjectives();
+    TestFerryOfficeJobVehicleCheckpointRequiresOccupiedVehicle();
+    TestFerryOfficeJobCompletionRequiresAllJobFlags();
     TestFerryOfficeSliceStartsIncomplete();
     TestFerryOfficeObjectiveTextGuidesRouteSteps();
     TestFerryOfficeCompletionRequiresRememberedLoop();

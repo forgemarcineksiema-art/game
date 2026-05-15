@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "id": "ferry-office",
   "name": "The Ferry Office",
-  "description": "Authoring snapshot for the current Ferry Office and service-yard prototype scene. Runtime still uses explicit C++ setup, with v0.12 mesh instances mirrored here.",
+  "description": "Runtime source scene for the current Ferry Office, service-yard, dock-road, and first driver/fixer job prototype.",
   "units": {
     "linear": "meter",
     "upAxis": "Y",
@@ -400,6 +400,17 @@
       "oneShot": false,
       "message": "Ferry Office summary marker reached.",
       "worldFlagsSetWhenReady": ["exitReached"]
+    },
+    {
+      "id": "service-run-confirm-marker",
+      "name": "Service Run Marker",
+      "prompt": "Confirm Service Run",
+      "type": "info",
+      "position": [18.6, 0.55, -0.55],
+      "radius": 1.8,
+      "oneShot": false,
+      "message": "Service run confirmed at the dock-road marker.",
+      "worldFlagsSetWhenReady": ["serviceRunConfirmed", "ferryOfficeJobComplete"]
     }
   ],
   "traversalAffordances": [
@@ -469,6 +480,12 @@
       "from": "service-yard-vehicle",
       "to": "dock-road-end-marker",
       "points": [[6.3, 0.08, -2.2], [10.0, 0.08, -2.2], [17.8, 0.08, -2.2], [19.35, 0.08, -2.2]]
+    },
+    {
+      "id": "route-dock-road-to-service-confirm",
+      "from": "dock-road-marker",
+      "to": "service-run-confirm-marker",
+      "points": [[19.35, 0.08, -2.2], [18.6, 0.08, -0.55]]
     }
   ],
   "objectiveMarkers": [
@@ -491,11 +508,16 @@
       "id": "dock-road-marker",
       "label": "Dock road turn-around marker",
       "position": [19.35, 0.08, -2.2]
+    },
+    {
+      "id": "service-run-checkpoint-marker",
+      "label": "Vehicle service-run checkpoint",
+      "position": [19.35, 0.08, -2.2]
     }
   ],
   "authoringNotes": [
-    "Runtime behavior is still driven by explicit C++ setup; mesh instances are mirrored here for validation and future loading/code generation.",
-    "When moving a Ferry Office object in C++, update this data file in the same change until runtime loading exists.",
+    "Runtime scene loading uses this file for layout, markers, interactables, traversal, vehicle data, and mesh instances.",
+    "Tidebreak-specific gameplay meaning remains in C++ scene/job code; this file is not a mission script.",
     "Keep ids stable and lowercase-kebab-case so Codex tools can compare scene data against code/docs."
   ]
 }

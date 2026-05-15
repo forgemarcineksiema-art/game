@@ -410,6 +410,7 @@ void SandboxLayer::onUpdate(double deltaSeconds, const engine::InputState& input
         if (vehicleEntered) {
             m_lastVehicleText = "Entered service yard vehicle.";
             engine::Logger::info("Vehicle: " + m_lastVehicleText);
+            recordWorldStateChange(m_scene.recordServiceVehicleUsed());
             m_vehicle.updateDriving(dt, input);
         } else {
             const InteractionResult interaction = m_scene.interactions().interact(input);
@@ -419,6 +420,10 @@ void SandboxLayer::onUpdate(double deltaSeconds, const engine::InputState& input
                 recordWorldStateChange(m_scene.applyInteractionResult(interaction));
             }
         }
+    }
+
+    if (m_vehicle.state().occupied) {
+        recordWorldStateChange(m_scene.updateJobVehicleCheckpoint(m_vehicle.state().position, true));
     }
 
     if (m_vehiclePhysicsWorld) {
@@ -520,6 +525,8 @@ void SandboxLayer::updateDebugText()
            << "objective=\"" << m_scene.currentObjectiveText() << "\" "
            << "readyForExit=" << (m_scene.isSliceReadyForExit() ? "yes" : "no") << " "
            << "sliceComplete=" << (m_scene.isSliceComplete() ? "yes" : "no") << "\n"
+           << "jobObjective=\"" << m_scene.currentJobObjectiveText() << "\" "
+           << m_scene.jobDebugSummary() << "\n"
            << "focus=" << (focus.hasFocus ? focus.name : "none") << " ";
     if (focus.hasFocus) {
         output << "prompt=\"Press E: " << focus.prompt << "\" ";
@@ -623,6 +630,17 @@ void SandboxLayer::drawInteractionDebug(engine::IRenderer& renderer)
             markerSize = m_scene.isSliceReadyForExit() ? 0.34f : 0.24f;
             beaconHeight = m_scene.isSliceReadyForExit() ? 1.65f : 0.9f;
         }
+        if (interactable.name == FerryOffice::Names::ServiceRunMarker) {
+            if (m_scene.isJobComplete()) {
+                color = {0.35f, 1.0f, 0.35f, 1.0f};
+            } else if (m_scene.job().isReadyForConfirmation(m_scene.worldState())) {
+                color = {1.0f, 0.82f, 0.25f, 1.0f};
+            } else {
+                color = {0.60f, 0.45f, 0.95f, 1.0f};
+            }
+            markerSize = 0.26f;
+            beaconHeight = 1.35f;
+        }
 
         if (!interactable.enabled || interactable.consumed) {
             color = {0.35f, 0.35f, 0.35f, 1.0f};
@@ -710,6 +728,9 @@ void SandboxLayer::drawSliceDebug(engine::IRenderer& renderer)
             if (marker.id.find("office") != std::string::npos) {
                 color = officeColor;
                 halfExtents = {0.35f, 0.35f, 0.35f};
+            } else if (marker.id.find("service-run") != std::string::npos) {
+                color = {1.0f, 0.82f, 0.25f, 1.0f};
+                halfExtents = {0.30f, 0.22f, 0.30f};
             } else if (marker.id.find("road") != std::string::npos) {
                 color = {1.0f, 0.82f, 0.25f, 1.0f};
                 halfExtents = {0.26f, 0.18f, 0.26f};

@@ -78,6 +78,15 @@ Vehicle spike controls:
 - In vehicle, `E`: exit when the side exit marker is clear.
 - On-foot controls resume after exit.
 
+First driver/fixer job loop:
+
+- Collect/check the Ferry Manifest to start the Ferry Office Service Call.
+- Use the Service Barrier Vault and inspect the Maintenance Box to restore power.
+- Open the service gate with the Wall Button.
+- Enter the service-yard vehicle and drive to the dock-road service checkpoint near the road-end marker.
+- Exit when the side marker is clear, then press `E` at the Service Run Marker to confirm the run.
+- GDI debug text shows `jobObjective`, `jobPhase`, `serviceVehicleUsed`, `dockRoadReached`, `serviceRunConfirmed`, and `jobComplete`.
+
 Headless smoke mode:
 
 ```powershell

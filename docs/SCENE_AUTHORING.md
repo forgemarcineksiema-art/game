@@ -37,6 +37,7 @@ The Ferry Office scene file describes:
 - traversal affordances,
 - vehicle spawn and service-yard bounds,
 - dock road visual placeholders and road-test route markers,
+- first driver/fixer job service-run marker and checkpoint,
 - route markers,
 - objective markers.
 
@@ -65,6 +66,7 @@ Loaded from scene data in v0.15:
 - interactables,
 - traversal affordances,
 - service-yard vehicle spawn, enter radius, proxy half extents, and bounds,
+- service-run confirmation interactable and checkpoint marker,
 - route markers and objective markers.
 
 Still scene-owned C++ behavior:
@@ -202,6 +204,16 @@ Required fields:
 Vehicle movement is still deterministic placeholder code. Jolt VehicleConstraint and real vehicle collision are deferred.
 
 The service-yard vehicle bounds include the original yard plus the short dock road and turn-around marker: `[3.35, -5.05]..[19.45, 0.95]` in X/Z. In v0.15 these values are loaded by `SandboxLayer` at runtime.
+
+## First Driver/Fixer Job Markers
+
+v0.16 keeps job behavior in C++ while authoring the current job markers in scene data:
+
+- `service-run-confirm-marker`: an `interactables` entry used to confirm the Ferry Office Service Call after the required loop.
+- `service-run-checkpoint-marker`: an `objectiveMarkers` entry used by `FerryOfficeJob` as the vehicle checkpoint position.
+- `route-dock-road-to-service-confirm`: a `routeMarkers` entry that makes the final dock-road-to-confirmation path visible to Codex tools and debug rendering.
+
+Do not turn these entries into a generic mission scripting format yet. New job beats should stay explicit, small, and backed by tests.
 
 ## Dock Road Segment
 

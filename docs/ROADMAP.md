@@ -211,6 +211,16 @@ Status: implemented as a compact dock road mood/layout pass. The service-yard no
 
 Status: implemented as a source-of-truth migration. The runtime now loads the Ferry Office scene through `SceneLoader` / `SceneDefinition` using `nlohmann/json`, while behavior remains explicitly scene-owned C++.
 
+## v0.16 - First Driver/Fixer Job Prototype
+
+- Add one explicit Ferry Office Service Call job using existing systems.
+- Use the manifest, Service Barrier Vault, Maintenance Box, service gate, service vehicle, dock-road checkpoint, and service-run confirmation marker.
+- Keep the job as a small scene-owned helper, not a generic mission framework or scripting system.
+- Preserve runtime scene loading, Ferry Office slice behavior, service-yard vehicle, dock road segment, scene tools, default validation, and Jolt opt-in validation.
+- Avoid NPC AI, traffic, combat, inventory, economy, save/load, mission scripting, large map expansion, and new vehicle physics.
+
+Status: implemented as the first driver/fixer job loop. `FerryOfficeJob` owns deterministic objective phases and completion checks while `WorldState` records job start, service vehicle use, dock-road checkpoint reach, service-run confirmation, and job completion.
+
 ## Recommended Next Goal
 
-Build v0.16 First Driver/Fixer Job Prototype.
+Build v0.16.1 First Job Manual Playtest + Objective/Marker Polish.

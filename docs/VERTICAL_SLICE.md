@@ -10,7 +10,7 @@ Last updated: 2026-05-14
 
 Define the first playable micro-scenario for the project direction locked in `docs/GAME_DIRECTION.md`.
 
-This document defines the micro-slice target and current v0.7 prototype state. It does not authorize adding missions, NPC AI, combat, vehicles, inventory, physics libraries, final art, or asset pipelines.
+This document defines the micro-slice target and prototype state. Early versions deliberately deferred vehicles; v0.16 adds one narrow service-vehicle job beat using the existing vehicle prototype without adding traffic, economy, NPC AI, full missions, inventory, save/load, final art, or asset pipelines.
 
 ## Player Experience Target
 
@@ -60,9 +60,26 @@ The player arrives at a closed ferry office on Veyra Reach. The service gate is 
 - `routeOpened=true` disables the `service-gate` blocking collider. v0.7.1 keeps this as a latch-open route to avoid trapping the player.
 - GDI debug text/logs show current objective, current flags, event count, last event, completion state, and whether the current action changed remembered state.
 
+## v0.16 Driver/Fixer Job Extension
+
+The first driver/fixer job is `Ferry Office Service Call`.
+
+It extends the micro-slice with one vehicle requirement while keeping the flow explicit and debug-only:
+
+1. Collect/check the Ferry Manifest to start the service call.
+2. Use the Service Barrier Vault route.
+3. Inspect the Maintenance Box and restore power.
+4. Open the service gate.
+5. Enter the service-yard vehicle.
+6. Drive to the dock-road service checkpoint.
+7. Exit near the Service Run Marker and confirm the service run.
+8. Show `ferryOfficeJobComplete=true` in world/debug state.
+
+This is still not a mission scripting system. It is one authored job helper used to prove that movement, interaction, traversal, vehicle driving, scene data, and remembered state can combine into a playable task.
+
 ## Systems Explicitly Deferred
 
-- Vehicles.
+- Additional vehicles beyond the one v0.16 service-yard vehicle beat.
 - NPC AI.
 - Combat.
 - Weapons.

@@ -443,3 +443,15 @@ Alternatives considered:
 - Generated C++ from JSON: avoids runtime dependency but creates stale generated-source risk and delays the source-of-truth migration.
 - Python-only validation: useful as authoring validation, but not sufficient for runtime loading.
 - Project-owned ad hoc parser: rejected because it would become fragile as scene data grows.
+
+## v0.16 Explicit First Job Helper
+
+Decision: Add `src/game/FerryOfficeJob.*` as a small scene-owned helper for the first Ferry Office Service Call instead of adding a generic mission scripting system.
+
+Reason: The project needs one playable driver/fixer job loop before it needs a quest graph, scripting language, rewards, economy, save/load, dialogue, NPCs, or traffic. The helper can express deterministic phases, objective text, service-vehicle checkpoint detection, and completion requirements while keeping behavior visible in C++ and tests.
+
+## v0.16 Scene-Authored Job Markers, C++ Job Meaning
+
+Decision: Author the current service-run confirmation marker, dock-road checkpoint marker, and final route marker in `data/scenes/ferry_office.scene.json`, but keep the meaning of those markers in `PrototypeScene` / `FerryOfficeJob`.
+
+Reason: v0.15 made scene data the runtime source of truth for layout. v0.16 should use that for placement, but turning scene JSON into a mission script would be premature. This keeps Codex-friendly placement and validation while avoiding a hidden mission framework.

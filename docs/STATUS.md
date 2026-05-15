@@ -3024,3 +3024,153 @@ Results:
 Recommended next goal:
 
 Build v0.16 First Driver/Fixer Job Prototype.
+
+## v0.16 Baseline - 2026-05-15
+
+Goal: add the first narrow driver/fixer job prototype inside the existing Ferry Office, service-yard, and dock-road scene using existing movement, interaction, traversal, vehicle, world-state, scene-loading, and debug systems. This is not a generic mission system, economy, inventory, NPC, traffic, save/load, or scripting milestone.
+
+Required context read before implementation:
+
+- `AGENTS.md`
+- `docs/STATUS.md`
+- `docs/GAME_DIRECTION.md`
+- `docs/VERTICAL_SLICE.md`
+- `docs/ROADMAP.md`
+- `docs/ARCHITECTURE.md`
+- `docs/TECH_DEBT.md`
+- `docs/SCENE_AUTHORING.md`
+- `docs/MANUAL_TEST_CHECKLIST.md`
+- `docs/DECISIONS.md`
+
+Baseline commands:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\verify.ps1
+cmake --preset windows-vs2022-debug-jolt
+cmake --build --preset windows-vs2022-debug-jolt
+ctest --preset windows-vs2022-debug-jolt --output-on-failure
+python tools\scene_report.py
+python tools\validate_scene.py
+python tools\scale_audit.py
+python tools\mesh_report.py
+```
+
+Baseline results:
+
+- Git state before v0.16 work: `main...origin/main`, clean working tree.
+- `scripts\verify.ps1`: passed. Default doctor/configure/build/CTest, scene validation, mesh report, and null smoke all completed. Null smoke reported engine `v0.15.0`, loaded scene `ferry-office`, and the expected dock road bounds.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 3/3 tests.
+- `python tools\scene_report.py`: passed; scene reports 9 colliders, 21 visual placeholders, 1 mesh asset, 10 mesh instances, 5 interactables, 1 traversal affordance, 1 vehicle, 5 route markers, and 4 objective markers.
+- `python tools\validate_scene.py`: passed.
+- `python tools\scale_audit.py`: passed; no suspicious scale issues found.
+- `python tools\mesh_report.py`: passed; `unit-box-mesh` has 10 scene uses.
+
+## v0.16 Short Implementation Plan
+
+1. Add failing tests first for Ferry Office job state/progression, new job world flags, scene-authored service checkpoint ids, vehicle checkpoint completion, repeat-safe completion, and debug text exposure.
+2. Add a small `FerryOfficeJob` game-layer helper that owns explicit objective phases and job completion logic without becoming a mission graph or scripting system.
+3. Extend `WorldState` with only the remembered flags needed for the job loop: job start, service vehicle use, dock-road checkpoint, service-run confirmation, and job completion.
+4. Add a scene-authored service-run checkpoint/confirmation marker to `data/scenes/ferry_office.scene.json` and keep the runtime using loaded scene data for its position/radius.
+5. Wire existing mechanics into the job: manifest starts the job, traversal records service route use, maintenance restores power, wall button opens route, vehicle enter records service vehicle use, reaching the road checkpoint records dock-road progress, and confirmation completes the job.
+6. Keep existing Ferry Office slice completion behavior intact; the new job can sit above it as a narrow prototype task, not a replacement mission system.
+7. Update docs, especially stale `TECH_DEBT.md` wording, manual checklist, roadmap, architecture, scene authoring, vertical slice, and decisions.
+8. Run the full default/Jolt/tool/windowed validation matrix and commit/push only after successful validation.
+
+## v0.16 Implementation Summary - 2026-05-15
+
+TDD checkpoint:
+
+- Added failing C++ tests for missing `FerryOfficeJob`, first-job flags, scene-authored service-run markers, objective ordering, vehicle checkpoint behavior, and repeat-safe completion.
+- Added failing Python scene-tool tests for `service-run-confirm-marker`, `service-run-checkpoint-marker`, and `route-dock-road-to-service-confirm`.
+- Confirmed red results:
+  - `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: failed as expected with missing `game/FerryOfficeJob.h`.
+  - `python tests\test_scene_tools.py`: failed as expected because the new v0.16 scene ids did not exist yet.
+
+Implemented changes:
+
+- Bumped project version to `0.16.0`.
+- Added `src/game/FerryOfficeJob.*` as a narrow explicit Ferry Office Service Call helper.
+- Extended `WorldState` with first-job flags:
+  - `ferryOfficeJobStarted`,
+  - `serviceVehicleUsed`,
+  - `dockRoadReached`,
+  - `serviceRunConfirmed`,
+  - `ferryOfficeJobComplete`.
+- Updated `PrototypeScene` so existing actions feed the job:
+  - manifest/notice can start the job,
+  - service route traversal remains recorded,
+  - maintenance and power remain existing world-state flags,
+  - wall button still opens the route,
+  - Service Run Marker confirms/completes the job only after prerequisites.
+- Updated `SandboxLayer` so entering the vehicle records service vehicle use and driving into the scene-authored dock-road checkpoint records `dockRoadReached`.
+- Added scene data entries:
+  - `service-run-confirm-marker`,
+  - `service-run-checkpoint-marker`,
+  - `route-dock-road-to-service-confirm`.
+- Added GDI/debug text for `jobObjective`, `jobPhase`, `serviceVehicleUsed`, `dockRoadReached`, `serviceRunConfirmed`, and `jobComplete`.
+- Updated docs for the new job loop and refreshed stale `TECH_DEBT.md` sections.
+
+Targeted post-implementation checks:
+
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: passed.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `python tests\test_scene_tools.py`: passed, 14 tests.
+
+Known implementation limitations:
+
+- `FerryOfficeJob` is an explicit scene helper, not a generic mission framework.
+- Service Run Marker interaction before prerequisites does not complete the job; a manual playtest should check whether prompt wording needs polish.
+- Route marker endpoints are still not validated against known ids by Python tools.
+- The vehicle remains deterministic placeholder movement; Jolt VehicleConstraint remains deferred.
+
+## v0.16 Final Validation - 2026-05-15
+
+Commands run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\doctor.ps1
+powershell -ExecutionPolicy Bypass -File scripts\configure.ps1
+powershell -ExecutionPolicy Bypass -File scripts\build.ps1
+ctest --preset windows-vs2022-debug --output-on-failure
+powershell -ExecutionPolicy Bypass -File scripts\verify.ps1
+cmake --preset windows-vs2022-debug-jolt
+cmake --build --preset windows-vs2022-debug-jolt
+ctest --preset windows-vs2022-debug-jolt --output-on-failure
+python tools\scene_report.py
+python tools\validate_scene.py
+python tools\scale_audit.py
+python tools\mesh_report.py
+python tools\status_report.py
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --frames 360
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 360
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --scene data\scenes\ferry_office.scene.json --frames 360
+```
+
+Results:
+
+- `scripts\doctor.ps1`: passed; expected PATH warnings remain for `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- `scripts\configure.ps1`: passed for `windows-vs2022-debug`.
+- `scripts\build.ps1`: passed.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 3/3 tests.
+- `scripts\verify.ps1`: passed; null smoke reported engine `v0.16.0`, loaded scene `ferry-office`, 6 interactables, and first-job debug text with `jobPhase=collectManifest`.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 3/3 tests.
+- `python tools\scene_report.py`: passed; scene reports 9 colliders, 21 visual placeholders, 1 mesh asset, 10 mesh instances, 6 interactables, 1 traversal affordance, 1 vehicle, 6 route markers, and 5 objective markers.
+- `python tools\validate_scene.py`: passed.
+- `python tools\scale_audit.py`: passed; no suspicious scale issues found.
+- `python tools\mesh_report.py`: passed; `unit-box-mesh` still has 10 uses.
+- `python tools\status_report.py`: completed and showed the expected v0.16 modified/new files before cleanup/commit.
+- `EngineApp.exe --renderer gdi --frames 360`: passed; window created, cursor captured, scene loaded, job debug text rendered/logged, and clean shutdown.
+- `EngineApp.exe --renderer dx11 --frames 360`: passed; hardware DX11 device failed and WARP was used, then the bounded run completed cleanly.
+- `EngineApp.exe --renderer gdi --scene data\scenes\ferry_office.scene.json --frames 360`: passed; explicit scene path loaded and the bounded run completed cleanly.
+
+Manual playtest note:
+
+- A full human-controlled driver/fixer job playthrough was not completed in this automated Codex run. The next goal should manually test objective clarity, vehicle checkpoint readability, and Service Run Marker placement on the target laptop.
+
+Recommended next goal:
+
+Build v0.16.1 First Job Manual Playtest + Objective/Marker Polish.

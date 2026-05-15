@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.24)
 
 project(GameEngineFoundation
-    VERSION 0.15.0
+    VERSION 0.16.0
     DESCRIPTION "AI-native C++ action/adventure engine foundation"
     LANGUAGES CXX
 )
@@ -117,6 +117,7 @@ else()
 endif()
 
 add_library(GamePrototype STATIC
+    src/game/FerryOfficeJob.cpp
     src/game/InteractionSystem.cpp
     src/game/FerryOfficeData.cpp
     src/game/PlayerController.cpp

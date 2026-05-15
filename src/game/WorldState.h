@@ -13,6 +13,11 @@ enum class WorldFlag {
     MaintenanceBoxInspected,
     RouteOpened,
     ExitReached,
+    FerryOfficeJobStarted,
+    ServiceVehicleUsed,
+    DockRoadReached,
+    ServiceRunConfirmed,
+    FerryOfficeJobComplete,
     Count,
 };
 

@@ -152,6 +152,8 @@ v0.12 adds `IRenderer::drawDebugFlatTriangles` as a narrow immediate-mode static
 
 `src/game/PrototypeScene.*` defines the Ferry Office debug micro-slice. In v0.15 it builds world colliders, interactables, and traversal affordances from `SceneDefinition` when runtime scene loading succeeds. It still owns the scene-specific meaning of those actions.
 
+`src/game/FerryOfficeJob.*` is the v0.16 first driver/fixer job helper. It is deliberately scene/game-layer scoped: it owns explicit Ferry Office Service Call phases, job objective text, service-vehicle checkpoint detection, and job completion checks. It is not a generic mission graph, scripting system, quest framework, reward system, or persistence layer.
+
 `src/game/PrototypeScene.*` also owns the first v0.5 traversal affordance: a service-barrier vault path used as access-gating groundwork for The Ferry Office.
 
 `src/game/FerryOfficeData.*` still centralizes stable Ferry Office names and C++ fallback constants used by behavior mapping, tests, and fallback debug paths. New layout edits should prefer `data/scenes/ferry_office.scene.json`; do not add new duplicated coordinates to `FerryOfficeData` unless the behavior code truly needs a stable symbolic constant.
@@ -201,7 +203,9 @@ World state support is intentionally primitive:
 - debug summary text and logs,
 - scene-level mapping from known prototype actions to flags.
 
-Current Ferry Office flags are `powerRestored`, `manifestCollected`, `serviceRouteUsed`, `maintenanceBoxInspected`, `routeOpened`, and `exitReached`.
+Current Ferry Office flags are `powerRestored`, `manifestCollected`, `serviceRouteUsed`, `maintenanceBoxInspected`, `routeOpened`, `exitReached`, `ferryOfficeJobStarted`, `serviceVehicleUsed`, `dockRoadReached`, `serviceRunConfirmed`, and `ferryOfficeJobComplete`.
+
+v0.16 maps the first driver/fixer job to remembered state without adding mission scripting: manifest/notice can start the job, the service vault records route use, the maintenance box restores power, the wall button opens the route, vehicle entry records service vehicle use, reaching the authored dock-road checkpoint records `dockRoadReached`, and the Service Run Marker can complete the job once prerequisites are met.
 
 No save/load, mission scripting, dialogue trees, global quest graph, inventory, or persistence exists.
 

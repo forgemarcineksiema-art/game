@@ -14,6 +14,7 @@ inline constexpr std::string_view ServiceGateCollider = "service-gate";
 inline constexpr std::string_view ServiceVault = "Service Barrier Vault";
 inline constexpr std::string_view WallButton = "Wall Button";
 inline constexpr std::string_view ExitMarker = "Exit Summary Marker";
+inline constexpr std::string_view ServiceRunMarker = "Service Run Marker";
 } // namespace Names
 
 namespace Prompts {
@@ -23,6 +24,7 @@ inline constexpr std::string_view MaintenanceBox = "Inspect Maintenance Box";
 inline constexpr std::string_view ServiceVault = "Press Space: Vault Service Barrier";
 inline constexpr std::string_view WallButton = "Open Service Gate";
 inline constexpr std::string_view ExitMarker = "Review Ferry Office Summary";
+inline constexpr std::string_view ServiceRunMarker = "Confirm Service Run";
 } // namespace Prompts
 
 namespace Messages {
@@ -32,6 +34,7 @@ inline constexpr std::string_view MaintenanceBox = "Maintenance box inspected: l
 inline constexpr std::string_view ServiceVault = "Service Barrier Vault";
 inline constexpr std::string_view WallButton = "Service gate opened.";
 inline constexpr std::string_view ExitMarker = "Ferry Office summary marker reached.";
+inline constexpr std::string_view ServiceRunMarker = "Service run confirmed at the dock-road marker.";
 } // namespace Messages
 
 namespace Positions {
@@ -42,6 +45,8 @@ inline constexpr engine::Vec3 FerryOfficeNotice {-1.8f, 0.55f, 3.2f};
 inline constexpr engine::Vec3 MaintenanceBox {2.8f, 0.65f, 1.9f};
 inline constexpr engine::Vec3 WallButton {-0.9f, 0.7f, 2.15f};
 inline constexpr engine::Vec3 ExitMarker {0.0f, 0.55f, 4.55f};
+inline constexpr engine::Vec3 ServiceRunMarker {18.6f, 0.55f, -0.55f};
+inline constexpr engine::Vec3 ServiceRunCheckpoint {19.35f, 0.08f, -2.2f};
 inline constexpr engine::Vec3 ServiceVaultStart {2.8f, 0.0f, -0.35f};
 inline constexpr engine::Vec3 ServiceVaultEnd {2.8f, 0.0f, 1.45f};
 inline constexpr engine::Vec3 ServiceVaultFacing {0.0f, 0.0f, 1.0f};
@@ -57,6 +62,8 @@ inline constexpr float FerryOfficeNotice = 1.7f;
 inline constexpr float MaintenanceBox = 1.4f;
 inline constexpr float WallButton = 1.7f;
 inline constexpr float ExitMarker = 1.8f;
+inline constexpr float ServiceRunMarker = 1.8f;
+inline constexpr float ServiceRunCheckpoint = 1.5f;
 } // namespace Radii
 
 namespace Traversal {

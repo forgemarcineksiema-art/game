@@ -89,10 +89,11 @@ python tools/mesh_report.py
 
 - [ ] `python tools/validate_scene.py` reports `Scene validation passed.`
 - [ ] `python tools/scene_report.py` reports scene id `ferry-office`.
-- [ ] Scene report lists 9 colliders, 5 interactables, 1 traversal affordance, 1 vehicle, 5 route markers, and 4 objective markers.
+- [ ] Scene report lists 9 colliders, 6 interactables, 1 traversal affordance, 1 vehicle, 6 route markers, and 5 objective markers.
 - [ ] `python tools/scale_audit.py` reports no suspicious scale issues, or any issue is documented.
 - [ ] `python tools/mesh_report.py` reports mesh asset `unit-box-mesh` and 10 expected Ferry Office/service-yard mesh instances.
 - [ ] `data/scenes/ferry_office.scene.json` contains the service gate, manifest, maintenance box, wall button, exit marker, service vault, player start, and service-yard vehicle ids.
+- [ ] `data/scenes/ferry_office.scene.json` contains `service-run-confirm-marker`, `service-run-checkpoint-marker`, and `route-dock-road-to-service-confirm`.
 - [ ] `data/scenes/ferry_office.scene.json` contains `meshAssets` and `meshInstances` for the current static mesh spike.
 - [ ] Runtime debug text reports `scene=ferry-office loaded=yes`.
 - [ ] Any manual movement of scene layout objects starts in scene JSON; only behavior-specific C++ fallback/mapping is changed when necessary.
@@ -127,6 +128,21 @@ python tools/mesh_report.py
 - [ ] After exit, on-foot movement, camera, traversal, and Ferry Office interactions still work.
 - [ ] Debug text reports vehicle occupancy, speed, throttle/brake/steer, camera mode, and physics backend status.
 - [ ] The vehicle does not steal `E` from the Ferry Manifest, Maintenance Box, Wall Button, Ferry Office Notice, or Exit Summary Marker when those are focused.
+
+## First Driver/Fixer Job
+
+- [ ] Initial GDI debug text shows `jobObjective` and `jobPhase=collectManifest`.
+- [ ] Collecting the Ferry Manifest records `manifestCollected=true` and starts the Ferry Office Service Call.
+- [ ] Using the Service Barrier Vault records `serviceRouteUsed=true`.
+- [ ] Inspecting the Maintenance Box records `maintenanceBoxInspected=true` and `powerRestored=true`.
+- [ ] Opening the service gate records `routeOpened=true`.
+- [ ] Entering the service-yard vehicle records `serviceVehicleUsed=true`.
+- [ ] Driving the vehicle to the dock-road checkpoint records `dockRoadReached=true`.
+- [ ] The Service Run Marker is visible near the dock-road end/exit side.
+- [ ] Pressing `E` at the Service Run Marker before prerequisites does not complete the job.
+- [ ] Pressing `E` at the Service Run Marker after prerequisites records `serviceRunConfirmed=true` and `ferryOfficeJobComplete=true`.
+- [ ] Repeating the Service Run Marker after completion does not duplicate world events.
+- [ ] Ferry Office slice completion through the Exit Summary Marker still works separately from the driver/fixer job.
 
 ## Interactions
 

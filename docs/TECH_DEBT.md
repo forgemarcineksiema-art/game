@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-15
 
-This file lists known foundation issues after v0.14. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
+This file lists known foundation issues after v0.16. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
 
 ## Build / Toolchain
 
@@ -79,10 +79,12 @@ This file lists known foundation issues after v0.14. It is not a mandate to fix 
 
 - `WorldState` is an in-memory local event ledger, not a save/load system.
 - Flag mappings are hardcoded in `PrototypeScene`; v0.8 reduced string-id repetition by using centralized Ferry Office names.
+- `FerryOfficeJob` is one explicit scene-owned job helper for the Ferry Office Service Call. It is not a generic mission graph, quest scripting layer, reward system, or persistence layer.
 - Repeated same-value flag writes are ignored, which is correct for v0.6 but may need richer event semantics later.
 - Debug summary text became longer in v0.7 because it now includes objective, completion, and `exitReached`. v0.7.1 splits the GDI/debug string into sections, but there is still no real UI overlay.
 - There is no mission graph, quest scripting, dialogue integration, global event bus, or persistence layer.
 - Slice completion is a scene helper, not a mission/objective scripting system.
+- Job completion is also a scene helper. It proves one driver/fixer loop, but should not be generalized until more job types prove the real data shape.
 
 ## Traversal
 
@@ -102,12 +104,14 @@ This file lists known foundation issues after v0.14. It is not a mandate to fix 
 ## Scene / Authoring Data
 
 - v0.15 makes `data/scenes/ferry_office.scene.json` the runtime source of truth for current layout data.
+- v0.16 adds scene-authored service-run confirmation and checkpoint markers for the first driver/fixer job.
 - Remaining duplication is behavior-oriented rather than pure layout-oriented: `FerryOfficeData` still holds stable names/fallback positions, `PrototypeScene` maps known action names to world-state flags, and `SandboxLayer` owns dynamic coloring, vehicle camera/exit behavior, and fallback values.
 - Runtime scene loading is one-shot at startup. There is no hot reload, runtime editing, prefab system, scene diff, or editor.
 - Invalid runtime scene paths currently log a warning and fall back to built-in Ferry Office setup so smoke/debug paths remain usable; stricter failure handling may be useful once multiple scenes exist.
 - There is no generated C++ data path from scene JSON.
 - There is no schema file beyond the Python validator.
 - Scene tools validate ids, vectors, radii, extents, vehicle bounds, mesh references, and scale sanity, but they do not validate every runtime behavior mapping.
+- Route marker `from` / `to` strings are not yet validated against known ids, so route endpoint mistakes can still slip through scene validation.
 - There is no editor, gizmo, visual placement tool, asset registry, prefab system, or scene diff tool.
 
 ## Static Mesh / Assets
@@ -131,13 +135,19 @@ This file lists known foundation issues after v0.14. It is not a mandate to fix 
 - DX11 has no debug text overlay, so visual playtesting still favors GDI until a real overlay or text path exists.
 - There is no authored composition pass for camera start angle, signposting, silhouettes, or route readability beyond simple colored volumes and unit-box mesh placeholders.
 
-## Recommended Debt After v0.15
+## Fix Soon
 
-1. Run a full human keyboard/mouse playthrough of the Ferry Office loop and service-yard vehicle on the target laptop.
-2. Keep the next gameplay goal narrow and use scene data first when adding or moving layout objects.
-3. Manually playtest the v0.14 vehicle acceleration, braking, reverse, steering, service-yard-to-dock-road bounds, and camera settings on the target laptop before adding more vehicle features.
-4. Decide whether glTF coverage should grow through cgltf/tinygltf before adding textures/materials.
-5. Validate captured cursor feel on the target laptop/touchpad and use `--free-cursor` if a remote session behaves badly.
-6. Decide whether the first Jolt gameplay promotion should be vehicle-only, world queries-only, or player collision-only after vehicle tuning.
-7. Keep `WorldState` runtime-only unless a later goal explicitly asks for persistence.
-8. Avoid adding a mission scripting system before the micro-slice proves its minimal state flow.
+1. Run a full human keyboard/mouse playthrough of the Ferry Office loop, service-yard vehicle, dock-road checkpoint, Service Run Marker, and job completion on the target laptop.
+2. Polish v0.16 objective wording, marker placement, and debug text if the first job is confusing during manual playtest.
+3. Add route endpoint validation to scene tools so `routeMarkers.from` / `routeMarkers.to` catch stale ids.
+4. Keep the next gameplay goal narrow and use scene data first when adding or moving layout objects.
+5. Decide whether the first Jolt gameplay promotion should be vehicle-only, world queries-only, or player collision-only after vehicle/job playtests.
+
+## Known But Acceptable For Now
+
+1. The vehicle is still deterministic placeholder movement, not Jolt VehicleConstraint.
+2. `WorldState` remains runtime-only with no save/load.
+3. `FerryOfficeJob` is one explicit job helper, not a general mission framework.
+4. DX11 still falls back to WARP on this machine.
+5. The scene is still debug/placeholder presentation, not commercial visual quality.
+6. glTF support remains the tiny custom unit-box subset until a later mesh/material milestone justifies cgltf/tinygltf.

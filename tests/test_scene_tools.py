@@ -36,8 +36,10 @@ class SceneToolTests(unittest.TestCase):
             "maintenance-box",
             "wall-button",
             "exit-summary-marker",
+            "service-run-confirm-marker",
             "service-barrier-vault",
             "service-yard-vehicle",
+            "service-run-checkpoint-marker",
         ]:
             self.assertIn(required_id, ids)
 
@@ -64,7 +66,7 @@ class SceneToolTests(unittest.TestCase):
 
         self.assertEqual("ferry-office", summary.scene_id)
         self.assertGreaterEqual(summary.collider_count, 9)
-        self.assertEqual(5, summary.interactable_count)
+        self.assertEqual(6, summary.interactable_count)
         self.assertEqual(1, summary.traversal_count)
         self.assertEqual(1, summary.vehicle_count)
 
@@ -114,6 +116,16 @@ class SceneToolTests(unittest.TestCase):
             "dock-road-end-marker",
             "route-service-yard-to-dock-road",
             "dock-road-marker",
+        ]:
+            self.assertIn(required_id, ids)
+
+    def test_v016_first_driver_fixer_job_authoring_ids_exist(self) -> None:
+        ids = scene_data.collect_ids(self.scene)
+
+        for required_id in [
+            "service-run-confirm-marker",
+            "service-run-checkpoint-marker",
+            "route-dock-road-to-service-confirm",
         ]:
             self.assertIn(required_id, ids)
 

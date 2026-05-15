@@ -2,6 +2,7 @@
 
 #include "game/SceneDefinition.h"
 
+#include <algorithm>
 #include <sstream>
 #include <utility>
 
@@ -65,6 +66,15 @@ void PrototypeScene::buildFromFerryOfficeData()
     exitMarker.message = FerryOffice::Messages::ExitMarker;
     m_interactions.addInteractable(exitMarker);
 
+    Interactable serviceRunMarker;
+    serviceRunMarker.name = FerryOffice::Names::ServiceRunMarker;
+    serviceRunMarker.prompt = FerryOffice::Prompts::ServiceRunMarker;
+    serviceRunMarker.position = FerryOffice::Positions::ServiceRunMarker;
+    serviceRunMarker.radius = FerryOffice::Radii::ServiceRunMarker;
+    serviceRunMarker.type = InteractableType::Info;
+    serviceRunMarker.message = FerryOffice::Messages::ServiceRunMarker;
+    m_interactions.addInteractable(serviceRunMarker);
+
     TraversalAffordance serviceVault;
     serviceVault.name = FerryOffice::Names::ServiceVault;
     serviceVault.prompt = FerryOffice::Prompts::ServiceVault;
@@ -76,6 +86,11 @@ void PrototypeScene::buildFromFerryOfficeData()
     serviceVault.requiredFacingDot = FerryOffice::Traversal::ServiceVaultRequiredFacingDot;
     serviceVault.durationSeconds = FerryOffice::Traversal::ServiceVaultDurationSeconds;
     m_traversal.addAffordance(serviceVault);
+
+    FerryOfficeJobConfig jobConfig;
+    jobConfig.vehicleCheckpointPosition = FerryOffice::Positions::ServiceRunCheckpoint;
+    jobConfig.vehicleCheckpointRadius = FerryOffice::Radii::ServiceRunCheckpoint;
+    m_job.configure(std::move(jobConfig));
 
     syncRouteGateCollider();
 }
@@ -133,6 +148,7 @@ void PrototypeScene::loadFromDefinition(const SceneDefinition& sceneDefinition)
         m_traversal.addAffordance(std::move(affordance));
     }
 
+    configureJobFromDefinition(sceneDefinition);
     syncRouteGateCollider();
 }
 
@@ -176,6 +192,16 @@ const WorldState& PrototypeScene::worldState() const
     return m_worldState;
 }
 
+FerryOfficeJob& PrototypeScene::job()
+{
+    return m_job;
+}
+
+const FerryOfficeJob& PrototypeScene::job() const
+{
+    return m_job;
+}
+
 bool PrototypeScene::applyInteractionResult(const InteractionResult& result)
 {
     if (!result.triggered) {
@@ -184,7 +210,10 @@ bool PrototypeScene::applyInteractionResult(const InteractionResult& result)
 
     bool changed = false;
     if (result.name == FerryOffice::Names::FerryManifest || result.name == "Test Pickup") {
+        changed |= m_job.recordJobStarted(m_worldState, result.name);
         changed |= m_worldState.setFlag(WorldFlag::ManifestCollected, true, result.name);
+    } else if (result.name == FerryOffice::Names::FerryOfficeNotice) {
+        changed |= m_job.recordJobStarted(m_worldState, result.name);
     } else if (result.name == FerryOffice::Names::MaintenanceBox) {
         changed |= m_worldState.setFlag(WorldFlag::MaintenanceBoxInspected, true, result.name);
         changed |= m_worldState.setFlag(WorldFlag::PowerRestored, true, result.name);
@@ -193,6 +222,8 @@ bool PrototypeScene::applyInteractionResult(const InteractionResult& result)
         syncRouteGateCollider();
     } else if (result.name == FerryOffice::Names::ExitMarker) {
         changed |= recordExitReached();
+    } else if (result.name == FerryOffice::Names::ServiceRunMarker) {
+        changed |= m_job.confirmServiceRun(m_worldState, result.name);
     }
 
     return changed;
@@ -201,6 +232,16 @@ bool PrototypeScene::applyInteractionResult(const InteractionResult& result)
 bool PrototypeScene::recordServiceRouteUsed()
 {
     return m_worldState.setFlag(WorldFlag::ServiceRouteUsed, true, std::string(FerryOffice::Messages::ServiceVault));
+}
+
+bool PrototypeScene::recordServiceVehicleUsed()
+{
+    return m_job.recordServiceVehicleUsed(m_worldState);
+}
+
+bool PrototypeScene::updateJobVehicleCheckpoint(engine::Vec3 vehiclePosition, bool vehicleOccupied)
+{
+    return m_job.updateVehicleCheckpoint(m_worldState, vehiclePosition, vehicleOccupied);
 }
 
 bool PrototypeScene::recordExitReached()
@@ -232,6 +273,11 @@ bool PrototypeScene::isServiceGateBlocking() const
     return gate != nullptr && gate->blocksPlayer;
 }
 
+bool PrototypeScene::isJobComplete() const
+{
+    return m_job.isComplete(m_worldState);
+}
+
 std::string PrototypeScene::currentObjectiveText() const
 {
     if (!m_worldState.isFlagSet(WorldFlag::ManifestCollected)) {
@@ -253,6 +299,11 @@ std::string PrototypeScene::currentObjectiveText() const
     return "Ferry Office micro-slice complete.";
 }
 
+std::string PrototypeScene::currentJobObjectiveText() const
+{
+    return m_job.currentObjectiveText(m_worldState);
+}
+
 std::string PrototypeScene::completionSummary() const
 {
     std::ostringstream output;
@@ -265,6 +316,32 @@ std::string PrototypeScene::completionSummary() const
            << " routeOpen=" << (m_worldState.isFlagSet(WorldFlag::RouteOpened) ? "true" : "false")
            << " exit=" << (m_worldState.isFlagSet(WorldFlag::ExitReached) ? "true" : "false");
     return output.str();
+}
+
+std::string PrototypeScene::jobDebugSummary() const
+{
+    return m_job.debugSummary(m_worldState);
+}
+
+void PrototypeScene::configureJobFromDefinition(const SceneDefinition& sceneDefinition)
+{
+    FerryOfficeJobConfig config;
+
+    for (const SceneObjectiveMarkerDefinition& marker : sceneDefinition.objectiveMarkers) {
+        if (marker.id == "service-run-checkpoint-marker") {
+            config.vehicleCheckpointPosition = marker.position;
+            break;
+        }
+    }
+
+    for (const SceneInteractableDefinition& interactable : sceneDefinition.interactables) {
+        if (interactable.id == "service-run-confirm-marker") {
+            config.vehicleCheckpointRadius = std::max(interactable.radius, config.vehicleCheckpointRadius);
+            break;
+        }
+    }
+
+    m_job.configure(std::move(config));
 }
 
 void PrototypeScene::syncRouteGateCollider()
