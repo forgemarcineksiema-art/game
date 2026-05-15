@@ -52,6 +52,38 @@ scripts/build.ps1 -Preset windows-vs2022-debug
 
 ## Run
 
+Playable build shortcut:
+
+```powershell
+scripts/play.ps1
+```
+
+This launches the current Ferry Office Service Call with the GDI renderer, `playtest` UI, and the default Ferry Office scene:
+
+```text
+--renderer gdi --ui-mode playtest --scene data\scenes\ferry_office.scene.json
+```
+
+Useful playable variants:
+
+```powershell
+scripts/play.ps1 -DebugUi
+scripts/play.ps1 -MinimalUi
+scripts/play.ps1 -Dx11 -Frames 360
+scripts/play.ps1 -FreeCursor
+scripts/play.ps1 -Args @("--frames", "360")
+scripts/play.ps1 -DryRun
+```
+
+`scripts/play.ps1` prints the exact `EngineApp.exe` command it runs. If the Debug executable is missing, run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\configure.ps1
+powershell -ExecutionPolicy Bypass -File scripts\build.ps1
+```
+
+Use `scripts/run.ps1` when you want the lower-level "last configured preset" launcher instead of the current playable-build preset.
+
 Windowed runtime, using the last configured preset:
 
 ```powershell
@@ -104,6 +136,7 @@ Headless smoke mode:
 
 ```powershell
 scripts/run.ps1 -Args @("--smoke-test", "--frames", "3")
+scripts/play.ps1 -Args @("--renderer", "null", "--headless", "--smoke-test", "--frames", "3")
 ```
 
 Renderer selection:
@@ -216,6 +249,7 @@ assets/models/road_edge_post.gltf
 assets/models/service_barrier.gltf
 assets/models/utility_box.gltf
 assets/models/ferry_notice_board.gltf
+assets/models/blender_ferry_notice_board.gltf
 ```
 
 The supported loader subset is intentionally tiny: `.gltf`, one embedded base64 buffer, `POSITION` float `VEC3`, indexed triangle list, no materials/textures/animation. v0.18 can load multiple scene-authored mesh asset ids, v0.19 validates the asset workflow around those files, and v0.20 adds an optional Blender check plus one clearly labeled fallback-generated notice-board prop. This is still not an asset registry or production mesh pipeline. See `docs/MESH_RENDERING.md`, `docs/ASSET_PIPELINE_DECISION.md`, and `docs/BLENDER_WORKFLOW.md` before changing mesh loading or renderer behavior.

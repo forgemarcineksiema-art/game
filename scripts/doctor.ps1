@@ -85,7 +85,8 @@ foreach ($Path in @(
     "tools\mesh_report.py",
     "tools\check_blender.py",
     "tools\create_simple_prop_gltf.py",
-    "tools\blender\create_tidebreak_notice_board.py"
+    "tools\blender\create_tidebreak_notice_board.py",
+    "scripts\play.ps1"
 )) {
     Test-PathRequired $Path
 }

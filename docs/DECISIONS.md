@@ -525,3 +525,11 @@ Decision: Keep the service-yard vehicle deterministic and game-layer scoped, but
 Reason: The current blocker is trust in the existing dock-road driving loop, not new vehicle physics. A look-ahead camera target and yaw follow make the route easier to read while reversing/turning, and low-speed steering assist makes compact service-yard turn-arounds less dead without adding wheels, suspension, Jolt VehicleConstraint, or a full vehicle tuning framework.
 
 Dependency impact: no dependency or new gameplay system was added. Jolt remains private to `src/engine` and is not used for live vehicle control in v0.22.
+
+## v0.23 Playable Launch Wrapper
+
+Decision: Add `scripts/play.ps1` as the player-facing local launch path for the current prototype, defaulting to GDI, `playtest` UI, and `data\scenes\ferry_office.scene.json`.
+
+Reason: The prototype has become playable, but the previous launch flow still required remembering long development arguments or using the lower-level `scripts/run.ps1` preset wrapper. A small tested wrapper improves hand-play and presentation without adding an installer, release packaging system, config UI, save/settings persistence, or new gameplay feature. Low-level direct executable, `scripts/run.ps1`, smoke/headless, DX11, Jolt, Blender, and scene-tool workflows remain available for development validation.
+
+Dependency impact: no dependency or new gameplay system was added.

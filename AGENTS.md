@@ -42,6 +42,7 @@ Before scene layout, map, object placement, asset, model, scale, or art-directio
 ## Run Commands
 
 ```powershell
+scripts/play.ps1
 scripts/run.ps1
 scripts/run.ps1 -Args @("--smoke-test", "--frames", "3")
 ```

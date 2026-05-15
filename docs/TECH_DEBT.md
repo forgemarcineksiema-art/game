@@ -2,20 +2,21 @@
 
 Last updated: 2026-05-15
 
-This file lists known foundation issues after v0.22. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
+This file lists known foundation issues during v0.23. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
 
-## v0.22 Priority Triage
+## v0.23 Priority Triage
 
 ### Blocking Playable Build
 
-- No confirmed blocker remains for the current Ferry Office Service Call after v0.22 bounded review and validation. The build launches, the scene loads, playtest/debug UI modes run, scene/asset tools pass, and the vehicle now has camera look-ahead, target-yaw follow, low-speed steering assist, and clearer driving status text.
+- No confirmed gameplay blocker remains for the current Ferry Office Service Call after v0.22 bounded review and v0.23 baseline validation.
+- Run UX was the active blocker for hand-play: the correct command existed but was too developer-shaped. v0.23 addresses this with a tested `scripts/play.ps1` wrapper rather than an installer or packaging system.
 
 ### Fix Soon
 
-1. Run a full human keyboard/mouse playthrough on the target laptop after v0.22 and capture any remaining vehicle feel issues around braking distance, reverse steering, checkpoint approach, exit placement, or cursor/camera comfort.
-2. Decide whether the next vehicle step is more deterministic tuning or a Jolt vehicle feasibility spike. The strongest remaining vehicle-specific blocker is hands-on feel evidence, not code architecture: v0.22 improves camera/control trust, but the vehicle is still deterministic and bounds-clamped.
-3. Improve DX11 presentation feedback once the GDI playtest path is solid. DX11 still lacks text overlay, so player-facing verification remains GDI-biased.
-4. Keep the Blender/static mesh path narrow and honest. Add only a few controlled original props until cgltf/tinygltf is clearly justified.
+1. Run a full human keyboard/mouse playthrough on the target laptop through `scripts/play.ps1` and capture any remaining vehicle feel issues around braking distance, reverse steering, checkpoint approach, exit placement, or cursor/camera comfort.
+2. Improve DX11 presentation feedback once the GDI playtest path is solid. DX11 still lacks text overlay, so player-facing verification remains GDI-biased.
+3. Keep the Blender/static mesh path narrow and honest. Add only a few controlled original props until cgltf/tinygltf is clearly justified.
+4. Decide whether the next non-packaging pass is presentation polish, a hand-authored Blender prop pass, or a Jolt vehicle feasibility spike based on actual hand-play feedback.
 
 ### Acceptable For Now
 
@@ -25,6 +26,7 @@ This file lists known foundation issues after v0.22. It is not a mandate to fix 
 4. The tiny custom `.gltf` subset remains acceptable while assets are simple embedded-buffer static props.
 5. GDI remains the primary visual/playtest renderer while DX11 lacks debug text and often falls back to WARP on this laptop.
 6. Scene data is the runtime source of truth for layout, while behavior mappings stay in C++ until more job types prove a stable data shape.
+7. v0.23 adds launch scripts, not release packaging, an installer, signing, updater, config UI, or save/settings persistence.
 
 ## Build / Toolchain
 

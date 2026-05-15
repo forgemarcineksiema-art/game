@@ -291,6 +291,16 @@ Status: implemented as a focused playable-build polish pass. The traversal promp
 
 Status: implemented as a narrow vehicle-control polish pass. The vehicle camera now looks slightly ahead, vehicle camera mode gently follows vehicle yaw, low-speed steering has an explicit assist factor for compact turn-arounds, and playtest text while driving reports speed, checkpoint status, and exit clear/blocked state.
 
+## v0.23 - Playable Build Packaging / Run UX Polish
+
+- Add a simple playable launch path for the current Ferry Office Service Call.
+- Default that path to GDI, playtest UI, and the authored Ferry Office scene.
+- Keep lower-level debug, DX11, smoke/headless, scene-tool, Blender, and Jolt validation paths available.
+- Add tests so the launch wrapper defaults, overrides, passthrough args, and missing-executable guidance do not drift.
+- Preserve the existing gameplay loop, scene loading, vehicle control, static mesh path, default validation, and Jolt opt-in validation.
+
+Status: implemented as a local run UX milestone. `scripts/play.ps1` now launches the current Ferry Office Service Call with GDI, playtest UI, and the authored Ferry Office scene by default, while tests cover defaults, overrides, passthrough args, and missing-executable guidance. This is not an installer, release packaging system, or gameplay expansion.
+
 ## Recommended Next Goal
 
-Build v0.23 Playable Build Packaging / Run UX Polish.
+Build v0.24 Ferry Office Playable Presentation Polish if v0.23 confirms the launch path is no longer the main blocker.

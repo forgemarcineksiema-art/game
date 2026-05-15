@@ -4193,3 +4193,124 @@ Result:
 - Playtest mode has clearer driving feedback while occupied.
 - Deterministic VehicleController remains acceptable for the next playable-build pass, but still needs human driving feel review before any physics migration decision.
 - Recommended next goal: v0.23 Playable Build Packaging / Run UX Polish.
+
+## v0.23 Baseline - 2026-05-15
+
+Goal: make the current Ferry Office Service Call easier and safer to launch/test locally without adding Job #2, new gameplay systems, a renderer rewrite, new asset pipeline work, or vehicle physics.
+
+Required context read before implementation:
+
+- `AGENTS.md`
+- `docs/STATUS.md`
+- `docs/RUNBOOK.md`
+- `docs/ROADMAP.md`
+- `docs/ARCHITECTURE.md`
+- `docs/TECH_DEBT.md`
+- `docs/MANUAL_TEST_CHECKLIST.md`
+- `docs/DECISIONS.md`
+- `docs/SCENE_AUTHORING.md`
+- `docs/ASSET_GUIDE.md`
+- `docs/MESH_RENDERING.md`
+- `docs/BLENDER_WORKFLOW.md`
+
+Baseline results:
+
+- `powershell -ExecutionPolicy Bypass -File scripts\verify.ps1`: passed. Default doctor/configure/build/CTest, scene validation, asset validation, mesh report, and null smoke all completed. Null smoke reported engine `v0.22.0` and loaded all seven scene-authored static mesh assets.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 3/3 tests.
+- `python tools\scene_report.py`: passed; scene reports 9 colliders, 21 visual placeholders, 7 mesh assets, 17 mesh instances, 6 interactables, 1 traversal affordance, 1 vehicle, 6 route markers, and 5 objective markers.
+- `python tools\validate_scene.py`: passed.
+- `python tools\validate_assets.py`: passed; 7 model files under `assets\models`.
+- `python tools\scale_audit.py`: passed with no suspicious scale issues.
+- `python tools\mesh_report.py`: passed; all seven `.gltf` files are referenced with license/provenance, vertex/index counts, and bounds.
+- `python tools\check_blender.py`: passed and reported Blender 5.1.1 available at `C:\Program Files\Blender Foundation\Blender 5.1\blender.EXE`.
+
+Run UX observations:
+
+- Direct bounded GDI launch works: `build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --ui-mode playtest --frames 360`.
+- Normal PowerShell use of `.\scripts\run.ps1 -Args @('--frames','3')` works and launches the app.
+- Nested `powershell -File scripts\run.ps1 -Args @('--frames','120')` is easy to misuse from automation and reported a missing executable, so v0.23 should prefer a clearer playable wrapper with first-class short options such as frames, UI mode, renderer, cursor mode, and dry run.
+- Current docs expose the right low-level commands, but the first playable path is still too developer-shaped.
+
+## v0.23 Short Implementation Plan
+
+1. Add a small `scripts\play.ps1` wrapper that defaults to GDI, playtest UI, and the Ferry Office scene, prints the exact command, supports passthrough args, supports bounded/dry-run validation, and fails clearly when the executable is missing.
+2. Add lightweight tests for the launch wrapper so the defaults, overrides, passthrough args, and missing-executable message stay stable.
+3. Register the run-script tests in CTest and bump the runtime version to `0.23.0`.
+4. Update run docs/checklists/status/debt so the user-facing launch path is obvious while the low-level debug paths remain documented.
+5. Run the full validation matrix, record exact results, then commit and push only if validation passes.
+
+## v0.23 Implementation Notes - 2026-05-15
+
+Run UX fixes:
+
+- Added `scripts\play.ps1` as the current playable-build launcher.
+- Defaults: `--renderer gdi --ui-mode playtest --scene data\scenes\ferry_office.scene.json`.
+- Added short wrapper switches: `-DebugUi`, `-MinimalUi`, `-Dx11`, `-FreeCursor`, `-Frames`, `-Scene`, `-DryRun`, and `-Args` passthrough.
+- The wrapper prints the exact executable command before launch.
+- Missing Debug executable now produces direct configure/build guidance.
+- Registered `scripts\play.ps1` in doctor/status-report important files.
+- Added `tests\test_run_scripts.py` and registered it with CTest.
+- Bumped the runtime version to `0.23.0`.
+
+Focused test and run results:
+
+- `python tests\test_run_scripts.py`: first failed on the passthrough-argument test because `powershell -File` cannot express the same `-Args @(...)` syntax as normal interactive PowerShell. The test was adjusted to use `powershell -Command "& ... -Args @(...)"`, matching documented user syntax.
+- `python tests\test_run_scripts.py`: passed, 4/4 tests.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 4/4 tests after registering `RunScriptTests`.
+- `scripts\play.ps1 -DryRun`: passed and printed the GDI/playtest/default-scene command.
+- `scripts\play.ps1 -DryRun -DebugUi -Frames 360`: passed and printed debug UI with bounded frames.
+- `scripts\play.ps1 -DryRun -Dx11 -Frames 360`: passed and printed DX11 with bounded frames.
+- `scripts\play.ps1 -DryRun -Args @('--free-cursor')`: passed and preserved passthrough args.
+- `scripts\play.ps1 -Frames 120`: passed; launched GDI playtest mode and loaded the Ferry Office scene.
+- `scripts\play.ps1 -DebugUi -Frames 120`: passed; launched GDI debug mode and preserved full telemetry.
+- `scripts\play.ps1 -Dx11 -Frames 120`: passed; launched DX11 playtest mode with the expected WARP fallback warning.
+
+Documentation updates:
+
+- `docs\RUNBOOK.md` now puts `scripts\play.ps1` first for playable local runs and keeps `scripts\run.ps1` as the lower-level preset launcher.
+- `docs\MANUAL_TEST_CHECKLIST.md` now uses `scripts\play.ps1` for playtest/debug/free-cursor/DX11 setup.
+- `docs\ROADMAP.md`, `docs\TECH_DEBT.md`, and `docs\DECISIONS.md` record v0.23 as a run UX wrapper milestone, not an installer or gameplay expansion.
+
+Known limitations:
+
+- v0.23 is not release packaging, signing, installer work, persistent settings, or a config UI.
+- DX11 still has no text overlay and remains a bounded renderer-validation path rather than the best playtest presentation path.
+- Full manual hand-play should now start with `scripts\play.ps1`.
+
+## v0.23 Final Validation - 2026-05-15
+
+Commands run:
+
+- `powershell -ExecutionPolicy Bypass -File scripts\doctor.ps1`: passed. Doctor now checks `scripts\play.ps1`; expected PATH warnings remain for `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- `powershell -ExecutionPolicy Bypass -File scripts\configure.ps1`: passed for `windows-vs2022-debug`.
+- `powershell -ExecutionPolicy Bypass -File scripts\build.ps1`: passed. Built `EngineCore`, `GamePrototype`, `EngineApp`, and `EngineCoreTests`.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 4/4 tests including the new `RunScriptTests`.
+- `powershell -ExecutionPolicy Bypass -File scripts\verify.ps1`: passed. Null smoke reported engine `v0.23.0` and loaded all seven scene-authored static mesh assets.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 4/4 tests.
+- `python tools\scene_report.py`: passed; scene reports 9 colliders, 21 visual placeholders, 7 mesh assets, 17 mesh instances, 6 interactables, 1 traversal affordance, 1 vehicle, 6 route markers, and 5 objective markers.
+- `python tools\validate_scene.py`: passed.
+- `python tools\validate_assets.py`: passed; 7 model files under `assets\models`.
+- `python tools\scale_audit.py`: passed with no suspicious scale issues.
+- `python tools\mesh_report.py`: passed; all seven `.gltf` files are referenced with license/provenance, vertex/index counts, and bounds.
+- `python tools\status_report.py`: passed.
+- `python tools\check_blender.py`: passed and reported Blender 5.1.1 available at `C:\Program Files\Blender Foundation\Blender 5.1\blender.EXE`.
+- `build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --ui-mode playtest --frames 360`: passed.
+- `build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --ui-mode debug --frames 360`: passed.
+- `build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 360`: passed. Hardware DX11 still falls back to WARP.
+- `build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --scene data\scenes\ferry_office.scene.json --ui-mode playtest --frames 360`: passed.
+- `scripts\play.ps1 -Args @('--frames','360')`: passed and launched the GDI/playtest/default-scene build through the wrapper.
+- `scripts\play.ps1 -Args @('--ui-mode','debug','--frames','360')`: passed and launched the GDI/debug/default-scene build through the wrapper.
+- `scripts\play.ps1 -Args @('--renderer','dx11','--frames','360')`: passed and launched the DX11/default-scene build through the wrapper, with the expected WARP fallback warning.
+
+Result:
+
+- v0.23 validation passed.
+- No Job #2 or new gameplay system was added.
+- The current playable build can be launched with `scripts\play.ps1`.
+- Full debug and lower-level run paths remain available.
+- Default validation and Jolt opt-in validation both pass.
+- Recommended next goal: v0.24 Ferry Office Playable Presentation Polish.
