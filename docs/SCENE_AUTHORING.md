@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-15
 
-v0.11 introduces scene data for Codex-friendly inspection and validation. v0.12 adds mesh asset and mesh instance references. Runtime behavior still comes from explicit C++ prototype setup. Keep scene data and C++ layout changes in sync until a later goal adds runtime loading or generation.
+v0.11 introduces scene data for Codex-friendly inspection and validation. v0.12 adds mesh asset and mesh instance references. v0.12.1 expands the Ferry Office mesh mirror for a focused prop/scale pass. Runtime behavior still comes from explicit C++ prototype setup. Keep scene data and C++ layout changes in sync until a later goal adds runtime loading or generation.
 
 ## Scene Data Location
 
@@ -114,7 +114,7 @@ Optional fields can link the instance to existing debug data:
 - `linkedColliderId`,
 - `colorKey`.
 
-v0.12 supports only tiny original `.gltf` placeholder assets through the static mesh spike. Do not add materials, textures, animation, mesh collision, or imported third-party art through this scene format yet.
+v0.12/v0.12.1 supports only tiny original `.gltf` placeholder assets through the static mesh spike. The current Ferry Office prop pass intentionally reuses `unit_box.gltf` for multiple authored instances. Do not add materials, textures, animation, mesh collision, or imported third-party art through this scene format yet.
 
 ## Interactables
 

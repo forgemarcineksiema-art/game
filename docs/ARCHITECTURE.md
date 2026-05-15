@@ -79,7 +79,7 @@ Scene tools live under `tools`:
 - `scale_audit.py`: suspicious-scale report for object sizes and vehicle dimensions.
 - `mesh_report.py`: static mesh asset/reference summary.
 
-v0.12 extends the scene file with `meshAssets` and `meshInstances`. These are validated authoring/runtime-candidate entries, not a full asset registry. Runtime still mirrors the important mesh instances explicitly in `SandboxLayer` until scene loading or code generation exists.
+v0.12 extends the scene file with `meshAssets` and `meshInstances`. These are validated authoring/runtime-candidate entries, not a full asset registry. v0.12.1 grows the Ferry Office mirror to 10 mesh instances for roof/facade/sign, service gate, maintenance box, dock props, service-yard crate, and vehicle body/cabin. Runtime still mirrors the important mesh instances explicitly in `SandboxLayer` until scene loading or code generation exists.
 
 ## Static Mesh Assets
 
@@ -121,7 +121,7 @@ Renderer selection defaults to `auto`, which attempts DirectX 11 on Windows when
 
 v0.2 adds debug primitive drawing to the renderer interface: debug camera, lines, boxes, grid/axes, and best-effort text. This is not a mesh/material pipeline.
 
-v0.12 adds `IRenderer::drawDebugFlatTriangles` as a narrow immediate-mode static mesh submission path. DX11 and GDI use the same CPU debug projection model as solid boxes; the null renderer accepts the call for smoke/test safety. This is still not a real material or GPU mesh-resource system.
+v0.12 adds `IRenderer::drawDebugFlatTriangles` as a narrow immediate-mode static mesh submission path. DX11 and GDI use the same CPU debug projection model as solid boxes; the null renderer accepts the call for smoke/test safety. v0.12.1 uses this path for a small unit-box prop replacement pass only. This is still not a real material or GPU mesh-resource system.
 
 ## Game Layer
 

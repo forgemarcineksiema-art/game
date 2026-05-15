@@ -72,7 +72,24 @@ class SceneToolTests(unittest.TestCase):
         summary = scene_data.build_summary(self.scene)
 
         self.assertGreaterEqual(summary.mesh_asset_count, 1)
-        self.assertGreaterEqual(summary.mesh_instance_count, 3)
+        self.assertGreaterEqual(summary.mesh_instance_count, 9)
+
+    def test_v0121_readability_mesh_instances_exist(self) -> None:
+        ids = scene_data.collect_ids(self.scene)
+
+        for required_id in [
+            "mesh-ferry-office-roof-cap",
+            "mesh-ferry-office-facade-panel",
+            "mesh-ferry-office-sign-board",
+            "mesh-service-gate",
+            "mesh-maintenance-box",
+            "mesh-dock-bollard-left",
+            "mesh-dock-bollard-right",
+            "mesh-service-yard-crate",
+            "mesh-service-yard-vehicle-body",
+            "mesh-service-yard-vehicle-cabin",
+        ]:
+            self.assertIn(required_id, ids)
 
     def test_valid_mesh_reference_scene_validates(self) -> None:
         scene = copy.deepcopy(self.scene)

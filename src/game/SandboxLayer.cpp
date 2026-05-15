@@ -96,6 +96,23 @@ void DrawMeshInstance(engine::IRenderer& renderer, const engine::StaticMeshAsset
     renderer.drawDebugFlatTriangles(triangles, instance.tint);
 }
 
+void DrawUnitBoxMeshInstance(
+    engine::IRenderer& renderer,
+    const engine::StaticMeshAsset& mesh,
+    engine::Vec3 position,
+    engine::Vec3 scale,
+    engine::Color tint,
+    float yawRadians = 0.0f)
+{
+    engine::StaticMeshInstance instance;
+    instance.assetId = "unit-box-mesh";
+    instance.position = position;
+    instance.scale = scale;
+    instance.tint = tint;
+    instance.yawRadians = yawRadians;
+    DrawMeshInstance(renderer, mesh, instance);
+}
+
 } // namespace
 
 void SandboxLayer::onAttach()
@@ -561,40 +578,41 @@ void SandboxLayer::drawStaticMeshDebug(engine::IRenderer& renderer)
     }
 
     const bool routeOpened = m_scene.worldState().isFlagSet(WorldFlag::RouteOpened);
-    engine::StaticMeshInstance roof;
-    roof.assetId = "unit-box-mesh";
-    roof.position = {0.0f, 1.68f, 5.18f};
-    roof.scale = {5.9f, 0.24f, 1.1f};
-    roof.tint = {0.44f, 0.24f, 0.15f, 1.0f};
-    DrawMeshInstance(renderer, m_unitBoxMesh, roof);
-
-    engine::StaticMeshInstance serviceGate;
-    serviceGate.assetId = "unit-box-mesh";
-    serviceGate.position = {0.0f, 0.75f, 2.35f};
-    serviceGate.scale = {4.9f, 1.5f, 0.32f};
-    serviceGate.tint = routeOpened
+    const bool powerRestored = m_scene.worldState().isFlagSet(WorldFlag::PowerRestored);
+    const engine::Color serviceGateTint = routeOpened
         ? engine::Color {0.12f, 0.36f, 0.20f, 1.0f}
         : engine::Color {0.42f, 0.12f, 0.08f, 1.0f};
-    DrawMeshInstance(renderer, m_unitBoxMesh, serviceGate);
-
-    engine::StaticMeshInstance maintenanceBox;
-    maintenanceBox.assetId = "unit-box-mesh";
-    maintenanceBox.position = {2.8f, 0.65f, 1.9f};
-    maintenanceBox.scale = {0.48f, 0.48f, 0.48f};
-    maintenanceBox.tint = m_scene.worldState().isFlagSet(WorldFlag::PowerRestored)
+    const engine::Color maintenanceTint = powerRestored
         ? engine::Color {0.18f, 0.74f, 0.62f, 1.0f}
         : engine::Color {0.11f, 0.40f, 0.36f, 1.0f};
-    DrawMeshInstance(renderer, m_unitBoxMesh, maintenanceBox);
-
-    engine::StaticMeshInstance vehicleBody;
-    vehicleBody.assetId = "unit-box-mesh";
-    vehicleBody.position = m_vehicle.state().position + engine::Vec3 {0.0f, 0.42f, 0.0f};
-    vehicleBody.scale = {1.16f, 0.68f, 1.84f};
-    vehicleBody.yawRadians = m_vehicle.state().yawRadians;
-    vehicleBody.tint = m_vehicle.state().occupied
+    const engine::Color vehicleTint = m_vehicle.state().occupied
         ? engine::Color {0.18f, 0.58f, 0.95f, 1.0f}
         : engine::Color {0.62f, 0.66f, 0.48f, 1.0f};
-    DrawMeshInstance(renderer, m_unitBoxMesh, vehicleBody);
+
+    // Keep these hand-authored instances synchronized with data/scenes/ferry_office.scene.json
+    // until a later scene loader or code generator exists.
+    DrawUnitBoxMeshInstance(renderer, m_unitBoxMesh, {0.0f, 1.68f, 5.18f}, {5.9f, 0.24f, 1.1f}, {0.44f, 0.24f, 0.15f, 1.0f});
+    DrawUnitBoxMeshInstance(renderer, m_unitBoxMesh, {0.0f, 0.95f, 2.12f}, {2.35f, 1.25f, 0.12f}, {0.28f, 0.32f, 0.28f, 1.0f});
+    DrawUnitBoxMeshInstance(renderer, m_unitBoxMesh, {0.0f, 1.45f, 1.98f}, {1.35f, 0.28f, 0.08f}, {0.76f, 0.62f, 0.24f, 1.0f});
+    DrawUnitBoxMeshInstance(renderer, m_unitBoxMesh, {0.0f, 0.75f, 2.35f}, {4.9f, 1.5f, 0.32f}, serviceGateTint);
+    DrawUnitBoxMeshInstance(renderer, m_unitBoxMesh, {2.8f, 0.65f, 1.9f}, {0.48f, 0.48f, 0.48f}, maintenanceTint);
+    DrawUnitBoxMeshInstance(renderer, m_unitBoxMesh, {-1.25f, 0.32f, -1.65f}, {0.20f, 0.64f, 0.20f}, {0.38f, 0.30f, 0.14f, 1.0f});
+    DrawUnitBoxMeshInstance(renderer, m_unitBoxMesh, {1.25f, 0.32f, -1.65f}, {0.20f, 0.64f, 0.20f}, {0.38f, 0.30f, 0.14f, 1.0f});
+    DrawUnitBoxMeshInstance(renderer, m_unitBoxMesh, {8.15f, 0.45f, 0.45f}, {1.10f, 0.90f, 0.90f}, {0.24f, 0.32f, 0.22f, 1.0f});
+    DrawUnitBoxMeshInstance(
+        renderer,
+        m_unitBoxMesh,
+        m_vehicle.state().position + engine::Vec3 {0.0f, 0.42f, 0.0f},
+        {1.16f, 0.68f, 1.84f},
+        vehicleTint,
+        m_vehicle.state().yawRadians);
+    DrawUnitBoxMeshInstance(
+        renderer,
+        m_unitBoxMesh,
+        m_vehicle.state().position + engine::Vec3 {0.0f, 0.86f, 0.0f},
+        {0.84f, 0.40f, 0.92f},
+        ScaleColor(vehicleTint, 0.78f),
+        m_vehicle.state().yawRadians);
 }
 
 void SandboxLayer::recordWorldStateChange(bool changed)

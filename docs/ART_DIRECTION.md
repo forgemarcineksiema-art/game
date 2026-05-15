@@ -54,7 +54,7 @@ Future rendering should aim for:
 - readable silhouettes,
 - gentle contrast rather than harsh action-game lighting.
 
-In v0.12 this remains documentation plus tiny static mesh placeholders only. Do not add lighting, shadows, post-processing, or weather systems yet.
+In v0.12/v0.12.1 this remains documentation plus tiny static mesh placeholders only. Do not add lighting, shadows, post-processing, or weather systems yet.
 
 ## Prop Language
 
@@ -106,3 +106,7 @@ They should stay useful until a later goal replaces them with real authored asse
 3. Preserve debug visibility while real assets are added.
 4. Build a small original prop kit before expanding the map.
 5. Keep screenshots as visual evidence after major presentation changes.
+
+## v0.12.1 Visual Observation
+
+The v0.12.1 screenshot at `docs/images/v0.12.1-gdi-screenshot.png` shows a clearer Ferry Office front, sign-board cue, dock bollards, service-yard crate, and vehicle cabin silhouette. The scene reads more like a dock/service-yard layout than v0.12, but it is still visibly a debug placeholder scene: wire overlays, route/debug markers, and flat-tinted unit boxes remain essential for playtesting.

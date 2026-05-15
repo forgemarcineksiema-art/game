@@ -216,6 +216,24 @@
       "replacesVisualPlaceholderId": "ferry-office-roof-cap"
     },
     {
+      "id": "mesh-ferry-office-facade-panel",
+      "assetId": "unit-box-mesh",
+      "position": [0.0, 0.95, 2.12],
+      "yawDegrees": 0.0,
+      "scale": [2.35, 1.25, 0.12],
+      "colorKey": "office-muted-concrete",
+      "notes": "Flat office-front cue so the building reads as a public ferry office volume."
+    },
+    {
+      "id": "mesh-ferry-office-sign-board",
+      "assetId": "unit-box-mesh",
+      "position": [0.0, 1.45, 1.98],
+      "yawDegrees": 0.0,
+      "scale": [1.35, 0.28, 0.08],
+      "colorKey": "dock-muted-sign-yellow",
+      "notes": "Simple original sign/timetable placeholder; not text, texture, or final signage."
+    },
+    {
       "id": "mesh-service-gate",
       "assetId": "unit-box-mesh",
       "position": [0.0, 0.75, 2.35],
@@ -234,12 +252,48 @@
       "replacesVisualPlaceholderId": "maintenance-box-visual-post"
     },
     {
+      "id": "mesh-dock-bollard-left",
+      "assetId": "unit-box-mesh",
+      "position": [-1.25, 0.32, -1.65],
+      "yawDegrees": 0.0,
+      "scale": [0.20, 0.64, 0.20],
+      "colorKey": "wet-timber",
+      "replacesVisualPlaceholderId": "dock-post-left"
+    },
+    {
+      "id": "mesh-dock-bollard-right",
+      "assetId": "unit-box-mesh",
+      "position": [1.25, 0.32, -1.65],
+      "yawDegrees": 0.0,
+      "scale": [0.20, 0.64, 0.20],
+      "colorKey": "wet-timber",
+      "replacesVisualPlaceholderId": "dock-post-right"
+    },
+    {
+      "id": "mesh-service-yard-crate",
+      "assetId": "unit-box-mesh",
+      "position": [8.15, 0.45, 0.45],
+      "yawDegrees": 0.0,
+      "scale": [1.10, 0.90, 0.90],
+      "colorKey": "mossy-service-crate",
+      "replacesVisualPlaceholderId": "service-yard-crate"
+    },
+    {
       "id": "mesh-service-yard-vehicle-body",
       "assetId": "unit-box-mesh",
       "position": [6.2, 0.42, -2.2],
       "yawDegrees": 88.0,
       "scale": [1.16, 0.68, 1.84],
       "colorKey": "service-vehicle-placeholder",
+      "linkedColliderId": "service-yard-vehicle"
+    },
+    {
+      "id": "mesh-service-yard-vehicle-cabin",
+      "assetId": "unit-box-mesh",
+      "position": [6.2, 0.86, -2.2],
+      "yawDegrees": 88.0,
+      "scale": [0.84, 0.40, 0.92],
+      "colorKey": "service-vehicle-cabin-placeholder",
       "linkedColliderId": "service-yard-vehicle"
     }
   ],

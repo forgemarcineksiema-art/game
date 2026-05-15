@@ -2385,3 +2385,194 @@ Known limitations after v0.12:
 Recommended next goal:
 
 Run v0.12.1 Ferry Office Prop Replacement + Visual Scale Pass.
+
+## v0.12.1 Baseline - 2026-05-15
+
+Goal: use the v0.12 static mesh path for a small Ferry Office/service-yard prop replacement and visual scale pass. This goal must preserve gameplay, debug visibility, scene validation, Jolt opt-in validation, and the tiny mesh/render scope. It must not add final art, textures/materials, animation, an editor, runtime scene loading, a broad asset registry, mesh collision import, or new gameplay systems.
+
+Required context read before coding:
+
+- `AGENTS.md`
+- `docs/STATUS.md`
+- `docs/ARCHITECTURE.md`
+- `docs/ROADMAP.md`
+- `docs/GAME_DIRECTION.md`
+- `docs/VERTICAL_SLICE.md`
+- `docs/TECH_DEBT.md`
+- `docs/MANUAL_TEST_CHECKLIST.md`
+- `docs/DECISIONS.md`
+- `docs/ASSET_GUIDE.md`
+- `docs/SCENE_AUTHORING.md`
+- `docs/ART_DIRECTION.md`
+- `docs/MESH_RENDERING.md`
+
+Baseline commands:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+cmake --preset windows-vs2022-debug-jolt
+cmake --build --preset windows-vs2022-debug-jolt
+ctest --preset windows-vs2022-debug-jolt --output-on-failure
+python tools/scene_report.py
+python tools/validate_scene.py
+python tools/scale_audit.py
+python tools/mesh_report.py
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --frames 300
+```
+
+Baseline results:
+
+- `scripts/verify.ps1`: passed. Default doctor/configure/build/test, scene validation, mesh report, and null smoke all completed.
+- Default CTest passed 3/3 tests: `EngineCoreTests`, `EngineSmokeTest`, and `SceneToolTests`.
+- Null smoke reported engine `v0.12.0`, loaded `unit-box-mesh`, and preserved the Ferry Office start state.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed; built `Jolt.lib`, `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 3/3 tests green.
+- `python tools/scene_report.py`: completed; reported 1 mesh asset and 4 mesh instances.
+- `python tools/validate_scene.py`: passed.
+- `python tools/scale_audit.py`: completed; no suspicious scale issues found.
+- `python tools/mesh_report.py`: completed; reported `unit-box-mesh`, 4 uses, 8 vertices, and 36 indices.
+- GDI bounded visual review: passed; window created, cursor captured/released, `unit-box-mesh` loaded, `gdi-fallback` renderer ran for 300 frames, clean shutdown.
+
+Baseline visual/readability observations:
+
+- The scene has the correct gameplay/debug structure, but the mesh layer is still sparse: roof cap, service gate, maintenance box, and vehicle body only.
+- The Ferry Office still needs a clearer front/facade cue so it reads as an office volume rather than mostly stacked service boxes.
+- The vehicle would benefit from a simple cabin silhouette; the v0.12 body alone reads as a generic block.
+- The dock/service-yard needs a few small scale props, such as bollards/crates/sign boards, to make the environment feel intentionally placed.
+- Debug text and old markers remain the most important readability layer; any mesh additions must stay muted and draw under/around debug markers.
+
+## v0.12.1 Short Implementation Plan
+
+1. Add tests first for the new expected mesh scene ids/counts so scene data changes are guarded.
+2. Reuse `assets/models/unit_box.gltf` for the pass unless a new mesh asset is truly needed; this keeps the loader subset stable.
+3. Add a small set of purposeful mesh instances to `data/scenes/ferry_office.scene.json`: Ferry Office facade/sign cue, dock bollards, service-yard crate, and vehicle cabin.
+4. Mirror those mesh instances in `SandboxLayer` through a more readable local mesh-instance table/helper rather than scattering ad-hoc draw calls.
+5. Keep debug collision, route, interaction, traversal, vehicle, and world-state markers visible on top of/around mesh placeholders.
+6. Update scene tools/tests/docs for the new mesh instance count and visual observations.
+7. Run the full default/Jolt/tool/windowed validation matrix and capture/update screenshot evidence if practical.
+
+## v0.12.1 Implementation Notes - 2026-05-15
+
+Changed:
+
+- Updated project version to `0.12.1`.
+- Added scene-tool tests for the v0.12.1 readability mesh instance ids and a minimum mesh-instance count.
+- Extended `data/scenes/ferry_office.scene.json` from 4 to 10 mesh instances while reusing the single original `unit_box.gltf` asset.
+- Added mesh-backed placeholders for:
+  - Ferry Office facade panel,
+  - Ferry Office sign/timetable board cue,
+  - dock bollard left/right,
+  - service-yard crate,
+  - service-yard vehicle cabin.
+- Kept the existing mesh-backed roof cap, service gate, maintenance box, and vehicle body.
+- Updated `SandboxLayer::drawStaticMeshDebug` with a small unit-box draw helper and a synchronization note for the JSON/C++ mirror.
+- Captured a GDI visual reference at `docs/images/v0.12.1-gdi-screenshot.png`.
+- Updated architecture, roadmap, decisions, technical debt, manual checklist, asset/scene/art docs, and mesh rendering docs.
+
+Test-first note:
+
+```powershell
+python tests\test_scene_tools.py
+```
+
+Result before scene data changes:
+
+- Failed as expected because the default scene still had 4 mesh instances and did not yet contain `mesh-ferry-office-facade-panel`.
+
+Focused checks after scene/runtime changes:
+
+```powershell
+python tests\test_scene_tools.py
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+python tools\scene_report.py
+python tools\validate_scene.py
+python tools\scale_audit.py
+python tools\mesh_report.py
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --frames 300
+```
+
+Results:
+
+- `tests\test_scene_tools.py`: passed, 11/11 tests.
+- `scripts/build.ps1`: passed.
+- `tools\scene_report.py`: completed; reported 1 mesh asset and 10 mesh instances.
+- `tools\validate_scene.py`: passed.
+- `tools\scale_audit.py`: completed; no suspicious scale issues found.
+- `tools\mesh_report.py`: completed; reported `unit-box-mesh`, 10 uses, 8 vertices, and 36 indices.
+- GDI bounded run: passed; window created, mesh asset loaded, `gdi-fallback` renderer ran for 300 frames, clean shutdown.
+
+Screenshot note:
+
+- The first full-screen screenshot attempt captured the console window instead of the game window, so it was discarded as visual evidence.
+- A second targeted `PrintWindow` capture against the `Tidebreak Prototype` window succeeded and wrote `docs/images/v0.12.1-gdi-screenshot.png`.
+
+Visual observations:
+
+- The scene reads more clearly as a Ferry Office/service-yard blockout than v0.12 because the office now has a front/facade cue, a simple sign board, dock bollards, a service-yard crate, and a vehicle cabin silhouette.
+- The service gate and route/debug markers remain visually dominant, which is useful for validation but still clearly debug/prototype presentation.
+- Debug text, collision wires, route lines, interactable markers, traversal markers, and vehicle markers remain visible.
+- The area is still far from commercial presentation: there are no real materials, textures, lighting, depth-aware mesh rendering, final meshes, or authored camera composition.
+
+Known limitations after implementation:
+
+- No new mesh files were added; every prop still reuses the unit-box placeholder.
+- Mesh instances remain duplicated between scene JSON and `SandboxLayer` C++.
+- Mesh placeholders remain visual-only and do not define collision or physics.
+- The current screenshot capture is an ad-hoc validation artifact, not a reusable workbench command.
+
+## v0.12.1 Final Validation - 2026-05-15
+
+Commands run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/doctor.ps1
+powershell -ExecutionPolicy Bypass -File scripts/configure.ps1
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+ctest --preset windows-vs2022-debug --output-on-failure
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+cmake --preset windows-vs2022-debug-jolt
+cmake --build --preset windows-vs2022-debug-jolt
+ctest --preset windows-vs2022-debug-jolt --output-on-failure
+python tools\scene_report.py
+python tools\validate_scene.py
+python tools\scale_audit.py
+python tools\mesh_report.py
+python tools\status_report.py
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --frames 300
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 300
+```
+
+Results:
+
+- `scripts/doctor.ps1`: completed. Existing warnings remain: `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg` are not in the plain PowerShell PATH.
+- `scripts/configure.ps1`: passed with preset `windows-vs2022-debug`.
+- `scripts/build.ps1`: passed; built `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 3/3 tests green.
+- `scripts/verify.ps1`: passed; repeated doctor/configure/build/test, ran scene validation, ran mesh report, and completed null smoke. Smoke log reported engine `v0.12.1`, loaded `unit-box-mesh`, and mesh report showed 10 mesh instances.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed; built `Jolt.lib`, `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, and `EngineCoreTests.exe`.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 3/3 tests green.
+- `python tools\scene_report.py`: completed; reported 1 mesh asset and 10 mesh instances.
+- `python tools\validate_scene.py`: passed.
+- `python tools\scale_audit.py`: completed; no suspicious scale issues found.
+- `python tools\mesh_report.py`: completed; reported `unit-box-mesh`, 10 uses, 8 vertices, and 36 indices.
+- `python tools\status_report.py`: completed and showed the expected v0.12.1 modified files plus `docs/images/v0.12.1-gdi-screenshot.png` before commit.
+- GDI bounded run: passed; window created, cursor captured/released, mesh asset loaded, `gdi-fallback` renderer ran for 300 frames, clean shutdown.
+- DX11 bounded run: passed; hardware DX11 device failed and fell back to WARP, mesh asset loaded, `dx11` renderer ran for 300 frames, clean shutdown, cursor released.
+
+Visual evidence:
+
+- Captured GDI screenshot: `docs/images/v0.12.1-gdi-screenshot.png`.
+- Screenshot shows a stronger Ferry Office facade/sign cue, dock bollards, service-yard crate, and vehicle cabin while preserving debug text, route lines, collision wires, interactable markers, traversal markers, and vehicle markers.
+
+Known limitations after v0.12.1:
+
+- The scene is more readable than v0.12, but still clearly debug-placeholder presentation.
+- Mesh placeholders are still unit-box instances, not final authored props.
+- Runtime scene loading, asset registry, material/textures, lighting, depth-aware mesh rendering, and mesh collision import remain deferred.
+- DX11 still falls back to WARP in this environment.
+
+Recommended next goal:
+
+Run v0.13 Vehicle Feel + Service Yard Road Test Polish.

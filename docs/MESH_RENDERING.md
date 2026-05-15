@@ -19,6 +19,7 @@ v0.12 adds the first narrow static mesh path. It is a render spike and authoring
 - Null renderer accepts the call and counts it for smoke/test visibility.
 - `assets/models/unit_box.gltf` is a tiny original project-owned placeholder mesh.
 - `data/scenes/ferry_office.scene.json` now has `meshAssets` and `meshInstances`.
+- v0.12.1 uses that single unit-box asset for a small prop kit: Ferry Office roof/facade/sign, service gate, maintenance box, dock bollards, service-yard crate, and service-yard vehicle body/cabin.
 
 ## Supported glTF Subset
 
@@ -58,13 +59,15 @@ Use:
 - `meshAssets` for source files, license/provenance, and authored bounds.
 - `meshInstances` for position, yaw, scale, tint/color key, and optional links back to placeholders/colliders.
 
-Runtime still uses explicit C++ setup in `SandboxLayer`; the scene file is the validated authoring mirror and future source-of-truth candidate.
+Runtime still uses explicit C++ setup in `SandboxLayer`; the scene file is the validated authoring mirror and future source-of-truth candidate. v0.12.1 keeps those explicit runtime mesh instances grouped in `SandboxLayer::drawStaticMeshDebug` with a synchronization note rather than introducing a scene loader.
 
 ## Renderer Notes
 
 This is not a production renderer yet. DX11 has no depth buffer, no real world/view/projection matrix, no material system, and no texture path. Triangles draw in submission order using the current debug projection. That is acceptable for small placeholder props and visual proof, but not for final art.
 
 Keep wire/debug markers visible until a later overlay and asset pipeline exist.
+
+The v0.12.1 mesh instances are still flat-tinted composition placeholders. They improve scale/readability, but they are not final art, material assets, or collision sources.
 
 ## How To Add A Simple Mesh
 

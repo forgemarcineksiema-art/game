@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-15
 
-This file lists known foundation issues after v0.12. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
+This file lists known foundation issues after v0.12.1. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
 
 ## Build / Toolchain
 
@@ -116,24 +116,25 @@ This file lists known foundation issues after v0.12. It is not a mandate to fix 
 - There is no asset registry, mesh resource cache, file watcher, importer/cooker, mesh optimizer, LOD, or material assignment.
 - Mesh instances render visually but do not define collision or physics shapes.
 - The current loader is intentionally narrow and should be replaced or backed by cgltf/tinygltf when real glTF coverage is needed.
+- v0.12.1 improves prop scale by reusing `unit_box.gltf` for 10 mesh instances, but those are still flat-tinted placeholder blocks, not authored production meshes.
+- Mesh placement is still duplicated between `data/scenes/ferry_office.scene.json` and `SandboxLayer::drawStaticMeshDebug`.
 
 ## Visual Readability
 
 - v0.9 improves the Ferry Office read with solid placeholder color, but it is still a debug scene. It is not final art and should not be mistaken for the target commercial visual quality.
 - v0.9.1 adds a route polyline, stronger marker hierarchy, and clearer objective wording, but the space still needs a real human playthrough on the target laptop.
-- v0.11 documents art direction and placeholder color keys. v0.12 adds first static mesh rendering, but it still does not add final art, lighting, textures, materials, or model loading beyond a tiny proof subset.
+- v0.11 documents art direction and placeholder color keys. v0.12/v0.12.1 add first static mesh rendering and a small prop replacement pass, but still do not add final art, lighting, textures, materials, or model loading beyond a tiny proof subset.
 - GDI debug text is now ordered around objective/focus first, but it remains functional debug text rather than a polished UI.
 - DX11 has no debug text overlay, so visual playtesting still favors GDI until a real overlay or text path exists.
-- There is no authored composition pass for camera start angle, signposting, silhouettes, or route readability beyond simple colored volumes.
+- There is no authored composition pass for camera start angle, signposting, silhouettes, or route readability beyond simple colored volumes and unit-box mesh placeholders.
 
 ## Recommended Debt After v0.12
 
 1. Run a full human keyboard/mouse playthrough of the Ferry Office loop and service-yard vehicle on the target laptop.
 2. Keep scene JSON and C++ layout synchronized until runtime loading or generation exists.
-3. Replace a few more Ferry Office debug boxes with authored mesh instances only after checking visual scale in GDI/DX11.
+3. Tune vehicle acceleration, braking, reverse speed, steering rate, service-yard bounds, and camera distance before adding more vehicle features.
 4. Decide whether glTF coverage should grow through cgltf/tinygltf before adding textures/materials.
-5. Tune vehicle acceleration, braking, reverse speed, steering rate, and camera distance before adding more vehicle features.
-6. Validate captured cursor feel on the target laptop/touchpad and use `--free-cursor` if a remote session behaves badly.
-7. Decide whether the first Jolt gameplay promotion should be vehicle-only, world queries-only, or player collision-only after vehicle tuning.
-8. Keep `WorldState` runtime-only unless a later goal explicitly asks for persistence.
-9. Avoid adding a mission scripting system before the micro-slice proves its minimal state flow.
+5. Validate captured cursor feel on the target laptop/touchpad and use `--free-cursor` if a remote session behaves badly.
+6. Decide whether the first Jolt gameplay promotion should be vehicle-only, world queries-only, or player collision-only after vehicle tuning.
+7. Keep `WorldState` runtime-only unless a later goal explicitly asks for persistence.
+8. Avoid adding a mission scripting system before the micro-slice proves its minimal state flow.

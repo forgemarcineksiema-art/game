@@ -172,6 +172,15 @@ Status: implemented as a tooling/data foundation. The runtime still uses the exi
 
 Status: implemented as a narrow static mesh/render spike. `assets/models/unit_box.gltf` is project-original, `data/scenes/ferry_office.scene.json` now references four mesh instances, GDI/DX11/null accept flat triangle submissions, and runtime mirrors a few mesh instances explicitly in `SandboxLayer`.
 
+## v0.12.1 - Ferry Office Prop Replacement + Visual Scale Pass
+
+- Use the v0.12 static mesh path to replace or augment a few purposeful Ferry Office/service-yard placeholders.
+- Improve visual scale/readability for the office front, service gate, maintenance box, dock props, service-yard crate, and vehicle silhouette.
+- Keep debug collision, interaction, traversal, route, vehicle, and world-state markers visible.
+- Preserve the tiny glTF loader, no-texture/no-material renderer scope, scene validation, default validation, and Jolt opt-in validation.
+
+Status: implemented as a small mesh-backed prop/scale pass using the existing original `unit_box.gltf`. Scene data now references 10 mesh instances, runtime mirrors them explicitly in `SandboxLayer`, and a new GDI screenshot reference records the v0.12.1 presentation.
+
 ## Recommended Next Goal
 
-Build v0.12.1 Ferry Office Prop Replacement + Visual Scale Pass.
+Build v0.13 Vehicle Feel + Service Yard Road Test Polish.

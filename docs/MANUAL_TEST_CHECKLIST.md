@@ -91,7 +91,7 @@ python tools/mesh_report.py
 - [ ] `python tools/scene_report.py` reports scene id `ferry-office`.
 - [ ] Scene report lists 9 colliders, 5 interactables, 1 traversal affordance, and 1 vehicle.
 - [ ] `python tools/scale_audit.py` reports no suspicious scale issues, or any issue is documented.
-- [ ] `python tools/mesh_report.py` reports mesh asset `unit-box-mesh` and the expected Ferry Office/service-yard mesh instances.
+- [ ] `python tools/mesh_report.py` reports mesh asset `unit-box-mesh` and 10 expected Ferry Office/service-yard mesh instances.
 - [ ] `data/scenes/ferry_office.scene.json` contains the service gate, manifest, maintenance box, wall button, exit marker, service vault, player start, and service-yard vehicle ids.
 - [ ] `data/scenes/ferry_office.scene.json` contains `meshAssets` and `meshInstances` for the current static mesh spike.
 - [ ] Any manual movement of scene objects is reflected in both C++ runtime data and scene JSON until runtime loading exists.
@@ -99,7 +99,7 @@ python tools/mesh_report.py
 ## Static Mesh Rendering
 
 - [ ] GDI run still shows debug text and all old gameplay markers.
-- [ ] GDI run shows flat mesh placeholders for the ferry office roof cap, service gate, maintenance box, and vehicle body.
+- [ ] GDI run shows flat mesh placeholders for the ferry office roof cap, facade/sign cue, service gate, maintenance box, dock bollards, service-yard crate, vehicle body, and vehicle cabin.
 - [ ] DX11 bounded run exits cleanly with mesh submissions enabled.
 - [ ] Mesh placeholders do not hide route, interaction, traversal, collision, or vehicle debug markers.
 - [ ] `assets/models/unit_box.gltf` remains a small original placeholder asset with scene-data license/provenance.
@@ -152,7 +152,9 @@ python tools/mesh_report.py
 - [ ] The scene reads as a dock/service-yard/ferry-office layout instead of only a wireframe test.
 - [ ] Distinct colors separate the dock/floor, ferry office volume, service gate, traversal path, interactables, player, and exit marker.
 - [ ] Solid placeholder geometry does not hide the important wire/debug outlines.
-- [ ] The committed visual reference at `docs/images/v0.9.1-gdi-screenshot.png` roughly matches the current GDI presentation.
+- [ ] The committed visual reference at `docs/images/v0.12.1-gdi-screenshot.png` roughly matches the current GDI presentation.
+- [ ] The ferry office front/sign cue reads as a deliberate public/service building marker, not only a wall of debug colliders.
+- [ ] The service-yard vehicle reads as a vehicle proxy with a separate cabin silhouette.
 - [ ] A light route polyline guides the eye from manifest to service vault, maintenance box, wall button, and exit marker.
 - [ ] The objective text names the next spatial target instead of only the next abstract action.
 - [ ] Collect the Ferry Manifest near the office approach.

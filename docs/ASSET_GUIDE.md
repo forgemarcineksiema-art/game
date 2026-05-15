@@ -66,9 +66,10 @@ Future authored assets should come from Blender or another legal DCC tool and ex
 
 ## glTF Direction
 
-v0.12 supports a tiny static `.gltf` subset through `src/engine/assets/StaticMesh.*`.
+v0.12/v0.12.1 supports a tiny static `.gltf` subset through `src/engine/assets/StaticMesh.*`.
 
 - Current committed proof asset: `assets/models/unit_box.gltf`.
+- v0.12.1 deliberately reuses that asset for a small Ferry Office prop kit instead of adding new mesh files.
 - Use meters, Y-up, +Z forward.
 - Keep placeholder meshes small, original, and clearly documented.
 - Add `license` and `provenance` for every scene `meshAssets` entry.

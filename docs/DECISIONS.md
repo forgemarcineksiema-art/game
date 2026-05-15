@@ -384,3 +384,15 @@ Reason: The current GDI and DX11 renderers are immediate debug renderers using C
 Decision: Add `meshAssets` and `meshInstances` to `data/scenes/ferry_office.scene.json`, but keep runtime integration explicit in C++ for now.
 
 Reason: v0.11 scene data is still an authoring mirror. Loading full scene data at runtime would combine two milestones: mesh rendering and scene source-of-truth migration. v0.12 keeps gameplay behavior stable while giving tools and future Codex runs validated mesh references.
+
+## v0.12.1 Unit-Box Prop Replacement Pass
+
+Decision: Reuse the original `assets/models/unit_box.gltf` mesh for the first Ferry Office prop replacement/scale pass instead of adding new mesh files or expanding the glTF loader.
+
+Reason: v0.12.1 is about visual scale, placement, and scene-data consistency. Reusing one known-good original asset lets the scene add a facade cue, sign board, dock bollards, service-yard crate, and vehicle cabin while keeping the tiny loader subset, dependency surface, renderer path, and validation contract stable.
+
+## v0.12.1 Runtime Mesh Mirror Remains Explicit
+
+Decision: Keep v0.12.1 mesh placement mirrored in `SandboxLayer` with a small local helper and a synchronization comment, rather than introducing runtime scene JSON loading.
+
+Reason: A runtime loader would be a separate architecture milestone touching error handling, asset lookup, scene ownership, and gameplay setup. The current goal only needed a safer prop/scale pass; explicit C++ keeps behavior predictable while scene tools validate the authored mirror.
