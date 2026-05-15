@@ -313,6 +313,17 @@ Status: implemented as a local run UX milestone. `scripts/play.ps1` now launches
 
 Status: implemented as a bounded-evidence presentation polish pass. Playtest/minimal modes now defer future route guidance and late markers until the current Ferry Office job phase needs them, while debug mode keeps the complete authored guidance set for validation. The overlay job line now uses player-facing step text instead of raw phase telemetry.
 
+## v0.25 - Ferry Office Composition Pass
+
+- Keep the existing Ferry Office Service Call as the only job.
+- Use the successful hand keyboard/mouse playthrough after v0.24 as the reason to skip v0.24.1 bugfix work.
+- Improve starting camera composition, office approach signposting, facade silhouette, service-yard threshold readability, dock-road rhythm, and visibility of existing Service Run confirmation beat.
+- Prefer `data/scenes/ferry_office.scene.json` layout and presentation edits; use C++ only where scene-authored player start orientation needs to affect runtime camera/facing.
+- Preserve progressive playtest guidance, debug validation mode, current vehicle behavior, static mesh subset, scene tooling, and default validation.
+- Avoid Job #2, new missions, NPCs, combat, Jolt VehicleConstraint, renderer rewrite, material/texture pipeline, asset registry, editor, packaging, save/settings persistence, or broad refactors.
+
+Status: implemented as an authored composition/readability pass. The scene start now uses a slight off-axis dock approach, the runtime honors scene-authored player-start yaw for initial facing/camera composition, and the Ferry Office/service-yard/dock-road gained a small set of existing-asset landmark cues without adding new assets or gameplay systems.
+
 ## Recommended Next Goal
 
-Run a full human keyboard/mouse Ferry Office playthrough on the target laptop and choose the next narrow pass from actual hand-play feedback.
+Run a short human v0.25 visual/playability pass through `scripts/play.ps1`, checking the new start composition, service-yard threshold, dock-road end, and Service Run Marker read before choosing the next narrow pass.

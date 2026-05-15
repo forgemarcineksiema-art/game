@@ -27,6 +27,7 @@
 #include <iostream>
 #include <array>
 #include <iterator>
+#include <nlohmann/json.hpp>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -44,6 +45,18 @@ std::vector<TestFailure> failures;
 std::filesystem::path DefaultScenePathForTests()
 {
     return std::filesystem::path(ENGINE_SOURCE_ROOT) / "data" / "scenes" / "ferry_office.scene.json";
+}
+
+std::filesystem::path WriteTempSceneWithPlayerStartYaw(float yawDegrees)
+{
+    std::ifstream input(DefaultScenePathForTests());
+    nlohmann::json scene = nlohmann::json::parse(input);
+    scene["playerStart"]["yawDegrees"] = yawDegrees;
+
+    const std::filesystem::path tempPath = std::filesystem::temp_directory_path() / "tidebreak-v025-player-start-yaw.scene.json";
+    std::ofstream output(tempPath);
+    output << scene.dump(2);
+    return tempPath;
 }
 
 const SceneVehicleDefinition* FindVehicle(const SceneDefinition& scene, std::string_view id)
@@ -131,6 +144,11 @@ public:
 
     bool initialize(const engine::RendererConfig&) override { return true; }
     void beginFrame(unsigned long long) override {}
+    void setDebugCamera(const engine::DebugCamera& camera) override
+    {
+        debugCamera = camera;
+        debugCameraSet = true;
+    }
     void drawDebugGridAndAxes() override {}
     void drawDebugLine(engine::Vec3 from, engine::Vec3 to, engine::Color color) override { lineCalls.push_back({from, to, color}); }
     void drawDebugSolidBox(engine::Vec3 center, engine::Vec3 halfExtents, engine::Color color) override { solidBoxCalls.push_back({center, halfExtents, color}); }
@@ -142,6 +160,8 @@ public:
     std::string name() const override { return "counting-test-renderer"; }
 
     unsigned int flatTriangleDrawCount = 0;
+    engine::DebugCamera debugCamera {};
+    bool debugCameraSet = false;
     std::vector<LineCall> lineCalls;
     std::vector<BoxCall> solidBoxCalls;
     std::vector<BoxCall> boxCalls;
@@ -580,7 +600,7 @@ void TestSceneLoaderLoadsDefaultFerryOfficeScene()
     Expect(result.scene.colliders.size() == 9,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored static colliders.");
-    Expect(result.scene.visualPlaceholders.size() == 21,
+    Expect(result.scene.visualPlaceholders.size() == 24,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored visual placeholders.");
     Expect(result.scene.meshInstances.size() >= 15,
@@ -1433,6 +1453,34 @@ void TestSandboxLayerDebugPreservesFullRouteGuidanceAtStart()
     Expect(CountLinesWithColor(renderer, routeColor) == CountRouteMarkerSegments(result.scene),
         "TestSandboxLayerDebugPreservesFullRouteGuidanceAtStart",
         "Debug mode should keep every authored route marker visible for validation.");
+}
+
+void TestSandboxLayerUsesScenePlayerStartYawForInitialComposition()
+{
+    const std::filesystem::path scenePath = WriteTempSceneWithPlayerStartYaw(-18.0f);
+    SandboxLayer layer(scenePath, engine::UiMode::Debug);
+    layer.onAttach();
+
+    engine::InputState input;
+    layer.onUpdate(0.016, input);
+    const std::string text = layer.debugText();
+
+    CountingRenderer renderer;
+    renderer.initialize({});
+    renderer.beginFrame(1);
+    layer.onRender(renderer);
+    renderer.endFrame();
+    layer.onDetach();
+
+    Expect(text.find("playerYaw=-18.00") != std::string::npos,
+        "TestSandboxLayerUsesScenePlayerStartYawForInitialComposition",
+        "Sandbox debug text should show that authored player start yaw becomes the initial player facing.");
+    Expect(text.find("camera yaw=-18.00") != std::string::npos,
+        "TestSandboxLayerUsesScenePlayerStartYawForInitialComposition",
+        "Sandbox camera should start from the scene-authored player start yaw.");
+    Expect(renderer.debugCameraSet && renderer.debugCamera.position.x > 0.9f,
+        "TestSandboxLayerUsesScenePlayerStartYawForInitialComposition",
+        "Initial debug camera should be offset sideways when the authored start yaw composes the scene off-axis.");
 }
 
 void TestSandboxLayerPlaytestRevealsNextRouteAfterManifest()
@@ -2878,6 +2926,7 @@ int main()
     TestSandboxLayerPlaytestTextPrioritizesObjectiveAndPrompt();
     TestSandboxLayerPlaytestDefersFutureRouteGuidanceAtStart();
     TestSandboxLayerDebugPreservesFullRouteGuidanceAtStart();
+    TestSandboxLayerUsesScenePlayerStartYawForInitialComposition();
     TestSandboxLayerPlaytestRevealsNextRouteAfterManifest();
     TestSandboxLayerDebugTextPreservesFullTelemetry();
     TestSandboxLayerMinimalTextStaysSmallButUseful();

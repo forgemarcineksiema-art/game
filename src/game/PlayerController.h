@@ -43,6 +43,7 @@ class PlayerController {
 public:
     void setSettings(const PlayerControllerSettings& settings);
     void setPosition(engine::Vec3 position);
+    void setFacingYawRadians(float yawRadians);
     void setWorld(const PrototypeWorld* world);
     void update(float deltaSeconds, const engine::InputState& input, float cameraYawRadians, const TraversalActivation* traversalActivation = nullptr);
 

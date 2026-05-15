@@ -8,6 +8,11 @@ void ThirdPersonCamera::setSettings(const ThirdPersonCameraSettings& settings)
     m_state.distance = settings.distance;
 }
 
+void ThirdPersonCamera::setYawRadians(float yawRadians)
+{
+    m_state.yawRadians = yawRadians;
+}
+
 void ThirdPersonCamera::update(float deltaSeconds, const engine::InputState& input, const CameraTarget& target)
 {
     const float dt = engine::Clamp(deltaSeconds, 0.0f, 0.1f);

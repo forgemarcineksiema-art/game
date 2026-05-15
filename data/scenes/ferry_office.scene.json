@@ -13,8 +13,8 @@
   "floorHeight": 0.0,
   "playerStart": {
     "id": "player-start-dock",
-    "position": [0.0, 0.0, 0.0],
-    "yawDegrees": 0.0
+    "position": [-0.45, 0.0, -0.1],
+    "yawDegrees": -8.0
   },
   "scaleReference": {
     "playerHeight": 1.8,
@@ -101,6 +101,20 @@
       "colorKey": "dock-weathered-wood"
     },
     {
+      "id": "office-approach-runner",
+      "role": "office-approach-pad",
+      "center": [-0.15, -0.052, 0.65],
+      "halfExtents": [1.05, 0.052, 1.55],
+      "colorKey": "damp-service-concrete"
+    },
+    {
+      "id": "office-front-threshold",
+      "role": "office-threshold-marker",
+      "center": [0.0, 0.045, 1.92],
+      "halfExtents": [1.35, 0.045, 0.10],
+      "colorKey": "dock-muted-sign-yellow"
+    },
+    {
       "id": "ferry-office-floor-slab",
       "role": "office-floor",
       "center": [0.0, -0.06, 3.25],
@@ -162,6 +176,13 @@
       "center": [6.3, -0.045, -2.2],
       "halfExtents": [3.05, 0.045, 2.95],
       "colorKey": "dark-service-asphalt"
+    },
+    {
+      "id": "service-yard-entry-lane-cue",
+      "role": "vehicle-yard-entry-pad",
+      "center": [9.75, -0.043, -2.2],
+      "halfExtents": [0.65, 0.043, 1.25],
+      "colorKey": "warning-service-orange"
     },
     {
       "id": "service-yard-west-rail",
@@ -349,6 +370,24 @@
       "notes": "Simple original sign/timetable placeholder; not text, texture, or final signage."
     },
     {
+      "id": "mesh-ferry-office-left-entry-post",
+      "assetId": "unit-box-mesh",
+      "position": [-1.42, 0.78, 2.04],
+      "yawDegrees": 0.0,
+      "scale": [0.22, 1.38, 0.16],
+      "colorKey": "office-muted-concrete",
+      "notes": "v0.25 facade rhythm cue that frames the public office approach without adding collision."
+    },
+    {
+      "id": "mesh-ferry-office-right-entry-post",
+      "assetId": "unit-box-mesh",
+      "position": [1.42, 0.78, 2.04],
+      "yawDegrees": 0.0,
+      "scale": [0.22, 1.38, 0.16],
+      "colorKey": "office-muted-concrete",
+      "notes": "v0.25 facade rhythm cue that keeps the service gate and sign silhouette readable from start."
+    },
+    {
       "id": "mesh-service-gate",
       "assetId": "unit-box-mesh",
       "position": [0.0, 0.75, 2.35],
@@ -440,6 +479,15 @@
       "notes": "v0.20.1 Blender-exported prop placed near the Ferry Office notice/entrance approach."
     },
     {
+      "id": "mesh-ferry-office-approach-notice-board",
+      "assetId": "blender-ferry-notice-board-mesh",
+      "position": [1.55, 0.0, 0.95],
+      "yawDegrees": -22.0,
+      "scale": [1.0, 1.0, 1.0],
+      "colorKey": "dock-muted-sign-yellow",
+      "notes": "v0.25 approach-side notice board that balances the first camera read and points the eye toward the manifest."
+    },
+    {
       "id": "mesh-dock-road-edge-post-a",
       "assetId": "road-edge-post-mesh",
       "position": [11.15, 0.0, -3.45],
@@ -456,6 +504,33 @@
       "scale": [1.0, 1.0, 1.0],
       "colorKey": "salt-white-road-post",
       "notes": "Second road-edge rhythm marker for the short dock service road."
+    },
+    {
+      "id": "mesh-service-yard-entry-post-a",
+      "assetId": "road-edge-post-mesh",
+      "position": [9.7, 0.0, -0.95],
+      "yawDegrees": 0.0,
+      "scale": [1.0, 1.0, 1.0],
+      "colorKey": "salt-white-road-post",
+      "notes": "v0.25 service-yard threshold cue so the vehicle route reads before route debug markers appear."
+    },
+    {
+      "id": "mesh-service-yard-entry-post-b",
+      "assetId": "road-edge-post-mesh",
+      "position": [9.7, 0.0, -3.45],
+      "yawDegrees": 0.0,
+      "scale": [1.0, 1.0, 1.0],
+      "colorKey": "salt-white-road-post",
+      "notes": "v0.25 paired threshold cue for the service-yard to dock-road opening."
+    },
+    {
+      "id": "mesh-dock-road-edge-post-c",
+      "assetId": "road-edge-post-mesh",
+      "position": [18.25, 0.0, -3.45],
+      "yawDegrees": 0.0,
+      "scale": [1.0, 1.0, 1.0],
+      "colorKey": "salt-white-road-post",
+      "notes": "v0.25 far road-edge rhythm marker that helps the turn-around read as the end of the compact service road."
     },
     {
       "id": "mesh-service-yard-barrier-cue",
@@ -476,6 +551,15 @@
       "colorKey": "oxidized-service-green",
       "linkedColliderId": "maintenance-crate",
       "notes": "Small maintenance-side utility cabinet; keeps the existing interaction marker visible."
+    },
+    {
+      "id": "mesh-service-run-confirm-sign",
+      "assetId": "service-road-sign-mesh",
+      "position": [18.4, 0.0, -0.25],
+      "yawDegrees": -25.0,
+      "scale": [1.0, 1.0, 1.0],
+      "colorKey": "ferry-route-sign-blue",
+      "notes": "v0.25 confirmation-side sign cue for the existing Service Run Marker; this is signposting only, not a new job beat."
     }
   ],
   "interactables": [

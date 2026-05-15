@@ -31,6 +31,7 @@ struct ThirdPersonCameraState {
 class ThirdPersonCamera {
 public:
     void setSettings(const ThirdPersonCameraSettings& settings);
+    void setYawRadians(float yawRadians);
     void update(float deltaSeconds, const engine::InputState& input, const CameraTarget& target);
 
     const ThirdPersonCameraState& state() const;

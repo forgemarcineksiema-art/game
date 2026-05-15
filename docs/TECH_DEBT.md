@@ -2,9 +2,9 @@
 
 Last updated: 2026-05-15
 
-This file lists known foundation issues during v0.23. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
+This file lists known foundation issues during the current playable-build phase. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
 
-## v0.23 Priority Triage
+## Current Priority Triage
 
 ### Blocking Playable Build
 
@@ -13,9 +13,9 @@ This file lists known foundation issues during v0.23. It is not a mandate to fix
 
 ### Fix Soon
 
-1. Run a full human keyboard/mouse playthrough on the target laptop through `scripts/play.ps1` and capture any remaining vehicle feel issues around braking distance, reverse steering, checkpoint approach, exit placement, or cursor/camera comfort. v0.24 used bounded visual evidence, not a complete hand-play pass.
+1. Run a short human v0.25 visual/playability pass through `scripts/play.ps1` and capture any issues with the new off-axis start composition, office approach signposting, service-yard threshold, dock-road end marker, Service Run Marker visibility, or remaining vehicle feel.
 2. Keep the Blender/static mesh path narrow and honest. Add only a few controlled original props until cgltf/tinygltf is clearly justified.
-3. Decide whether the next non-packaging pass is presentation polish, a hand-authored Blender prop pass, or a Jolt vehicle feasibility spike based on actual hand-play feedback.
+3. Decide whether the next non-packaging pass is a hand-authored Blender prop pass, a small vehicle-feel follow-up, or a Jolt vehicle feasibility spike based on actual v0.25 hand-play feedback.
 
 ### Acceptable For Now
 
@@ -162,8 +162,9 @@ This file lists known foundation issues during v0.23. It is not a mandate to fix
 - v0.14 makes the service-yard read more like a dock road with a shore/water edge cue and turn-around marker. v0.15 loads that layout from scene data, but it remains hand-authored placeholder geometry.
 - v0.17 playtest mode puts objective/focus/job status first and reserves raw telemetry for debug mode, but it remains functional debug text rather than a polished UI.
 - v0.24 adds a first progressive-guidance pass for playtest/minimal modes so future route, traversal, vehicle, checkpoint, and service-run markers wait for the relevant Ferry Office job phase. Debug mode still keeps the full authored guidance set for validation.
+- v0.25 adds a first authored composition pass: scene-authored player-start yaw now drives initial facing/camera composition, and existing placeholder assets add office approach, service-yard threshold, dock-road rhythm, and Service Run confirmation cues.
 - DX11 now has a simple debug text overlay, so bounded DX11 playtest checks are useful. GDI still remains the simpler renderer for overlay debugging, and a real renderer-owned text/HUD path is deferred.
-- There is still no final authored composition pass for camera start angle, silhouettes, art-quality signposting, or route readability beyond simple colored volumes, progressive debug guidance, and the first flat-tinted prop-kit meshes.
+- The v0.25 composition pass is still prototype presentation: there is no final art-quality signage, depth-aware renderer, lighting, materials, textures, authored terrain, or production HUD.
 
 ## Deprecated Priority Lists
 

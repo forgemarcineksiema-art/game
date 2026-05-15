@@ -30,6 +30,11 @@ void PlayerController::setPosition(engine::Vec3 position)
     }
 }
 
+void PlayerController::setFacingYawRadians(float yawRadians)
+{
+    m_state.facingYawRadians = yawRadians;
+}
+
 void PlayerController::setWorld(const PrototypeWorld* world)
 {
     m_world = world;

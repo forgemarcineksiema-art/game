@@ -355,6 +355,8 @@ void SandboxLayer::configureRuntimeFromScene()
 {
     if (m_sceneDefinitionLoaded) {
         m_player.setPosition(m_sceneDefinition.playerStart.position);
+        m_player.setFacingYawRadians(m_sceneDefinition.playerStart.yawRadians);
+        m_camera.setYawRadians(m_sceneDefinition.playerStart.yawRadians);
     }
 
     VehicleControllerSettings vehicleSettings;
@@ -638,6 +640,7 @@ std::string SandboxLayer::buildFullDebugText() const
     }
     output << "travFocus=" << (traversalFocus.hasFocus ? traversalFocus.name : "none") << "\n"
            << "player=(" << player.position.x << "," << player.position.y << "," << player.position.z << ") "
+           << "playerYaw=" << engine::Degrees(player.facingYawRadians) << " "
            << "speed=" << player.horizontalSpeed << " "
            << (player.sprinting ? "sprint" : "walk") << " "
            << (player.grounded ? "grounded" : "air") << " "

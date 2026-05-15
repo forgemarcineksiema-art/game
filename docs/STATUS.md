@@ -4511,3 +4511,58 @@ Remaining limitations:
 
 - A full human keyboard/mouse playthrough is still needed for braking distance, reverse steering, checkpoint approach, exit placement, cursor/camera comfort, and full checklist confidence.
 - The UI is still debug text and immediate debug geometry, not a production HUD, depth-aware renderer, authored level composition pass, or final art presentation.
+
+## v0.25 Ferry Office Composition Pass (2026-05-15)
+
+Scope:
+
+- Proceeded directly to v0.25 because the user completed a hand keyboard/mouse Ferry Office playthrough after v0.24 and reported no gameplay notes.
+- Kept the existing Ferry Office Service Call as the only job.
+- Focused on authored composition/readability: start camera composition, Ferry Office approach signposting, facade silhouette, service-yard threshold, dock-road rhythm, and visibility of the existing Service Run Marker beat.
+- Avoided Job #2, new mission systems, NPCs, combat, Jolt vehicle work, renderer rewrite, new assets, material/texture pipeline, asset registry, editor, packaging, save/settings persistence, or broad refactors.
+
+Baseline observations:
+
+- `build\captures\v0.25-baseline-playtest-start.png` showed a functional but very axial start read: the player/manifest sat in the center of the view and partially obscured the Ferry Office facade, sign, and service gate.
+- `build\captures\v0.25-baseline-debug-start.png` confirmed that the scene data was valid and guidance was preserved in debug mode, but authored composition was still mostly flat-on.
+- `playerStart.yawDegrees` existed in scene data but runtime did not use it for the initial player facing or camera yaw.
+
+Focused TDD result:
+
+- Added `TestSandboxLayerUsesScenePlayerStartYawForInitialComposition` before implementation. It initially failed because debug text had no `playerYaw`, camera yaw stayed `0.00`, and the debug camera did not shift sideways when a temp scene authored a non-zero start yaw.
+- Added `test_v025_composition_pass_start_and_landmarks_exist` before scene edits. It initially failed because the default scene start was still centered and the v0.25 composition ids were absent.
+- After implementation, `python tests\test_scene_tools.py` passed and `ctest --preset windows-vs2022-debug -R EngineCoreTests --output-on-failure` passed.
+
+Implementation notes:
+
+- `PlayerController` now exposes a small `setFacingYawRadians()` setter.
+- `ThirdPersonCamera` now exposes a small `setYawRadians()` setter.
+- `SandboxLayer::configureRuntimeFromScene()` applies scene-authored `playerStart.yawDegrees` to both initial player facing and initial camera yaw.
+- Debug UI now reports `playerYaw=` alongside camera yaw, which makes authored start composition visible during validation.
+- `data\scenes\ferry_office.scene.json` now starts the player slightly off-center at `[-0.45, 0.0, -0.1]` with `yawDegrees=-8.0`.
+- Scene data added three visual composition cues: `office-approach-runner`, `office-front-threshold`, and `service-yard-entry-lane-cue`.
+- Scene data added existing-asset mesh cues for the Ferry Office entry posts, approach notice board, service-yard entry posts, an extra far dock-road post, and a Service Run confirmation sign.
+
+Visual evidence:
+
+- Baseline playtest: `build\captures\v0.25-baseline-playtest-start.png`.
+- Baseline debug: `build\captures\v0.25-baseline-debug-start.png`.
+- After composition playtest: `build\captures\v0.25-composition-playtest-start.png`.
+- After composition debug: `build\captures\v0.25-composition-debug-start.png`.
+
+Validation so far:
+
+- `python tests\test_scene_tools.py`: passed, 30 tests.
+- `powershell -ExecutionPolicy Bypass -File scripts\build.ps1`: passed during focused C++ test verification.
+- `ctest --preset windows-vs2022-debug -R EngineCoreTests --output-on-failure`: passed.
+- `python tools\validate_scene.py`: passed.
+- `python tools\validate_assets.py`: passed.
+- `python tools\scene_report.py`: passed; scene now reports 9 colliders, 24 visual placeholders, 7 mesh assets, 24 mesh instances, 6 interactables, 1 traversal affordance, 1 vehicle, 6 route markers, and 5 objective markers.
+- `python tools\scale_audit.py`: passed, no suspicious scale issues.
+- `python tools\mesh_report.py`: passed; reports 7 mesh assets, 24 mesh instances, and 7 referenced model files.
+- `powershell -ExecutionPolicy Bypass -File scripts\verify.ps1`: passed; doctor warnings for compiler/tool binaries outside plain `PATH` remain expected, CTest 4/4 passed, scene validation passed, asset validation passed, mesh report passed, and null smoke loaded the v0.25 scene with 24 mesh instances.
+
+Remaining limitations:
+
+- v0.25 is still a debug-placeholder composition pass, not final art, final signage, a production HUD, lighting, materials, textures, depth-aware rendering, authored terrain, or a real asset pipeline.
+- A short human v0.25 pass should check the new start composition, service-yard threshold, dock-road end, and Service Run Marker read before choosing the next narrow pass.

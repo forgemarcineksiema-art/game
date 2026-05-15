@@ -153,6 +153,28 @@ class SceneToolTests(unittest.TestCase):
         self.assertIn("blender", mesh_assets["blender-ferry-notice-board-mesh"]["provenance"].lower())
         self.assertIn("5.1.1", mesh_assets["blender-ferry-notice-board-mesh"]["provenance"])
 
+    def test_v025_composition_pass_start_and_landmarks_exist(self) -> None:
+        ids = scene_data.collect_ids(self.scene)
+        player_start = self.scene["playerStart"]
+
+        self.assertEqual("player-start-dock", player_start["id"])
+        self.assertLess(player_start["position"][0], 0.0)
+        self.assertLess(player_start["yawDegrees"], 0.0)
+
+        for required_id in [
+            "office-approach-runner",
+            "office-front-threshold",
+            "service-yard-entry-lane-cue",
+            "mesh-ferry-office-left-entry-post",
+            "mesh-ferry-office-right-entry-post",
+            "mesh-ferry-office-approach-notice-board",
+            "mesh-service-yard-entry-post-a",
+            "mesh-service-yard-entry-post-b",
+            "mesh-dock-road-edge-post-c",
+            "mesh-service-run-confirm-sign",
+        ]:
+            self.assertIn(required_id, ids)
+
     def test_duplicate_mesh_replacement_links_are_reported(self) -> None:
         scene = copy.deepcopy(self.scene)
         first = copy.deepcopy(scene["meshInstances"][0])
