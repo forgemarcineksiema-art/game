@@ -8,9 +8,12 @@
 
 #include <string>
 
+struct SceneDefinition;
+
 class PrototypeScene {
 public:
     PrototypeScene();
+    explicit PrototypeScene(const SceneDefinition& sceneDefinition);
 
     PrototypeWorld& world();
     const PrototypeWorld& world() const;
@@ -20,6 +23,7 @@ public:
     const TraversalSystem& traversal() const;
     WorldState& worldState();
     const WorldState& worldState() const;
+    void loadFromDefinition(const SceneDefinition& sceneDefinition);
 
     bool applyInteractionResult(const InteractionResult& result);
     bool recordServiceRouteUsed();
@@ -32,6 +36,7 @@ public:
     std::string completionSummary() const;
 
 private:
+    void buildFromFerryOfficeData();
     void syncRouteGateCollider();
 
     PrototypeWorld m_world;

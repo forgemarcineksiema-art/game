@@ -36,7 +36,7 @@ cmake --build --preset windows-vs2022-debug-jolt
 ctest --preset windows-vs2022-debug-jolt --output-on-failure
 ```
 
-The Jolt preset is intentionally not part of the automatic `scripts/configure.ps1` candidate list. Use it when validating physics dependency work, not for the everyday dependency-free path.
+The Jolt preset is intentionally not part of the automatic `scripts/configure.ps1` candidate list. Use it when validating physics dependency work, not for the everyday path.
 
 ## Build
 
@@ -91,6 +91,15 @@ scripts/run.ps1 -Args @("--renderer", "dx11", "--frames", "120")
 scripts/run.ps1 -Args @("--renderer", "gdi", "--frames", "120")
 scripts/run.ps1 -Args @("--renderer", "null", "--headless", "--frames", "120")
 ```
+
+Runtime scene selection:
+
+```powershell
+scripts/run.ps1 -Args @("--renderer", "gdi", "--scene", "data/scenes/ferry_office.scene.json")
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --scene data\scenes\ferry_office.scene.json --frames 300
+```
+
+If `--scene` is omitted, the app loads `data/scenes/ferry_office.scene.json`. If loading fails, the runtime logs a warning and falls back to the built-in Ferry Office layout so smoke/debug paths remain usable.
 
 Cursor mode:
 
@@ -153,7 +162,7 @@ python tools/scale_audit.py data/scenes/ferry_office.scene.json
 python tools/mesh_report.py data/scenes/ferry_office.scene.json
 ```
 
-`scripts/verify.ps1` runs `python tools/validate_scene.py` and `python tools/mesh_report.py` after CTest. Scene and mesh reference validation are now part of the normal dependency-free path.
+`scripts/verify.ps1` runs `python tools/validate_scene.py` and `python tools/mesh_report.py` after CTest. Scene and mesh reference validation are part of the normal path.
 
 ## Static Mesh Rendering
 
@@ -212,6 +221,7 @@ build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi
 - If all windowed rendering fails, keep `--renderer null --headless` working while the renderer issue is fixed.
 - If captured mouse-look feels risky in a VM or remote session, run with `--free-cursor` and use arrow keys for camera orbit.
 - If the Jolt preset fails while normal validation passes, keep using the default preset and inspect `docs/PHYSICS_DECISION.md`. The Jolt path is opt-in until the physics backend is promoted by a later goal.
+- If the runtime logs `Runtime scene load failed`, check the `--scene` path first, then run `python tools/validate_scene.py <path>`.
 - If scene validation fails, inspect `data/scenes/ferry_office.scene.json` and run `python tools/scene_report.py` to see the current object counts and required ids.
 - If mesh references fail, run `python tools/mesh_report.py` and verify referenced files exist under `assets/models` with license/provenance in scene data.
 - v0.3+ collision is debug-only static AABB collision. If a collider layout feels odd, inspect `src/game/PrototypeWorld.cpp` and rerun `scripts/verify.ps1` after edits.

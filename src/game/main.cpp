@@ -24,6 +24,5 @@ int main(int argc, const char* const* argv)
     }
 
     engine::Application app;
-    return app.run(parseResult.config, std::make_unique<SandboxLayer>());
+    return app.run(parseResult.config, std::make_unique<SandboxLayer>(parseResult.config.scenePath));
 }
-

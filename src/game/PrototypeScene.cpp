@@ -1,8 +1,21 @@
 #include "game/PrototypeScene.h"
 
+#include "game/SceneDefinition.h"
+
 #include <sstream>
+#include <utility>
 
 PrototypeScene::PrototypeScene()
+{
+    buildFromFerryOfficeData();
+}
+
+PrototypeScene::PrototypeScene(const SceneDefinition& sceneDefinition)
+{
+    loadFromDefinition(sceneDefinition);
+}
+
+void PrototypeScene::buildFromFerryOfficeData()
 {
     m_world.buildFerryOfficePrototypeLayout();
 
@@ -63,6 +76,62 @@ PrototypeScene::PrototypeScene()
     serviceVault.requiredFacingDot = FerryOffice::Traversal::ServiceVaultRequiredFacingDot;
     serviceVault.durationSeconds = FerryOffice::Traversal::ServiceVaultDurationSeconds;
     m_traversal.addAffordance(serviceVault);
+
+    syncRouteGateCollider();
+}
+
+namespace {
+
+InteractableType InteractableTypeFromSceneString(const std::string& type)
+{
+    if (type == "pickup") {
+        return InteractableType::Pickup;
+    }
+    if (type == "toggle") {
+        return InteractableType::Toggle;
+    }
+    return InteractableType::Info;
+}
+
+TraversalType TraversalTypeFromSceneString(const std::string&)
+{
+    return TraversalType::Vault;
+}
+
+} // namespace
+
+void PrototypeScene::loadFromDefinition(const SceneDefinition& sceneDefinition)
+{
+    m_worldState.clear();
+    m_world.buildFromSceneDefinition(sceneDefinition);
+    m_interactions.clear();
+    m_traversal.clear();
+
+    for (const SceneInteractableDefinition& authored : sceneDefinition.interactables) {
+        Interactable interactable;
+        interactable.name = authored.name;
+        interactable.prompt = authored.prompt;
+        interactable.position = authored.position;
+        interactable.radius = authored.radius;
+        interactable.type = InteractableTypeFromSceneString(authored.type);
+        interactable.oneShot = authored.oneShot;
+        interactable.message = authored.message;
+        m_interactions.addInteractable(std::move(interactable));
+    }
+
+    for (const SceneTraversalAffordanceDefinition& authored : sceneDefinition.traversalAffordances) {
+        TraversalAffordance affordance;
+        affordance.name = authored.name;
+        affordance.prompt = authored.prompt;
+        affordance.type = TraversalTypeFromSceneString(authored.type);
+        affordance.startPosition = authored.startPosition;
+        affordance.endPosition = authored.endPosition;
+        affordance.focusRadius = authored.focusRadius;
+        affordance.requiredFacingDirection = authored.requiredFacingDirection;
+        affordance.requiredFacingDot = authored.requiredFacingDot;
+        affordance.durationSeconds = authored.durationSeconds;
+        m_traversal.addAffordance(std::move(affordance));
+    }
 
     syncRouteGateCollider();
 }

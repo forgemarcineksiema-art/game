@@ -18,6 +18,7 @@ struct AppConfig {
     int maxFrames = 0;
     std::string rendererBackend = "auto";
     std::filesystem::path assetRoot = "assets";
+    std::filesystem::path scenePath = "data/scenes/ferry_office.scene.json";
     Color clearColor = {0.08f, 0.11f, 0.16f, 1.0f};
 };
 

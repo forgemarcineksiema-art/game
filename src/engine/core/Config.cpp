@@ -113,6 +113,11 @@ ConfigParseResult ParseArguments(int argc, const char* const* argv)
             continue;
         }
 
+        if (ReadValue(argc, argv, index, argument, "--scene", value)) {
+            result.config.scenePath = value;
+            continue;
+        }
+
         result.errors.push_back("Unknown argument: " + std::string(argument));
     }
 
@@ -134,6 +139,7 @@ std::string BuildHelpText()
         << "  --width <pixels>      Window width for windowed runs.\n"
         << "  --height <pixels>     Window height for windowed runs.\n"
         << "  --assets <path>       Asset root path.\n"
+        << "  --scene <path>        Runtime scene JSON path.\n"
         << "  --help                Show this help.\n";
     return output.str();
 }

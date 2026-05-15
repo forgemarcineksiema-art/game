@@ -428,3 +428,18 @@ Reason: The v0.13 vehicle already feels promising, but it needs a meaningful, re
 Decision: Keep the v0.14 road segment authored in `data/scenes/ferry_office.scene.json` and mirrored manually in `SandboxLayer.cpp`, rather than adding runtime scene loading in the same goal.
 
 Reason: Runtime scene loading is now the right next architecture problem, but combining it with a road/mood pass would make failures harder to isolate. v0.14 keeps behavior predictable, adds tests for the authored ids and finite bounds, and makes the scene-data drift risk more visible for v0.15.
+
+## v0.15 Runtime Scene JSON Loader
+
+Decision: Use `nlohmann/json` through a pinned CMake `FetchContent` dependency for runtime scene loading, with all third-party parser types hidden inside `SceneLoader.cpp`.
+
+Reason: v0.15 needs a real runtime source of truth for the Ferry Office scene. The scene format now contains nested objects, optional fields, ids, references, routes, vehicles, colliders, mesh instances, and future schema pressure. A tiny project-owned parser would be brittle, Python-only validation would not solve runtime drift, and generated C++ would introduce freshness/build choreography before the engine has a stable data pipeline. `nlohmann/json` is MIT licensed, CMake-friendly, widely used, and small enough for this milestone when scoped to the scene loader boundary.
+
+Dependency impact: adds `nlohmann/json` as a default build dependency via `FetchContent`. Future Codex runs should expect configure to populate or reuse the CMake dependency cache. Gameplay code should depend on Tidebreak scene structs, not `nlohmann::json`.
+
+Alternatives considered:
+
+- `yyjson`: fast and permissively licensed, but lower-level C-style API is less ergonomic for the current small C++ loader.
+- Generated C++ from JSON: avoids runtime dependency but creates stale generated-source risk and delays the source-of-truth migration.
+- Python-only validation: useful as authoring validation, but not sufficient for runtime loading.
+- Project-owned ad hoc parser: rejected because it would become fragile as scene data grows.

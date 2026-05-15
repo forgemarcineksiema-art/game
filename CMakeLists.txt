@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.24)
 
 project(GameEngineFoundation
-    VERSION 0.14.0
+    VERSION 0.15.0
     DESCRIPTION "AI-native C++ action/adventure engine foundation"
     LANGUAGES CXX
 )
@@ -11,6 +11,16 @@ option(ENGINE_WARNINGS_AS_ERRORS "Treat warnings as errors" OFF)
 option(ENGINE_ENABLE_JOLT_PHYSICS "Enable the opt-in Jolt physics backend spike" OFF)
 
 find_package(Python3 COMPONENTS Interpreter REQUIRED)
+include(FetchContent)
+
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+FetchContent_Declare(
+    nlohmann_json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG v3.11.3
+    GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(nlohmann_json)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -58,8 +68,6 @@ else()
 endif()
 
 if(ENGINE_ENABLE_JOLT_PHYSICS)
-    include(FetchContent)
-
     set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
     set(CPP_EXCEPTIONS_ENABLED OFF CACHE BOOL "" FORCE)
     set(CPP_RTTI_ENABLED OFF CACHE BOOL "" FORCE)
@@ -113,6 +121,8 @@ add_library(GamePrototype STATIC
     src/game/FerryOfficeData.cpp
     src/game/PlayerController.cpp
     src/game/SandboxLayer.cpp
+    src/game/SceneDefinition.cpp
+    src/game/SceneLoader.cpp
     src/game/PrototypeScene.cpp
     src/game/PrototypeWorld.cpp
     src/game/ThirdPersonCamera.cpp
@@ -126,7 +136,12 @@ target_include_directories(GamePrototype
         ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_link_libraries(GamePrototype PUBLIC EngineCore)
+target_compile_definitions(GamePrototype
+    PUBLIC
+        ENGINE_SOURCE_ROOT="${CMAKE_CURRENT_SOURCE_DIR}"
+)
+
+target_link_libraries(GamePrototype PUBLIC EngineCore PRIVATE nlohmann_json::nlohmann_json)
 
 if(MSVC)
     target_compile_options(GamePrototype PRIVATE /W4 /permissive-)

@@ -2892,3 +2892,135 @@ Visual observations:
 Recommended next goal:
 
 Build v0.15 Runtime Scene Loading / Scene Data Source of Truth.
+
+## v0.15 Baseline - 2026-05-15
+
+Goal: make `data/scenes/ferry_office.scene.json` a runtime source of truth for the current Ferry Office, service-yard, and dock-road prototype layout without adding new gameplay systems.
+
+Commands run before implementation:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\verify.ps1
+cmake --preset windows-vs2022-debug-jolt
+cmake --build --preset windows-vs2022-debug-jolt
+ctest --preset windows-vs2022-debug-jolt --output-on-failure
+python tools\scene_report.py
+python tools\validate_scene.py
+python tools\scale_audit.py
+python tools\mesh_report.py
+```
+
+Baseline results:
+
+- `scripts\verify.ps1`: passed; null smoke reported engine `v0.14.0`, `roadSegment=dock-road`, and vehicle road bounds `(3.35,-5.05)-(19.45,0.95)`.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 3/3 tests.
+- `python tools\scene_report.py`: passed; scene reports 9 colliders, 21 visual placeholders, 1 mesh asset, 10 mesh instances, 5 interactables, 1 traversal affordance, 1 vehicle, 5 route markers, 4 objective markers, and vehicle bounds `[3.35, -5.05]..[19.45, 0.95]`.
+- `python tools\validate_scene.py`: passed.
+- `python tools\scale_audit.py`: passed; no suspicious scale issues found.
+- `python tools\mesh_report.py`: passed; `unit-box-mesh` has 10 uses.
+
+Inspection notes:
+
+- Static colliders are duplicated between `data/scenes/ferry_office.scene.json` and `PrototypeWorld::buildFerryOfficePrototypeLayout`.
+- Vehicle spawn, yaw, bounds, proxy extents, and service-yard/dock-road visuals are duplicated between scene JSON and `SandboxLayer.cpp`.
+- Interactables and traversal are duplicated between scene JSON and `FerryOfficeData` / `PrototypeScene`, but Ferry Office world-state behavior should remain scene-owned C++ for now.
+- Mesh instances are authored in scene JSON but still submitted from a hand-mirrored C++ list.
+- The current vehicle proxy height differs between JSON (`proxyHalfExtents.y = 0.53`) and runtime physics/debug body height (`0.34`), so v0.15 must resolve that deliberately.
+
+## v0.15 Implementation Plan - 2026-05-15
+
+1. Add failing C++ tests for scene path parsing, default scene loading, missing-scene errors, collider loading, vehicle bounds loading, route/objective markers, mesh instances, and scene-driven PrototypeScene setup.
+2. Add a narrow `SceneDefinition` / `SceneLoader` boundary under `src/game` using `nlohmann/json` internally, with no third-party types exposed to gameplay code.
+3. Add `--scene` config parsing and pass the selected scene path into `SandboxLayer`; default remains `data/scenes/ferry_office.scene.json`.
+4. Build `PrototypeWorld` colliders, `PrototypeScene` interactables/traversal, vehicle spawn/bounds/proxy, visual placeholders, route markers, objective markers, and mesh instances from loaded scene data where practical.
+5. Keep Tidebreak-specific behavior mapping in C++ for this goal: world-state flags, interaction results, traversal completion side effects, and objective text.
+6. Update Python scene tools only if the schema/expectations change, then update docs with what is now loaded versus what remains hardcoded.
+7. Run the full v0.15 validation set, then commit and push if validation passes.
+
+## v0.15 Implementation Summary - 2026-05-15
+
+TDD checkpoint:
+
+- Added runtime scene-loader tests before implementation.
+- Confirmed the initial red build:
+  - `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`
+  - Result: failed as expected with missing `game/SceneDefinition.h`.
+
+Implemented changes:
+
+- Bumped project version to `0.15.0`.
+- Added `nlohmann/json` through pinned CMake `FetchContent` for runtime scene loading.
+- Added `src/game/SceneDefinition.*` and `src/game/SceneLoader.*`.
+- Added `--scene <path>` CLI parsing.
+- `SandboxLayer` now loads `data/scenes/ferry_office.scene.json` by default.
+- Runtime scene data now drives:
+  - player start,
+  - static colliders,
+  - visual placeholders,
+  - mesh instances,
+  - interactables,
+  - traversal affordances,
+  - service-yard vehicle spawn, enter radius, proxy half extents, and bounds,
+  - route markers,
+  - objective markers.
+- `PrototypeWorld` can build static colliders from `SceneDefinition`.
+- `PrototypeScene` can build interactables and traversal affordances from `SceneDefinition`.
+- Static mesh debug drawing now uses loaded scene mesh instances instead of a hand-mirrored list.
+- GDI/null/DX11 debug text now reports `scene=ferry-office loaded=yes`.
+- Scene paths and mesh asset paths resolve from the source root when the app is launched from a build directory.
+
+Known limitations:
+
+- Scene loading is one-shot at startup; there is no hot reload, editor, prefab system, scene diff, or runtime editing.
+- Invalid runtime scene paths log a warning and fall back to built-in Ferry Office setup so smoke/debug paths remain usable.
+- World-state effects, interaction result mapping, traversal completion side effects, objective text, and dynamic state coloring remain C++ scene behavior.
+- The project now has a default `nlohmann/json` dependency; configure may populate or reuse the CMake dependency cache.
+- DX11 still falls back to WARP on this machine, but bounded DX11 runs exit cleanly.
+
+## v0.15 Final Validation - 2026-05-15
+
+Commands run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\doctor.ps1
+powershell -ExecutionPolicy Bypass -File scripts\configure.ps1
+powershell -ExecutionPolicy Bypass -File scripts\build.ps1
+ctest --preset windows-vs2022-debug --output-on-failure
+powershell -ExecutionPolicy Bypass -File scripts\verify.ps1
+cmake --preset windows-vs2022-debug-jolt
+cmake --build --preset windows-vs2022-debug-jolt
+ctest --preset windows-vs2022-debug-jolt --output-on-failure
+python tools\scene_report.py
+python tools\validate_scene.py
+python tools\scale_audit.py
+python tools\mesh_report.py
+python tools\status_report.py
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --frames 300
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 300
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --scene data\scenes\ferry_office.scene.json --frames 300
+```
+
+Results:
+
+- `scripts\doctor.ps1`: passed; expected PATH warnings remain for `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- `scripts\configure.ps1`: passed for `windows-vs2022-debug`.
+- `scripts\build.ps1`: passed.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 3/3 tests.
+- `scripts\verify.ps1`: passed; null smoke reported engine `v0.15.0`, loaded scene `ferry-office`, and `roadBounds=(3.35,-5.05)-(19.45,0.95)`.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 3/3 tests.
+- `python tools\scene_report.py`: passed; scene reports 9 colliders, 21 visual placeholders, 1 mesh asset, 10 mesh instances, 5 interactables, 1 traversal affordance, 1 vehicle, 5 route markers, and 4 objective markers.
+- `python tools\validate_scene.py`: passed.
+- `python tools\scale_audit.py`: passed; no suspicious scale issues found.
+- `python tools\mesh_report.py`: passed; `unit-box-mesh` has 10 uses.
+- `python tools\status_report.py`: completed and showed the expected v0.15 modified/new files before commit.
+- `EngineApp.exe --renderer gdi --frames 300`: passed; scene loaded, mesh loaded, GDI ran 300 frames, clean shutdown.
+- `EngineApp.exe --renderer dx11 --frames 300`: passed; hardware DX11 device failed and WARP was used, then the bounded run completed cleanly.
+- `EngineApp.exe --renderer gdi --scene data\scenes\ferry_office.scene.json --frames 300`: passed; explicit scene path loaded and the bounded run completed cleanly.
+
+Recommended next goal:
+
+Build v0.16 First Driver/Fixer Job Prototype.

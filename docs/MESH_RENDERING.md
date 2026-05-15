@@ -59,7 +59,7 @@ Use:
 - `meshAssets` for source files, license/provenance, and authored bounds.
 - `meshInstances` for position, yaw, scale, tint/color key, and optional links back to placeholders/colliders.
 
-Runtime still uses explicit C++ setup in `SandboxLayer`; the scene file is the validated authoring mirror and future source-of-truth candidate. v0.12.1 keeps those explicit runtime mesh instances grouped in `SandboxLayer::drawStaticMeshDebug` with a synchronization note rather than introducing a scene loader.
+v0.15 loads these mesh asset and mesh instance records through the runtime scene loader. `SandboxLayer::drawStaticMeshDebug` still applies dynamic state rules, such as service-gate color and moving vehicle body/cabin placement, but the authored mesh instance list now comes from `data/scenes/ferry_office.scene.json`.
 
 ## Renderer Notes
 
@@ -87,7 +87,7 @@ scripts/verify.ps1
 ## Deferred
 
 - Real static mesh resource lifetime.
-- Runtime scene loading from JSON.
+- Runtime scene hot reload or editing.
 - Mesh/material asset registry.
 - Texture/material/PBR work.
 - Depth buffer and camera matrices.

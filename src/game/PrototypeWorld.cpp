@@ -1,6 +1,7 @@
 #include "game/PrototypeWorld.h"
 
 #include "game/FerryOfficeData.h"
+#include "game/SceneDefinition.h"
 
 #include <algorithm>
 #include <cmath>
@@ -50,13 +51,14 @@ void PrototypeWorld::setFloorHeight(float floorHeight)
     m_floorHeight = floorHeight;
 }
 
-int PrototypeWorld::addBox(std::string name, engine::Vec3 center, engine::Vec3 halfExtents)
+int PrototypeWorld::addBox(std::string name, engine::Vec3 center, engine::Vec3 halfExtents, bool blocksPlayer)
 {
     StaticCollider collider;
     collider.id = m_nextColliderId++;
     collider.name = std::move(name);
     collider.bounds.center = center;
     collider.bounds.halfExtents = halfExtents;
+    collider.blocksPlayer = blocksPlayer;
     m_colliders.push_back(std::move(collider));
     return m_colliders.back().id;
 }
@@ -88,6 +90,20 @@ void PrototypeWorld::buildFerryOfficePrototypeLayout()
     addBox("dock-rail-right", {4.2f, 0.45f, -0.5f}, {0.2f, 0.45f, 3.0f});
     addBox("office-counter", {-1.35f, 0.45f, 1.45f}, {0.7f, 0.45f, 0.3f});
     addBox("maintenance-crate", {3.6f, 0.45f, 0.55f}, {0.45f, 0.45f, 0.45f});
+}
+
+void PrototypeWorld::buildFromSceneDefinition(const SceneDefinition& scene)
+{
+    clear();
+    setFloorHeight(scene.floorHeight);
+
+    for (const SceneColliderDefinition& collider : scene.colliders) {
+        if (collider.kind != "box") {
+            continue;
+        }
+
+        addBox(collider.id, collider.center, collider.halfExtents, collider.blocksPlayer);
+    }
 }
 
 bool PrototypeWorld::setColliderBlocksPlayer(std::string_view name, bool blocksPlayer)

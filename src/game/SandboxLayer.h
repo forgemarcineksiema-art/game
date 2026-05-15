@@ -5,14 +5,18 @@
 #include "engine/physics/PhysicsWorld.h"
 #include "game/PlayerController.h"
 #include "game/PrototypeScene.h"
+#include "game/SceneDefinition.h"
 #include "game/ThirdPersonCamera.h"
 #include "game/VehicleController.h"
 
+#include <filesystem>
 #include <memory>
 #include <string>
 
 class SandboxLayer final : public engine::IGameLayer {
 public:
+    explicit SandboxLayer(std::filesystem::path scenePath = "data/scenes/ferry_office.scene.json");
+
     void onAttach() override;
     void onUpdate(double deltaSeconds, const engine::InputState& input) override;
     void onRender(engine::IRenderer& renderer) override;
@@ -27,17 +31,24 @@ private:
     void drawStaticMeshDebug(engine::IRenderer& renderer);
     void drawWorldStateDebug(engine::IRenderer& renderer);
     void drawSliceDebug(engine::IRenderer& renderer);
+    void drawSceneVisualPlaceholders(engine::IRenderer& renderer);
     void recordWorldStateChange(bool changed);
+    void loadSceneDefinition();
+    void configureRuntimeFromScene();
     void setupVehiclePhysicsWorld();
     bool isVehicleExitPositionClear(engine::Vec3 position) const;
     void applyCameraSettingsForMode(bool vehicleMode);
     void loadStaticMeshAssets();
 
     PrototypeScene m_scene;
+    SceneDefinition m_sceneDefinition;
+    std::filesystem::path m_scenePath;
     PlayerController m_player;
     ThirdPersonCamera m_camera;
     VehicleController m_vehicle;
     engine::StaticMeshAsset m_unitBoxMesh;
+    engine::Vec3 m_vehicleProxyHalfExtents {0.58f, 0.34f, 0.92f};
+    engine::Vec3 m_vehicleCabinHalfExtents {0.42f, 0.20f, 0.46f};
     ThirdPersonCameraSettings m_onFootCameraSettings;
     ThirdPersonCameraSettings m_vehicleCameraSettings;
     std::unique_ptr<engine::physics::IPhysicsWorld> m_vehiclePhysicsWorld;
@@ -51,5 +62,6 @@ private:
     bool m_worldStateChangedThisFrame = false;
     bool m_cameraInVehicleMode = false;
     bool m_unitBoxMeshLoaded = false;
+    bool m_sceneDefinitionLoaded = false;
     unsigned long long m_frameIndex = 0;
 };

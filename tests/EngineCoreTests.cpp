@@ -12,6 +12,8 @@
 #include "game/PrototypeScene.h"
 #include "game/PrototypeWorld.h"
 #include "game/SandboxLayer.h"
+#include "game/SceneDefinition.h"
+#include "game/SceneLoader.h"
 #include "game/ThirdPersonCamera.h"
 #include "game/TraversalSystem.h"
 #include "game/VehicleController.h"
@@ -22,6 +24,7 @@
 #include <iostream>
 #include <array>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -33,6 +36,44 @@ struct TestFailure {
 };
 
 std::vector<TestFailure> failures;
+
+std::filesystem::path DefaultScenePathForTests()
+{
+    return std::filesystem::path(ENGINE_SOURCE_ROOT) / "data" / "scenes" / "ferry_office.scene.json";
+}
+
+const SceneVehicleDefinition* FindVehicle(const SceneDefinition& scene, std::string_view id)
+{
+    for (const SceneVehicleDefinition& vehicle : scene.vehicles) {
+        if (vehicle.id == id) {
+            return &vehicle;
+        }
+    }
+
+    return nullptr;
+}
+
+const SceneRouteMarkerDefinition* FindRouteMarker(const SceneDefinition& scene, std::string_view id)
+{
+    for (const SceneRouteMarkerDefinition& marker : scene.routeMarkers) {
+        if (marker.id == id) {
+            return &marker;
+        }
+    }
+
+    return nullptr;
+}
+
+const SceneVisualPlaceholderDefinition* FindVisualPlaceholder(const SceneDefinition& scene, std::string_view id)
+{
+    for (const SceneVisualPlaceholderDefinition& placeholder : scene.visualPlaceholders) {
+        if (placeholder.id == id) {
+            return &placeholder;
+        }
+    }
+
+    return nullptr;
+}
 
 void Expect(bool condition, const std::string& name, const std::string& message)
 {
@@ -109,6 +150,19 @@ void TestCursorCaptureArguments()
         Expect(result.errors.empty(), "TestCursorCaptureArguments", "Cursor mode arguments should parse cleanly.");
         Expect(result.config.captureCursor, "TestCursorCaptureArguments", "Later capture cursor argument should win.");
     }
+}
+
+void TestSceneArgumentSelectsRuntimeScenePath()
+{
+    const char* argv[] = {"EngineApp", "--scene", "data/scenes/ferry_office.scene.json"};
+    const auto result = engine::ParseArguments(3, argv);
+
+    Expect(result.errors.empty(),
+        "TestSceneArgumentSelectsRuntimeScenePath",
+        "Scene path argument should parse cleanly.");
+    Expect(result.config.scenePath.generic_string() == "data/scenes/ferry_office.scene.json",
+        "TestSceneArgumentSelectsRuntimeScenePath",
+        "Config should preserve the selected runtime scene path.");
 }
 
 void TestNormalizePathKeepsAssetPathsInsideBase()
@@ -214,6 +268,116 @@ void TestStaticMeshBuildsTransformedTriangleList()
     ExpectNear(triangles[2].y, 1.0f, 0.001f,
         "TestStaticMeshBuildsTransformedTriangleList",
         "Instance transform should preserve local y after scale.");
+}
+
+void TestSceneLoaderLoadsDefaultFerryOfficeScene()
+{
+    const SceneLoadResult result = LoadSceneDefinition(DefaultScenePathForTests());
+
+    Expect(result.ok(),
+        "TestSceneLoaderLoadsDefaultFerryOfficeScene",
+        "Default Ferry Office scene JSON should load successfully.");
+    Expect(result.scene.id == "ferry-office",
+        "TestSceneLoaderLoadsDefaultFerryOfficeScene",
+        "Loaded scene should expose the authored scene id.");
+    Expect(result.scene.colliders.size() == 9,
+        "TestSceneLoaderLoadsDefaultFerryOfficeScene",
+        "Loaded scene should expose authored static colliders.");
+    Expect(result.scene.visualPlaceholders.size() == 21,
+        "TestSceneLoaderLoadsDefaultFerryOfficeScene",
+        "Loaded scene should expose authored visual placeholders.");
+    Expect(result.scene.meshInstances.size() == 10,
+        "TestSceneLoaderLoadsDefaultFerryOfficeScene",
+        "Loaded scene should expose authored mesh instances.");
+    Expect(result.scene.interactables.size() == 5,
+        "TestSceneLoaderLoadsDefaultFerryOfficeScene",
+        "Loaded scene should expose authored interactables.");
+    Expect(result.scene.traversalAffordances.size() == 1,
+        "TestSceneLoaderLoadsDefaultFerryOfficeScene",
+        "Loaded scene should expose authored traversal affordances.");
+}
+
+void TestSceneLoaderReportsMissingSceneFile()
+{
+    const SceneLoadResult result = LoadSceneDefinition(std::filesystem::path(ENGINE_SOURCE_ROOT) / "data" / "scenes" / "missing.scene.json");
+
+    Expect(!result.ok(),
+        "TestSceneLoaderReportsMissingSceneFile",
+        "Missing scene file should fail cleanly.");
+    Expect(result.error.find("not found") != std::string::npos || result.error.find("Could not read") != std::string::npos,
+        "TestSceneLoaderReportsMissingSceneFile",
+        "Missing scene failure should explain that the file could not be read.");
+}
+
+void TestSceneLoaderLoadsVehicleBoundsAndRoadMarkers()
+{
+    const SceneLoadResult result = LoadSceneDefinition(DefaultScenePathForTests());
+    const SceneVehicleDefinition* vehicle = FindVehicle(result.scene, "service-yard-vehicle");
+    const SceneRouteMarkerDefinition* route = FindRouteMarker(result.scene, "route-service-yard-to-dock-road");
+    const SceneVisualPlaceholderDefinition* road = FindVisualPlaceholder(result.scene, "dock-road-segment");
+
+    Expect(result.ok(),
+        "TestSceneLoaderLoadsVehicleBoundsAndRoadMarkers",
+        "Default scene should load before querying vehicle and road data.");
+    Expect(vehicle != nullptr,
+        "TestSceneLoaderLoadsVehicleBoundsAndRoadMarkers",
+        "Loaded scene should include the service-yard vehicle.");
+    if (vehicle != nullptr) {
+        ExpectNear(vehicle->spawnPosition.x, 6.2f, 0.001f,
+            "TestSceneLoaderLoadsVehicleBoundsAndRoadMarkers",
+            "Vehicle spawn X should come from scene data.");
+        ExpectNear(vehicle->boundsMax.x, 19.45f, 0.001f,
+            "TestSceneLoaderLoadsVehicleBoundsAndRoadMarkers",
+            "Vehicle road-test max X bound should come from scene data.");
+        ExpectNear(vehicle->proxyHalfExtents.y, 0.53f, 0.001f,
+            "TestSceneLoaderLoadsVehicleBoundsAndRoadMarkers",
+            "Vehicle proxy height should come from scene data.");
+    }
+    Expect(route != nullptr && route->points.size() == 4,
+        "TestSceneLoaderLoadsVehicleBoundsAndRoadMarkers",
+        "Loaded scene should include the dock-road route marker polyline.");
+    Expect(road != nullptr,
+        "TestSceneLoaderLoadsVehicleBoundsAndRoadMarkers",
+        "Loaded scene should include the dock-road visual placeholder.");
+}
+
+void TestPrototypeWorldBuildsFerryOfficeCollidersFromSceneData()
+{
+    const SceneLoadResult result = LoadSceneDefinition(DefaultScenePathForTests());
+    PrototypeWorld world;
+    world.buildFromSceneDefinition(result.scene);
+
+    Expect(result.ok(),
+        "TestPrototypeWorldBuildsFerryOfficeCollidersFromSceneData",
+        "Default scene should load before building the world.");
+    Expect(world.colliders().size() == result.scene.colliders.size(),
+        "TestPrototypeWorldBuildsFerryOfficeCollidersFromSceneData",
+        "PrototypeWorld should build static colliders from scene data.");
+    const StaticCollider* gate = world.colliderByName(FerryOffice::Names::ServiceGateCollider);
+    Expect(gate != nullptr && gate->blocksPlayer,
+        "TestPrototypeWorldBuildsFerryOfficeCollidersFromSceneData",
+        "Service gate collider should be loaded from scene data and start blocking.");
+}
+
+void TestPrototypeSceneLoadsInteractionsAndTraversalFromSceneData()
+{
+    const SceneLoadResult result = LoadSceneDefinition(DefaultScenePathForTests());
+    PrototypeScene scene;
+    scene.loadFromDefinition(result.scene);
+
+    Expect(result.ok(),
+        "TestPrototypeSceneLoadsInteractionsAndTraversalFromSceneData",
+        "Default scene should load before building the prototype scene.");
+    Expect(scene.interactions().interactableCount() == result.scene.interactables.size(),
+        "TestPrototypeSceneLoadsInteractionsAndTraversalFromSceneData",
+        "PrototypeScene should build interactables from scene data.");
+    Expect(scene.traversal().affordanceCount() == result.scene.traversalAffordances.size(),
+        "TestPrototypeSceneLoadsInteractionsAndTraversalFromSceneData",
+        "PrototypeScene should build traversal affordances from scene data.");
+    const InteractionFocus manifestFocus = scene.interactions().updateFocus({0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f});
+    Expect(manifestFocus.hasFocus && manifestFocus.name == FerryOffice::Names::FerryManifest,
+        "TestPrototypeSceneLoadsInteractionsAndTraversalFromSceneData",
+        "Loaded scene interactables should preserve the Ferry Manifest focus behavior.");
 }
 
 void TestPhysicsWorldCreatesAndShutsDownThroughVendorFreeInterface()
@@ -687,12 +851,15 @@ void TestSandboxLayerVehicleDebugTextIncludesRoadTestTelemetry()
 
 void TestSandboxLayerDebugTextIncludesDockRoadTelemetry()
 {
-    SandboxLayer layer;
+    SandboxLayer layer(DefaultScenePathForTests());
     layer.onAttach();
 
     const std::string debug = layer.debugText();
     layer.onDetach();
 
+    Expect(debug.find("scene=ferry-office loaded=yes") != std::string::npos,
+        "TestSandboxLayerDebugTextIncludesDockRoadTelemetry",
+        "Sandbox debug text should expose that the runtime scene data loaded.");
     Expect(debug.find("roadSegment=dock-road") != std::string::npos,
         "TestSandboxLayerDebugTextIncludesDockRoadTelemetry",
         "Sandbox debug text should expose the authored dock road segment.");
@@ -1874,12 +2041,18 @@ int main()
     TestFramesArgumentOverridesSmokeDefault();
     TestInvalidRendererIsRejected();
     TestCursorCaptureArguments();
+    TestSceneArgumentSelectsRuntimeScenePath();
     TestNormalizePathKeepsAssetPathsInsideBase();
     TestClockStartsAtFrameZeroAndTicksForward();
     TestNullRendererRecordsFrameAndDebugDraw();
     TestStaticMeshLoaderLoadsCommittedUnitBox();
     TestStaticMeshLoaderReportsMissingAsset();
     TestStaticMeshBuildsTransformedTriangleList();
+    TestSceneLoaderLoadsDefaultFerryOfficeScene();
+    TestSceneLoaderReportsMissingSceneFile();
+    TestSceneLoaderLoadsVehicleBoundsAndRoadMarkers();
+    TestPrototypeWorldBuildsFerryOfficeCollidersFromSceneData();
+    TestPrototypeSceneLoadsInteractionsAndTraversalFromSceneData();
     TestPhysicsWorldCreatesAndShutsDownThroughVendorFreeInterface();
     TestPhysicsWorldRaycastHitsStaticBox();
     TestPhysicsWorldDebugLinesExposeStaticBoxes();

@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-15
 
-v0.11 introduces scene data for Codex-friendly inspection and validation. v0.12 adds mesh asset and mesh instance references. v0.12.1 expands the Ferry Office mesh mirror for a focused prop/scale pass. v0.14 adds the first dock road segment as authored placeholders and route markers. Runtime behavior still comes from explicit C++ prototype setup. Keep scene data and C++ layout changes in sync until a later goal adds runtime loading or generation.
+v0.11 introduced scene data for Codex-friendly inspection and validation. v0.12 added mesh asset and mesh instance references. v0.12.1 expanded the Ferry Office mesh set for a focused prop/scale pass. v0.14 added the first dock road segment as authored placeholders and route markers. v0.15 makes `data/scenes/ferry_office.scene.json` the runtime source of truth for current layout data while keeping Tidebreak-specific behavior in C++.
 
 ## Scene Data Location
 
@@ -42,11 +42,43 @@ The Ferry Office scene file describes:
 
 Use stable lowercase kebab-case ids. Do not rely on runtime add-order numeric ids.
 
+## Runtime Loading
+
+Default runtime scene:
+
+```powershell
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi
+```
+
+Explicit runtime scene path:
+
+```powershell
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --scene data\scenes\ferry_office.scene.json
+```
+
+Loaded from scene data in v0.15:
+
+- floor height and player start,
+- static colliders,
+- visual placeholders,
+- mesh assets and mesh instances,
+- interactables,
+- traversal affordances,
+- service-yard vehicle spawn, enter radius, proxy half extents, and bounds,
+- route markers and objective markers.
+
+Still scene-owned C++ behavior:
+
+- world-state flag effects,
+- interaction result handling,
+- traversal completion side effects,
+- objective text and completion summary,
+- dynamic state colors and vehicle camera/update behavior.
+
 ## Adding Or Moving Objects
 
 1. Edit the appropriate section in `data/scenes/ferry_office.scene.json`.
-2. If runtime behavior must change before scene loading exists, update the matching C++ constants/setup in the same change.
-3. Run:
+2. Run:
 
 ```powershell
 python tools/validate_scene.py
@@ -55,7 +87,8 @@ python tools/scale_audit.py
 python tools/mesh_report.py
 ```
 
-4. Run `scripts/verify.ps1` before claiming success.
+3. Run `scripts/verify.ps1` before claiming success.
+4. For layout/runtime changes, run a short GDI pass and confirm the object moved in-game.
 
 ## Colliders
 
@@ -168,22 +201,22 @@ Required fields:
 
 Vehicle movement is still deterministic placeholder code. Jolt VehicleConstraint and real vehicle collision are deferred.
 
-For v0.14, the service-yard vehicle bounds include the original yard plus the short dock road and turn-around marker: `[3.35, -5.05]..[19.45, 0.95]` in X/Z. Any bounds, pad, road, rail, curb, water-edge, or end-marker edit must stay synchronized with the grouped service-yard/dock-road constants in `src/game/SandboxLayer.cpp`.
+The service-yard vehicle bounds include the original yard plus the short dock road and turn-around marker: `[3.35, -5.05]..[19.45, 0.95]` in X/Z. In v0.15 these values are loaded by `SandboxLayer` at runtime.
 
 ## Dock Road Segment
 
-Use `visualPlaceholders` for road pads, shore/water cues, edge rails, curbs, bollards, and end markers. Use `routeMarkers` for Codex-readable route intent such as `route-service-yard-to-dock-road`. The v0.14 road is an authored placeholder route, not a terrain system, road spline, traffic path, or runtime-loaded map.
+Use `visualPlaceholders` for road pads, shore/water cues, edge rails, curbs, bollards, and end markers. Use `routeMarkers` for Codex-readable route intent such as `route-service-yard-to-dock-road`. The road is an authored placeholder route, not a terrain system, road spline, traffic path, or full map.
 
 ## Avoiding Layout Drift
 
-Until runtime scene loading exists, any change to these areas must update both the scene data and matching C++:
+After v0.15, new layout edits should start in `data/scenes/ferry_office.scene.json`. Do not reintroduce duplicate placement constants in C++ unless a runtime behavior genuinely needs a named fallback or special-case dynamic rule.
 
-- `src/game/FerryOfficeData.*`
-- `src/game/PrototypeWorld.cpp`
-- `src/game/PrototypeScene.cpp`
-- `src/game/SandboxLayer.cpp`
+Remaining drift risks:
 
-Future goals should reduce this duplication by either loading scene data at runtime or generating a small C++ data file from the JSON.
+- `FerryOfficeData` still contains stable names and fallback positions for behavior/tests.
+- `PrototypeScene` still maps known interaction names to world-state flags.
+- `SandboxLayer` still owns dynamic coloring, vehicle camera behavior, exit safety, and fallback values.
+- There is no editor, prefab system, runtime scene reload, or schema file beyond code and Python validation.
 
 ## Definition Of Done For Scene Edits
 

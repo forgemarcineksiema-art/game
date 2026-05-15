@@ -94,7 +94,8 @@ python tools/mesh_report.py
 - [ ] `python tools/mesh_report.py` reports mesh asset `unit-box-mesh` and 10 expected Ferry Office/service-yard mesh instances.
 - [ ] `data/scenes/ferry_office.scene.json` contains the service gate, manifest, maintenance box, wall button, exit marker, service vault, player start, and service-yard vehicle ids.
 - [ ] `data/scenes/ferry_office.scene.json` contains `meshAssets` and `meshInstances` for the current static mesh spike.
-- [ ] Any manual movement of scene objects is reflected in both C++ runtime data and scene JSON until runtime loading exists.
+- [ ] Runtime debug text reports `scene=ferry-office loaded=yes`.
+- [ ] Any manual movement of scene layout objects starts in scene JSON; only behavior-specific C++ fallback/mapping is changed when necessary.
 
 ## Static Mesh Rendering
 

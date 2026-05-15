@@ -6,6 +6,8 @@
 #include <string_view>
 #include <vector>
 
+struct SceneDefinition;
+
 struct Aabb {
     engine::Vec3 center;
     engine::Vec3 halfExtents;
@@ -53,9 +55,10 @@ class PrototypeWorld {
 public:
     void clear();
     void setFloorHeight(float floorHeight);
-    int addBox(std::string name, engine::Vec3 center, engine::Vec3 halfExtents);
+    int addBox(std::string name, engine::Vec3 center, engine::Vec3 halfExtents, bool blocksPlayer = true);
     void buildDefaultCollisionTestLayout();
     void buildFerryOfficePrototypeLayout();
+    void buildFromSceneDefinition(const SceneDefinition& scene);
     bool setColliderBlocksPlayer(std::string_view name, bool blocksPlayer);
 
     CollisionResult resolvePlayer(const PlayerCollisionProxy& proxy) const;

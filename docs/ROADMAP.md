@@ -159,7 +159,7 @@ Status: implemented as a first vehicle feel spike. The service-yard vehicle can 
 - Document units, scale, pivots, naming, Blender/glTF direction, scene authoring workflow, and art/mood direction.
 - Keep runtime behavior unchanged and avoid a full editor, ECS, asset pipeline, model loading, animation runtime, or gameplay system.
 
-Status: implemented as a tooling/data foundation. The runtime still uses the existing C++ prototype setup, but `data/scenes/ferry_office.scene.json` now mirrors the scene and is validated by Python tools and CTest/verify.
+Status: implemented as a tooling/data foundation. At v0.11, runtime still used the existing C++ prototype setup, while `data/scenes/ferry_office.scene.json` mirrored the scene and was validated by Python tools and CTest/verify. v0.15 later promoted that scene data into runtime loading.
 
 ## v0.12 - Static Mesh + glTF Render Spike
 
@@ -198,8 +198,19 @@ Status: implemented as a small feel/readability polish pass. The vehicle remains
 - Preserve the Ferry Office loop, interactions, traversal, world state, vehicle enter/exit, static mesh validation, default validation, and Jolt opt-in validation.
 - Avoid traffic, missions, large map expansion, runtime scene loading, full vehicle physics, textures/materials, final art, and new gameplay systems.
 
-Status: implemented as a compact dock road mood/layout pass. The service-yard now opens into a short road pad with a turn-around marker, shore/water cue, rail/curb bounds, route marker, expanded finite vehicle bounds, and updated scene validation tests. Runtime layout remains mirrored explicitly in `SandboxLayer`.
+Status: implemented as a compact dock road mood/layout pass. The service-yard now opens into a short road pad with a turn-around marker, shore/water cue, rail/curb bounds, route marker, expanded finite vehicle bounds, and updated scene validation tests. At v0.14 runtime layout remained mirrored explicitly in `SandboxLayer`; v0.15 later moved that layout into runtime scene loading.
+
+## v0.15 - Runtime Scene Loading / Scene Data Source of Truth
+
+- Load `data/scenes/ferry_office.scene.json` at runtime.
+- Use scene data for static colliders, visual placeholders, mesh instances, interactables, traversal affordances, player start, vehicle spawn/proxy/bounds, route markers, and objective markers where practical.
+- Keep Tidebreak-specific gameplay meaning in C++ for now: world-state effects, objective text, interaction result mapping, and traversal completion side effects.
+- Add `--scene <path>` for custom scene experiments.
+- Preserve the Ferry Office loop, service-yard vehicle, dock road segment, scene tools, default validation, and Jolt opt-in validation.
+- Avoid editor/ECS/prefabs, mission scripting, asset pipeline expansion, full map work, or new gameplay systems.
+
+Status: implemented as a source-of-truth migration. The runtime now loads the Ferry Office scene through `SceneLoader` / `SceneDefinition` using `nlohmann/json`, while behavior remains explicitly scene-owned C++.
 
 ## Recommended Next Goal
 
-Build v0.15 Runtime Scene Loading / Scene Data Source of Truth.
+Build v0.16 First Driver/Fixer Job Prototype.

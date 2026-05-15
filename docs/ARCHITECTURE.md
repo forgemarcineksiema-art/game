@@ -61,15 +61,24 @@ The Win32 layer maps `W/A/S/D`, `Shift`, `Space`, `E`, `Esc`, mouse/touchpad mov
 
 ## Scene Data
 
-v0.11 adds the first explicit scene/object authoring data:
+v0.11 added the first explicit scene/object authoring data:
 
 ```text
 data/scenes/ferry_office.scene.json
 ```
 
-This file mirrors the current Ferry Office, service-yard, and v0.14 dock road prototype: units, floor height, player start, scale references, static colliders, visual placeholders, interactables, traversal affordance, vehicle spawn/bounds, route markers, and objective markers.
+This file describes the current Ferry Office, service-yard, and v0.14 dock road prototype: units, floor height, player start, scale references, static colliders, visual placeholders, mesh assets/instances, interactables, traversal affordance, vehicle spawn/bounds, route markers, and objective markers.
 
-Runtime loading is intentionally deferred. The active game still uses `PrototypeWorld`, `PrototypeScene`, `FerryOfficeData`, and `SandboxLayer` C++ setup. Until a loader or generator exists, changes to authored layout must keep the JSON and matching C++ constants synchronized.
+v0.15 adds a runtime scene-data boundary:
+
+```text
+src/game/SceneDefinition.*
+src/game/SceneLoader.*
+```
+
+`SceneLoader` uses `nlohmann/json` internally and returns Tidebreak-owned `SceneDefinition` structs. Third-party parser types do not leave `SceneLoader.cpp`. `SandboxLayer` loads `data/scenes/ferry_office.scene.json` by default, and `--scene <path>` can point the runtime at another scene file.
+
+The runtime now uses loaded scene data for static colliders, visual placeholders, mesh instances, interactables, traversal affordances, player start, vehicle spawn/proxy/bounds, route markers, and objective markers where practical. Tidebreak-specific behavior remains C++ scene logic for now: world-state flag effects, interaction result mapping, traversal completion side effects, and objective/completion text.
 
 Scene tools live under `tools`:
 
@@ -79,7 +88,7 @@ Scene tools live under `tools`:
 - `scale_audit.py`: suspicious-scale report for object sizes and vehicle dimensions.
 - `mesh_report.py`: static mesh asset/reference summary.
 
-v0.12 extends the scene file with `meshAssets` and `meshInstances`. These are validated authoring/runtime-candidate entries, not a full asset registry. v0.12.1 grows the Ferry Office mirror to 10 mesh instances for roof/facade/sign, service gate, maintenance box, dock props, service-yard crate, and vehicle body/cabin. Runtime still mirrors the important mesh instances explicitly in `SandboxLayer` until scene loading or code generation exists.
+v0.12 extends the scene file with `meshAssets` and `meshInstances`. These are validated scene entries, not a full asset registry. v0.12.1 grows the Ferry Office prop set to 10 mesh instances for roof/facade/sign, service gate, maintenance box, dock props, service-yard crate, and vehicle body/cabin. v0.15 submits those mesh instances from loaded scene data; the current renderer still uses the narrow unit-box flat-triangle path.
 
 ## Static Mesh Assets
 
@@ -103,7 +112,7 @@ The default backend is a tiny dependency-free `simple` world used by normal vali
 
 `src/engine/physics/JoltPhysicsWorld.cpp` is compiled only when `ENGINE_ENABLE_JOLT_PHYSICS=ON`. It keeps Jolt headers and `JPH::*` types private to `EngineCore`. Game code must not include Jolt headers or store Jolt handles directly.
 
-The opt-in preset `windows-vs2022-debug-jolt` proves that Jolt can initialize/shutdown, create static boxes, support raycasts through the engine interface, and build with the current Windows toolchain. The normal `windows-vs2022-debug` preset remains dependency-free for reliable everyday validation.
+The opt-in preset `windows-vs2022-debug-jolt` proves that Jolt can initialize/shutdown, create static boxes, support raycasts through the engine interface, and build with the current Windows toolchain. The normal `windows-vs2022-debug` preset remains Jolt-free for everyday validation.
 
 `src/game/PrototypeWorld.*` remains the active Ferry Office authoring and collision owner for now. A later migration should mirror or move one tested behavior at a time into `engine::physics`; v0.9.2 deliberately does not rewrite player movement, traversal landing, or service-gate collision around Jolt.
 
@@ -133,7 +142,7 @@ v0.12 adds `IRenderer::drawDebugFlatTriangles` as a narrow immediate-mode static
 
 `src/game/VehicleController.*` is the v0.10 narrow vehicle feel spike, tuned in v0.13 for the compact service-yard road test. It owns a deterministic arcade-style placeholder vehicle state: position, yaw, speed, velocity, throttle/brake/steer telemetry, occupied state, focus range, pressed-edge enter/exit, safe exit checks, drag/coast behavior, and simple yard-bound clamping. It deliberately does not expose Jolt, vehicle constraints, wheels, suspension, damage, doors, seats, cargo, traffic, or tuning data files.
 
-`src/game/PrototypeWorld.*` is the v0.3 static world/collision boundary. It owns named static AABB colliders, a floor height, player proxy resolution, overlap checks, ground checks, and a simple raycast query for future camera obstruction or interaction work. v0.7 adds a Ferry Office prototype layout builder and lets the scene toggle whether a named collider blocks the player.
+`src/game/PrototypeWorld.*` is the v0.3 static world/collision boundary. It owns named static AABB colliders, a floor height, player proxy resolution, overlap checks, ground checks, and a simple raycast query for future camera obstruction or interaction work. v0.15 can build its static colliders from `SceneDefinition`; the older Ferry Office layout builder remains only as a built-in fallback/test helper.
 
 `src/game/InteractionSystem.*` is the v0.4 gameplay interaction boundary. It owns lightweight interactable data, selects the best focus candidate from player position/facing/range, and executes simple built-in actions: pickup, toggle, and info. It deliberately has no scripting, inventory, dialogue tree, mission state, or UI framework.
 
@@ -141,13 +150,13 @@ v0.12 adds `IRenderer::drawDebugFlatTriangles` as a narrow immediate-mode static
 
 `src/game/WorldState.*` is the v0.6 local remembered-state boundary for the prototype scene. It owns boolean flags, deterministic event records, event ids, last-event text, and compact debug summary text. It is runtime-only and does not implement save/load, mission scripting, inventory, dialogue, or persistence.
 
-`src/game/PrototypeScene.*` defines the Ferry Office debug micro-slice. It asks `PrototypeWorld` to build a dock/ferry-office prototype layout with a closed service gate, a service barrier, office walls, dock rails, and maintenance-side blockers. It owns five debug interactables: a one-shot Ferry Manifest pickup, a repeatable Wall Button service-gate opener, a repeatable Ferry Office Notice, a Maintenance Box, and an Exit Summary Marker.
+`src/game/PrototypeScene.*` defines the Ferry Office debug micro-slice. In v0.15 it builds world colliders, interactables, and traversal affordances from `SceneDefinition` when runtime scene loading succeeds. It still owns the scene-specific meaning of those actions.
 
 `src/game/PrototypeScene.*` also owns the first v0.5 traversal affordance: a service-barrier vault path used as access-gating groundwork for The Ferry Office.
 
-`src/game/FerryOfficeData.*` centralizes the Ferry Office prototype's stable debug names, prompts, messages, important marker positions, radii, and traversal tuning constants. It is not a content pipeline; it is a small data cleanup so scene setup, state mapping, debug rendering, and tests do not repeat string ids and coordinates.
+`src/game/FerryOfficeData.*` still centralizes stable Ferry Office names and C++ fallback constants used by behavior mapping, tests, and fallback debug paths. New layout edits should prefer `data/scenes/ferry_office.scene.json`; do not add new duplicated coordinates to `FerryOfficeData` unless the behavior code truly needs a stable symbolic constant.
 
-`data/scenes/ferry_office.scene.json` is now the Codex-facing scene mirror for those positions and ids. It should become the source of truth in a later goal, but v0.11 deliberately keeps it as a validated authoring snapshot so gameplay behavior stays unchanged.
+`data/scenes/ferry_office.scene.json` is now the runtime source of truth for current layout data. It is not yet a mission script, prefab system, editor format, or full asset registry.
 
 `src/game/PrototypeScene.*` maps prototype gameplay results to remembered state: Ferry Manifest sets `manifestCollected`, Wall Button sets `routeOpened=true`, Maintenance Box sets `maintenanceBoxInspected` and `powerRestored`, Service Barrier Vault completion sets `serviceRouteUsed`, and the Exit Summary Marker can set `exitReached` only after the required loop is ready. This mapping stays in the scene layer so `InteractionSystem` and `TraversalSystem` remain generic.
 
@@ -157,7 +166,7 @@ v0.12 adds `IRenderer::drawDebugFlatTriangles` as a narrow immediate-mode static
 
 When the vehicle is occupied, `SandboxLayer` skips on-foot player movement, traversal activation, and Ferry Office interactions for that frame. `W/S/A/D` drive the vehicle, `E` exits only when the computed side exit position is clear, and the existing third-person camera follows the vehicle target with separate distance/height/smoothing settings. Exiting places the player beside the vehicle and returns the next frame to the normal on-foot flow.
 
-v0.13 keeps service-yard vehicle placement explicit but reduces local drift by grouping spawn, bounds, pad, rail, back-stop, crate, body, and cabin constants at the top of `SandboxLayer.cpp`. v0.14 extends this grouped constant set with dock-road pad, turn-around, shore/water cue, rail/curb, and road-end marker constants. These constants still mirror `data/scenes/ferry_office.scene.json`; they are not yet loaded from scene data at runtime.
+v0.15 moves service-yard vehicle spawn, enter radius, proxy half extents, finite road-test bounds, visual placeholders, road route markers, and mesh instances onto loaded scene data. `SandboxLayer` still owns dynamic runtime behavior such as vehicle camera mode, exit safety checks, world-state coloring, and fallback values.
 
 In v0.5.1, traversal activation uses the player's current position as the runtime traversal start while keeping the authored affordance target fixed. This avoids a visible snap to the start marker when the player presses `Space` inside the focus radius. The authored start marker remains a focus/debug marker, not a mandatory teleport point.
 
@@ -212,9 +221,9 @@ v0.9 adds a narrow solid debug drawing path, `IRenderer::drawDebugSolidBox`, imp
 
 `SandboxLayer` now draws muted solid placeholder slabs and boxes for the Ferry Office dock, service yard, office walls, gate, traversal markers, interactables, and player proxy, then draws the existing wire/debug outlines on top. This keeps collision and state visibility intact while reducing the pure wireframe workbench feeling.
 
-v0.10 adds a service-yard driving pad, a placeholder vehicle body/cabin, vehicle heading line, enter radius, safe exit marker, yard bounds, and physics debug lines. v0.14 adds a compact dock road pad, shore/water edge cue, rail/curb edges, road route line, turn-around/end marker, and expanded finite vehicle bounds. These are debug primitives only; there is still no vehicle mesh, material system, tire model, terrain system, traffic path, or final road art.
+v0.10 adds a service-yard driving pad, a placeholder vehicle body/cabin, vehicle heading line, enter radius, safe exit marker, yard bounds, and physics debug lines. v0.14 adds a compact dock road pad, shore/water edge cue, rail/curb edges, road route line, turn-around/end marker, and expanded finite vehicle bounds. v0.15 draws these scene presentation objects from runtime scene data. These are debug primitives only; there is still no vehicle mesh resource pipeline, material system, tire model, terrain system, traffic path, or final road art.
 
-This is not an asset pipeline. There are still no textures, mesh loading, materials, lighting, shadows, post-processing, or scene serialization. Solid debug geometry should stay simple and disposable until a later art/asset milestone proves what the engine actually needs.
+This is not a full asset pipeline. There are still no textures, materials, lighting, shadows, post-processing, scene editor, prefabs, or asset registry. Solid debug geometry should stay simple and disposable until later art/asset milestones prove what the engine actually needs.
 
 `docs/ASSET_GUIDE.md`, `docs/SCENE_AUTHORING.md`, and `docs/ART_DIRECTION.md` define the first scale, naming, Blender/glTF direction, scene editing workflow, and coastal-industrial mood target. These guide future asset/model work but do not add runtime model loading yet.
 

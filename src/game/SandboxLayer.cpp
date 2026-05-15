@@ -3,10 +3,15 @@
 #include "engine/core/Logger.h"
 #include "engine/math/Math.h"
 #include "game/FerryOfficeData.h"
+#include "game/SceneLoader.h"
 
+#include <algorithm>
+#include <filesystem>
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include <string_view>
+#include <utility>
 #include <vector>
 
 namespace {
@@ -44,6 +49,77 @@ const engine::Vec3 VehicleCabinHalfExtents {0.42f, 0.20f, 0.46f};
 engine::Color ScaleColor(engine::Color color, float scale)
 {
     return {color.r * scale, color.g * scale, color.b * scale, color.a};
+}
+
+std::filesystem::path ResolveProjectPath(const std::filesystem::path& path)
+{
+    if (path.empty() || path.is_absolute() || std::filesystem::exists(path)) {
+        return path;
+    }
+
+#ifdef ENGINE_SOURCE_ROOT
+    const std::filesystem::path sourcePath = std::filesystem::path(ENGINE_SOURCE_ROOT) / path;
+    if (std::filesystem::exists(sourcePath)) {
+        return sourcePath;
+    }
+#endif
+
+    return path;
+}
+
+engine::Color ColorForSceneKey(std::string_view key, bool routeOpened = false, bool powerRestored = false, bool vehicleOccupied = false)
+{
+    if (key == "dock-weathered-wood") {
+        return {0.33f, 0.30f, 0.22f, 1.0f};
+    }
+    if (key == "office-muted-concrete") {
+        return {0.25f, 0.28f, 0.24f, 1.0f};
+    }
+    if (key == "damp-service-concrete") {
+        return {0.18f, 0.23f, 0.22f, 1.0f};
+    }
+    if (key == "deep-harbor-blue") {
+        return {0.05f, 0.13f, 0.22f, 1.0f};
+    }
+    if (key == "rusted-roof-trim") {
+        return {0.44f, 0.24f, 0.15f, 1.0f};
+    }
+    if (key == "wet-timber") {
+        return {0.38f, 0.30f, 0.14f, 1.0f};
+    }
+    if (key == "oxidized-service-green") {
+        return powerRestored
+            ? engine::Color {0.18f, 0.74f, 0.62f, 1.0f}
+            : engine::Color {0.11f, 0.40f, 0.36f, 1.0f};
+    }
+    if (key == "dark-service-asphalt") {
+        return {0.15f, 0.18f, 0.17f, 1.0f};
+    }
+    if (key == "weathered-yard-rail") {
+        return {0.42f, 0.30f, 0.13f, 1.0f};
+    }
+    if (key == "mossy-service-crate") {
+        return {0.24f, 0.32f, 0.22f, 1.0f};
+    }
+    if (key == "dock-muted-sign-yellow") {
+        return {0.78f, 0.65f, 0.22f, 1.0f};
+    }
+    if (key == "service-gate-state") {
+        return routeOpened
+            ? engine::Color {0.12f, 0.36f, 0.20f, 1.0f}
+            : engine::Color {0.42f, 0.12f, 0.08f, 1.0f};
+    }
+    if (key == "service-vehicle-placeholder") {
+        return vehicleOccupied
+            ? engine::Color {0.18f, 0.58f, 0.95f, 1.0f}
+            : engine::Color {0.62f, 0.66f, 0.48f, 1.0f};
+    }
+    if (key == "service-vehicle-cabin-placeholder") {
+        const engine::Color body = ColorForSceneKey("service-vehicle-placeholder", routeOpened, powerRestored, vehicleOccupied);
+        return ScaleColor(body, 0.78f);
+    }
+
+    return {0.35f, 0.42f, 0.40f, 1.0f};
 }
 
 bool NameContains(const StaticCollider& collider, const char* token)
@@ -218,27 +294,75 @@ void DrawUnitBoxMeshInstance(
 
 } // namespace
 
+SandboxLayer::SandboxLayer(std::filesystem::path scenePath)
+    : m_scenePath(std::move(scenePath))
+{
+}
+
 void SandboxLayer::onAttach()
 {
     engine::Logger::info("Sandbox layer attached.");
+    loadSceneDefinition();
+    configureRuntimeFromScene();
     m_player.setWorld(&m_scene.world());
     m_onFootCameraSettings = m_camera.settings();
     m_vehicleCameraSettings = m_onFootCameraSettings;
     m_vehicleCameraSettings.distance = 7.25f;
     m_vehicleCameraSettings.heightOffset = 2.05f;
     m_vehicleCameraSettings.smoothing = 10.5f;
+    setupVehiclePhysicsWorld();
+    loadStaticMeshAssets();
+    updateDebugText();
+}
+
+void SandboxLayer::loadSceneDefinition()
+{
+    const std::filesystem::path resolvedScenePath = ResolveProjectPath(m_scenePath);
+    const SceneLoadResult loadedScene = LoadSceneDefinition(resolvedScenePath);
+    if (!loadedScene.ok()) {
+        m_sceneDefinitionLoaded = false;
+        engine::Logger::warning("Runtime scene load failed; using built-in Ferry Office fallback. " + loadedScene.error);
+        return;
+    }
+
+    m_sceneDefinition = loadedScene.scene;
+    m_sceneDefinitionLoaded = true;
+    m_scene.loadFromDefinition(m_sceneDefinition);
+    engine::Logger::info("Loaded runtime scene data: " + m_sceneDefinition.id + " from " + resolvedScenePath.string());
+}
+
+void SandboxLayer::configureRuntimeFromScene()
+{
+    if (m_sceneDefinitionLoaded) {
+        m_player.setPosition(m_sceneDefinition.playerStart.position);
+    }
 
     VehicleControllerSettings vehicleSettings;
+    const SceneVehicleDefinition* vehicle = m_sceneDefinitionLoaded && !m_sceneDefinition.vehicles.empty()
+        ? &m_sceneDefinition.vehicles.front()
+        : nullptr;
+
+    if (vehicle) {
+        vehicleSettings.enterRadius = vehicle->enterRadius;
+        vehicleSettings.boundsMinX = vehicle->boundsMin.x;
+        vehicleSettings.boundsMaxX = vehicle->boundsMax.x;
+        vehicleSettings.boundsMinZ = vehicle->boundsMin.y;
+        vehicleSettings.boundsMaxZ = vehicle->boundsMax.y;
+        m_vehicleProxyHalfExtents = vehicle->proxyHalfExtents;
+        m_vehicle.setSettings(vehicleSettings);
+        m_vehicle.setPosition(vehicle->spawnPosition);
+        m_vehicle.setYawRadians(vehicle->spawnYawRadians);
+        return;
+    }
+
     vehicleSettings.boundsMinX = ServiceYardBoundsMinX;
     vehicleSettings.boundsMaxX = ServiceYardBoundsMaxX;
     vehicleSettings.boundsMinZ = ServiceYardBoundsMinZ;
     vehicleSettings.boundsMaxZ = ServiceYardBoundsMaxZ;
+    m_vehicleProxyHalfExtents = VehicleBodyHalfExtents;
     m_vehicle.setSettings(vehicleSettings);
     m_vehicle.setPosition(ServiceYardVehicleSpawnPosition);
     m_vehicle.setYawRadians(ServiceYardVehicleSpawnYawRadians);
-    setupVehiclePhysicsWorld();
-    loadStaticMeshAssets();
-    updateDebugText();
 }
 
 void SandboxLayer::onUpdate(double deltaSeconds, const engine::InputState& input)
@@ -322,9 +446,13 @@ void SandboxLayer::onRender(engine::IRenderer& renderer)
 {
     renderer.setDebugCamera(m_camera.debugCamera());
     renderer.drawDebugGridAndAxes();
-    DrawFerryOfficeMoodBase(renderer, m_scene.world().floorHeight());
-    DrawVehicleServiceYardBase(renderer, m_scene.world().floorHeight());
-    DrawDockRoadBase(renderer, m_scene.world().floorHeight());
+    if (m_sceneDefinitionLoaded) {
+        drawSceneVisualPlaceholders(renderer);
+    } else {
+        DrawFerryOfficeMoodBase(renderer, m_scene.world().floorHeight());
+        DrawVehicleServiceYardBase(renderer, m_scene.world().floorHeight());
+        DrawDockRoadBase(renderer, m_scene.world().floorHeight());
+    }
     drawStaticMeshDebug(renderer);
     renderer.drawDebugLine({-12.0f, m_scene.world().floorHeight(), -12.0f}, {12.0f, m_scene.world().floorHeight(), -12.0f}, {0.35f, 0.9f, 0.55f, 1.0f});
     renderer.drawDebugLine({12.0f, m_scene.world().floorHeight(), -12.0f}, {12.0f, m_scene.world().floorHeight(), 12.0f}, {0.35f, 0.9f, 0.55f, 1.0f});
@@ -384,6 +512,8 @@ void SandboxLayer::updateDebugText()
     const ThirdPersonCameraState& camera = m_camera.state();
     const InteractionFocus& focus = m_scene.interactions().focus();
     const TraversalFocus& traversalFocus = m_scene.traversal().focus();
+    const VehicleControllerSettings& vehicleSettings = m_vehicle.settings();
+    const std::string sceneId = m_sceneDefinitionLoaded ? m_sceneDefinition.id : "built-in-fallback";
 
     std::ostringstream output;
     output << std::fixed << std::setprecision(2)
@@ -424,9 +554,11 @@ void SandboxLayer::updateDebugText()
            << "exitClear=" << (isVehicleExitPositionClear(m_vehicle.exitPosition()) ? "yes" : "no") << " "
            << "exitBlocked=" << (vehicle.exitBlockedThisFrame ? "yes" : "no") << " "
            << "boundsHit=" << (vehicle.hitBoundsThisFrame ? "yes" : "no") << " "
+           << "scene=" << sceneId << " "
+           << "loaded=" << (m_sceneDefinitionLoaded ? "yes" : "no") << " "
            << "roadSegment=dock-road "
-           << "roadBounds=(" << ServiceYardBoundsMinX << "," << ServiceYardBoundsMinZ << ")-("
-           << ServiceYardBoundsMaxX << "," << ServiceYardBoundsMaxZ << ") "
+           << "roadBounds=(" << vehicleSettings.boundsMinX << "," << vehicleSettings.boundsMinZ << ")-("
+           << vehicleSettings.boundsMaxX << "," << vehicleSettings.boundsMaxZ << ") "
            << "physics=" << m_vehiclePhysicsBackendText << "\n"
            << "interactPressed=" << (m_interactPressedThisFrame ? "yes" : "no") << " "
            << "worldChanged=" << (m_worldStateChangedThisFrame ? "yes" : "no") << " "
@@ -537,24 +669,31 @@ void SandboxLayer::drawWorldStateDebug(engine::IRenderer& renderer)
         powerColor);
 }
 
+void SandboxLayer::drawSceneVisualPlaceholders(engine::IRenderer& renderer)
+{
+    const bool routeOpened = m_scene.worldState().isFlagSet(WorldFlag::RouteOpened);
+    const bool powerRestored = m_scene.worldState().isFlagSet(WorldFlag::PowerRestored);
+    const bool vehicleOccupied = m_vehicle.state().occupied;
+
+    for (const SceneVisualPlaceholderDefinition& placeholder : m_sceneDefinition.visualPlaceholders) {
+        const engine::Color color = ColorForSceneKey(placeholder.colorKey, routeOpened, powerRestored, vehicleOccupied);
+        renderer.drawDebugSolidBox(placeholder.center, placeholder.halfExtents, color);
+
+        if (placeholder.role.find("pad") != std::string::npos
+            || placeholder.role.find("marker") != std::string::npos
+            || placeholder.role.find("bound") != std::string::npos
+            || placeholder.role.find("curb") != std::string::npos) {
+            renderer.drawDebugBox(
+                {placeholder.center.x, placeholder.center.y + 0.02f, placeholder.center.z},
+                {placeholder.halfExtents.x, std::max(placeholder.halfExtents.y, 0.02f), placeholder.halfExtents.z},
+                ScaleColor(color, 1.65f));
+        }
+    }
+}
+
 void SandboxLayer::drawSliceDebug(engine::IRenderer& renderer)
 {
     const float floor = m_scene.world().floorHeight();
-    const engine::Vec3 dockStart {
-        FerryOffice::Positions::DockStart.x,
-        floor + FerryOffice::Positions::DockStart.y,
-        FerryOffice::Positions::DockStart.z,
-    };
-    const engine::Vec3 officeMarker {
-        FerryOffice::Positions::OfficeMarker.x,
-        floor + FerryOffice::Positions::OfficeMarker.y,
-        FerryOffice::Positions::OfficeMarker.z,
-    };
-    const engine::Vec3 exitMarker {
-        FerryOffice::Positions::ExitMarker.x,
-        floor + FerryOffice::Positions::ExitMarker.y,
-        FerryOffice::Positions::ExitMarker.z,
-    };
     const engine::Color dockColor {0.25f, 0.65f, 1.0f, 1.0f};
     const engine::Color officeColor {0.95f, 0.95f, 0.8f, 1.0f};
     const engine::Color exitColor = m_scene.isSliceComplete()
@@ -562,25 +701,53 @@ void SandboxLayer::drawSliceDebug(engine::IRenderer& renderer)
         : (m_scene.isSliceReadyForExit()
                   ? engine::Color {1.0f, 0.9f, 0.25f, 1.0f}
                   : engine::Color {0.45f, 0.45f, 0.55f, 1.0f});
-
-    renderer.drawDebugSolidBox(dockStart, {0.22f, 0.08f, 0.22f}, ScaleColor(dockColor, 0.45f));
-    renderer.drawDebugBox(dockStart, {0.22f, 0.08f, 0.22f}, dockColor);
-    renderer.drawDebugLine(dockStart, dockStart + engine::Vec3 {0.0f, 1.0f, 0.0f}, dockColor);
-    renderer.drawDebugSolidBox(officeMarker, {0.35f, 0.35f, 0.35f}, ScaleColor(officeColor, 0.45f));
-    renderer.drawDebugBox(officeMarker, {0.35f, 0.35f, 0.35f}, officeColor);
     const engine::Color routeColor {0.70f, 0.92f, 1.0f, 1.0f};
-    renderer.drawDebugLine({FerryOffice::Positions::FerryManifest.x, floor + 0.08f, FerryOffice::Positions::FerryManifest.z},
-        {FerryOffice::Positions::ServiceVaultStart.x, floor + 0.08f, FerryOffice::Positions::ServiceVaultStart.z},
-        routeColor);
-    renderer.drawDebugLine({FerryOffice::Positions::ServiceVaultEnd.x, floor + 0.08f, FerryOffice::Positions::ServiceVaultEnd.z},
-        {FerryOffice::Positions::MaintenanceBox.x, floor + 0.08f, FerryOffice::Positions::MaintenanceBox.z},
-        routeColor);
-    renderer.drawDebugLine({FerryOffice::Positions::MaintenanceBox.x, floor + 0.08f, FerryOffice::Positions::MaintenanceBox.z},
-        {FerryOffice::Positions::WallButton.x, floor + 0.08f, FerryOffice::Positions::WallButton.z},
-        routeColor);
-    renderer.drawDebugLine({FerryOffice::Positions::WallButton.x, floor + 0.08f, FerryOffice::Positions::WallButton.z},
-        {FerryOffice::Positions::ExitMarker.x, floor + 0.08f, FerryOffice::Positions::ExitMarker.z},
-        routeColor);
+
+    if (m_sceneDefinitionLoaded) {
+        for (const SceneObjectiveMarkerDefinition& marker : m_sceneDefinition.objectiveMarkers) {
+            engine::Color color = dockColor;
+            engine::Vec3 halfExtents {0.20f, 0.08f, 0.20f};
+            if (marker.id.find("office") != std::string::npos) {
+                color = officeColor;
+                halfExtents = {0.35f, 0.35f, 0.35f};
+            } else if (marker.id.find("road") != std::string::npos) {
+                color = {1.0f, 0.82f, 0.25f, 1.0f};
+                halfExtents = {0.26f, 0.18f, 0.26f};
+            }
+
+            renderer.drawDebugSolidBox(marker.position, halfExtents, ScaleColor(color, 0.45f));
+            renderer.drawDebugBox(marker.position, halfExtents, color);
+            renderer.drawDebugLine(marker.position, marker.position + engine::Vec3 {0.0f, 1.0f, 0.0f}, color);
+        }
+
+        for (const SceneRouteMarkerDefinition& marker : m_sceneDefinition.routeMarkers) {
+            for (std::size_t index = 1; index < marker.points.size(); ++index) {
+                renderer.drawDebugLine(marker.points[index - 1], marker.points[index], routeColor);
+            }
+        }
+    } else {
+        const engine::Vec3 dockStart {
+            FerryOffice::Positions::DockStart.x,
+            floor + FerryOffice::Positions::DockStart.y,
+            FerryOffice::Positions::DockStart.z,
+        };
+        const engine::Vec3 officeMarker {
+            FerryOffice::Positions::OfficeMarker.x,
+            floor + FerryOffice::Positions::OfficeMarker.y,
+            FerryOffice::Positions::OfficeMarker.z,
+        };
+        renderer.drawDebugSolidBox(dockStart, {0.22f, 0.08f, 0.22f}, ScaleColor(dockColor, 0.45f));
+        renderer.drawDebugBox(dockStart, {0.22f, 0.08f, 0.22f}, dockColor);
+        renderer.drawDebugLine(dockStart, dockStart + engine::Vec3 {0.0f, 1.0f, 0.0f}, dockColor);
+        renderer.drawDebugSolidBox(officeMarker, {0.35f, 0.35f, 0.35f}, ScaleColor(officeColor, 0.45f));
+        renderer.drawDebugBox(officeMarker, {0.35f, 0.35f, 0.35f}, officeColor);
+    }
+
+    const engine::Vec3 exitMarker {
+        FerryOffice::Positions::ExitMarker.x,
+        floor + FerryOffice::Positions::ExitMarker.y,
+        FerryOffice::Positions::ExitMarker.z,
+    };
     renderer.drawDebugSolidBox(exitMarker, {0.28f, 0.28f, 0.28f}, ScaleColor(exitColor, 0.45f));
     renderer.drawDebugBox(exitMarker, {0.28f, 0.28f, 0.28f}, exitColor);
     renderer.drawDebugBox({exitMarker.x, floor + 0.03f, exitMarker.z}, {FerryOffice::Radii::ExitMarker, 0.03f, FerryOffice::Radii::ExitMarker}, exitColor);
@@ -637,11 +804,11 @@ void SandboxLayer::drawVehicleDebug(engine::IRenderer& renderer)
     const engine::Color vehicleColor = vehicle.occupied
         ? engine::Color {0.25f, 0.72f, 1.0f, 1.0f}
         : engine::Color {0.75f, 0.78f, 0.58f, 1.0f};
-    const engine::Vec3 bodyCenter = vehicle.position + engine::Vec3 {0.0f, 0.42f, 0.0f};
-    renderer.drawDebugSolidBox(bodyCenter, VehicleBodyHalfExtents, ScaleColor(vehicleColor, 0.50f));
-    renderer.drawDebugBox(bodyCenter, VehicleBodyHalfExtents, vehicleColor);
-    renderer.drawDebugSolidBox(vehicle.position + engine::Vec3 {0.0f, 0.86f, 0.0f}, VehicleCabinHalfExtents, ScaleColor(vehicleColor, 0.38f));
-    renderer.drawDebugBox(vehicle.position + engine::Vec3 {0.0f, 0.86f, 0.0f}, VehicleCabinHalfExtents, vehicleColor);
+    const engine::Vec3 bodyCenter = vehicle.position + engine::Vec3 {0.0f, m_vehicleProxyHalfExtents.y, 0.0f};
+    renderer.drawDebugSolidBox(bodyCenter, m_vehicleProxyHalfExtents, ScaleColor(vehicleColor, 0.50f));
+    renderer.drawDebugBox(bodyCenter, m_vehicleProxyHalfExtents, vehicleColor);
+    renderer.drawDebugSolidBox(vehicle.position + engine::Vec3 {0.0f, 0.86f, 0.0f}, m_vehicleCabinHalfExtents, ScaleColor(vehicleColor, 0.38f));
+    renderer.drawDebugBox(vehicle.position + engine::Vec3 {0.0f, 0.86f, 0.0f}, m_vehicleCabinHalfExtents, vehicleColor);
 
     const engine::Vec3 forward = m_vehicle.forward();
     renderer.drawDebugLine(vehicle.position + engine::Vec3 {0.0f, 0.75f, 0.0f},
@@ -694,40 +861,29 @@ void SandboxLayer::drawStaticMeshDebug(engine::IRenderer& renderer)
 
     const bool routeOpened = m_scene.worldState().isFlagSet(WorldFlag::RouteOpened);
     const bool powerRestored = m_scene.worldState().isFlagSet(WorldFlag::PowerRestored);
-    const engine::Color serviceGateTint = routeOpened
-        ? engine::Color {0.12f, 0.36f, 0.20f, 1.0f}
-        : engine::Color {0.42f, 0.12f, 0.08f, 1.0f};
-    const engine::Color maintenanceTint = powerRestored
-        ? engine::Color {0.18f, 0.74f, 0.62f, 1.0f}
-        : engine::Color {0.11f, 0.40f, 0.36f, 1.0f};
-    const engine::Color vehicleTint = m_vehicle.state().occupied
-        ? engine::Color {0.18f, 0.58f, 0.95f, 1.0f}
-        : engine::Color {0.62f, 0.66f, 0.48f, 1.0f};
+    const bool vehicleOccupied = m_vehicle.state().occupied;
 
-    // Keep these hand-authored instances synchronized with data/scenes/ferry_office.scene.json
-    // until a later scene loader or code generator exists.
-    DrawUnitBoxMeshInstance(renderer, m_unitBoxMesh, {0.0f, 1.68f, 5.18f}, {5.9f, 0.24f, 1.1f}, {0.44f, 0.24f, 0.15f, 1.0f});
-    DrawUnitBoxMeshInstance(renderer, m_unitBoxMesh, {0.0f, 0.95f, 2.12f}, {2.35f, 1.25f, 0.12f}, {0.28f, 0.32f, 0.28f, 1.0f});
-    DrawUnitBoxMeshInstance(renderer, m_unitBoxMesh, {0.0f, 1.45f, 1.98f}, {1.35f, 0.28f, 0.08f}, {0.76f, 0.62f, 0.24f, 1.0f});
-    DrawUnitBoxMeshInstance(renderer, m_unitBoxMesh, {0.0f, 0.75f, 2.35f}, {4.9f, 1.5f, 0.32f}, serviceGateTint);
-    DrawUnitBoxMeshInstance(renderer, m_unitBoxMesh, {2.8f, 0.65f, 1.9f}, {0.48f, 0.48f, 0.48f}, maintenanceTint);
-    DrawUnitBoxMeshInstance(renderer, m_unitBoxMesh, {-1.25f, 0.32f, -1.65f}, {0.20f, 0.64f, 0.20f}, {0.38f, 0.30f, 0.14f, 1.0f});
-    DrawUnitBoxMeshInstance(renderer, m_unitBoxMesh, {1.25f, 0.32f, -1.65f}, {0.20f, 0.64f, 0.20f}, {0.38f, 0.30f, 0.14f, 1.0f});
-    DrawUnitBoxMeshInstance(renderer, m_unitBoxMesh, ServiceYardCrateCenter, ServiceYardCrateHalfExtents * 2.0f, {0.24f, 0.32f, 0.22f, 1.0f});
-    DrawUnitBoxMeshInstance(
-        renderer,
-        m_unitBoxMesh,
-        m_vehicle.state().position + engine::Vec3 {0.0f, 0.42f, 0.0f},
-        VehicleBodyHalfExtents * 2.0f,
-        vehicleTint,
-        m_vehicle.state().yawRadians);
-    DrawUnitBoxMeshInstance(
-        renderer,
-        m_unitBoxMesh,
-        m_vehicle.state().position + engine::Vec3 {0.0f, 0.86f, 0.0f},
-        VehicleCabinHalfExtents * 2.0f,
-        ScaleColor(vehicleTint, 0.78f),
-        m_vehicle.state().yawRadians);
+    for (const SceneMeshInstanceDefinition& authored : m_sceneDefinition.meshInstances) {
+        if (authored.assetId != "unit-box-mesh") {
+            continue;
+        }
+
+        engine::Vec3 position = authored.position;
+        float yawRadians = authored.yawRadians;
+        if (authored.linkedColliderId == "service-yard-vehicle") {
+            position.x = m_vehicle.state().position.x;
+            position.z = m_vehicle.state().position.z;
+            yawRadians = m_vehicle.state().yawRadians;
+        }
+
+        DrawUnitBoxMeshInstance(
+            renderer,
+            m_unitBoxMesh,
+            position,
+            authored.scale,
+            ColorForSceneKey(authored.colorKey, routeOpened, powerRestored, vehicleOccupied),
+            yawRadians);
+    }
 }
 
 void SandboxLayer::recordWorldStateChange(bool changed)
@@ -760,45 +916,63 @@ void SandboxLayer::setupVehiclePhysicsWorld()
     m_vehiclePhysicsBackendText = std::string(m_vehiclePhysicsWorld->backendName());
     m_vehiclePhysicsWorld->addFloor("vehicle-yard-physics-floor", m_scene.world().floorHeight(), 12.0f, 0.05f);
 
-    engine::physics::BoxColliderDesc westRail;
-    westRail.name = "vehicle-yard-west-rail";
-    westRail.center = ServiceYardWestRailCenter;
-    westRail.halfExtents = ServiceYardRailHalfExtents;
-    m_vehiclePhysicsWorld->addStaticBox(westRail);
+    if (m_sceneDefinitionLoaded) {
+        for (const SceneVisualPlaceholderDefinition& placeholder : m_sceneDefinition.visualPlaceholders) {
+            const bool isVehicleBoundary = placeholder.role == "vehicle-yard-bound"
+                || placeholder.role == "vehicle-yard-road-opening-post"
+                || placeholder.role == "dock-road-bound"
+                || placeholder.role == "dock-road-curb";
+            if (!isVehicleBoundary) {
+                continue;
+            }
 
-    engine::physics::BoxColliderDesc eastNorthPost = westRail;
-    eastNorthPost.name = "vehicle-yard-east-entry-north-post";
-    eastNorthPost.center = ServiceYardEastEntryPostNorthCenter;
-    eastNorthPost.halfExtents = ServiceYardEastEntryPostHalfExtents;
-    m_vehiclePhysicsWorld->addStaticBox(eastNorthPost);
+            engine::physics::BoxColliderDesc boundary;
+            boundary.name = placeholder.id;
+            boundary.center = placeholder.center;
+            boundary.halfExtents = placeholder.halfExtents;
+            m_vehiclePhysicsWorld->addStaticBox(boundary);
+        }
+    } else {
+        engine::physics::BoxColliderDesc westRail;
+        westRail.name = "vehicle-yard-west-rail";
+        westRail.center = ServiceYardWestRailCenter;
+        westRail.halfExtents = ServiceYardRailHalfExtents;
+        m_vehiclePhysicsWorld->addStaticBox(westRail);
 
-    engine::physics::BoxColliderDesc eastSouthPost = eastNorthPost;
-    eastSouthPost.name = "vehicle-yard-east-entry-south-post";
-    eastSouthPost.center = ServiceYardEastEntryPostSouthCenter;
-    m_vehiclePhysicsWorld->addStaticBox(eastSouthPost);
+        engine::physics::BoxColliderDesc eastNorthPost = westRail;
+        eastNorthPost.name = "vehicle-yard-east-entry-north-post";
+        eastNorthPost.center = ServiceYardEastEntryPostNorthCenter;
+        eastNorthPost.halfExtents = ServiceYardEastEntryPostHalfExtents;
+        m_vehiclePhysicsWorld->addStaticBox(eastNorthPost);
 
-    engine::physics::BoxColliderDesc dockRoadSouthRail;
-    dockRoadSouthRail.name = "dock-road-south-rail";
-    dockRoadSouthRail.center = DockRoadSouthRailCenter;
-    dockRoadSouthRail.halfExtents = DockRoadRailHalfExtents;
-    m_vehiclePhysicsWorld->addStaticBox(dockRoadSouthRail);
+        engine::physics::BoxColliderDesc eastSouthPost = eastNorthPost;
+        eastSouthPost.name = "vehicle-yard-east-entry-south-post";
+        eastSouthPost.center = ServiceYardEastEntryPostSouthCenter;
+        m_vehiclePhysicsWorld->addStaticBox(eastSouthPost);
 
-    engine::physics::BoxColliderDesc dockRoadNorthCurb = dockRoadSouthRail;
-    dockRoadNorthCurb.name = "dock-road-north-curb";
-    dockRoadNorthCurb.center = DockRoadNorthCurbCenter;
-    dockRoadNorthCurb.halfExtents = {DockRoadRailHalfExtents.x, 0.18f, 0.08f};
-    m_vehiclePhysicsWorld->addStaticBox(dockRoadNorthCurb);
+        engine::physics::BoxColliderDesc dockRoadSouthRail;
+        dockRoadSouthRail.name = "dock-road-south-rail";
+        dockRoadSouthRail.center = DockRoadSouthRailCenter;
+        dockRoadSouthRail.halfExtents = DockRoadRailHalfExtents;
+        m_vehiclePhysicsWorld->addStaticBox(dockRoadSouthRail);
 
-    engine::physics::BoxColliderDesc backStop;
-    backStop.name = "vehicle-yard-back-stop";
-    backStop.center = ServiceYardBackStopCenter;
-    backStop.halfExtents = ServiceYardBackStopHalfExtents;
-    m_vehiclePhysicsWorld->addStaticBox(backStop);
+        engine::physics::BoxColliderDesc dockRoadNorthCurb = dockRoadSouthRail;
+        dockRoadNorthCurb.name = "dock-road-north-curb";
+        dockRoadNorthCurb.center = DockRoadNorthCurbCenter;
+        dockRoadNorthCurb.halfExtents = {DockRoadRailHalfExtents.x, 0.18f, 0.08f};
+        m_vehiclePhysicsWorld->addStaticBox(dockRoadNorthCurb);
+
+        engine::physics::BoxColliderDesc backStop;
+        backStop.name = "vehicle-yard-back-stop";
+        backStop.center = ServiceYardBackStopCenter;
+        backStop.halfExtents = ServiceYardBackStopHalfExtents;
+        m_vehiclePhysicsWorld->addStaticBox(backStop);
+    }
 
     engine::physics::DynamicBoxDesc vehicleProxy;
     vehicleProxy.name = "service-yard-vehicle-proxy";
-    vehicleProxy.center = ServiceYardVehicleSpawnPosition + engine::Vec3 {0.0f, 0.42f, 0.0f};
-    vehicleProxy.halfExtents = VehicleBodyHalfExtents;
+    vehicleProxy.center = m_vehicle.state().position + engine::Vec3 {0.0f, m_vehicleProxyHalfExtents.y, 0.0f};
+    vehicleProxy.halfExtents = m_vehicleProxyHalfExtents;
     vehicleProxy.mass = 900.0f;
     m_vehiclePhysicsWorld->addDynamicBox(vehicleProxy);
 }
@@ -835,7 +1009,13 @@ void SandboxLayer::applyCameraSettingsForMode(bool vehicleMode)
 
 void SandboxLayer::loadStaticMeshAssets()
 {
-    const engine::StaticMeshLoadResult unitBox = engine::LoadStaticMeshFromGltf("assets/models/unit_box.gltf");
+    std::filesystem::path unitBoxPath = "assets/models/unit_box.gltf";
+    if (const SceneMeshAssetDefinition* unitBoxAsset = FindSceneMeshAssetById(m_sceneDefinition, "unit-box-mesh")) {
+        unitBoxPath = unitBoxAsset->path;
+    }
+
+    unitBoxPath = ResolveProjectPath(unitBoxPath);
+    const engine::StaticMeshLoadResult unitBox = engine::LoadStaticMeshFromGltf(unitBoxPath);
     if (!unitBox.ok()) {
         engine::Logger::warning("Static mesh load failed: " + unitBox.error);
         m_unitBoxMeshLoaded = false;
@@ -845,5 +1025,5 @@ void SandboxLayer::loadStaticMeshAssets()
     m_unitBoxMesh = unitBox.mesh;
     m_unitBoxMesh.id = "unit-box-mesh";
     m_unitBoxMeshLoaded = true;
-    engine::Logger::info("Loaded static mesh asset: unit-box-mesh from assets/models/unit_box.gltf");
+    engine::Logger::info("Loaded static mesh asset: unit-box-mesh from " + unitBoxPath.string());
 }
