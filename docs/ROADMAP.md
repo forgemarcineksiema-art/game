@@ -191,6 +191,15 @@ Status: implemented as a small mesh-backed prop/scale pass using the existing or
 
 Status: implemented as a small feel/readability polish pass. The vehicle remains deterministic and game-layer scoped; it is better suited for the current service-yard road test, but still needs human playtest tuning before deeper vehicle physics or a larger road loop.
 
+## v0.14 - First Island Road Segment / Dock Road Mood Pass
+
+- Extend the Ferry Office/service-yard into a compact dock road segment so the vehicle has a meaningful out-and-back route.
+- Keep the route placeholder-only: solid debug pads, rails, shore/water cue, road marker, finite vehicle bounds, and scene-data synchronization.
+- Preserve the Ferry Office loop, interactions, traversal, world state, vehicle enter/exit, static mesh validation, default validation, and Jolt opt-in validation.
+- Avoid traffic, missions, large map expansion, runtime scene loading, full vehicle physics, textures/materials, final art, and new gameplay systems.
+
+Status: implemented as a compact dock road mood/layout pass. The service-yard now opens into a short road pad with a turn-around marker, shore/water cue, rail/curb bounds, route marker, expanded finite vehicle bounds, and updated scene validation tests. Runtime layout remains mirrored explicitly in `SandboxLayer`.
+
 ## Recommended Next Goal
 
-Build v0.13.1 Vehicle Manual Playtest + Control Polish.
+Build v0.15 Runtime Scene Loading / Scene Data Source of Truth.

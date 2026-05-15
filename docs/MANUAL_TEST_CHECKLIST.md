@@ -89,7 +89,7 @@ python tools/mesh_report.py
 
 - [ ] `python tools/validate_scene.py` reports `Scene validation passed.`
 - [ ] `python tools/scene_report.py` reports scene id `ferry-office`.
-- [ ] Scene report lists 9 colliders, 5 interactables, 1 traversal affordance, and 1 vehicle.
+- [ ] Scene report lists 9 colliders, 5 interactables, 1 traversal affordance, 1 vehicle, 5 route markers, and 4 objective markers.
 - [ ] `python tools/scale_audit.py` reports no suspicious scale issues, or any issue is documented.
 - [ ] `python tools/mesh_report.py` reports mesh asset `unit-box-mesh` and 10 expected Ferry Office/service-yard mesh instances.
 - [ ] `data/scenes/ferry_office.scene.json` contains the service gate, manifest, maintenance box, wall button, exit marker, service vault, player start, and service-yard vehicle ids.
@@ -118,7 +118,10 @@ python tools/mesh_report.py
 - [ ] Reverse steering is understandable when backing up.
 - [ ] The vehicle camera follows the vehicle without obvious jitter.
 - [ ] The service-yard bounds prevent the vehicle from drifting far outside the test pad.
-- [ ] The service-yard pad/rails/back-stop visually communicate the tiny road-test area.
+- [ ] The service-yard pad/rails/back-stop visually communicate the vehicle start area.
+- [ ] The vehicle can drive from the service-yard pad through the east opening onto the short dock road segment.
+- [ ] The dock road segment has a readable road pad, shore/water edge cue, rail/curb edges, and turn-around/end marker.
+- [ ] The expanded vehicle bounds keep the vehicle inside the service-yard/dock-road route instead of drifting into nowhere.
 - [ ] Pressing `E` exits only when the side exit marker is clear.
 - [ ] After exit, on-foot movement, camera, traversal, and Ferry Office interactions still work.
 - [ ] Debug text reports vehicle occupancy, speed, throttle/brake/steer, camera mode, and physics backend status.
@@ -159,6 +162,8 @@ python tools/mesh_report.py
 - [ ] The committed visual reference at `docs/images/v0.12.1-gdi-screenshot.png` roughly matches the current GDI presentation.
 - [ ] The ferry office front/sign cue reads as a deliberate public/service building marker, not only a wall of debug colliders.
 - [ ] The service-yard vehicle reads as a vehicle proxy with a separate cabin silhouette.
+- [ ] The dock road extension reads as a short island service road connected to the service-yard, not random extra boxes.
+- [ ] The road-end marker and shore/water edge cue help orient the driving route.
 - [ ] A light route polyline guides the eye from manifest to service vault, maintenance box, wall button, and exit marker.
 - [ ] The objective text names the next spatial target instead of only the next abstract action.
 - [ ] Collect the Ferry Manifest near the office approach.

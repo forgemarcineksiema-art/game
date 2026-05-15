@@ -685,6 +685,22 @@ void TestSandboxLayerVehicleDebugTextIncludesRoadTestTelemetry()
         "Sandbox debug text should expose whether the vehicle side exit marker is currently safe.");
 }
 
+void TestSandboxLayerDebugTextIncludesDockRoadTelemetry()
+{
+    SandboxLayer layer;
+    layer.onAttach();
+
+    const std::string debug = layer.debugText();
+    layer.onDetach();
+
+    Expect(debug.find("roadSegment=dock-road") != std::string::npos,
+        "TestSandboxLayerDebugTextIncludesDockRoadTelemetry",
+        "Sandbox debug text should expose the authored dock road segment.");
+    Expect(debug.find("roadBounds=(3.35,-5.05)-(19.45,0.95)") != std::string::npos,
+        "TestSandboxLayerDebugTextIncludesDockRoadTelemetry",
+        "Sandbox debug text should expose the finite vehicle road-test bounds.");
+}
+
 void TestDebugWindowTitleUsesStableSingleLine()
 {
     const std::string debugText =
@@ -1879,6 +1895,7 @@ int main()
     TestVehicleExitPositionUsesSideAndBackOffsets();
     TestVehicleReverseSteeringIsPredictable();
     TestSandboxLayerVehicleDebugTextIncludesRoadTestTelemetry();
+    TestSandboxLayerDebugTextIncludesDockRoadTelemetry();
     TestDebugWindowTitleUsesStableSingleLine();
     TestGameCodeDoesNotReferenceJoltVendorApi();
     TestVec3NormalizationKeepsDiagonalMovementAtUnitLength();

@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-15
 
-v0.11 introduces scene data for Codex-friendly inspection and validation. v0.12 adds mesh asset and mesh instance references. v0.12.1 expands the Ferry Office mesh mirror for a focused prop/scale pass. Runtime behavior still comes from explicit C++ prototype setup. Keep scene data and C++ layout changes in sync until a later goal adds runtime loading or generation.
+v0.11 introduces scene data for Codex-friendly inspection and validation. v0.12 adds mesh asset and mesh instance references. v0.12.1 expands the Ferry Office mesh mirror for a focused prop/scale pass. v0.14 adds the first dock road segment as authored placeholders and route markers. Runtime behavior still comes from explicit C++ prototype setup. Keep scene data and C++ layout changes in sync until a later goal adds runtime loading or generation.
 
 ## Scene Data Location
 
@@ -36,6 +36,7 @@ The Ferry Office scene file describes:
 - interactable markers,
 - traversal affordances,
 - vehicle spawn and service-yard bounds,
+- dock road visual placeholders and road-test route markers,
 - route markers,
 - objective markers.
 
@@ -167,7 +168,11 @@ Required fields:
 
 Vehicle movement is still deterministic placeholder code. Jolt VehicleConstraint and real vehicle collision are deferred.
 
-For v0.13, the service-yard vehicle bounds should remain slightly inside the visible pad/rail/back-stop layout so the vehicle center clamps before crossing the debug rails. Any bounds or pad edit must stay synchronized with the grouped service-yard constants in `src/game/SandboxLayer.cpp`.
+For v0.14, the service-yard vehicle bounds include the original yard plus the short dock road and turn-around marker: `[3.35, -5.05]..[19.45, 0.95]` in X/Z. Any bounds, pad, road, rail, curb, water-edge, or end-marker edit must stay synchronized with the grouped service-yard/dock-road constants in `src/game/SandboxLayer.cpp`.
+
+## Dock Road Segment
+
+Use `visualPlaceholders` for road pads, shore/water cues, edge rails, curbs, bollards, and end markers. Use `routeMarkers` for Codex-readable route intent such as `route-service-yard-to-dock-road`. The v0.14 road is an authored placeholder route, not a terrain system, road spline, traffic path, or runtime-loaded map.
 
 ## Avoiding Layout Drift
 

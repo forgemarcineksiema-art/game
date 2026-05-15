@@ -91,7 +91,7 @@ class SceneToolTests(unittest.TestCase):
         ]:
             self.assertIn(required_id, ids)
 
-    def test_v013_service_yard_vehicle_bounds_are_authoritative(self) -> None:
+    def test_v014_service_yard_vehicle_bounds_include_dock_road(self) -> None:
         vehicle = self.scene["vehicles"][0]
 
         self.assertEqual("service-yard-vehicle", vehicle["id"])
@@ -100,7 +100,22 @@ class SceneToolTests(unittest.TestCase):
         self.assertEqual([0.58, 0.53, 0.92], vehicle["proxyHalfExtents"])
         self.assertEqual(1.8, vehicle["enterRadius"])
         self.assertEqual([3.35, -5.05], vehicle["bounds"]["min"])
-        self.assertEqual([9.25, 0.65], vehicle["bounds"]["max"])
+        self.assertEqual([19.45, 0.95], vehicle["bounds"]["max"])
+
+    def test_v014_dock_road_authoring_ids_exist(self) -> None:
+        ids = scene_data.collect_ids(self.scene)
+
+        for required_id in [
+            "dock-road-segment",
+            "dock-road-turnaround-pad",
+            "dock-road-water-edge",
+            "dock-road-south-rail",
+            "dock-road-north-curb",
+            "dock-road-end-marker",
+            "route-service-yard-to-dock-road",
+            "dock-road-marker",
+        ]:
+            self.assertIn(required_id, ids)
 
     def test_valid_mesh_reference_scene_validates(self) -> None:
         scene = copy.deepcopy(self.scene)

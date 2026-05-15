@@ -110,3 +110,7 @@ They should stay useful until a later goal replaces them with real authored asse
 ## v0.12.1 Visual Observation
 
 The v0.12.1 screenshot at `docs/images/v0.12.1-gdi-screenshot.png` shows a clearer Ferry Office front, sign-board cue, dock bollards, service-yard crate, and vehicle cabin silhouette. The scene reads more like a dock/service-yard layout than v0.12, but it is still visibly a debug placeholder scene: wire overlays, route/debug markers, and flat-tinted unit boxes remain essential for playtesting.
+
+## v0.14 Dock Road Observation
+
+The v0.14 dock road pass extends the service-yard into a compact island service road with a dark road pad, turn-around/end marker, shore/water edge cue, and weathered rail/curb edges. This improves the first read of "vehicle near a dock road" without changing the renderer or adding final art. The strongest remaining visual limitation is still composition and authored assets: the area is more legible, but it remains a hand-mirrored debug layout rather than a production scene.

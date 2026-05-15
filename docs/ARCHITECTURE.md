@@ -67,7 +67,7 @@ v0.11 adds the first explicit scene/object authoring data:
 data/scenes/ferry_office.scene.json
 ```
 
-This file mirrors the current Ferry Office and service-yard prototype: units, floor height, player start, scale references, static colliders, visual placeholders, interactables, traversal affordance, vehicle spawn/bounds, route markers, and objective markers.
+This file mirrors the current Ferry Office, service-yard, and v0.14 dock road prototype: units, floor height, player start, scale references, static colliders, visual placeholders, interactables, traversal affordance, vehicle spawn/bounds, route markers, and objective markers.
 
 Runtime loading is intentionally deferred. The active game still uses `PrototypeWorld`, `PrototypeScene`, `FerryOfficeData`, and `SandboxLayer` C++ setup. Until a loader or generator exists, changes to authored layout must keep the JSON and matching C++ constants synchronized.
 
@@ -157,7 +157,7 @@ v0.12 adds `IRenderer::drawDebugFlatTriangles` as a narrow immediate-mode static
 
 When the vehicle is occupied, `SandboxLayer` skips on-foot player movement, traversal activation, and Ferry Office interactions for that frame. `W/S/A/D` drive the vehicle, `E` exits only when the computed side exit position is clear, and the existing third-person camera follows the vehicle target with separate distance/height/smoothing settings. Exiting places the player beside the vehicle and returns the next frame to the normal on-foot flow.
 
-v0.13 keeps service-yard vehicle placement explicit but reduces local drift by grouping spawn, bounds, pad, rail, back-stop, crate, body, and cabin constants at the top of `SandboxLayer.cpp`. These constants still mirror `data/scenes/ferry_office.scene.json`; they are not yet loaded from scene data at runtime.
+v0.13 keeps service-yard vehicle placement explicit but reduces local drift by grouping spawn, bounds, pad, rail, back-stop, crate, body, and cabin constants at the top of `SandboxLayer.cpp`. v0.14 extends this grouped constant set with dock-road pad, turn-around, shore/water cue, rail/curb, and road-end marker constants. These constants still mirror `data/scenes/ferry_office.scene.json`; they are not yet loaded from scene data at runtime.
 
 In v0.5.1, traversal activation uses the player's current position as the runtime traversal start while keeping the authored affordance target fixed. This avoids a visible snap to the start marker when the player presses `Space` inside the focus radius. The authored start marker remains a focus/debug marker, not a mandatory teleport point.
 
@@ -212,7 +212,7 @@ v0.9 adds a narrow solid debug drawing path, `IRenderer::drawDebugSolidBox`, imp
 
 `SandboxLayer` now draws muted solid placeholder slabs and boxes for the Ferry Office dock, service yard, office walls, gate, traversal markers, interactables, and player proxy, then draws the existing wire/debug outlines on top. This keeps collision and state visibility intact while reducing the pure wireframe workbench feeling.
 
-v0.10 adds a service-yard driving pad, a placeholder vehicle body/cabin, vehicle heading line, enter radius, safe exit marker, yard bounds, and physics debug lines. These are debug primitives only; there is still no vehicle mesh, material system, tire model, or final road art.
+v0.10 adds a service-yard driving pad, a placeholder vehicle body/cabin, vehicle heading line, enter radius, safe exit marker, yard bounds, and physics debug lines. v0.14 adds a compact dock road pad, shore/water edge cue, rail/curb edges, road route line, turn-around/end marker, and expanded finite vehicle bounds. These are debug primitives only; there is still no vehicle mesh, material system, tire model, terrain system, traffic path, or final road art.
 
 This is not an asset pipeline. There are still no textures, mesh loading, materials, lighting, shadows, post-processing, or scene serialization. Solid debug geometry should stay simple and disposable until a later art/asset milestone proves what the engine actually needs.
 

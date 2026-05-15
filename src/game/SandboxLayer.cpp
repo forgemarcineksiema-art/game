@@ -14,18 +14,30 @@ namespace {
 const engine::Vec3 ServiceYardVehicleSpawnPosition {6.2f, 0.0f, -2.2f};
 const float ServiceYardVehicleSpawnYawRadians = engine::Radians(88.0f);
 const float ServiceYardBoundsMinX = 3.35f;
-const float ServiceYardBoundsMaxX = 9.25f;
+const float ServiceYardBoundsMaxX = 19.45f;
 const float ServiceYardBoundsMinZ = -5.05f;
-const float ServiceYardBoundsMaxZ = 0.65f;
+const float ServiceYardBoundsMaxZ = 0.95f;
 const engine::Vec3 ServiceYardPadCenter {6.30f, -0.045f, -2.20f};
 const engine::Vec3 ServiceYardPadHalfExtents {3.05f, 0.045f, 2.95f};
 const engine::Vec3 ServiceYardWestRailCenter {3.25f, 0.35f, -2.20f};
-const engine::Vec3 ServiceYardEastRailCenter {9.35f, 0.35f, -2.20f};
 const engine::Vec3 ServiceYardRailHalfExtents {0.12f, 0.35f, 2.85f};
+const engine::Vec3 ServiceYardEastEntryPostNorthCenter {9.35f, 0.35f, 0.15f};
+const engine::Vec3 ServiceYardEastEntryPostSouthCenter {9.35f, 0.35f, -4.55f};
+const engine::Vec3 ServiceYardEastEntryPostHalfExtents {0.12f, 0.35f, 0.55f};
 const engine::Vec3 ServiceYardBackStopCenter {6.30f, 0.18f, -5.15f};
 const engine::Vec3 ServiceYardBackStopHalfExtents {2.55f, 0.18f, 0.12f};
 const engine::Vec3 ServiceYardCrateCenter {8.15f, 0.45f, 0.45f};
 const engine::Vec3 ServiceYardCrateHalfExtents {0.55f, 0.45f, 0.45f};
+const engine::Vec3 DockRoadCenter {13.35f, -0.050f, -2.20f};
+const engine::Vec3 DockRoadHalfExtents {4.25f, 0.050f, 1.30f};
+const engine::Vec3 DockRoadTurnaroundCenter {17.80f, -0.045f, -2.20f};
+const engine::Vec3 DockRoadTurnaroundHalfExtents {1.80f, 0.045f, 1.80f};
+const engine::Vec3 DockRoadWaterEdgeCenter {13.70f, -0.070f, -4.15f};
+const engine::Vec3 DockRoadWaterEdgeHalfExtents {5.70f, 0.050f, 0.45f};
+const engine::Vec3 DockRoadSouthRailCenter {13.55f, 0.28f, -3.65f};
+const engine::Vec3 DockRoadNorthCurbCenter {13.55f, 0.18f, -0.70f};
+const engine::Vec3 DockRoadRailHalfExtents {4.45f, 0.28f, 0.10f};
+const engine::Vec3 DockRoadEndMarkerCenter {19.35f, 0.38f, -2.20f};
 const engine::Vec3 VehicleBodyHalfExtents {0.58f, 0.34f, 0.92f};
 const engine::Vec3 VehicleCabinHalfExtents {0.42f, 0.20f, 0.46f};
 
@@ -112,8 +124,12 @@ void DrawVehicleServiceYardBase(engine::IRenderer& renderer, float floor)
         ServiceYardRailHalfExtents,
         {0.42f, 0.30f, 0.13f, 1.0f});
     renderer.drawDebugSolidBox(
-        {ServiceYardEastRailCenter.x, floor + ServiceYardEastRailCenter.y, ServiceYardEastRailCenter.z},
-        ServiceYardRailHalfExtents,
+        {ServiceYardEastEntryPostNorthCenter.x, floor + ServiceYardEastEntryPostNorthCenter.y, ServiceYardEastEntryPostNorthCenter.z},
+        ServiceYardEastEntryPostHalfExtents,
+        {0.42f, 0.30f, 0.13f, 1.0f});
+    renderer.drawDebugSolidBox(
+        {ServiceYardEastEntryPostSouthCenter.x, floor + ServiceYardEastEntryPostSouthCenter.y, ServiceYardEastEntryPostSouthCenter.z},
+        ServiceYardEastEntryPostHalfExtents,
         {0.42f, 0.30f, 0.13f, 1.0f});
     renderer.drawDebugSolidBox(
         {ServiceYardBackStopCenter.x, floor + ServiceYardBackStopCenter.y, ServiceYardBackStopCenter.z},
@@ -123,6 +139,58 @@ void DrawVehicleServiceYardBase(engine::IRenderer& renderer, float floor)
         {ServiceYardCrateCenter.x, floor + ServiceYardCrateCenter.y, ServiceYardCrateCenter.z},
         ServiceYardCrateHalfExtents,
         {0.27f, 0.30f, 0.22f, 1.0f});
+}
+
+void DrawDockRoadBase(engine::IRenderer& renderer, float floor)
+{
+    renderer.drawDebugSolidBox(
+        {DockRoadCenter.x, floor + DockRoadCenter.y, DockRoadCenter.z},
+        DockRoadHalfExtents,
+        {0.13f, 0.16f, 0.15f, 1.0f});
+    renderer.drawDebugBox(
+        {DockRoadCenter.x, floor + 0.025f, DockRoadCenter.z},
+        {DockRoadHalfExtents.x, 0.025f, DockRoadHalfExtents.z},
+        {0.52f, 0.72f, 0.62f, 1.0f});
+    renderer.drawDebugSolidBox(
+        {DockRoadTurnaroundCenter.x, floor + DockRoadTurnaroundCenter.y, DockRoadTurnaroundCenter.z},
+        DockRoadTurnaroundHalfExtents,
+        {0.14f, 0.17f, 0.16f, 1.0f});
+    renderer.drawDebugBox(
+        {DockRoadTurnaroundCenter.x, floor + 0.025f, DockRoadTurnaroundCenter.z},
+        {DockRoadTurnaroundHalfExtents.x, 0.025f, DockRoadTurnaroundHalfExtents.z},
+        {0.84f, 0.76f, 0.42f, 1.0f});
+    renderer.drawDebugSolidBox(
+        {DockRoadWaterEdgeCenter.x, floor + DockRoadWaterEdgeCenter.y, DockRoadWaterEdgeCenter.z},
+        DockRoadWaterEdgeHalfExtents,
+        {0.05f, 0.13f, 0.22f, 1.0f});
+    renderer.drawDebugSolidBox(
+        {DockRoadSouthRailCenter.x, floor + DockRoadSouthRailCenter.y, DockRoadSouthRailCenter.z},
+        DockRoadRailHalfExtents,
+        {0.42f, 0.30f, 0.13f, 1.0f});
+    renderer.drawDebugSolidBox(
+        {DockRoadNorthCurbCenter.x, floor + DockRoadNorthCurbCenter.y, DockRoadNorthCurbCenter.z},
+        {DockRoadRailHalfExtents.x, 0.18f, 0.08f},
+        {0.31f, 0.32f, 0.26f, 1.0f});
+    renderer.drawDebugLine(
+        {ServiceYardPadCenter.x, floor + 0.06f, ServiceYardPadCenter.z},
+        {DockRoadTurnaroundCenter.x, floor + 0.06f, DockRoadTurnaroundCenter.z},
+        {0.88f, 0.80f, 0.36f, 1.0f});
+    renderer.drawDebugLine(
+        {DockRoadTurnaroundCenter.x - 0.75f, floor + 0.06f, DockRoadTurnaroundCenter.z - 0.75f},
+        {DockRoadTurnaroundCenter.x + 0.75f, floor + 0.06f, DockRoadTurnaroundCenter.z + 0.75f},
+        {0.88f, 0.80f, 0.36f, 1.0f});
+    renderer.drawDebugLine(
+        {DockRoadTurnaroundCenter.x - 0.75f, floor + 0.06f, DockRoadTurnaroundCenter.z + 0.75f},
+        {DockRoadTurnaroundCenter.x + 0.75f, floor + 0.06f, DockRoadTurnaroundCenter.z - 0.75f},
+        {0.88f, 0.80f, 0.36f, 1.0f});
+    renderer.drawDebugSolidBox(
+        {DockRoadEndMarkerCenter.x, floor + DockRoadEndMarkerCenter.y, DockRoadEndMarkerCenter.z},
+        {0.25f, 0.38f, 0.25f},
+        {0.78f, 0.65f, 0.22f, 1.0f});
+    renderer.drawDebugBox(
+        {DockRoadEndMarkerCenter.x, floor + DockRoadEndMarkerCenter.y, DockRoadEndMarkerCenter.z},
+        {0.25f, 0.38f, 0.25f},
+        {1.0f, 0.86f, 0.28f, 1.0f});
 }
 
 void DrawMeshInstance(engine::IRenderer& renderer, const engine::StaticMeshAsset& mesh, const engine::StaticMeshInstance& instance)
@@ -256,6 +324,7 @@ void SandboxLayer::onRender(engine::IRenderer& renderer)
     renderer.drawDebugGridAndAxes();
     DrawFerryOfficeMoodBase(renderer, m_scene.world().floorHeight());
     DrawVehicleServiceYardBase(renderer, m_scene.world().floorHeight());
+    DrawDockRoadBase(renderer, m_scene.world().floorHeight());
     drawStaticMeshDebug(renderer);
     renderer.drawDebugLine({-12.0f, m_scene.world().floorHeight(), -12.0f}, {12.0f, m_scene.world().floorHeight(), -12.0f}, {0.35f, 0.9f, 0.55f, 1.0f});
     renderer.drawDebugLine({12.0f, m_scene.world().floorHeight(), -12.0f}, {12.0f, m_scene.world().floorHeight(), 12.0f}, {0.35f, 0.9f, 0.55f, 1.0f});
@@ -355,6 +424,9 @@ void SandboxLayer::updateDebugText()
            << "exitClear=" << (isVehicleExitPositionClear(m_vehicle.exitPosition()) ? "yes" : "no") << " "
            << "exitBlocked=" << (vehicle.exitBlockedThisFrame ? "yes" : "no") << " "
            << "boundsHit=" << (vehicle.hitBoundsThisFrame ? "yes" : "no") << " "
+           << "roadSegment=dock-road "
+           << "roadBounds=(" << ServiceYardBoundsMinX << "," << ServiceYardBoundsMinZ << ")-("
+           << ServiceYardBoundsMaxX << "," << ServiceYardBoundsMaxZ << ") "
            << "physics=" << m_vehiclePhysicsBackendText << "\n"
            << "interactPressed=" << (m_interactPressedThisFrame ? "yes" : "no") << " "
            << "worldChanged=" << (m_worldStateChangedThisFrame ? "yes" : "no") << " "
@@ -694,10 +766,28 @@ void SandboxLayer::setupVehiclePhysicsWorld()
     westRail.halfExtents = ServiceYardRailHalfExtents;
     m_vehiclePhysicsWorld->addStaticBox(westRail);
 
-    engine::physics::BoxColliderDesc eastRail = westRail;
-    eastRail.name = "vehicle-yard-east-rail";
-    eastRail.center = ServiceYardEastRailCenter;
-    m_vehiclePhysicsWorld->addStaticBox(eastRail);
+    engine::physics::BoxColliderDesc eastNorthPost = westRail;
+    eastNorthPost.name = "vehicle-yard-east-entry-north-post";
+    eastNorthPost.center = ServiceYardEastEntryPostNorthCenter;
+    eastNorthPost.halfExtents = ServiceYardEastEntryPostHalfExtents;
+    m_vehiclePhysicsWorld->addStaticBox(eastNorthPost);
+
+    engine::physics::BoxColliderDesc eastSouthPost = eastNorthPost;
+    eastSouthPost.name = "vehicle-yard-east-entry-south-post";
+    eastSouthPost.center = ServiceYardEastEntryPostSouthCenter;
+    m_vehiclePhysicsWorld->addStaticBox(eastSouthPost);
+
+    engine::physics::BoxColliderDesc dockRoadSouthRail;
+    dockRoadSouthRail.name = "dock-road-south-rail";
+    dockRoadSouthRail.center = DockRoadSouthRailCenter;
+    dockRoadSouthRail.halfExtents = DockRoadRailHalfExtents;
+    m_vehiclePhysicsWorld->addStaticBox(dockRoadSouthRail);
+
+    engine::physics::BoxColliderDesc dockRoadNorthCurb = dockRoadSouthRail;
+    dockRoadNorthCurb.name = "dock-road-north-curb";
+    dockRoadNorthCurb.center = DockRoadNorthCurbCenter;
+    dockRoadNorthCurb.halfExtents = {DockRoadRailHalfExtents.x, 0.18f, 0.08f};
+    m_vehiclePhysicsWorld->addStaticBox(dockRoadNorthCurb);
 
     engine::physics::BoxColliderDesc backStop;
     backStop.name = "vehicle-yard-back-stop";

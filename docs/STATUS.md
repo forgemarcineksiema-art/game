@@ -2738,3 +2738,157 @@ Validation:
 
 - `powershell -ExecutionPolicy Bypass -File scripts\build.ps1`: passed.
 - `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 3/3 tests.
+
+## v0.14 Baseline - 2026-05-15
+
+Goal: add the first short island/dock road segment connected to the Ferry Office/service-yard prototype so the v0.13 vehicle has a more meaningful place to drive, without adding new gameplay systems, final art, full map expansion, runtime scene loading, Jolt VehicleConstraint, or vehicle physics migration.
+
+Required context read before coding:
+
+- `AGENTS.md`
+- `docs/STATUS.md`
+- `docs/GAME_DIRECTION.md`
+- `docs/ROADMAP.md`
+- `docs/ARCHITECTURE.md`
+- `docs/TECH_DEBT.md`
+- `docs/MANUAL_TEST_CHECKLIST.md`
+- `docs/DECISIONS.md`
+- `docs/SCENE_AUTHORING.md`
+- `docs/ASSET_GUIDE.md`
+- `docs/ART_DIRECTION.md`
+
+Baseline commands:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\verify.ps1
+cmake --preset windows-vs2022-debug-jolt
+cmake --build --preset windows-vs2022-debug-jolt
+ctest --preset windows-vs2022-debug-jolt --output-on-failure
+python tools\scene_report.py
+python tools\validate_scene.py
+python tools\scale_audit.py
+python tools\mesh_report.py
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --frames 300
+```
+
+Baseline results:
+
+- Git state before v0.14 work: `main...origin/main`, clean working tree.
+- `scripts\verify.ps1`: passed. Default doctor/configure/build/CTest, scene validation, mesh report, and null smoke all completed. Null smoke reported engine `v0.13.0` and vehicle debug text included `exitClear=yes`.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 3/3 tests.
+- `python tools\scene_report.py`: completed; current authoring mirror still reports 14 visual placeholders, 10 mesh instances, 1 vehicle, and vehicle bounds `[3.35, -5.05]..[9.25, 0.65]`.
+- `python tools\validate_scene.py`: passed.
+- `python tools\scale_audit.py`: passed; no suspicious scale issues found.
+- `python tools\mesh_report.py`: passed; `unit-box-mesh` has 10 scene uses.
+- Bounded GDI review: passed; window created, cursor captured, `unit-box-mesh` loaded, GDI ran 300 frames, clean shutdown.
+
+Baseline visual/drive observations:
+
+- The vehicle/service-yard feel is promising but still spatially boxed into a small yard.
+- The service-yard vehicle currently has no meaningful road beyond the immediate pad/rails/back-stop.
+- The best low-risk road connection is to extend from the service-yard side of the scene into a short dock/service road with finite bounds and clear edge markers.
+- The GDI/debug UI flicker patch is present in the baseline; no new UI system is needed for this goal.
+- Scene/C++ drift risk remains the main production risk: road placeholders, route markers, vehicle bounds, and runtime debug drawing must be kept mirrored in `data/scenes/ferry_office.scene.json` and `SandboxLayer.cpp`.
+
+## v0.14 Short Implementation Plan
+
+1. Add failing tests first for scene road ids, road route marker presence, updated vehicle bounds that include the road segment, and road/debug telemetry in `SandboxLayer`.
+2. Keep the road as placeholder authoring data plus explicit C++ runtime drawing. Do not introduce runtime scene loading in v0.14.
+3. Extend service-yard vehicle bounds only enough for a compact dock road segment and turn-around/end marker.
+4. Add road pad, edge rails/barriers, water/shore cue, lane/route line, and a road-end marker using existing solid debug boxes/lines and unit-box mesh path where useful.
+5. Update `data/scenes/ferry_office.scene.json` with road visual placeholders, route marker(s), objective marker, and bounds changes.
+6. Preserve Ferry Office interactions, traversal, remembered state, vehicle enter/exit, GDI debug UI patch, mesh tools, and Jolt opt-in validation.
+7. Update docs with what road segment was added, why it remains placeholder-only, and what remains before a real island route/map.
+8. Run full default/Jolt/tool/windowed validation and capture a v0.14 GDI screenshot if practical.
+
+## v0.14 Implementation Notes
+
+TDD / targeted checks before implementation:
+
+- Added Python scene-tool tests expecting v0.14 dock road ids and expanded vehicle bounds.
+- Added a C++ `SandboxLayer` debug-text test expecting `roadSegment=dock-road` and finite road bounds telemetry.
+- `python tests\test_scene_tools.py`: failed as expected before implementation because `dock-road-segment` did not exist and vehicle bounds still ended at `[9.25, 0.65]`.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: failed as expected before implementation because road telemetry did not exist.
+
+Implemented changes:
+
+- Bumped project version to `0.14.0`.
+- Added a compact dock road segment connected to the service-yard east side:
+  - road pad,
+  - turn-around pad,
+  - shore/water edge cue,
+  - south rail,
+  - north curb,
+  - road-end marker,
+  - route line from the service-yard vehicle toward the road end.
+- Split the old full east service-yard rail into smaller entry posts so the road connection reads as open.
+- Expanded deterministic vehicle bounds from `[3.35, -5.05]..[9.25, 0.65]` to `[3.35, -5.05]..[19.45, 0.95]`.
+- Mirrored the road layout in `data/scenes/ferry_office.scene.json` with new visual placeholders, `route-service-yard-to-dock-road`, and `dock-road-marker`.
+- Added `roadSegment=dock-road` and `roadBounds=(3.35,-5.05)-(19.45,0.95)` to debug text.
+
+Targeted post-implementation checks:
+
+- `python tests\test_scene_tools.py`: passed, 13 tests.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: passed.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `python tools\validate_scene.py`: passed.
+- `python tools\scale_audit.py`: passed; no suspicious scale issues found.
+- `python tools\scene_report.py`: passed; now reports 21 visual placeholders, 5 route markers, 4 objective markers, and vehicle bounds `[3.35, -5.05]..[19.45, 0.95]`.
+
+Known implementation limitation:
+
+- The v0.14 road segment is still manually mirrored between JSON and `SandboxLayer.cpp`. This is acceptable for v0.14 but makes v0.15 Runtime Scene Loading / Scene Data Source of Truth the strongest next architecture goal.
+
+## v0.14 Final Validation - 2026-05-15
+
+Commands run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\doctor.ps1
+powershell -ExecutionPolicy Bypass -File scripts\configure.ps1
+powershell -ExecutionPolicy Bypass -File scripts\build.ps1
+ctest --preset windows-vs2022-debug --output-on-failure
+powershell -ExecutionPolicy Bypass -File scripts\verify.ps1
+cmake --preset windows-vs2022-debug-jolt
+cmake --build --preset windows-vs2022-debug-jolt
+ctest --preset windows-vs2022-debug-jolt --output-on-failure
+python tools\scene_report.py
+python tools\validate_scene.py
+python tools\scale_audit.py
+python tools\mesh_report.py
+python tools\status_report.py
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --frames 300
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 300
+```
+
+Results:
+
+- `scripts\doctor.ps1`: passed; expected PATH warnings remain for `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- `scripts\configure.ps1`: passed for `windows-vs2022-debug`.
+- `scripts\build.ps1`: passed.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 3/3 tests.
+- `scripts\verify.ps1`: passed; null smoke reported engine `v0.14.0` and road telemetry `roadSegment=dock-road`.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 3/3 tests.
+- `python tools\scene_report.py`: passed; scene reports 21 visual placeholders, 10 mesh instances, 5 route markers, 4 objective markers, and vehicle bounds `[3.35, -5.05]..[19.45, 0.95]`.
+- `python tools\validate_scene.py`: passed.
+- `python tools\scale_audit.py`: passed; no suspicious scale issues found.
+- `python tools\mesh_report.py`: passed; `unit-box-mesh` still has 10 uses.
+- `python tools\status_report.py`: completed and showed the expected v0.14 modified files before commit.
+- `EngineApp.exe --renderer gdi --frames 300`: passed; window created, cursor captured, GDI ran 300 frames, clean shutdown.
+- `EngineApp.exe --renderer dx11 --frames 300`: passed; hardware DX11 device failed and WARP was used, then the bounded run completed cleanly.
+- Captured `docs/images/v0.14-gdi-screenshot.png` as the v0.14 visual reference.
+
+Visual observations:
+
+- The service-yard now has a clear east opening into a longer dock/service road segment.
+- The yellow route line and road-end marker make the compact out-and-back drive more legible than the previous tiny yard pad.
+- The dark road pad, rail/curb edges, and water/shore cue make the scene read more like a dock road placeholder.
+- Debug text and collision/interaction/traversal markers remain visible, but the scene is still debug-heavy and not commercial art.
+
+Recommended next goal:
+
+Build v0.15 Runtime Scene Loading / Scene Data Source of Truth.

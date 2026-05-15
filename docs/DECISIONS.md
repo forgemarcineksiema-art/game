@@ -416,3 +416,15 @@ Decision: Treat Tidebreak as an island-first third-person driver/fixer sandbox w
 Reason: This gives the project a sharper identity than "mini GTA" or pure trucking. Veyra Reach should first become a compact, dense, memorable region with practical jobs, grounded driving, route access, systemic objects, humor, atmosphere, and remembered local consequences. A larger city/mainland region can become a later expansion, but not before the island has strong place, vehicle feel, and world-memory foundations.
 
 Reference filter: learn map density from `Bully`/`Yakuza`, vehicle weight from `Mafia 2`/`GTA IV`, world reactivity from `RDR2`/`GTA IV`, object systems from `Watch Dogs`, local mission structure from `Bully`/`Yakuza`, and social memory from `Kingdom Come`/`RDR2`-lite. These are inspiration lenses only, not content or design to copy.
+
+## v0.14 Dock Road Before Bigger Gameplay
+
+Decision: Skip v0.13.1 as a formal goal and add a compact dock road/service route before the next gameplay milestone.
+
+Reason: The v0.13 vehicle already feels promising, but it needs a meaningful, readable place to exist before further tuning or job design. A short service-yard-to-dock-road segment improves spatial context, driving purpose, and island mood while staying within debug geometry and scene-data validation.
+
+## v0.14 Road Layout Remains Mirrored Explicitly
+
+Decision: Keep the v0.14 road segment authored in `data/scenes/ferry_office.scene.json` and mirrored manually in `SandboxLayer.cpp`, rather than adding runtime scene loading in the same goal.
+
+Reason: Runtime scene loading is now the right next architecture problem, but combining it with a road/mood pass would make failures harder to isolate. v0.14 keeps behavior predictable, adds tests for the authored ids and finite bounds, and makes the scene-data drift risk more visible for v0.15.

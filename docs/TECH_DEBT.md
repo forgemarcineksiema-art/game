@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-15
 
-This file lists known foundation issues after v0.13. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
+This file lists known foundation issues after v0.14. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
 
 ## Build / Toolchain
 
@@ -63,7 +63,8 @@ This file lists known foundation issues after v0.13. It is not a mandate to fix 
 - Vehicle collision is only safe yard-bound clamping plus a safe exit overlap check. It does not collide physically with all Ferry Office AABBs or dynamic bodies.
 - Enter/exit has no animation, doors, seats, mount offsets per vehicle, or obstruction sweeps.
 - Vehicle camera uses the existing third-person camera with alternate settings. v0.13 retunes distance/height/smoothing for the small yard, but there is no camera collision, chase-camera lag tuning, or reset-behind-vehicle command.
-- The service-yard road area is debug geometry only, not final art or a real road/terrain system.
+- The service-yard and v0.14 dock road segment are debug geometry only, not final art or a real road/terrain system.
+- The v0.14 road extends vehicle bounds for a compact out-and-back route, but vehicle collision is still a finite bounds clamp rather than road-edge collision against all debug rails/curbs.
 - Full Jolt vehicle integration is intentionally deferred until the placeholder feel is playtested. The next vehicle goal should still focus on manual feel/control polish rather than wheel physics.
 
 ## Interaction
@@ -103,6 +104,7 @@ This file lists known foundation issues after v0.13. It is not a mandate to fix 
 - `data/scenes/ferry_office.scene.json` is a validated authoring mirror, not a runtime-loaded source of truth yet.
 - Scene facts are still duplicated between JSON and C++ in `FerryOfficeData`, `PrototypeWorld`, `PrototypeScene`, and `SandboxLayer`.
 - Mesh instance facts are also duplicated between scene JSON and explicit `SandboxLayer` runtime setup.
+- v0.14 adds more duplicated layout data for the dock road segment, road-edge cues, route marker, and vehicle bounds. This makes runtime scene loading or code generation a stronger blocker before the next content/layout expansion.
 - There is no generated C++ data path from scene JSON.
 - There is no schema file beyond the Python validator.
 - Scene tools validate ids, vectors, radii, extents, vehicle bounds, mesh references, and scale sanity, but they do not compare every JSON value against C++ constants yet.
@@ -124,15 +126,16 @@ This file lists known foundation issues after v0.13. It is not a mandate to fix 
 - v0.9 improves the Ferry Office read with solid placeholder color, but it is still a debug scene. It is not final art and should not be mistaken for the target commercial visual quality.
 - v0.9.1 adds a route polyline, stronger marker hierarchy, and clearer objective wording, but the space still needs a real human playthrough on the target laptop.
 - v0.11 documents art direction and placeholder color keys. v0.12/v0.12.1 add first static mesh rendering and a small prop replacement pass, but still do not add final art, lighting, textures, materials, or model loading beyond a tiny proof subset.
+- v0.14 makes the service-yard read more like a dock road with a shore/water edge cue and turn-around marker, but it remains hand-authored placeholder geometry.
 - GDI debug text is now ordered around objective/focus first, but it remains functional debug text rather than a polished UI.
 - DX11 has no debug text overlay, so visual playtesting still favors GDI until a real overlay or text path exists.
 - There is no authored composition pass for camera start angle, signposting, silhouettes, or route readability beyond simple colored volumes and unit-box mesh placeholders.
 
-## Recommended Debt After v0.12
+## Recommended Debt After v0.14
 
 1. Run a full human keyboard/mouse playthrough of the Ferry Office loop and service-yard vehicle on the target laptop.
-2. Keep scene JSON and C++ layout synchronized until runtime loading or generation exists.
-3. Manually playtest the v0.13 vehicle acceleration, braking, reverse, steering, service-yard bounds, and camera settings on the target laptop before adding more vehicle features.
+2. Move toward runtime scene loading or generated C++ data before adding another sizeable layout pass.
+3. Manually playtest the v0.14 vehicle acceleration, braking, reverse, steering, service-yard-to-dock-road bounds, and camera settings on the target laptop before adding more vehicle features.
 4. Decide whether glTF coverage should grow through cgltf/tinygltf before adding textures/materials.
 5. Validate captured cursor feel on the target laptop/touchpad and use `--free-cursor` if a remote session behaves badly.
 6. Decide whether the first Jolt gameplay promotion should be vehicle-only, world queries-only, or player collision-only after vehicle tuning.
