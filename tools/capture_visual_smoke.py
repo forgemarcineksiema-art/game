@@ -30,6 +30,7 @@ class VisualThresholds:
     min_warm_pixels: int = 4
     min_green_pixels: int = 4
     min_cool_pixels: int = 4
+    min_overlay_text_pixels: int = 80
 
 
 def resolve_repo_path(value: str | pathlib.Path) -> pathlib.Path:
@@ -92,10 +93,14 @@ def analyze_bmp_capture(path: pathlib.Path, thresholds: VisualThresholds | None 
         "green_pixels": 0,
         "cool_pixels": 0,
         "neutral_pixels": 0,
+        "overlay_text_pixels": 0,
     }
 
     first_bgr = pixels[:3]
     for index in range(0, len(pixels), 4):
+        pixel_index = index // 4
+        x = pixel_index % width
+        y = pixel_index // width
         pixel = pixels[index : index + 4]
         blue = pixel[0]
         green = pixel[1]
@@ -128,6 +133,8 @@ def analyze_bmp_capture(path: pathlib.Path, thresholds: VisualThresholds | None 
             scene_presence["cool_pixels"] += 1
         if max(red, green, blue) - min(red, green, blue) <= 24 and luminance >= 70:
             scene_presence["neutral_pixels"] += 1
+        if x < min(width, 760) and y < min(height, 180) and luminance >= 185 and max(red, green, blue) - min(red, green, blue) <= 35:
+            scene_presence["overlay_text_pixels"] += 1
 
     pixel_count = width * height
     stats: dict[str, Any] = {
@@ -175,6 +182,7 @@ def validate_capture_stats(stats: dict[str, Any], thresholds: VisualThresholds, 
         "warm_pixels": thresholds.min_warm_pixels,
         "green_pixels": thresholds.min_green_pixels,
         "cool_pixels": thresholds.min_cool_pixels,
+        "overlay_text_pixels": thresholds.min_overlay_text_pixels,
     }
     for bucket, minimum in required_scene_buckets.items():
         if minimum > 0 and scene_presence[bucket] < minimum:
@@ -225,7 +233,7 @@ def compare_capture_parity(captures: dict[str, dict[str, Any]]) -> dict[str, Any
 def write_report(report_path: pathlib.Path, captures: dict[str, dict[str, Any]], parity: dict[str, Any]) -> None:
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report = {
-        "schema": "v0.30-capture-visual-smoke",
+        "schema": "v0.31-capture-visual-smoke",
         "captures": captures,
         "parity": parity,
     }
@@ -280,7 +288,8 @@ def run_capture(
         f"warm/green/cool="
         f"{stats['scene_presence']['warm_pixels']}/"
         f"{stats['scene_presence']['green_pixels']}/"
-        f"{stats['scene_presence']['cool_pixels']}"
+        f"{stats['scene_presence']['cool_pixels']}, "
+        f"text={stats['scene_presence']['overlay_text_pixels']}"
     )
     return stats
 
@@ -323,7 +332,7 @@ def main() -> int:
                 exe,
                 scene,
                 renderer,
-                output_dir / f"v0.30-{renderer}-capture.bmp",
+                output_dir / f"v0.31-{renderer}-capture.bmp",
                 args.frames,
                 thresholds,
             )

@@ -63,6 +63,7 @@ class CaptureVisualSmokeTests(unittest.TestCase):
                 min_warm_pixels=2,
                 min_green_pixels=2,
                 min_cool_pixels=2,
+                min_overlay_text_pixels=0,
             )
 
             stats = capture_visual_smoke.analyze_bmp_capture(path, thresholds)
@@ -114,6 +115,48 @@ class CaptureVisualSmokeTests(unittest.TestCase):
 
             self.assertGreaterEqual(stats["scene_presence"]["green_pixels"], 2)
 
+    def test_overlay_text_signal_counts_top_left_bright_neutral_pixels(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = pathlib.Path(temp_dir) / "overlay-text.bmp"
+            pixels = [
+                (245, 235, 230, 255),
+                (245, 235, 230, 255),
+                (18, 24, 34, 255),
+                (18, 24, 34, 255),
+                (245, 235, 230, 255),
+                (245, 235, 230, 255),
+                (18, 24, 34, 255),
+                (18, 24, 34, 255),
+                (18, 24, 34, 255),
+                (18, 24, 34, 255),
+                (54, 112, 236, 255),
+                (78, 210, 38, 255),
+                (18, 24, 34, 255),
+                (18, 24, 34, 255),
+                (54, 112, 236, 255),
+                (78, 210, 38, 255),
+            ]
+            write_test_bmp(path, 4, 4, pixels)
+
+            thresholds = capture_visual_smoke.VisualThresholds(
+                expected_width=4,
+                expected_height=4,
+                min_unique_colors=4,
+                min_different_pixels=6,
+                min_luminance_range=120,
+                min_dark_pixels=4,
+                min_bright_pixels=4,
+                min_warm_pixels=2,
+                min_green_pixels=2,
+                min_cool_pixels=0,
+                min_overlay_text_pixels=4,
+            )
+
+            stats = capture_visual_smoke.analyze_bmp_capture(path, thresholds)
+            capture_visual_smoke.validate_capture_stats(stats, thresholds, "dx11")
+
+            self.assertGreaterEqual(stats["scene_presence"]["overlay_text_pixels"], 4)
+
     def test_capture_parity_rejects_dimension_mismatch(self) -> None:
         gdi_stats = {"renderer": "gdi", "width": 1280, "height": 720}
         dx11_stats = {"renderer": "dx11", "width": 640, "height": 720}
@@ -133,7 +176,7 @@ class CaptureVisualSmokeTests(unittest.TestCase):
             capture_visual_smoke.write_report(report_path, captures, parity)
 
             report = json.loads(report_path.read_text(encoding="utf-8"))
-            self.assertEqual("v0.30-capture-visual-smoke", report["schema"])
+            self.assertEqual("v0.31-capture-visual-smoke", report["schema"])
             self.assertEqual(1280, report["captures"]["gdi"]["width"])
             self.assertTrue(report["parity"]["dimensions_match"])
 

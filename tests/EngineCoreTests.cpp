@@ -6,6 +6,7 @@
 #include "engine/physics/PhysicsWorld.h"
 #include "engine/assets/StaticMesh.h"
 #include "engine/renderer/BmpWriter.h"
+#include "engine/renderer/DebugBitmapText.h"
 #include "engine/renderer/DebugCameraMatrices.h"
 #include "engine/renderer/DebugProjection.h"
 #include "engine/renderer/Renderer.h"
@@ -525,6 +526,80 @@ void TestBmpWriterCreatesTopDown32BitBmp()
     }
 
     std::filesystem::remove(outputPath);
+}
+
+void TestDebugBitmapTextBuildsGlyphQuadsInsideBounds()
+{
+    engine::DebugBitmapTextLayout layout;
+    layout.viewportWidth = 160;
+    layout.viewportHeight = 72;
+    layout.originX = 4;
+    layout.originY = 5;
+    layout.glyphScale = 2;
+    layout.lineSpacing = 3;
+    layout.rightPadding = 4;
+    layout.bottomPadding = 4;
+
+    const std::vector<engine::DebugBitmapTextQuad> quads =
+        engine::BuildDebugBitmapTextQuads("Objective:\nPrompt E", layout);
+
+    Expect(!quads.empty(),
+        "TestDebugBitmapTextBuildsGlyphQuadsInsideBounds",
+        "Debug bitmap text should emit visible glyph quads.");
+
+    bool foundSecondLine = false;
+    const int secondLineTop = layout.originY + (7 * layout.glyphScale) + layout.lineSpacing;
+    for (const engine::DebugBitmapTextQuad& quad : quads) {
+        Expect(quad.left >= layout.originX
+                && quad.top >= layout.originY
+                && quad.right <= layout.viewportWidth - layout.rightPadding
+                && quad.bottom <= layout.viewportHeight - layout.bottomPadding,
+            "TestDebugBitmapTextBuildsGlyphQuadsInsideBounds",
+            "Debug bitmap text quads should stay inside the configured viewport padding.");
+        if (quad.top >= secondLineTop) {
+            foundSecondLine = true;
+        }
+    }
+
+    Expect(foundSecondLine,
+        "TestDebugBitmapTextBuildsGlyphQuadsInsideBounds",
+        "Debug bitmap text should honor newline layout.");
+}
+
+void TestDebugBitmapTextWrapsLongLinesBeforeOverflow()
+{
+    engine::DebugBitmapTextLayout layout;
+    layout.viewportWidth = 42;
+    layout.viewportHeight = 80;
+    layout.originX = 2;
+    layout.originY = 2;
+    layout.glyphScale = 1;
+    layout.glyphSpacing = 1;
+    layout.lineSpacing = 1;
+    layout.rightPadding = 2;
+    layout.bottomPadding = 2;
+
+    const std::vector<engine::DebugBitmapTextQuad> quads =
+        engine::BuildDebugBitmapTextQuads("ABCDE ABCDE", layout);
+
+    Expect(!quads.empty(),
+        "TestDebugBitmapTextWrapsLongLinesBeforeOverflow",
+        "Debug bitmap text should emit quads for wrapped text.");
+
+    bool wrapped = false;
+    const int firstLineBottom = layout.originY + (7 * layout.glyphScale);
+    for (const engine::DebugBitmapTextQuad& quad : quads) {
+        Expect(quad.right <= layout.viewportWidth - layout.rightPadding,
+            "TestDebugBitmapTextWrapsLongLinesBeforeOverflow",
+            "Wrapped debug bitmap text should not overflow the right edge.");
+        if (quad.top >= firstLineBottom + layout.lineSpacing) {
+            wrapped = true;
+        }
+    }
+
+    Expect(wrapped,
+        "TestDebugBitmapTextWrapsLongLinesBeforeOverflow",
+        "Debug bitmap text should wrap long lines before they overflow.");
 }
 
 void TestDebugProjectionKeepsLongVisibleLinesWhenEndpointsAreOffscreen()
@@ -3109,6 +3184,8 @@ int main()
     TestClockStartsAtFrameZeroAndTicksForward();
     TestNullRendererRecordsFrameAndDebugDraw();
     TestBmpWriterCreatesTopDown32BitBmp();
+    TestDebugBitmapTextBuildsGlyphQuadsInsideBounds();
+    TestDebugBitmapTextWrapsLongLinesBeforeOverflow();
     TestDebugProjectionKeepsLongVisibleLinesWhenEndpointsAreOffscreen();
     TestDebugProjectionClipsLinesAndTrianglesAgainstNearPlane();
     TestDebugProjectionSortsProjectedTrianglesBackToFront();

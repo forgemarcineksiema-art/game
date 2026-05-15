@@ -57,11 +57,11 @@ private:
     bool updateWorldMatrixConstants();
     void drawLineVertices(const std::vector<Vertex>& vertices);
     void drawTriangleVertices(const std::vector<Vertex>& vertices);
-    void drawDebugTextOverlay();
+    void drawOverlayTriangleVertices(const std::vector<Vertex>& vertices);
+    void drawRendererOwnedDebugText(std::string_view text);
 
     RendererConfig m_config;
     DebugCamera m_debugCamera;
-    std::string m_debugText;
     HWND m_window = nullptr;
     Microsoft::WRL::ComPtr<ID3D11Device> m_device;
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_context;

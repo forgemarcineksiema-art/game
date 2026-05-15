@@ -4550,7 +4550,7 @@ Visual evidence:
 - After composition playtest: `build\captures\v0.25-composition-playtest-start.png`.
 - After composition debug: `build\captures\v0.25-composition-debug-start.png`.
 
-Validation so far:
+Validation:
 
 - `python tests\test_scene_tools.py`: passed, 30 tests.
 - `powershell -ExecutionPolicy Bypass -File scripts\build.ps1`: passed during focused C++ test verification.
@@ -4818,3 +4818,50 @@ Remaining limitations:
 - The harness is still heuristic smoke coverage, not a human-quality visual judgment.
 - There is still no PNG encoder, pixel-perfect or thresholded visual diff, golden-image approval flow, semantic object detection, renderer-owned DX11 text capture, or resize matrix for alternate capture dimensions.
 - DX11 capture still excludes the temporary Win32 debug text overlay because it reads the swap-chain back buffer before `Present`.
+
+## v0.31 DX11 Capture Overlay Parity / Renderer-Owned Debug Text Spike (2026-05-15)
+
+Scope:
+
+- Built on v0.29/v0.30's renderer-owned BMP capture and visual smoke harness.
+- Kept gameplay, scene data, movement, interactions, vehicle behavior, GDI behavior, and renderer presentation intent unchanged.
+- Reduced the biggest v0.30 DX11 visual QA blind spot by moving/mirroring debug/playtest text into a renderer-owned DX11 path that is drawn before capture and `Present`.
+- Chose a tiny dependency-free bitmap/monospace debug text renderer instead of DirectWrite, a full HUD/text system, PNG output, OCR, or golden-image approval testing.
+
+Focused TDD result:
+
+- Added `TestDebugBitmapTextBuildsGlyphQuadsInsideBounds` and `TestDebugBitmapTextWrapsLongLinesBeforeOverflow` before implementation.
+- Added `test_overlay_text_signal_counts_top_left_bright_neutral_pixels` before implementation.
+- `scripts\build.ps1` failed as expected before implementation because `engine/renderer/DebugBitmapText.h` was missing.
+- `python tests\test_capture_visual_smoke.py` failed as expected before implementation because `VisualThresholds` did not yet accept `min_overlay_text_pixels`.
+- After implementation, `scripts\build.ps1`, the focused CTest run, and the capture visual smoke tests passed.
+
+Implementation notes:
+
+- Added `src\engine\renderer\DebugBitmapText.h/.cpp` with a tiny 5x7 bitmap glyph layout helper, wrapping, bounds limiting, and focused unit coverage.
+- `Dx11Renderer::drawDebugText` now builds renderer-owned pixel quads for debug/playtest text and submits them as depth-disabled overlay triangles before application capture and swap-chain `Present`.
+- Removed the old DX11 post-`Present` Win32 GDI text overlay path.
+- `tools\capture_visual_smoke.py` now reports/asserts a conservative top-left bright neutral text signal as `overlay_text_pixels`, keeps GDI/DX11 dimension parity checks, and writes schema `v0.31-capture-visual-smoke`.
+- Updated `docs\RUNBOOK.md`, `docs\MANUAL_TEST_CHECKLIST.md`, `docs\TECH_DEBT.md`, and `docs\ROADMAP.md`.
+
+Validation so far:
+
+- `scripts\build.ps1`: failed as expected before implementation because `engine/renderer/DebugBitmapText.h` was missing.
+- `python tests\test_capture_visual_smoke.py`: failed as expected before implementation because `min_overlay_text_pixels` was not supported yet.
+- `python tests\test_capture_visual_smoke.py`: failed once after implementation because existing fixtures needed explicit zero text-thresholds and corrected BGRA warm-marker tuples; the tests were corrected.
+- `scripts\build.ps1`: passed.
+- `python tests\test_capture_visual_smoke.py`: passed, 6 tests.
+- `ctest --preset windows-vs2022-debug --output-on-failure -R EngineCoreTests`: passed.
+- `python tools\capture_visual_smoke.py`: passed; GDI reported 1280x720, 32 colors, luminance range 227, warm/green/cool/text counts 5926/8256/20339/6026. DX11 reported 1280x720, 37 colors, luminance range 227, warm/green/cool/text counts 2770/6203/17855/12092. Hardware DX11 still fell back to WARP in this environment.
+- `scripts\doctor.ps1`: passed; expected warnings remain for compiler/tool binaries outside plain `PATH`.
+- `scripts\configure.ps1`: passed for `windows-vs2022-debug`.
+- `scripts\build.ps1`: passed.
+- `scripts\verify.ps1`: passed; CTest 5/5 passed including `CaptureVisualSmokeTests`, scene validation passed, asset validation passed, mesh report passed, and null smoke loaded all 8 static mesh assets.
+- `python tools\capture_visual_smoke.py`: passed after full verify; recreated `build\captures\v0.31-gdi-capture.bmp`, `build\captures\v0.31-dx11-capture.bmp`, and `build\captures\capture_visual_smoke_report.json`. GDI reported 1280x720, 32 colors, luminance range 227, warm/green/cool/text counts 5926/8256/20339/6026. DX11 reported 1280x720, 37 colors, luminance range 227, warm/green/cool/text counts 2770/6203/17855/12092.
+- `git diff --check`: passed; expected line-ending warnings remain on this Windows checkout.
+
+Remaining limitations:
+
+- The bitmap text path is ASCII-oriented, tiny, and debug-only. It is not a production HUD, rich font renderer, Unicode/shaping path, layout engine, localization solution, or DirectWrite replacement.
+- The visual smoke harness still checks broad heuristics only; it is not OCR, semantic object detection, human-quality composition judgment, golden-image comparison, or a thresholded visual diff.
+- Capture output is still BMP only, and alternate capture/window dimensions still need more renderer/camera resize validation.

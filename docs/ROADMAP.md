@@ -380,6 +380,18 @@ Status: implemented as a local visual-validation harness. `--capture-frame` and 
 
 Status: implemented as a capture QA hardening pass. The visual smoke harness now validates 1280x720 32-bit BMP captures for non-flat output, luminance range, warm/green-teal/cool/dark scene signals, matching GDI/DX11 dimensions, and writes a JSON report alongside the captures.
 
+## v0.31 - DX11 Capture Overlay Parity / Renderer-Owned Debug Text Spike
+
+- Keep gameplay unchanged.
+- Reduce the biggest remaining v0.30 visual QA blind spot: DX11 captures should include debug/playtest text before `Present`.
+- Prefer a tiny dependency-free bitmap/monospace renderer-owned debug text path over DirectWrite, a full HUD system, or broad renderer architecture work.
+- Keep GDI behavior stable and keep the text path explicitly temporary/debug-oriented.
+- Extend `tools\capture_visual_smoke.py` with a conservative overlay text signal check without OCR or pixel-perfect golden tests.
+- Add focused tests for text layout/raster/stat behavior.
+- Update validation docs and run the standard doctor/configure/build/verify plus the visual capture harness.
+
+Status: implemented as a narrow DX11 capture parity spike. DX11 now draws debug/playtest text through a tiny renderer-owned bitmap text path before capture and `Present`, while GDI keeps its existing overlay behavior. The visual smoke harness validates broad scene signals plus a conservative top-left bright text signal for both renderers.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py` as the bounded evidence path before asking for manual play. If captures stay clean, choose the next small goal from actual risk: vehicle feel if driving still lacks confidence, renderer-owned DX11 text/resize handling if capture/overlay gaps block validation, or one tiny authored prop only if scene language is now the clearest blocker.
+Use `python tools\capture_visual_smoke.py` as the bounded evidence path before asking for manual play. If captures stay clean and manual time is scarce, the next small goal should likely be an automated Ferry Office interaction/playthrough QA harness. Otherwise choose from actual risk: vehicle feel if driving still lacks confidence, resize/text-quality renderer polish if capture reliability blocks validation, or one tiny authored prop only if scene language is clearly the blocker.

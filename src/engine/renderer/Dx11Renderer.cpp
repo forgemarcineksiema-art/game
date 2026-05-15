@@ -5,6 +5,7 @@
 #include "engine/core/Logger.h"
 #include "engine/math/BoxEdges.h"
 #include "engine/renderer/BmpWriter.h"
+#include "engine/renderer/DebugBitmapText.h"
 #include "engine/renderer/DebugCameraMatrices.h"
 #include "engine/renderer/DebugProjection.h"
 
@@ -121,6 +122,29 @@ void AddWorldTriangle(
     vertices.push_back({a.x, a.y, a.z, color.r, color.g, color.b, color.a});
     vertices.push_back({b.x, b.y, b.z, color.r, color.g, color.b, color.a});
     vertices.push_back({c.x, c.y, c.z, color.r, color.g, color.b, color.a});
+}
+
+void AddPixelQuad(
+    std::vector<Dx11Renderer::Vertex>& vertices,
+    const DebugBitmapTextQuad& quad,
+    int viewportWidth,
+    int viewportHeight,
+    Color color)
+{
+    const float safeWidth = static_cast<float>(std::max(viewportWidth, 1));
+    const float safeHeight = static_cast<float>(std::max(viewportHeight, 1));
+    const float left = (static_cast<float>(quad.left) / safeWidth) * 2.0f - 1.0f;
+    const float right = (static_cast<float>(quad.right) / safeWidth) * 2.0f - 1.0f;
+    const float top = 1.0f - (static_cast<float>(quad.top) / safeHeight) * 2.0f;
+    const float bottom = 1.0f - (static_cast<float>(quad.bottom) / safeHeight) * 2.0f;
+
+    vertices.push_back({left, top, 0.0f, color.r, color.g, color.b, color.a});
+    vertices.push_back({right, top, 0.0f, color.r, color.g, color.b, color.a});
+    vertices.push_back({right, bottom, 0.0f, color.r, color.g, color.b, color.a});
+
+    vertices.push_back({left, top, 0.0f, color.r, color.g, color.b, color.a});
+    vertices.push_back({right, bottom, 0.0f, color.r, color.g, color.b, color.a});
+    vertices.push_back({left, bottom, 0.0f, color.r, color.g, color.b, color.a});
 }
 
 } // namespace
@@ -454,7 +478,6 @@ bool Dx11Renderer::createBuffer(const Vertex* vertices, unsigned int vertexCount
 
 void Dx11Renderer::beginFrame(unsigned long long)
 {
-    m_debugText.clear();
     const float color[] = {
         m_config.clearColor.r,
         m_config.clearColor.g,
@@ -579,7 +602,7 @@ void Dx11Renderer::drawDebugBox(Vec3 center, Vec3 halfExtents, Color color)
 
 void Dx11Renderer::drawDebugText(std::string_view text)
 {
-    m_debugText = std::string(text);
+    drawRendererOwnedDebugText(text);
 }
 
 bool Dx11Renderer::captureFrame(const std::filesystem::path& outputPath)
@@ -766,10 +789,68 @@ void Dx11Renderer::drawTriangleVertices(const std::vector<Vertex>& vertices)
     m_context->Draw(vertexCount, 0);
 }
 
+void Dx11Renderer::drawOverlayTriangleVertices(const std::vector<Vertex>& vertices)
+{
+    if (vertices.empty()) {
+        return;
+    }
+
+    const unsigned int vertexCount = static_cast<unsigned int>(vertices.size());
+    if (!ensureDynamicBuffer(vertexCount)) {
+        return;
+    }
+
+    D3D11_MAPPED_SUBRESOURCE mapped {};
+    HRESULT result = m_context->Map(m_dynamicVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+    if (FAILED(result)) {
+        return;
+    }
+    std::memcpy(mapped.pData, vertices.data(), sizeof(Vertex) * vertexCount);
+    m_context->Unmap(m_dynamicVertexBuffer.Get(), 0);
+
+    const UINT stride = sizeof(Vertex);
+    const UINT offset = 0;
+    ID3D11Buffer* vertexBuffer = m_dynamicVertexBuffer.Get();
+    m_context->OMSetDepthStencilState(m_depthDisabledState.Get(), 0);
+    m_context->IASetInputLayout(m_inputLayout.Get());
+    m_context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+    m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    m_context->VSSetShader(m_vertexShader.Get(), nullptr, 0);
+    m_context->PSSetShader(m_pixelShader.Get(), nullptr, 0);
+    m_context->Draw(vertexCount, 0);
+}
+
+void Dx11Renderer::drawRendererOwnedDebugText(std::string_view text)
+{
+    if (text.empty()) {
+        return;
+    }
+
+    DebugBitmapTextLayout layout;
+    layout.viewportWidth = std::max(m_config.width, 1);
+    layout.viewportHeight = std::max(m_config.height, 1);
+    layout.originX = 16;
+    layout.originY = 16;
+    layout.rightPadding = 16;
+    layout.bottomPadding = 16;
+    layout.glyphScale = 2;
+    layout.glyphSpacing = 2;
+    layout.lineSpacing = 4;
+
+    const std::vector<DebugBitmapTextQuad> quads = BuildDebugBitmapTextQuads(text, layout);
+    std::vector<Vertex> vertices;
+    vertices.reserve(quads.size() * 6U);
+    constexpr Color TextColor {0.90f, 0.92f, 0.96f, 1.0f};
+    for (const DebugBitmapTextQuad& quad : quads) {
+        AddPixelQuad(vertices, quad, layout.viewportWidth, layout.viewportHeight, TextColor);
+    }
+
+    drawOverlayTriangleVertices(vertices);
+}
+
 void Dx11Renderer::endFrame()
 {
     m_swapChain->Present(1, 0);
-    drawDebugTextOverlay();
 }
 
 void Dx11Renderer::shutdown()
@@ -797,26 +878,6 @@ void Dx11Renderer::shutdown()
 std::string Dx11Renderer::name() const
 {
     return "dx11";
-}
-
-void Dx11Renderer::drawDebugTextOverlay()
-{
-    if (!m_window || m_debugText.empty()) {
-        return;
-    }
-
-    HDC deviceContext = GetDC(m_window);
-    if (!deviceContext) {
-        return;
-    }
-
-    RECT rect {};
-    GetClientRect(m_window, &rect);
-    RECT textRect {16, 16, rect.right - 16, rect.bottom - 16};
-    SetBkMode(deviceContext, TRANSPARENT);
-    SetTextColor(deviceContext, RGB(230, 235, 245));
-    DrawTextA(deviceContext, m_debugText.c_str(), static_cast<int>(m_debugText.size()), &textRect, DT_LEFT | DT_TOP | DT_WORDBREAK | DT_NOCLIP);
-    ReleaseDC(m_window, deviceContext);
 }
 
 } // namespace engine
