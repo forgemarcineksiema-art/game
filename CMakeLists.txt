@@ -120,6 +120,7 @@ endif()
 
 add_library(GamePrototype STATIC
     src/game/FerryOfficeJob.cpp
+    src/game/FerryOfficePlaythroughQa.cpp
     src/game/InteractionSystem.cpp
     src/game/PlayerController.cpp
     src/game/SandboxLayer.cpp
@@ -191,6 +192,20 @@ if(ENGINE_BUILD_TESTS)
     add_test(
         NAME CaptureVisualSmokeTests
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_capture_visual_smoke.py
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+    add_test(
+        NAME PlaythroughQaTests
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_playthrough_qa.py
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+    add_test(
+        NAME FerryOfficePlaythroughQaSmoke
+        COMMAND
+            ${Python3_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/tools/playthrough_qa.py
+            --exe $<TARGET_FILE:EngineApp>
+            --report-json ${CMAKE_CURRENT_BINARY_DIR}/playthroughs/ferry-office-service-call-report.json
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
 endif()

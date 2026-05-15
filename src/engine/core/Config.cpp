@@ -77,6 +77,11 @@ bool AppConfig::captureRequested() const
     return !captureFramePath.empty() || !captureDir.empty();
 }
 
+bool AppConfig::qaPlaythroughRequested() const
+{
+    return !qaPlaythrough.empty();
+}
+
 ConfigParseResult ParseArguments(int argc, const char* const* argv)
 {
     ConfigParseResult result;
@@ -189,11 +194,32 @@ ConfigParseResult ParseArguments(int argc, const char* const* argv)
             continue;
         }
 
+        if (ReadValue(argc, argv, index, argument, "--qa-playthrough", value)) {
+            if (value == "ferry-office-service-call") {
+                result.config.qaPlaythrough = value;
+            } else {
+                result.errors.push_back("--qa-playthrough must be: ferry-office-service-call.");
+            }
+            continue;
+        }
+
+        if (ReadValue(argc, argv, index, argument, "--qa-playthrough-report", value)) {
+            if (value.empty()) {
+                result.errors.push_back("--qa-playthrough-report requires a non-empty output path.");
+            } else {
+                result.config.qaPlaythroughReportPath = value;
+            }
+            continue;
+        }
+
         result.errors.push_back("Unknown argument: " + std::string(argument));
     }
 
     if (!result.config.captureFramePath.empty() && !result.config.captureDir.empty()) {
         result.errors.push_back("--capture-frame and --capture-dir cannot be combined.");
+    }
+    if (!result.config.qaPlaythroughReportPath.empty() && result.config.qaPlaythrough.empty()) {
+        result.errors.push_back("--qa-playthrough-report requires --qa-playthrough.");
     }
 
     return result;
@@ -220,6 +246,8 @@ std::string BuildHelpText()
         << "  --scene <path>        Runtime scene JSON path.\n"
         << "  --capture-frame <path> Write one renderer-owned BMP capture to the exact path.\n"
         << "  --capture-dir <path>  Write one renderer-owned BMP capture into the directory.\n"
+        << "  --qa-playthrough <name> Run a QA-only automated playthrough. Supported: ferry-office-service-call.\n"
+        << "  --qa-playthrough-report <path> Write the QA playthrough JSON report.\n"
         << "  --help                Show this help.\n";
     return output.str();
 }

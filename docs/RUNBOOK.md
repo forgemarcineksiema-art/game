@@ -148,6 +148,15 @@ python tools\capture_visual_smoke.py --report-json build\captures\v0.31-visual-r
 
 `tools\capture_visual_smoke.py` is the preferred bounded visual evidence path. It launches GDI and DX11, checks expected dimensions, BMP validity, non-flat color diversity, luminance range, broad Ferry Office start-view color signals for dark background, warm markers, green/teal markers, cool geometry, and a conservative top-left bright text signal. It also compares renderer capture dimensions and writes `build\captures\capture_visual_smoke_report.json` by default. This is intentionally not OCR, semantic object detection, or a pixel-perfect golden-image test.
 
+Automated Ferry Office playthrough QA:
+
+```powershell
+python tools\playthrough_qa.py
+build\windows-vs2022-debug\Debug\EngineApp.exe --qa-playthrough ferry-office-service-call --qa-playthrough-report build\playthroughs\ferry-office-service-call-report.json
+```
+
+`--qa-playthrough ferry-office-service-call` is a QA-only path, off by default. It does not open a window or play through keyboard/mouse input. It loads the authored Ferry Office scene, runs the existing scene/job systems through the first Service Call phases, asserts `manifestCollected`, `serviceRouteUsed`, `maintenanceBoxInspected`, `powerRestored`, `routeOpened`, `serviceVehicleUsed`, `dockRoadReached`, `serviceRunConfirmed`, and `ferryOfficeJobComplete`, and writes a JSON report under `build\playthroughs` by default. This is deterministic behavioral coverage, not a replacement for human feel review of movement, driving, camera, readability, or interaction ergonomics.
+
 Headless smoke mode:
 
 ```powershell

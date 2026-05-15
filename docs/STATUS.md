@@ -4865,3 +4865,52 @@ Remaining limitations:
 - The bitmap text path is ASCII-oriented, tiny, and debug-only. It is not a production HUD, rich font renderer, Unicode/shaping path, layout engine, localization solution, or DirectWrite replacement.
 - The visual smoke harness still checks broad heuristics only; it is not OCR, semantic object detection, human-quality composition judgment, golden-image comparison, or a thresholded visual diff.
 - Capture output is still BMP only, and alternate capture/window dimensions still need more renderer/camera resize validation.
+
+## v0.32 Automated Ferry Office Playthrough QA Harness (2026-05-15)
+
+Scope:
+
+- Built on v0.29-v0.31 bounded validation work.
+- Kept gameplay, scene data, renderer output, movement, interactions, vehicle behavior, and the normal launch path unchanged.
+- Added a QA-only, off-by-default automated Ferry Office Service Call validation path so Codex can verify first-job completion without a manual keyboard/mouse pass.
+- Avoided Job #2, mission scripting, NPCs, save/load, new vehicle physics, broad input rewrites, or a claim that deterministic QA replaces human feel review.
+
+Focused TDD result:
+
+- Added C++ tests for `--qa-playthrough` config parsing, help text, and a game-owned playthrough runner that completes the Service Call and writes a JSON report.
+- Added Python tests for `tools\playthrough_qa.py` report path and report validation behavior.
+- Added a CTest smoke path for the real `EngineApp.exe --qa-playthrough ferry-office-service-call` command through `tools\playthrough_qa.py`.
+- `scripts\build.ps1` failed as expected before implementation because `game/FerryOfficePlaythroughQa.h` was missing.
+- `python tests\test_playthrough_qa.py` failed as expected before implementation because `tools\playthrough_qa.py` was missing.
+
+Implementation notes:
+
+- Added `src\game\FerryOfficePlaythroughQa.h/.cpp`.
+- `RunFerryOfficeServiceCallPlaythroughQa` loads the authored scene, drives real `InteractionSystem` interactions for manifest, maintenance, wall button, and Service Run Marker, uses `TraversalSystem` plus `PlayerController` for the Service Barrier Vault, and uses `FerryOfficeJob` checkpoint/confirmation logic for the vehicle/job end state.
+- Added `--qa-playthrough ferry-office-service-call` and `--qa-playthrough-report <path>` to `AppConfig`/CLI help.
+- `src\game\main.cpp` routes QA playthrough requests before normal `Application` startup, so the path does not open a window or render frames.
+- Added `tools\playthrough_qa.py`, which runs the QA command, validates schema `v0.32-ferry-office-playthrough-qa`, checks all required final flags, and writes/reads `build\playthroughs\ferry-office-service-call-report.json` by default.
+- `scripts\doctor.ps1` now checks that `tools\playthrough_qa.py` exists.
+- Added `PlaythroughQaTests` and `FerryOfficePlaythroughQaSmoke` to CTest.
+
+Validation so far:
+
+- `scripts\build.ps1`: failed as expected before implementation because `game/FerryOfficePlaythroughQa.h` was missing.
+- `python tests\test_playthrough_qa.py`: failed as expected before implementation because `tools\playthrough_qa.py` was missing.
+- `ctest --preset windows-vs2022-debug --output-on-failure -R "EngineCoreTests|PlaythroughQaTests|FerryOfficePlaythroughQaSmoke"`: failed once after implementation because the C++ test kept the report `ifstream` open during Windows cleanup and the Python validator reported phase before the missing flag name; both test issues were fixed.
+- `scripts\build.ps1`: passed after implementation.
+- `ctest --preset windows-vs2022-debug --output-on-failure -R "EngineCoreTests|PlaythroughQaTests|FerryOfficePlaythroughQaSmoke"`: passed, 3/3 focused tests.
+- `python tests\test_playthrough_qa.py`: passed, 3 tests.
+- `python tools\playthrough_qa.py`: passed; wrote `build\playthroughs\ferry-office-service-call-report.json` with `phase=complete`, `eventCount=10`, and all required Service Call flags through `ferryOfficeJobComplete=true`.
+- `scripts\doctor.ps1`: passed; expected warnings remain for compiler/tool binaries outside plain `PATH`, and the new `tools\playthrough_qa.py` check passed.
+- `scripts\configure.ps1`: passed for `windows-vs2022-debug`.
+- `scripts\build.ps1`: passed after the final doctor-script update.
+- `scripts\verify.ps1`: passed; CTest 7/7 passed including `PlaythroughQaTests` and `FerryOfficePlaythroughQaSmoke`, scene validation passed, asset validation passed, mesh report passed, and null smoke loaded all 8 static mesh assets.
+- `python tools\playthrough_qa.py`: passed after full verify; wrote `build\playthroughs\ferry-office-service-call-report.json` with `phase=complete`, `eventCount=10`, and all required Service Call flags through `ferryOfficeJobComplete=true`.
+- `python tools\capture_visual_smoke.py`: passed after full verify; GDI reported 1280x720, 32 colors, luminance range 227, warm/green/cool/text counts 5926/8256/20339/6026. DX11 reported 1280x720, 37 colors, luminance range 227, warm/green/cool/text counts 2770/6203/17855/12092.
+
+Remaining limitations:
+
+- The playthrough QA runner is deterministic behavioral coverage, not human input automation.
+- It does not prove route readability, camera comfort, vehicle driving feel, collision feel, prompt ergonomics, visual composition quality, or complete end-to-end keyboard/mouse navigation.
+- The path is intentionally Ferry Office Service Call-specific and should not become a generic mission scripting system until more jobs prove a stable data shape.

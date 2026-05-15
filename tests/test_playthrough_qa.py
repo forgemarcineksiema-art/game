@@ -1,0 +1,95 @@
+#!/usr/bin/env python3
+"""Unit tests for the automated Ferry Office playthrough QA wrapper."""
+
+from __future__ import annotations
+
+import importlib.util
+import json
+import pathlib
+import tempfile
+import unittest
+
+
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+TOOL_PATH = ROOT / "tools" / "playthrough_qa.py"
+
+spec = importlib.util.spec_from_file_location("playthrough_qa", TOOL_PATH)
+playthrough_qa = importlib.util.module_from_spec(spec)
+assert spec.loader is not None
+spec.loader.exec_module(playthrough_qa)  # type: ignore[union-attr]
+
+
+class PlaythroughQaTests(unittest.TestCase):
+    def test_default_report_path_lives_under_build_playthroughs(self) -> None:
+        report_path = playthrough_qa.default_report_path("ferry-office-service-call")
+
+        self.assertEqual(ROOT / "build" / "playthroughs" / "ferry-office-service-call-report.json", report_path)
+
+    def test_validate_report_requires_completed_ferry_office_flags(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            report_path = pathlib.Path(temp_dir) / "report.json"
+            report_path.write_text(
+                json.dumps(
+                    {
+                        "schema": "v0.32-ferry-office-playthrough-qa",
+                        "scenario": "ferry-office-service-call",
+                        "passed": True,
+                        "final": {
+                            "phase": "complete",
+                            "flags": {
+                                "manifestCollected": True,
+                                "serviceRouteUsed": True,
+                                "maintenanceBoxInspected": True,
+                                "powerRestored": True,
+                                "routeOpened": True,
+                                "serviceVehicleUsed": True,
+                                "dockRoadReached": True,
+                                "serviceRunConfirmed": True,
+                                "ferryOfficeJobComplete": True,
+                            },
+                        },
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            report = playthrough_qa.load_and_validate_report(report_path)
+
+            self.assertEqual("complete", report["final"]["phase"])
+
+    def test_validate_report_rejects_missing_job_completion(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            report_path = pathlib.Path(temp_dir) / "report.json"
+            report_path.write_text(
+                json.dumps(
+                    {
+                        "schema": "v0.32-ferry-office-playthrough-qa",
+                        "scenario": "ferry-office-service-call",
+                        "passed": True,
+                        "final": {
+                            "phase": "confirmServiceRun",
+                            "flags": {
+                                "manifestCollected": True,
+                                "serviceRouteUsed": True,
+                                "maintenanceBoxInspected": True,
+                                "powerRestored": True,
+                                "routeOpened": True,
+                                "serviceVehicleUsed": True,
+                                "dockRoadReached": True,
+                                "serviceRunConfirmed": True,
+                                "ferryOfficeJobComplete": False,
+                            },
+                        },
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(ValueError, "ferryOfficeJobComplete"):
+                playthrough_qa.load_and_validate_report(report_path)
+
+
+if __name__ == "__main__":
+    unittest.main()

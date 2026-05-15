@@ -31,9 +31,12 @@ struct AppConfig {
     std::filesystem::path scenePath = "data/scenes/ferry_office.scene.json";
     std::filesystem::path captureFramePath;
     std::filesystem::path captureDir;
+    std::string qaPlaythrough;
+    std::filesystem::path qaPlaythroughReportPath;
     Color clearColor = {0.08f, 0.11f, 0.16f, 1.0f};
 
     bool captureRequested() const;
+    bool qaPlaythroughRequested() const;
 };
 
 struct ConfigParseResult {

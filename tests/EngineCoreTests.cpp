@@ -15,6 +15,7 @@
 #include "game/PlayerController.h"
 #include "game/FerryOfficeData.h"
 #include "game/FerryOfficeJob.h"
+#include "game/FerryOfficePlaythroughQa.h"
 #include "game/PrototypeScene.h"
 #include "game/PrototypeWorld.h"
 #include "game/SandboxLayer.h"
@@ -326,6 +327,50 @@ void TestHelpTextMentionsCaptureFlags()
     Expect(help.find("--capture-dir") != std::string::npos,
         "TestHelpTextMentionsCaptureFlags",
         "Help text should document generated capture output.");
+}
+
+void TestQaPlaythroughArgumentsSelectScenarioAndReportPath()
+{
+    const char* argv[] = {
+        "EngineApp",
+        "--qa-playthrough",
+        "ferry-office-service-call",
+        "--qa-playthrough-report",
+        "build/playthroughs/report.json",
+    };
+    const auto result = engine::ParseArguments(5, argv);
+
+    Expect(result.errors.empty(),
+        "TestQaPlaythroughArgumentsSelectScenarioAndReportPath",
+        "QA playthrough arguments should parse cleanly.");
+    Expect(result.config.qaPlaythrough == "ferry-office-service-call",
+        "TestQaPlaythroughArgumentsSelectScenarioAndReportPath",
+        "Config should preserve the requested QA playthrough scenario.");
+    Expect(result.config.qaPlaythroughReportPath.generic_string() == "build/playthroughs/report.json",
+        "TestQaPlaythroughArgumentsSelectScenarioAndReportPath",
+        "Config should preserve the requested QA playthrough report path.");
+}
+
+void TestQaPlaythroughArgumentsRejectUnknownScenario()
+{
+    const char* argv[] = {"EngineApp", "--qa-playthrough", "job-two"};
+    const auto result = engine::ParseArguments(3, argv);
+
+    Expect(!result.errors.empty(),
+        "TestQaPlaythroughArgumentsRejectUnknownScenario",
+        "Unknown QA playthrough scenarios should be rejected.");
+}
+
+void TestHelpTextMentionsQaPlaythroughFlags()
+{
+    const std::string help = engine::BuildHelpText();
+
+    Expect(help.find("--qa-playthrough") != std::string::npos,
+        "TestHelpTextMentionsQaPlaythroughFlags",
+        "Help text should document the QA playthrough scenario flag.");
+    Expect(help.find("--qa-playthrough-report") != std::string::npos,
+        "TestHelpTextMentionsQaPlaythroughFlags",
+        "Help text should document the QA playthrough report flag.");
 }
 
 void TestCursorCaptureArguments()
@@ -2858,6 +2903,68 @@ void TestFerryOfficeLoopCanCompleteThroughSceneSystems()
         "The Ferry Office slice should complete after the exit marker records the ready state.");
 }
 
+void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
+{
+    const std::filesystem::path reportPath =
+        std::filesystem::temp_directory_path() / "tidebreak-v032-playthrough-report.json";
+    std::filesystem::remove(reportPath);
+
+    const FerryOfficePlaythroughQaResult result =
+        RunFerryOfficeServiceCallPlaythroughQa(DefaultScenePathForTests(), reportPath);
+
+    Expect(result.passed,
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "The automated Ferry Office playthrough QA should pass on the committed scene.");
+    Expect(result.finalPhase == FerryOfficeJobPhase::Complete,
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "The automated playthrough should finish in the complete job phase.");
+
+    const WorldState& state = result.finalWorldState;
+    Expect(state.isFlagSet(WorldFlag::ManifestCollected),
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "QA playthrough should collect the manifest.");
+    Expect(state.isFlagSet(WorldFlag::ServiceRouteUsed),
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "QA playthrough should record the service route traversal.");
+    Expect(state.isFlagSet(WorldFlag::MaintenanceBoxInspected) && state.isFlagSet(WorldFlag::PowerRestored),
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "QA playthrough should inspect maintenance and restore power.");
+    Expect(state.isFlagSet(WorldFlag::RouteOpened),
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "QA playthrough should open the service gate.");
+    Expect(state.isFlagSet(WorldFlag::ServiceVehicleUsed),
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "QA playthrough should use the service vehicle.");
+    Expect(state.isFlagSet(WorldFlag::DockRoadReached),
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "QA playthrough should reach the dock-road checkpoint.");
+    Expect(state.isFlagSet(WorldFlag::ServiceRunConfirmed) && state.isFlagSet(WorldFlag::FerryOfficeJobComplete),
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "QA playthrough should confirm and complete the service run.");
+    Expect(result.steps.size() >= 7,
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "QA playthrough should report each major authored phase.");
+    Expect(std::filesystem::exists(reportPath),
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "QA playthrough should write a report artifact.");
+
+    {
+        std::ifstream input(reportPath);
+        const nlohmann::json report = nlohmann::json::parse(input);
+        Expect(report["schema"] == "v0.32-ferry-office-playthrough-qa",
+            "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+            "QA playthrough report should use the v0.32 schema.");
+        Expect(report["passed"] == true,
+            "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+            "QA playthrough report should mark the run as passed.");
+        Expect(report["final"]["flags"]["ferryOfficeJobComplete"] == true,
+            "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+            "QA playthrough report should expose final job completion.");
+    }
+
+    std::filesystem::remove(reportPath);
+}
+
 void TestSandboxDebugTextUsesReadableSections()
 {
     SandboxLayer layer;
@@ -3176,6 +3283,9 @@ int main()
     TestCaptureDirArgumentsSelectOutputDirectory();
     TestCaptureArgumentsRejectAmbiguousDestination();
     TestHelpTextMentionsCaptureFlags();
+    TestQaPlaythroughArgumentsSelectScenarioAndReportPath();
+    TestQaPlaythroughArgumentsRejectUnknownScenario();
+    TestHelpTextMentionsQaPlaythroughFlags();
     TestCursorCaptureArguments();
     TestUiModeArguments();
     TestInputStateTracksDebugOverlayToggleEdge();
@@ -3268,6 +3378,7 @@ int main()
     TestFerryOfficeServiceVaultFocusesFromAccessibleSide();
     TestMaintenanceBoxIsNotFocusedBeforeServiceVault();
     TestFerryOfficeLoopCanCompleteThroughSceneSystems();
+    TestFerryOfficePlaythroughQaCompletesJobAndWritesReport();
     TestSandboxDebugTextUsesReadableSections();
     TestFerryOfficeOneShotManifestDoesNotDuplicateEvents();
     TestTraversalFocusSelectsAvailableAffordance();

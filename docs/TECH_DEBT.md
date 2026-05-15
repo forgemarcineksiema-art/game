@@ -13,8 +13,8 @@ This file lists known foundation issues during the current playable-build phase.
 
 ### Fix Soon
 
-1. Use `python tools\capture_visual_smoke.py` as the default bounded visual evidence path for GDI/DX11 presentation before asking for a manual pass.
-2. Decide whether the next non-packaging pass should be a small vehicle-feel follow-up, an automated playthrough/input QA harness, a second renderer polish pass around resize/text quality, or one more tiny authored prop. Do not expand several at once.
+1. Use `python tools\capture_visual_smoke.py` plus `python tools\playthrough_qa.py` as the default bounded visual/behavioral evidence path before asking for a manual pass.
+2. Decide whether the next non-packaging pass should be a small vehicle-feel follow-up, a second renderer polish pass around resize/text quality, an input-scripted runtime pass, or one more tiny authored prop. Do not expand several at once.
 3. Keep the Blender/static mesh path narrow and honest. v0.27 adds one controlled original Blender prop; avoid more quantity until visual evidence proves prop language, not renderer readability or vehicle feel, is the blocker.
 
 ### Acceptable For Now
@@ -26,6 +26,7 @@ This file lists known foundation issues during the current playable-build phase.
 5. GDI remains the most battle-tested visual/playtest renderer, but DX11 now has a tiny renderer-owned bitmap debug text overlay and can be used for bounded playtest checks. DX11 still often falls back to WARP on this laptop.
 6. Scene data is the runtime source of truth for layout, while behavior mappings stay in C++ until more job types prove a stable data shape.
 7. v0.23 adds launch scripts, not release packaging, an installer, signing, updater, config UI, or save/settings persistence.
+8. v0.32 adds deterministic first-job QA coverage, not a replacement for human feel testing.
 
 ## Build / Toolchain
 
@@ -106,6 +107,7 @@ This file lists known foundation issues during the current playable-build phase.
 ## World State
 
 - `WorldState` is an in-memory local event ledger, not a save/load system.
+- v0.32 adds an automated QA-only Ferry Office Service Call path that validates the first job's state chain and report output. It is deterministic behavioral coverage, not mission scripting or save/load.
 - Flag mappings are hardcoded in `PrototypeScene`; v0.8 reduced string-id repetition by using centralized Ferry Office names.
 - `FerryOfficeJob` is one explicit scene-owned job helper for the Ferry Office Service Call. It is not a generic mission graph, quest scripting layer, reward system, or persistence layer.
 - Repeated same-value flag writes are ignored, which is correct for v0.6 but may need richer event semantics later.
@@ -113,6 +115,7 @@ This file lists known foundation issues during the current playable-build phase.
 - There is no mission graph, quest scripting, dialogue integration, global event bus, or persistence layer.
 - Slice completion is a scene helper, not a mission/objective scripting system.
 - Job completion is also a scene helper. It proves one driver/fixer loop, but should not be generalized until more job types prove the real data shape.
+- The v0.32 playthrough QA runner drives scene/job systems directly for bounded validation. It does not yet simulate full keyboard/mouse navigation, camera movement, real-time route following, vehicle pathing, or human-readable feel.
 
 ## Traversal
 

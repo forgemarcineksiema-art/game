@@ -392,6 +392,17 @@ Status: implemented as a capture QA hardening pass. The visual smoke harness now
 
 Status: implemented as a narrow DX11 capture parity spike. DX11 now draws debug/playtest text through a tiny renderer-owned bitmap text path before capture and `Present`, while GDI keeps its existing overlay behavior. The visual smoke harness validates broad scene signals plus a conservative top-left bright text signal for both renderers.
 
+## v0.32 - Automated Ferry Office Playthrough QA Harness
+
+- Keep gameplay unchanged.
+- Add a narrow QA-only automated validation path for the existing Ferry Office Service Call.
+- Verify the first job state chain without manual keyboard/mouse play: manifest, service route, maintenance/power, gate, service vehicle, dock-road checkpoint, service-run confirmation, and job completion.
+- Keep the path deterministic, off by default, and explicitly non-production.
+- Write a report artifact under `build\playthroughs` and add focused tests for config parsing, report validation, and state completion.
+- Avoid Job #2, mission scripting, NPCs, save/load, new vehicle physics, broad input rewrites, or a human-play replacement claim.
+
+Status: implemented as a bounded behavioral QA harness. `--qa-playthrough ferry-office-service-call` and `tools\playthrough_qa.py` run the authored Ferry Office Service Call state chain, assert all required flags through `ferryOfficeJobComplete`, and write `build\playthroughs\ferry-office-service-call-report.json`.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py` as the bounded evidence path before asking for manual play. If captures stay clean and manual time is scarce, the next small goal should likely be an automated Ferry Office interaction/playthrough QA harness. Otherwise choose from actual risk: vehicle feel if driving still lacks confidence, resize/text-quality renderer polish if capture reliability blocks validation, or one tiny authored prop only if scene language is clearly the blocker.
+Use `python tools\capture_visual_smoke.py` and `python tools\playthrough_qa.py` as bounded evidence before asking for manual play. The next small goal should probably target the remaining gap those tools cannot prove: either a small input-scripted runtime pass, vehicle feel if driving still lacks confidence, or resize/text-quality renderer polish if capture reliability blocks validation. Avoid Job #2 until the first job is both automatically validated and comfortable by hand.
