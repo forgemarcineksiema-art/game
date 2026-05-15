@@ -175,6 +175,27 @@ class SceneToolTests(unittest.TestCase):
         ]:
             self.assertIn(required_id, ids)
 
+    def test_v026_prop_identity_pass_reuses_existing_mesh_assets(self) -> None:
+        ids = scene_data.collect_ids(self.scene)
+        mesh_assets = {asset["id"] for asset in self.scene["meshAssets"]}
+        mesh_instances = {instance["id"]: instance for instance in self.scene["meshInstances"]}
+
+        self.assertEqual(7, len(mesh_assets))
+        self.assertEqual(31, len(mesh_instances))
+
+        expected_assets = {
+            "mesh-manifest-counter-shelf": "unit-box-mesh",
+            "mesh-manifest-paper-stack": "unit-box-mesh",
+            "mesh-office-side-service-panel": "utility-box-mesh",
+            "mesh-dock-cleat-left": "unit-box-mesh",
+            "mesh-dock-cleat-right": "unit-box-mesh",
+            "mesh-service-yard-tool-crate": "unit-box-mesh",
+            "mesh-service-run-review-board": "ferry-notice-board-mesh",
+        }
+        for required_id, asset_id in expected_assets.items():
+            self.assertIn(required_id, ids)
+            self.assertEqual(asset_id, mesh_instances[required_id]["assetId"])
+
     def test_duplicate_mesh_replacement_links_are_reported(self) -> None:
         scene = copy.deepcopy(self.scene)
         first = copy.deepcopy(scene["meshInstances"][0])

@@ -4566,3 +4566,53 @@ Remaining limitations:
 
 - v0.25 is still a debug-placeholder composition pass, not final art, final signage, a production HUD, lighting, materials, textures, depth-aware rendering, authored terrain, or a real asset pipeline.
 - A short human v0.25 pass should check the new start composition, service-yard threshold, dock-road end, and Service Run Marker read before choosing the next narrow pass.
+
+## v0.26 Ferry Office Prop / Identity Pass (2026-05-15)
+
+Scope:
+
+- Proceeded directly to v0.26 because the user completed the v0.25 hand playthrough and reported no notes.
+- Kept the existing Ferry Office Service Call as the only job.
+- Focused on a small scene-data prop/identity pass for the manifest area, Ferry Office controls side, dock starting edge, service yard, and the existing Service Run confirmation endpoint.
+- Reused existing `meshAssets`; no new model files, gameplay systems, colliders, renderer work, asset registry, material/texture pipeline, Job #2, NPCs, combat, Jolt VehicleConstraint work, packaging, persistence, or broad refactors.
+
+Focused TDD result:
+
+- Added `test_v026_prop_identity_pass_reuses_existing_mesh_assets` before scene edits.
+- `python tests\test_scene_tools.py` failed as expected before implementation because the scene still had 24 mesh instances and the v0.26 prop ids did not exist.
+- After implementation, `python tests\test_scene_tools.py` passed with 31 tests.
+
+Implementation notes:
+
+- `data\scenes\ferry_office.scene.json` now has 31 mesh instances while keeping the same 7 mesh assets.
+- Added existing-asset cues:
+  - `mesh-manifest-counter-shelf`
+  - `mesh-manifest-paper-stack`
+  - `mesh-office-side-service-panel`
+  - `mesh-dock-cleat-left`
+  - `mesh-dock-cleat-right`
+  - `mesh-service-yard-tool-crate`
+  - `mesh-service-run-review-board`
+- The new props are visual only and do not add collision, interaction prompts, objective steps, or route logic.
+
+Validation so far:
+
+- `python tests\test_scene_tools.py`: passed, 31 tests.
+- `python tools\validate_scene.py`: passed.
+- `python tools\scale_audit.py`: passed, no suspicious scale issues.
+- `python tools\mesh_report.py`: passed; reports 7 mesh assets, 31 mesh instances, and 7 referenced model files.
+- `python tools\scene_report.py`: passed; scene now reports 9 colliders, 24 visual placeholders, 7 mesh assets, 31 mesh instances, 6 interactables, 1 traversal affordance, 1 vehicle, 6 route markers, and 5 objective markers.
+- `powershell -ExecutionPolicy Bypass -File scripts\doctor.ps1`: passed; expected warnings remain for compiler/tool binaries outside plain `PATH`.
+- `powershell -ExecutionPolicy Bypass -File scripts\configure.ps1`: passed for `windows-vs2022-debug`.
+- `powershell -ExecutionPolicy Bypass -File scripts\build.ps1`: passed.
+- `powershell -ExecutionPolicy Bypass -File scripts\verify.ps1`: passed; CTest 4/4 passed, scene validation passed, asset validation passed, mesh report passed, and null smoke loaded the v0.26 scene with 31 mesh instances.
+
+Command notes:
+
+- `rg -n "capture|screenshot|playtest-start|--screenshot|png" scripts tools tests docs | head` failed because `head` is not available in PowerShell.
+- `rg -n "capture|screenshot|playtest-start|--screenshot|png" scripts tools tests docs | Select-Object -First 40` exited nonzero after the pipeline stopped early; it was only an exploratory screenshot-helper search and did not change repo files.
+
+Remaining limitations:
+
+- v0.26 is still a placeholder prop/identity pass using flat-tinted prototype meshes. It is not final art, final signage, a production HUD, lighting, materials, textures, depth-aware rendering, authored terrain, or a real asset pipeline.
+- A short human v0.26 pass should check that the new prop cues improve readability without hiding prompts, markers, route/debug geometry, or vehicle route understanding.

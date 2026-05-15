@@ -406,6 +406,33 @@
       "replacesVisualPlaceholderId": "maintenance-box-visual-post"
     },
     {
+      "id": "mesh-manifest-counter-shelf",
+      "assetId": "unit-box-mesh",
+      "position": [-0.08, 0.50, 1.18],
+      "yawDegrees": 0.0,
+      "scale": [1.15, 0.18, 0.42],
+      "colorKey": "wet-timber",
+      "notes": "v0.26 low manifest counter cue; reused unit-box geometry only, with no collision or final art treatment."
+    },
+    {
+      "id": "mesh-manifest-paper-stack",
+      "assetId": "unit-box-mesh",
+      "position": [0.28, 0.66, 1.04],
+      "yawDegrees": -6.0,
+      "scale": [0.36, 0.08, 0.24],
+      "colorKey": "salt-white-road-post",
+      "notes": "v0.26 tiny paperwork cue for the manifest area; placeholder geometry, not textured or readable text."
+    },
+    {
+      "id": "mesh-office-side-service-panel",
+      "assetId": "utility-box-mesh",
+      "position": [-1.08, 0.0, 2.06],
+      "yawDegrees": 8.0,
+      "scale": [0.72, 0.85, 0.72],
+      "colorKey": "oxidized-service-green",
+      "notes": "v0.26 side-wall service panel cue near the gate controls; visual identity only."
+    },
+    {
       "id": "mesh-dock-bollard-left",
       "assetId": "unit-box-mesh",
       "position": [-1.25, 0.32, -1.65],
@@ -424,6 +451,24 @@
       "replacesVisualPlaceholderId": "dock-post-right"
     },
     {
+      "id": "mesh-dock-cleat-left",
+      "assetId": "unit-box-mesh",
+      "position": [-1.9, 0.10, -1.95],
+      "yawDegrees": 14.0,
+      "scale": [0.46, 0.20, 0.18],
+      "colorKey": "wet-timber",
+      "notes": "v0.26 dock-side cleat silhouette so the starting pier reads less like a raw slab."
+    },
+    {
+      "id": "mesh-dock-cleat-right",
+      "assetId": "unit-box-mesh",
+      "position": [1.9, 0.10, -1.95],
+      "yawDegrees": -14.0,
+      "scale": [0.46, 0.20, 0.18],
+      "colorKey": "wet-timber",
+      "notes": "v0.26 paired dock-side cleat silhouette for the starting pier."
+    },
+    {
       "id": "mesh-service-yard-crate",
       "assetId": "unit-box-mesh",
       "position": [8.15, 0.45, 0.45],
@@ -431,6 +476,15 @@
       "scale": [1.10, 0.90, 0.90],
       "colorKey": "mossy-service-crate",
       "replacesVisualPlaceholderId": "service-yard-crate"
+    },
+    {
+      "id": "mesh-service-yard-tool-crate",
+      "assetId": "unit-box-mesh",
+      "position": [7.28, 0.26, -0.08],
+      "yawDegrees": -12.0,
+      "scale": [0.62, 0.52, 0.48],
+      "colorKey": "mossy-service-crate",
+      "notes": "v0.26 small service-yard prop that reinforces the utility area without altering route clearance."
     },
     {
       "id": "mesh-service-yard-vehicle-body",
@@ -560,6 +614,15 @@
       "scale": [1.0, 1.0, 1.0],
       "colorKey": "ferry-route-sign-blue",
       "notes": "v0.25 confirmation-side sign cue for the existing Service Run Marker; this is signposting only, not a new job beat."
+    },
+    {
+      "id": "mesh-service-run-review-board",
+      "assetId": "ferry-notice-board-mesh",
+      "position": [17.55, 0.0, 0.46],
+      "yawDegrees": -34.0,
+      "scale": [0.9, 0.9, 0.9],
+      "colorKey": "dock-muted-sign-yellow",
+      "notes": "v0.26 review-board cue for the existing Service Run Marker; confirms the endpoint without adding Job #2."
     }
   ],
   "interactables": [

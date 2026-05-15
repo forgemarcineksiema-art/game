@@ -324,6 +324,17 @@ Status: implemented as a bounded-evidence presentation polish pass. Playtest/min
 
 Status: implemented as an authored composition/readability pass. The scene start now uses a slight off-axis dock approach, the runtime honors scene-authored player-start yaw for initial facing/camera composition, and the Ferry Office/service-yard/dock-road gained a small set of existing-asset landmark cues without adding new assets or gameplay systems.
 
+## v0.26 - Ferry Office Prop / Identity Pass
+
+- Keep the existing Ferry Office Service Call as the only job.
+- Use the clean hand playthrough after v0.25 as the reason to move straight into small scene-composition polish rather than vehicle, mission, or engine expansion work.
+- Add a controlled set of original prop/identity cues to the manifest area, office controls side, dock starting edge, service yard, and Service Run confirmation endpoint.
+- Prefer existing `meshAssets` and `meshInstances` in `data/scenes/ferry_office.scene.json`; add no new model files unless a tiny Blender/procedural prop is clearly justified and remains inside the current embedded-buffer `.gltf` subset.
+- Preserve progressive playtest guidance, debug validation mode, current vehicle behavior, static mesh subset, scene tooling, and default validation.
+- Avoid Job #2, new missions, NPCs, combat, Jolt VehicleConstraint, renderer rewrite, material/texture pipeline, asset registry, editor, packaging, save/settings persistence, or broad refactors.
+
+Status: implemented as a scene-data prop/identity pass. The Ferry Office scene now reuses the existing seven mesh assets for 31 total mesh instances, adding manifest counter/paperwork cues, a side service panel, dock cleats, a service-yard tool crate, and a Service Run review board without adding collision, new assets, or gameplay systems.
+
 ## Recommended Next Goal
 
-Run a short human v0.25 visual/playability pass through `scripts/play.ps1`, checking the new start composition, service-yard threshold, dock-road end, and Service Run Marker read before choosing the next narrow pass.
+Run a short human v0.26 visual/playability pass through `scripts/play.ps1`, checking whether the manifest props, service panel, dock cleats, service-yard crate, and Service Run review board improve readability without hiding prompts, markers, or route/debug geometry. Use that feedback to choose between a tiny authored Blender prop follow-up, vehicle-feel polish, or a renderer/depth presentation spike.

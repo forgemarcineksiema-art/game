@@ -13,9 +13,9 @@ This file lists known foundation issues during the current playable-build phase.
 
 ### Fix Soon
 
-1. Run a short human v0.25 visual/playability pass through `scripts/play.ps1` and capture any issues with the new off-axis start composition, office approach signposting, service-yard threshold, dock-road end marker, Service Run Marker visibility, or remaining vehicle feel.
-2. Keep the Blender/static mesh path narrow and honest. Add only a few controlled original props until cgltf/tinygltf is clearly justified.
-3. Decide whether the next non-packaging pass is a hand-authored Blender prop pass, a small vehicle-feel follow-up, or a Jolt vehicle feasibility spike based on actual v0.25 hand-play feedback.
+1. Run a short human v0.26 visual/playability pass through `scripts/play.ps1` and capture any issues with the new manifest props, office-side panel, dock cleats, service-yard crate, Service Run review board, marker visibility, route readability, or remaining vehicle feel.
+2. Keep the Blender/static mesh path narrow and honest. v0.26 deliberately reused existing meshes; add only one or two controlled original Blender/procedural props next if the reused-box silhouettes are the clearest remaining presentation blocker.
+3. Decide whether the next non-packaging pass is a tiny authored prop follow-up, a small vehicle-feel follow-up, a renderer/depth presentation spike, or a Jolt vehicle feasibility spike based on actual v0.26 hand-play feedback.
 
 ### Acceptable For Now
 
@@ -144,6 +144,7 @@ This file lists known foundation issues during the current playable-build phase.
 - `assets/models/unit_box.gltf` and the v0.18 prop-kit meshes are placeholder proof assets, not production art.
 - `assets/models/ferry_notice_board.gltf` is a v0.20 fallback-generated proof prop, not a Blender export or production art.
 - `assets/models/blender_ferry_notice_board.gltf` is a v0.20.1 Blender-exported procedural proof prop, not production art.
+- v0.26 reuses the existing seven scene mesh assets for 31 total mesh instances, adding manifest counter/paperwork cues, a side service panel, dock cleats, a service-yard tool crate, and a Service Run review board without new model files or collision.
 - There is no asset registry, mesh resource cache, file watcher, importer/cooker, mesh optimizer, LOD, or material assignment.
 - Mesh instances render visually but do not define collision or physics shapes.
 - The current loader is intentionally narrow. v0.19 decides to keep it briefly while asset workflow validation improves, then move to cgltf/tinygltf when real glTF coverage is needed.
@@ -163,8 +164,9 @@ This file lists known foundation issues during the current playable-build phase.
 - v0.17 playtest mode puts objective/focus/job status first and reserves raw telemetry for debug mode, but it remains functional debug text rather than a polished UI.
 - v0.24 adds a first progressive-guidance pass for playtest/minimal modes so future route, traversal, vehicle, checkpoint, and service-run markers wait for the relevant Ferry Office job phase. Debug mode still keeps the full authored guidance set for validation.
 - v0.25 adds a first authored composition pass: scene-authored player-start yaw now drives initial facing/camera composition, and existing placeholder assets add office approach, service-yard threshold, dock-road rhythm, and Service Run confirmation cues.
+- v0.26 adds a controlled existing-asset prop/identity pass around the manifest, Ferry Office controls side, dock edge, service yard, and Service Run endpoint. It improves authored read but is still built from placeholder flat-tinted meshes.
 - DX11 now has a simple debug text overlay, so bounded DX11 playtest checks are useful. GDI still remains the simpler renderer for overlay debugging, and a real renderer-owned text/HUD path is deferred.
-- The v0.25 composition pass is still prototype presentation: there is no final art-quality signage, depth-aware renderer, lighting, materials, textures, authored terrain, or production HUD.
+- The v0.26 prop/identity pass is still prototype presentation: there is no final art-quality signage, depth-aware renderer, lighting, materials, textures, authored terrain, or production HUD.
 
 ## Deprecated Priority Lists
 
