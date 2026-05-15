@@ -1078,13 +1078,6 @@ void SandboxLayer::setupVehiclePhysicsWorld()
         backStop.halfExtents = ServiceYardBackStopHalfExtents;
         m_vehiclePhysicsWorld->addStaticBox(backStop);
     }
-
-    engine::physics::DynamicBoxDesc vehicleProxy;
-    vehicleProxy.name = "service-yard-vehicle-proxy";
-    vehicleProxy.center = m_vehicle.state().position + engine::Vec3 {0.0f, m_vehicleProxyHalfExtents.y, 0.0f};
-    vehicleProxy.halfExtents = m_vehicleProxyHalfExtents;
-    vehicleProxy.mass = 900.0f;
-    m_vehiclePhysicsWorld->addDynamicBox(vehicleProxy);
 }
 
 bool SandboxLayer::isVehicleExitPositionClear(engine::Vec3 position) const

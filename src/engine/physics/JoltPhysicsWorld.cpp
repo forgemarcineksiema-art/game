@@ -311,11 +311,13 @@ public:
         result.hit = true;
         result.distance = hit.mFraction * maxDistance;
         result.point = FromJoltRVec3(ray.GetPointOnRay(hit.mFraction));
-        result.body.value = hit.mBodyID.GetIndexAndSequenceNumber();
 
-        const auto recordIt = m_recordByBodyId.find(hit.mBodyID.GetIndexAndSequenceNumber());
+        const std::uint32_t joltId = hit.mBodyID.GetIndexAndSequenceNumber();
+        const auto recordIt = m_recordByBodyId.find(joltId);
         if (recordIt != m_recordByBodyId.end()) {
-            result.bodyName = m_records[recordIt->second].name;
+            const JoltBodyRecord& record = m_records[recordIt->second];
+            result.body = record.handle;
+            result.bodyName = record.name;
         }
 
         return result;

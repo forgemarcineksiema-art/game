@@ -131,11 +131,9 @@ int Application::run(AppConfig config, std::unique_ptr<IGameLayer> layer)
             running = false;
         }
 
-        if (config.smokeTest) {
-            continue;
+        if (config.headless) {
+            std::this_thread::yield();
         }
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(16));
     }
 
     layer->onDetach();

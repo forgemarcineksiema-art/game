@@ -103,6 +103,10 @@ void PrototypeWorld::buildFromSceneDefinition(const SceneDefinition& scene)
         }
 
         addBox(collider.id, collider.center, collider.halfExtents, collider.blocksPlayer);
+        if (!collider.stateFlag.empty() && !m_colliders.empty()) {
+            m_colliders.back().stateFlag = collider.stateFlag;
+            m_colliders.back().blocksWhenFlagFalse = collider.blocksWhenFlagFalse;
+        }
     }
 }
 
@@ -261,59 +265,78 @@ engine::Vec3 PrototypeWorld::resolveCollider(const PlayerCollisionProxy& proxy, 
     const float minZ = collider.bounds.center.z - expandedHalfExtents.z;
     const float maxZ = collider.bounds.center.z + expandedHalfExtents.z;
 
-    if (position.x < minX || position.x > maxX || position.z < minZ || position.z > maxZ) {
-        result.position = position;
-        return position;
-    }
+    const int maxPasses = 3;
+    for (int pass = 0; pass < maxPasses; ++pass) {
+        if (position.x < minX || position.x > maxX || position.z < minZ || position.z > maxZ) {
+            break;
+        }
 
-    const float pushLeft = std::abs(position.x - minX);
-    const float pushRight = std::abs(maxX - position.x);
-    const float pushBack = std::abs(position.z - minZ);
-    const float pushForward = std::abs(maxZ - position.z);
+        float pushLeft = maxX - position.x;
+        float pushRight = position.x - minX;
+        float pushForward = maxZ - position.z;
+        float pushBack = position.z - minZ;
 
-    const bool cameFromLeft = proxy.previousPosition.x <= minX && pushLeft <= pushRight;
-    const bool cameFromRight = proxy.previousPosition.x >= maxX && pushRight <= pushLeft;
-    const bool cameFromBack = proxy.previousPosition.z <= minZ && pushBack <= pushForward;
-    const bool cameFromForward = proxy.previousPosition.z >= maxZ && pushForward <= pushBack;
+        if (pass == 0) {
+            const bool cameFromLeft = proxy.previousPosition.x <= minX && pushLeft <= pushRight;
+            const bool cameFromRight = proxy.previousPosition.x >= maxX && pushRight <= pushLeft;
+            const bool cameFromBack = proxy.previousPosition.z <= minZ && pushBack <= pushForward;
+            const bool cameFromForward = proxy.previousPosition.z >= maxZ && pushForward <= pushBack;
 
-    engine::Vec3 corrected = position;
-    engine::Vec3 normal {};
-    if (cameFromLeft) {
-        corrected.x = minX;
-        normal = {-1.0f, 0.0f, 0.0f};
-        result.velocity.x = std::min(result.velocity.x, 0.0f);
-    } else if (cameFromRight) {
-        corrected.x = maxX;
-        normal = {1.0f, 0.0f, 0.0f};
-        result.velocity.x = std::max(result.velocity.x, 0.0f);
-    } else if (cameFromBack) {
-        corrected.z = minZ;
-        normal = {0.0f, 0.0f, -1.0f};
-        result.velocity.z = std::min(result.velocity.z, 0.0f);
-    } else if (cameFromForward) {
-        corrected.z = maxZ;
-        normal = {0.0f, 0.0f, 1.0f};
-        result.velocity.z = std::max(result.velocity.z, 0.0f);
-    } else {
-        const float minPush = std::min({pushLeft, pushRight, pushBack, pushForward});
-        if (minPush == pushLeft) {
-            corrected.x = minX;
-            normal = {-1.0f, 0.0f, 0.0f};
-        } else if (minPush == pushRight) {
-            corrected.x = maxX;
-            normal = {1.0f, 0.0f, 0.0f};
-        } else if (minPush == pushBack) {
-            corrected.z = minZ;
-            normal = {0.0f, 0.0f, -1.0f};
+            engine::Vec3 normal {};
+            if (cameFromLeft) {
+                position.x = minX;
+                normal = {-1.0f, 0.0f, 0.0f};
+                result.velocity.x = std::min(result.velocity.x, 0.0f);
+            } else if (cameFromRight) {
+                position.x = maxX;
+                normal = {1.0f, 0.0f, 0.0f};
+                result.velocity.x = std::max(result.velocity.x, 0.0f);
+            } else if (cameFromBack) {
+                position.z = minZ;
+                normal = {0.0f, 0.0f, -1.0f};
+                result.velocity.z = std::min(result.velocity.z, 0.0f);
+            } else if (cameFromForward) {
+                position.z = maxZ;
+                normal = {0.0f, 0.0f, 1.0f};
+                result.velocity.z = std::max(result.velocity.z, 0.0f);
+            } else {
+                const float minPush = std::min({pushLeft, pushRight, pushBack, pushForward});
+                if (minPush == pushLeft) {
+                    position.x = maxX;
+                    normal = {1.0f, 0.0f, 0.0f};
+                } else if (minPush == pushRight) {
+                    position.x = minX;
+                    normal = {-1.0f, 0.0f, 0.0f};
+                } else if (minPush == pushBack) {
+                    position.z = maxZ;
+                    normal = {0.0f, 0.0f, 1.0f};
+                } else {
+                    position.z = minZ;
+                    normal = {0.0f, 0.0f, -1.0f};
+                }
+            }
+
+            result.lastPush = position - proxy.position;
+            result.lastNormal = normal;
+            result.hitCount += 1;
         } else {
-            corrected.z = maxZ;
-            normal = {0.0f, 0.0f, 1.0f};
+            const float minPush = std::min({pushLeft, pushRight, pushBack, pushForward});
+            if (minPush == pushLeft) {
+                position.x = maxX;
+                result.velocity.x = std::max(result.velocity.x, 0.0f);
+            } else if (minPush == pushRight) {
+                position.x = minX;
+                result.velocity.x = std::min(result.velocity.x, 0.0f);
+            } else if (minPush == pushBack) {
+                position.z = maxZ;
+                result.velocity.z = std::max(result.velocity.z, 0.0f);
+            } else {
+                position.z = minZ;
+                result.velocity.z = std::min(result.velocity.z, 0.0f);
+            }
         }
     }
 
-    result.lastPush = corrected - position;
-    result.lastNormal = normal;
-    result.hitCount += 1;
-    result.position = corrected;
-    return corrected;
+    result.position = position;
+    return position;
 }

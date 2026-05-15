@@ -23,6 +23,8 @@ struct StaticCollider {
     std::string name;
     Aabb bounds;
     bool blocksPlayer = true;
+    std::string stateFlag;
+    bool blocksWhenFlagFalse = false;
 };
 
 struct PlayerCollisionProxy {

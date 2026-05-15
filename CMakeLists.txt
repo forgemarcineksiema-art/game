@@ -62,7 +62,7 @@ if(WIN32)
             src/engine/platform/Win32Window.cpp
             src/engine/renderer/GdiRenderer.cpp
     )
-    target_link_libraries(EngineCore PUBLIC user32 gdi32 d3d11 dxgi d3dcompiler)
+    target_link_libraries(EngineCore PUBLIC nlohmann_json::nlohmann_json user32 gdi32 d3d11 dxgi d3dcompiler)
 else()
     target_compile_definitions(EngineCore PUBLIC ENGINE_PLATFORM_WINDOWS=0)
 endif()

@@ -1,12 +1,11 @@
 #include "engine/assets/StaticMesh.h"
 
 #include <algorithm>
-#include <cctype>
 #include <cmath>
 #include <cstdint>
 #include <cstring>
 #include <fstream>
-#include <iterator>
+#include <nlohmann/json.hpp>
 #include <optional>
 #include <sstream>
 #include <utility>
@@ -43,122 +42,6 @@ std::optional<std::string> ReadTextFile(const std::filesystem::path& path)
     std::ostringstream stream;
     stream << file.rdbuf();
     return stream.str();
-}
-
-std::size_t FindMatching(const std::string& text, std::size_t openPosition, char open, char close)
-{
-    int depth = 0;
-    bool inString = false;
-    bool escaped = false;
-    for (std::size_t index = openPosition; index < text.size(); ++index) {
-        const char c = text[index];
-        if (inString) {
-            if (escaped) {
-                escaped = false;
-            } else if (c == '\\') {
-                escaped = true;
-            } else if (c == '"') {
-                inString = false;
-            }
-            continue;
-        }
-        if (c == '"') {
-            inString = true;
-            continue;
-        }
-        if (c == open) {
-            ++depth;
-        } else if (c == close) {
-            --depth;
-            if (depth == 0) {
-                return index;
-            }
-        }
-    }
-    return std::string::npos;
-}
-
-std::optional<std::string> ExtractArraySection(const std::string& text, const std::string& key)
-{
-    const std::string token = "\"" + key + "\"";
-    const std::size_t keyPosition = text.find(token);
-    if (keyPosition == std::string::npos) {
-        return std::nullopt;
-    }
-    const std::size_t open = text.find('[', keyPosition + token.size());
-    if (open == std::string::npos) {
-        return std::nullopt;
-    }
-    const std::size_t close = FindMatching(text, open, '[', ']');
-    if (close == std::string::npos) {
-        return std::nullopt;
-    }
-    return text.substr(open + 1, close - open - 1);
-}
-
-std::vector<std::string> ExtractObjects(const std::string& arrayText)
-{
-    std::vector<std::string> objects;
-    for (std::size_t cursor = 0; cursor < arrayText.size();) {
-        const std::size_t open = arrayText.find('{', cursor);
-        if (open == std::string::npos) {
-            break;
-        }
-        const std::size_t close = FindMatching(arrayText, open, '{', '}');
-        if (close == std::string::npos) {
-            break;
-        }
-        objects.push_back(arrayText.substr(open, close - open + 1));
-        cursor = close + 1;
-    }
-    return objects;
-}
-
-std::optional<std::string> FindStringValue(const std::string& objectText, const std::string& key)
-{
-    const std::string token = "\"" + key + "\"";
-    const std::size_t keyPosition = objectText.find(token);
-    if (keyPosition == std::string::npos) {
-        return std::nullopt;
-    }
-    const std::size_t colon = objectText.find(':', keyPosition + token.size());
-    if (colon == std::string::npos) {
-        return std::nullopt;
-    }
-    const std::size_t openQuote = objectText.find('"', colon + 1);
-    if (openQuote == std::string::npos) {
-        return std::nullopt;
-    }
-    const std::size_t closeQuote = objectText.find('"', openQuote + 1);
-    if (closeQuote == std::string::npos) {
-        return std::nullopt;
-    }
-    return objectText.substr(openQuote + 1, closeQuote - openQuote - 1);
-}
-
-std::optional<int> FindIntValue(const std::string& objectText, const std::string& key)
-{
-    const std::string token = "\"" + key + "\"";
-    const std::size_t keyPosition = objectText.find(token);
-    if (keyPosition == std::string::npos) {
-        return std::nullopt;
-    }
-    const std::size_t colon = objectText.find(':', keyPosition + token.size());
-    if (colon == std::string::npos) {
-        return std::nullopt;
-    }
-    std::size_t cursor = colon + 1;
-    while (cursor < objectText.size() && std::isspace(static_cast<unsigned char>(objectText[cursor]))) {
-        ++cursor;
-    }
-    std::size_t end = cursor;
-    while (end < objectText.size() && (std::isdigit(static_cast<unsigned char>(objectText[end])) || objectText[end] == '-')) {
-        ++end;
-    }
-    if (end == cursor) {
-        return std::nullopt;
-    }
-    return std::stoi(objectText.substr(cursor, end - cursor));
 }
 
 std::optional<std::vector<std::uint8_t>> DecodeBase64(std::string_view input)
@@ -204,81 +87,6 @@ std::optional<std::vector<std::uint8_t>> DecodeBase64(std::string_view input)
         }
     }
     return output;
-}
-
-std::optional<std::vector<std::uint8_t>> ExtractEmbeddedBuffer(const std::string& gltfText)
-{
-    const std::string marker = "data:application/octet-stream;base64,";
-    const std::size_t markerPosition = gltfText.find(marker);
-    if (markerPosition == std::string::npos) {
-        return std::nullopt;
-    }
-    const std::size_t dataStart = markerPosition + marker.size();
-    const std::size_t dataEnd = gltfText.find('"', dataStart);
-    if (dataEnd == std::string::npos) {
-        return std::nullopt;
-    }
-    return DecodeBase64(std::string_view(gltfText).substr(dataStart, dataEnd - dataStart));
-}
-
-std::vector<BufferViewInfo> ParseBufferViews(const std::string& gltfText)
-{
-    std::vector<BufferViewInfo> views;
-    const auto section = ExtractArraySection(gltfText, "bufferViews");
-    if (!section) {
-        return views;
-    }
-    for (const std::string& object : ExtractObjects(*section)) {
-        BufferViewInfo view;
-        view.byteOffset = static_cast<std::size_t>(FindIntValue(object, "byteOffset").value_or(0));
-        view.byteLength = static_cast<std::size_t>(FindIntValue(object, "byteLength").value_or(0));
-        views.push_back(view);
-    }
-    return views;
-}
-
-std::vector<AccessorInfo> ParseAccessors(const std::string& gltfText)
-{
-    std::vector<AccessorInfo> accessors;
-    const auto section = ExtractArraySection(gltfText, "accessors");
-    if (!section) {
-        return accessors;
-    }
-    for (const std::string& object : ExtractObjects(*section)) {
-        AccessorInfo accessor;
-        accessor.bufferView = FindIntValue(object, "bufferView").value_or(-1);
-        accessor.byteOffset = static_cast<std::size_t>(FindIntValue(object, "byteOffset").value_or(0));
-        accessor.componentType = FindIntValue(object, "componentType").value_or(0);
-        accessor.count = static_cast<std::size_t>(FindIntValue(object, "count").value_or(0));
-        accessor.type = FindStringValue(object, "type").value_or("");
-        accessors.push_back(accessor);
-    }
-    return accessors;
-}
-
-std::optional<int> ParseFirstPrimitiveIndex(const std::string& gltfText, const std::string& key)
-{
-    const std::string token = "\"" + key + "\"";
-    const std::size_t keyPosition = gltfText.find(token);
-    if (keyPosition == std::string::npos) {
-        return std::nullopt;
-    }
-    const std::size_t colon = gltfText.find(':', keyPosition + token.size());
-    if (colon == std::string::npos) {
-        return std::nullopt;
-    }
-    std::size_t cursor = colon + 1;
-    while (cursor < gltfText.size() && std::isspace(static_cast<unsigned char>(gltfText[cursor]))) {
-        ++cursor;
-    }
-    std::size_t end = cursor;
-    while (end < gltfText.size() && std::isdigit(static_cast<unsigned char>(gltfText[end]))) {
-        ++end;
-    }
-    if (end == cursor) {
-        return std::nullopt;
-    }
-    return std::stoi(gltfText.substr(cursor, end - cursor));
 }
 
 template <typename T>
@@ -346,26 +154,89 @@ StaticMeshLoadResult LoadStaticMeshFromGltf(const std::filesystem::path& path)
         return Fail("glTF mesh file not found: " + path.string());
     }
 
-    const auto buffer = ExtractEmbeddedBuffer(*gltfText);
-    if (!buffer) {
+    nlohmann::json root;
+    try {
+        root = nlohmann::json::parse(*gltfText);
+    } catch (const std::exception&) {
+        return Fail("glTF mesh file is not valid JSON: " + path.string());
+    }
+
+    if (!root.contains("buffers") || !root["buffers"].is_array() || root["buffers"].empty()) {
+        return Fail("glTF mesh must contain at least one buffer.");
+    }
+
+    const auto& buffer0 = root["buffers"][0];
+    if (!buffer0.contains("uri") || !buffer0["uri"].is_string()) {
+        return Fail("glTF mesh must contain an embedded buffer URI.");
+    }
+
+    const std::string uri = buffer0["uri"].get<std::string>();
+    const std::string marker = "data:application/octet-stream;base64,";
+    const std::size_t markerPos = uri.find(marker);
+    if (markerPos == std::string::npos) {
         return Fail("glTF mesh must contain one embedded application/octet-stream base64 buffer.");
     }
 
-    const std::vector<BufferViewInfo> bufferViews = ParseBufferViews(*gltfText);
-    const std::vector<AccessorInfo> accessors = ParseAccessors(*gltfText);
-    const auto positionAccessorIndex = ParseFirstPrimitiveIndex(*gltfText, "POSITION");
-    const auto indexAccessorIndex = ParseFirstPrimitiveIndex(*gltfText, "indices");
-
-    if (!positionAccessorIndex || !indexAccessorIndex) {
-        return Fail("glTF mesh must contain POSITION and indices accessors.");
+    const auto buffer = DecodeBase64(std::string_view(uri).substr(markerPos + marker.size()));
+    if (!buffer) {
+        return Fail("glTF mesh embedded buffer could not be base64-decoded.");
     }
-    if (*positionAccessorIndex < 0 || static_cast<std::size_t>(*positionAccessorIndex) >= accessors.size()
-        || *indexAccessorIndex < 0 || static_cast<std::size_t>(*indexAccessorIndex) >= accessors.size()) {
+
+    std::vector<BufferViewInfo> bufferViews;
+    if (root.contains("bufferViews") && root["bufferViews"].is_array()) {
+        for (const auto& bv : root["bufferViews"]) {
+            BufferViewInfo view;
+            view.byteOffset = bv.value("byteOffset", 0U);
+            view.byteLength = bv.value("byteLength", 0U);
+            bufferViews.push_back(view);
+        }
+    }
+
+    std::vector<AccessorInfo> accessors;
+    if (root.contains("accessors") && root["accessors"].is_array()) {
+        for (const auto& a : root["accessors"]) {
+            AccessorInfo accessor;
+            accessor.bufferView = a.value("bufferView", -1);
+            accessor.byteOffset = a.value("byteOffset", 0U);
+            accessor.componentType = a.value("componentType", 0);
+            accessor.count = a.value("count", 0U);
+            accessor.type = a.value("type", "");
+            accessors.push_back(accessor);
+        }
+    }
+
+    if (!root.contains("meshes") || !root["meshes"].is_array() || root["meshes"].empty()) {
+        return Fail("glTF mesh must contain at least one mesh.");
+    }
+
+    const auto& mesh0 = root["meshes"][0];
+    if (!mesh0.contains("primitives") || !mesh0["primitives"].is_array() || mesh0["primitives"].empty()) {
+        return Fail("glTF mesh must contain at least one primitive.");
+    }
+
+    const auto& primitive = mesh0["primitives"][0];
+    if (!primitive.contains("attributes") || !primitive["attributes"].is_object()) {
+        return Fail("glTF mesh primitive must have attributes.");
+    }
+
+    const auto& attributes = primitive["attributes"];
+    if (!attributes.contains("POSITION")) {
+        return Fail("glTF mesh primitive must have a POSITION attribute.");
+    }
+
+    const int positionAccessorIndex = attributes["POSITION"].get<int>();
+    const int indexAccessorIndex = primitive.value("indices", -1);
+
+    if (indexAccessorIndex < 0) {
+        return Fail("glTF mesh must contain indices accessor.");
+    }
+    if (positionAccessorIndex < 0 || static_cast<std::size_t>(positionAccessorIndex) >= accessors.size()
+        || indexAccessorIndex < 0 || static_cast<std::size_t>(indexAccessorIndex) >= accessors.size()) {
         return Fail("glTF mesh references an accessor outside the accessors array.");
     }
 
-    const AccessorInfo& positionAccessor = accessors[static_cast<std::size_t>(*positionAccessorIndex)];
-    const AccessorInfo& indexAccessor = accessors[static_cast<std::size_t>(*indexAccessorIndex)];
+    const AccessorInfo& positionAccessor = accessors[static_cast<std::size_t>(positionAccessorIndex)];
+    const AccessorInfo& indexAccessor = accessors[static_cast<std::size_t>(indexAccessorIndex)];
     if (positionAccessor.componentType != 5126 || positionAccessor.type != "VEC3") {
         return Fail("glTF POSITION accessor must be FLOAT VEC3.");
     }

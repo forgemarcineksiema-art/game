@@ -48,6 +48,7 @@ private:
     bool createShaders();
     bool createDebugGeometry();
     bool createBuffer(const Vertex* vertices, unsigned int vertexCount, Microsoft::WRL::ComPtr<ID3D11Buffer>& buffer);
+    bool ensureDynamicBuffer(unsigned int vertexCount);
     void drawLineVertices(const std::vector<Vertex>& vertices);
     void drawTriangleVertices(const std::vector<Vertex>& vertices);
 
@@ -63,7 +64,9 @@ private:
     Microsoft::WRL::ComPtr<ID3D11InputLayout> m_inputLayout;
     Microsoft::WRL::ComPtr<ID3D11Buffer> m_gridBuffer;
     Microsoft::WRL::ComPtr<ID3D11Buffer> m_triangleBuffer;
+    Microsoft::WRL::ComPtr<ID3D11Buffer> m_dynamicVertexBuffer;
     unsigned int m_gridVertexCount = 0;
+    unsigned int m_dynamicBufferCapacity = 0;
 };
 
 } // namespace engine

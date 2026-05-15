@@ -1,7 +1,26 @@
 #include "game/WorldState.h"
 
+#include <array>
 #include <sstream>
 #include <utility>
+
+namespace {
+
+constexpr std::array AllFlags = {
+    WorldFlag::PowerRestored,
+    WorldFlag::ManifestCollected,
+    WorldFlag::ServiceRouteUsed,
+    WorldFlag::MaintenanceBoxInspected,
+    WorldFlag::RouteOpened,
+    WorldFlag::ExitReached,
+    WorldFlag::FerryOfficeJobStarted,
+    WorldFlag::ServiceVehicleUsed,
+    WorldFlag::DockRoadReached,
+    WorldFlag::ServiceRunConfirmed,
+    WorldFlag::FerryOfficeJobComplete,
+};
+
+} // namespace
 
 std::string_view WorldFlagName(WorldFlag flag)
 {
@@ -95,18 +114,10 @@ std::string WorldState::lastEventText() const
 std::string WorldState::debugSummary() const
 {
     std::ostringstream output;
-    output << WorldFlagName(WorldFlag::PowerRestored) << "=" << (isFlagSet(WorldFlag::PowerRestored) ? "true" : "false")
-           << " " << WorldFlagName(WorldFlag::ManifestCollected) << "=" << (isFlagSet(WorldFlag::ManifestCollected) ? "true" : "false")
-           << " " << WorldFlagName(WorldFlag::ServiceRouteUsed) << "=" << (isFlagSet(WorldFlag::ServiceRouteUsed) ? "true" : "false")
-           << " " << WorldFlagName(WorldFlag::MaintenanceBoxInspected) << "=" << (isFlagSet(WorldFlag::MaintenanceBoxInspected) ? "true" : "false")
-           << " " << WorldFlagName(WorldFlag::RouteOpened) << "=" << (isFlagSet(WorldFlag::RouteOpened) ? "true" : "false")
-           << " " << WorldFlagName(WorldFlag::ExitReached) << "=" << (isFlagSet(WorldFlag::ExitReached) ? "true" : "false")
-           << " " << WorldFlagName(WorldFlag::FerryOfficeJobStarted) << "=" << (isFlagSet(WorldFlag::FerryOfficeJobStarted) ? "true" : "false")
-           << " " << WorldFlagName(WorldFlag::ServiceVehicleUsed) << "=" << (isFlagSet(WorldFlag::ServiceVehicleUsed) ? "true" : "false")
-           << " " << WorldFlagName(WorldFlag::DockRoadReached) << "=" << (isFlagSet(WorldFlag::DockRoadReached) ? "true" : "false")
-           << " " << WorldFlagName(WorldFlag::ServiceRunConfirmed) << "=" << (isFlagSet(WorldFlag::ServiceRunConfirmed) ? "true" : "false")
-           << " " << WorldFlagName(WorldFlag::FerryOfficeJobComplete) << "=" << (isFlagSet(WorldFlag::FerryOfficeJobComplete) ? "true" : "false")
-           << " eventCount=" << eventCount()
+    for (WorldFlag flag : AllFlags) {
+        output << WorldFlagName(flag) << "=" << (isFlagSet(flag) ? "true" : "false") << " ";
+    }
+    output << "eventCount=" << eventCount()
            << " lastEvent=\"" << lastEventText() << "\"";
     return output.str();
 }

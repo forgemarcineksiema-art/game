@@ -115,12 +115,11 @@ void GdiRenderer::drawDebugLine(Vec3 from, Vec3 to, Color color)
     const POINT screenA = ToScreen(a, width, height);
     const POINT screenB = ToScreen(b, width, height);
 
-    HPEN pen = CreatePen(PS_SOLID, 2, ToColorRef(color));
+    HPEN pen = acquirePen(ToColorRef(color));
     HPEN oldPen = static_cast<HPEN>(SelectObject(m_deviceContext, pen));
     MoveToEx(m_deviceContext, screenA.x, screenA.y, nullptr);
     LineTo(m_deviceContext, screenB.x, screenB.y);
     SelectObject(m_deviceContext, oldPen);
-    DeleteObject(pen);
 }
 
 void GdiRenderer::drawDebugSolidBox(Vec3 center, Vec3 halfExtents, Color color)
@@ -166,8 +165,8 @@ void GdiRenderer::drawDebugSolidBox(Vec3 center, Vec3 halfExtents, Color color)
         {3, 0, 4, 7},
     };
 
-    HBRUSH brush = CreateSolidBrush(ToColorRef(color));
-    HPEN pen = CreatePen(PS_SOLID, 1, ToColorRef(color));
+    HBRUSH brush = acquireBrush(ToColorRef(color));
+    HPEN pen = acquirePen(ToColorRef(color));
     HGDIOBJ oldBrush = SelectObject(m_deviceContext, brush);
     HGDIOBJ oldPen = SelectObject(m_deviceContext, pen);
     for (const auto& face : faces) {
@@ -181,8 +180,6 @@ void GdiRenderer::drawDebugSolidBox(Vec3 center, Vec3 halfExtents, Color color)
     }
     SelectObject(m_deviceContext, oldPen);
     SelectObject(m_deviceContext, oldBrush);
-    DeleteObject(pen);
-    DeleteObject(brush);
 }
 
 void GdiRenderer::drawDebugFlatTriangles(std::span<const Vec3> triangleVertices, Color color)
@@ -199,8 +196,8 @@ void GdiRenderer::drawDebugFlatTriangles(std::span<const Vec3> triangleVertices,
         return;
     }
 
-    HBRUSH brush = CreateSolidBrush(ToColorRef(color));
-    HPEN pen = CreatePen(PS_SOLID, 1, ToColorRef(color));
+    HBRUSH brush = acquireBrush(ToColorRef(color));
+    HPEN pen = acquirePen(ToColorRef(color));
     HGDIOBJ oldBrush = SelectObject(m_deviceContext, brush);
     HGDIOBJ oldPen = SelectObject(m_deviceContext, pen);
 
@@ -222,8 +219,6 @@ void GdiRenderer::drawDebugFlatTriangles(std::span<const Vec3> triangleVertices,
 
     SelectObject(m_deviceContext, oldPen);
     SelectObject(m_deviceContext, oldBrush);
-    DeleteObject(pen);
-    DeleteObject(brush);
 }
 
 void GdiRenderer::drawDebugBox(Vec3 center, Vec3 halfExtents, Color color)
@@ -280,6 +275,7 @@ void GdiRenderer::endFrame()
 void GdiRenderer::shutdown()
 {
     releaseBackBuffer();
+    releaseGdiObjects();
     Logger::info("GDI fallback renderer shutdown.");
 }
 
@@ -331,6 +327,42 @@ void GdiRenderer::releaseBackBuffer()
     m_previousBackBufferBitmap = nullptr;
     m_backBufferWidth = 0;
     m_backBufferHeight = 0;
+}
+
+void GdiRenderer::releaseGdiObjects()
+{
+    for (auto& entry : m_penCache) {
+        DeleteObject(entry.second);
+    }
+    m_penCache.clear();
+    for (auto& entry : m_brushCache) {
+        DeleteObject(entry.second);
+    }
+    m_brushCache.clear();
+}
+
+HPEN GdiRenderer::acquirePen(COLORREF color)
+{
+    const auto it = m_penCache.find(color);
+    if (it != m_penCache.end()) {
+        return it->second;
+    }
+
+    HPEN pen = CreatePen(PS_SOLID, 2, color);
+    m_penCache[color] = pen;
+    return pen;
+}
+
+HBRUSH GdiRenderer::acquireBrush(COLORREF color)
+{
+    const auto it = m_brushCache.find(color);
+    if (it != m_brushCache.end()) {
+        return it->second;
+    }
+
+    HBRUSH brush = CreateSolidBrush(color);
+    m_brushCache[color] = brush;
+    return brush;
 }
 
 } // namespace engine

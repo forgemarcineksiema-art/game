@@ -463,26 +463,59 @@ void Dx11Renderer::drawDebugText(std::string_view)
 {
 }
 
+bool Dx11Renderer::ensureDynamicBuffer(unsigned int vertexCount)
+{
+    if (vertexCount <= m_dynamicBufferCapacity) {
+        return true;
+    }
+
+    m_dynamicVertexBuffer.Reset();
+    m_dynamicBufferCapacity = 0;
+
+    D3D11_BUFFER_DESC desc {};
+    desc.Usage = D3D11_USAGE_DYNAMIC;
+    desc.ByteWidth = sizeof(Vertex) * vertexCount;
+    desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+    desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+    HRESULT result = m_device->CreateBuffer(&desc, nullptr, m_dynamicVertexBuffer.GetAddressOf());
+    if (FAILED(result)) {
+        Logger::error("DX11 dynamic vertex buffer creation failed.");
+        return false;
+    }
+
+    m_dynamicBufferCapacity = vertexCount;
+    return true;
+}
+
 void Dx11Renderer::drawLineVertices(const std::vector<Vertex>& vertices)
 {
     if (vertices.empty()) {
         return;
     }
 
-    Microsoft::WRL::ComPtr<ID3D11Buffer> buffer;
-    if (!createBuffer(vertices.data(), static_cast<unsigned int>(vertices.size()), buffer)) {
+    const unsigned int vertexCount = static_cast<unsigned int>(vertices.size());
+    if (!ensureDynamicBuffer(vertexCount)) {
         return;
     }
 
+    D3D11_MAPPED_SUBRESOURCE mapped {};
+    HRESULT result = m_context->Map(m_dynamicVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+    if (FAILED(result)) {
+        return;
+    }
+    std::memcpy(mapped.pData, vertices.data(), sizeof(Vertex) * vertexCount);
+    m_context->Unmap(m_dynamicVertexBuffer.Get(), 0);
+
     const UINT stride = sizeof(Vertex);
     const UINT offset = 0;
-    ID3D11Buffer* vertexBuffer = buffer.Get();
+    ID3D11Buffer* vertexBuffer = m_dynamicVertexBuffer.Get();
     m_context->IASetInputLayout(m_inputLayout.Get());
     m_context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
     m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
     m_context->VSSetShader(m_vertexShader.Get(), nullptr, 0);
     m_context->PSSetShader(m_pixelShader.Get(), nullptr, 0);
-    m_context->Draw(static_cast<UINT>(vertices.size()), 0);
+    m_context->Draw(vertexCount, 0);
 }
 
 void Dx11Renderer::drawTriangleVertices(const std::vector<Vertex>& vertices)
@@ -491,20 +524,28 @@ void Dx11Renderer::drawTriangleVertices(const std::vector<Vertex>& vertices)
         return;
     }
 
-    Microsoft::WRL::ComPtr<ID3D11Buffer> buffer;
-    if (!createBuffer(vertices.data(), static_cast<unsigned int>(vertices.size()), buffer)) {
+    const unsigned int vertexCount = static_cast<unsigned int>(vertices.size());
+    if (!ensureDynamicBuffer(vertexCount)) {
         return;
     }
 
+    D3D11_MAPPED_SUBRESOURCE mapped {};
+    HRESULT result = m_context->Map(m_dynamicVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+    if (FAILED(result)) {
+        return;
+    }
+    std::memcpy(mapped.pData, vertices.data(), sizeof(Vertex) * vertexCount);
+    m_context->Unmap(m_dynamicVertexBuffer.Get(), 0);
+
     const UINT stride = sizeof(Vertex);
     const UINT offset = 0;
-    ID3D11Buffer* vertexBuffer = buffer.Get();
+    ID3D11Buffer* vertexBuffer = m_dynamicVertexBuffer.Get();
     m_context->IASetInputLayout(m_inputLayout.Get());
     m_context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
     m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     m_context->VSSetShader(m_vertexShader.Get(), nullptr, 0);
     m_context->PSSetShader(m_pixelShader.Get(), nullptr, 0);
-    m_context->Draw(static_cast<UINT>(vertices.size()), 0);
+    m_context->Draw(vertexCount, 0);
 }
 
 void Dx11Renderer::endFrame()
@@ -516,6 +557,8 @@ void Dx11Renderer::shutdown()
 {
     m_triangleBuffer.Reset();
     m_gridBuffer.Reset();
+    m_dynamicVertexBuffer.Reset();
+    m_dynamicBufferCapacity = 0;
     m_inputLayout.Reset();
     m_pixelShader.Reset();
     m_vertexShader.Reset();

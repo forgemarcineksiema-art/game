@@ -4314,3 +4314,62 @@ Result:
 - Full debug and lower-level run paths remain available.
 - Default validation and Jolt opt-in validation both pass.
 - Recommended next goal: v0.24 Ferry Office Playable Presentation Polish.
+
+## v0.23.1 - Engine Code Quality / Bugfix Pass (2026-05-15)
+
+Goal: comprehensive code audit and fix of critical performance and correctness issues found during full project review.
+
+Baseline command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+```
+
+Baseline result: passed, 4/4 tests.
+
+### Changes Made
+
+**P0 - Critical:**
+
+1. `Dx11Renderer` - replaced per-draw-call `CreateBuffer()` with a shared dynamic vertex buffer (`D3D11_USAGE_DYNAMIC` + `Map`/`Unmap`/`D3D11_MAP_WRITE_DISCARD`). Added `m_dynamicVertexBuffer`, `m_dynamicBufferCapacity`, `ensureDynamicBuffer()`. Eliminates GPU allocation/deallocation per draw call.
+
+2. `GdiRenderer` - replaced per-draw-call `CreatePen`/`CreateSolidBrush`/`DeleteObject` with a color-keyed cache (`m_penCache`, `m_brushCache`, `acquirePen()`, `acquireBrush()`). Eliminates GDI object churn per draw call.
+
+**P1 - Major:**
+
+3. `Application.cpp` - fixed frame limiter: removed hardcoded `sleep_for(16ms)` in normal mode and inverted `smokeTest continue`. Now headless mode uses `std::this_thread::yield()`, windowed modes let the renderer handle frame pacing (VSync via DXGI_Present).
+
+4. `StaticMesh.cpp` - replaced ~266 lines of manual JSON string parsing with `nlohmann::json::parse()`. Removed `FindMatching`, `ExtractArraySection`, `ExtractObjects`, `FindStringValue`, `FindIntValue`, `ParseBufferViews`, `ParseAccessors`, `ParseFirstPrimitiveIndex`, `ExtractEmbeddedBuffer`. Added `nlohmann_json::nlohmann_json` link dependency to `EngineCore` in `CMakeLists.txt`.
+
+5. `PrototypeWorld.cpp` - `resolveCollider()` now uses multi-pass iterative resolution (up to 3 passes). After the initial direction-based push-out, subsequent passes handle residual overlap on orthogonal axes. Eliminates partial-tunneling risk at diagonal corner collisions.
+
+6. `WorldState.cpp` - `debugSummary()` now iterates over a `constexpr std::array AllFlags` instead of manually listing each flag. Adding a new `WorldFlag` enum value and `AllFlags` entry is sufficient; the debug summary auto-includes it.
+
+7. `JoltPhysicsWorld.cpp` - `raycast()` now returns the engine-owned `BodyHandle` (looked up from `m_recordByBodyId`) instead of the raw Jolt internal body ID.
+
+8. `PrototypeWorld.h/.cpp` - `StaticCollider` now stores `stateFlag` and `blocksWhenFlagFalse` fields from scene JSON. `buildFromSceneDefinition()` populates them. Infrastructure ready for data-driven collider toggling beyond the hardcoded service-gate.
+
+9. `SandboxLayer.cpp` - removed unused `DynamicBoxDesc` from `setupVehiclePhysicsWorld()`. The vehicle physics world now only contains static boundary colliders for debug visualization.
+
+### Commands Run
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/configure.ps1
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+powershell -ExecutionPolicy Bypass -File scripts/verify.ps1
+```
+
+### Results
+
+- `scripts/configure.ps1`: passed using `windows-vs2022-debug`.
+- `scripts/build.ps1`: passed, no warnings. Produced `EngineCore.lib`, `GamePrototype.lib`, `EngineApp.exe`, `EngineCoreTests.exe`.
+- `ctest --preset windows-vs2022-debug`: 4/4 tests passed.
+- `scripts/verify.ps1`: passed (doctor, configure, build, ctest, scene validation, asset validation, mesh report, smoke test).
+- Smoke test logs show engine v0.23.0, all 7 mesh assets loaded, objective/job/prompt text correct.
+
+### Known Issues / Limitations
+
+- P2 items from audit remain (empty .cpp files, box edge duplication, missing Release preset, ASCII-only ToWide, DX11 no debug text, STATUS.md size).
+- Jolt raycast still doesn't return surface normal (requires `CastRay` with body hit collector).
+- P3 items remain (missing noexcept, manual test checklist not executed).
+
