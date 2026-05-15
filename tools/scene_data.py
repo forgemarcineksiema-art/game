@@ -234,6 +234,14 @@ def validate_scene(scene: dict[str, Any]) -> ValidationResult:
                 result.errors.append(f"{label}.{reference_key} references unknown id '{reference}'.")
 
     ids = set(seen)
+    for route in _as_list(scene.get("routeMarkers")):
+        item = _as_dict(route)
+        label = f"route {item.get('id', '<missing-id>')}"
+        for reference_key in ["from", "to"]:
+            reference = item.get(reference_key)
+            if isinstance(reference, str) and reference and reference not in ids:
+                result.errors.append(f"{label}.{reference_key} references unknown id '{reference}'.")
+
     for required_id in sorted(REQUIRED_IDS):
         if required_id not in ids:
             result.errors.append(f"Required id missing: {required_id}")

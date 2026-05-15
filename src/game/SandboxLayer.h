@@ -15,7 +15,9 @@
 
 class SandboxLayer final : public engine::IGameLayer {
 public:
-    explicit SandboxLayer(std::filesystem::path scenePath = "data/scenes/ferry_office.scene.json");
+    explicit SandboxLayer(
+        std::filesystem::path scenePath = "data/scenes/ferry_office.scene.json",
+        engine::UiMode uiMode = engine::UiMode::Debug);
 
     void onAttach() override;
     void onUpdate(double deltaSeconds, const engine::InputState& input) override;
@@ -25,6 +27,9 @@ public:
 
 private:
     void updateDebugText();
+    std::string buildFullDebugText() const;
+    std::string buildPresentationText(bool minimal) const;
+    void toggleDebugUiMode();
     void drawInteractionDebug(engine::IRenderer& renderer);
     void drawTraversalDebug(engine::IRenderer& renderer);
     void drawVehicleDebug(engine::IRenderer& renderer);
@@ -63,5 +68,7 @@ private:
     bool m_cameraInVehicleMode = false;
     bool m_unitBoxMeshLoaded = false;
     bool m_sceneDefinitionLoaded = false;
+    engine::UiMode m_uiMode = engine::UiMode::Debug;
+    engine::UiMode m_nonDebugUiMode = engine::UiMode::Playtest;
     unsigned long long m_frameIndex = 0;
 };

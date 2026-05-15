@@ -10,6 +10,7 @@ struct InputState {
     bool jumpPressed = false;
     bool interactHeld = false;
     bool interactPressed = false;
+    bool debugOverlayTogglePressed = false;
     float cameraYawDelta = 0.0f;
     float cameraPitchDelta = 0.0f;
     float mouseDeltaX = 0.0f;

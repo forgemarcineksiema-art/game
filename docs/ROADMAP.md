@@ -221,6 +221,16 @@ Status: implemented as a source-of-truth migration. The runtime now loads the Fe
 
 Status: implemented as the first driver/fixer job loop. `FerryOfficeJob` owns deterministic objective phases and completion checks while `WorldState` records job start, service vehicle use, dock-road checkpoint reach, service-run confirmation, and job completion.
 
+## v0.17 - First Playable Presentation Mode
+
+- Keep the existing Ferry Office Service Call as the only job.
+- Add a player-facing playtest/presentation overlay while preserving full debug telemetry.
+- Add a small runtime toggle between presentation and debug overlay.
+- Reduce marker/debug clutter in normal play without hiding validation data.
+- Fix only small presentation/readability bugs exposed by the current playable loop.
+
+Status: implemented as a presentation/readability pass. Normal windowed play now defaults to `--ui-mode playtest`, `--ui-mode debug` keeps full raw telemetry, `--ui-mode minimal` provides a tiny objective/prompt/job view, and `F1` toggles the debug overlay at runtime. No Job #2 or new gameplay system was added.
+
 ## Recommended Next Goal
 
-Build v0.16.1 First Job Manual Playtest + Objective/Marker Polish.
+Build v0.18 Island Service Road Visual Identity / First Real Prop Style Spike.

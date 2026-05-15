@@ -4,9 +4,18 @@
 
 #include <filesystem>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace engine {
+
+enum class UiMode {
+    Playtest,
+    Debug,
+    Minimal,
+};
+
+std::string_view UiModeName(UiMode mode);
 
 struct AppConfig {
     std::string appName = "Tidebreak Prototype";
@@ -17,6 +26,7 @@ struct AppConfig {
     bool captureCursor = true;
     int maxFrames = 0;
     std::string rendererBackend = "auto";
+    UiMode uiMode = UiMode::Playtest;
     std::filesystem::path assetRoot = "assets";
     std::filesystem::path scenePath = "data/scenes/ferry_office.scene.json";
     Color clearColor = {0.08f, 0.11f, 0.16f, 1.0f};

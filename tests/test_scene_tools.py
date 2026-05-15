@@ -129,6 +129,35 @@ class SceneToolTests(unittest.TestCase):
         ]:
             self.assertIn(required_id, ids)
 
+    def test_route_marker_unknown_endpoint_is_reported(self) -> None:
+        scene = copy.deepcopy(self.scene)
+        scene["routeMarkers"][0]["from"] = "missing-route-source"
+
+        result = scene_data.validate_scene(scene)
+
+        self.assertTrue(any("from references unknown id" in error for error in result.errors))
+
+    def test_service_run_route_and_checkpoint_are_aligned(self) -> None:
+        checkpoint = next(
+            marker for marker in self.scene["objectiveMarkers"] if marker["id"] == "service-run-checkpoint-marker"
+        )
+        confirm = next(
+            interactable for interactable in self.scene["interactables"] if interactable["id"] == "service-run-confirm-marker"
+        )
+        route = next(
+            route for route in self.scene["routeMarkers"] if route["id"] == "route-dock-road-to-service-confirm"
+        )
+        vehicle = self.scene["vehicles"][0]
+
+        self.assertEqual("dock-road-marker", route["from"])
+        self.assertEqual("service-run-confirm-marker", route["to"])
+        self.assertEqual([checkpoint["position"][0], checkpoint["position"][2]], [route["points"][0][0], route["points"][0][2]])
+        self.assertEqual([confirm["position"][0], confirm["position"][2]], [route["points"][-1][0], route["points"][-1][2]])
+        self.assertLessEqual(vehicle["bounds"]["min"][0], checkpoint["position"][0])
+        self.assertGreaterEqual(vehicle["bounds"]["max"][0], checkpoint["position"][0])
+        self.assertLessEqual(vehicle["bounds"]["min"][1], checkpoint["position"][2])
+        self.assertGreaterEqual(vehicle["bounds"]["max"][1], checkpoint["position"][2])
+
     def test_valid_mesh_reference_scene_validates(self) -> None:
         scene = copy.deepcopy(self.scene)
         scene["meshAssets"] = [

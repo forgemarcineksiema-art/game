@@ -3174,3 +3174,183 @@ Manual playtest note:
 Recommended next goal:
 
 Build v0.16.1 First Job Manual Playtest + Objective/Marker Polish.
+
+## v0.17 Baseline - 2026-05-15
+
+Goal: create the first playable presentation mode for the existing Ferry Office Service Call loop, reduce debug-workbench clutter, and fix/document only small presentation/control regressions without adding Job #2 or any new major gameplay system.
+
+Required context read before implementation:
+
+- `AGENTS.md`
+- `docs/STATUS.md`
+- `docs/GAME_DIRECTION.md`
+- `docs/VERTICAL_SLICE.md`
+- `docs/ROADMAP.md`
+- `docs/ARCHITECTURE.md`
+- `docs/TECH_DEBT.md`
+- `docs/SCENE_AUTHORING.md`
+- `docs/MANUAL_TEST_CHECKLIST.md`
+- `docs/DECISIONS.md`
+- `docs/ART_DIRECTION.md`
+
+Baseline commands:
+
+```powershell
+git status --short --branch
+powershell -ExecutionPolicy Bypass -File scripts\verify.ps1
+cmake --preset windows-vs2022-debug-jolt
+cmake --build --preset windows-vs2022-debug-jolt
+ctest --preset windows-vs2022-debug-jolt --output-on-failure
+python tools\scene_report.py
+python tools\validate_scene.py
+python tools\scale_audit.py
+python tools\mesh_report.py
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --frames 180
+```
+
+Baseline results:
+
+- Git state before v0.17 work: `main...origin/main`, clean working tree.
+- `scripts\verify.ps1`: passed. Default doctor/configure/build/CTest, scene validation, mesh report, and null smoke all completed. Null smoke reported engine `v0.16.0`, loaded scene `ferry-office`, 6 interactables, and first-job debug text with `jobPhase=collectManifest`.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 3/3 tests.
+- `python tools\scene_report.py`: passed; scene reports 9 colliders, 21 visual placeholders, 1 mesh asset, 10 mesh instances, 6 interactables, 1 traversal affordance, 1 vehicle, 6 route markers, and 5 objective markers.
+- `python tools\validate_scene.py`: passed.
+- `python tools\scale_audit.py`: passed; no suspicious scale issues found.
+- `python tools\mesh_report.py`: passed; `unit-box-mesh` still has 10 scene uses.
+- `EngineApp.exe --renderer gdi --frames 180`: passed; window created, cursor captured, GDI ran 180 frames, clean shutdown.
+
+Presentation / bug review notes:
+
+- The user already completed a manual v0.16 playtest and reported that the current first job loop feels very good.
+- The current GDI overlay is still a raw multi-line debug dump. Objective and prompt information exists, but it competes with player/camera/vehicle/world telemetry.
+- The window title mirrors the first raw debug line, so normal play still reads like a developer workbench.
+- Cursor capture/release behaved correctly during the bounded GDI run.
+- No crash or obvious bounded-run startup bug was observed before v0.17 changes.
+
+## v0.17 Short Implementation Plan
+
+1. Add failing tests first for UI mode config parsing, F1/debug-toggle input edge state, playtest/debug/minimal text composition, and preservation of full debug telemetry in debug mode.
+2. Add a small `UiMode` runtime config with `playtest`, `debug`, and `minimal` values. Windowed default should become `playtest`; smoke/headless behavior must remain stable.
+3. Extend `InputState` / Win32 input with a pressed-edge F1 debug overlay toggle if it stays small and safe.
+4. Extend `SandboxLayer` to accept an initial UI mode, toggle between playtest and debug on F1, and build separate player-facing presentation text from the existing full debug text.
+5. Keep full debug telemetry available through `--ui-mode debug`; keep minimal mode for a very small objective/prompt/status view.
+6. Reduce playtest-mode visual clutter by keeping core route/interaction/traversal/vehicle markers while reserving full collider/physics telemetry overlays for debug mode.
+7. Update docs and run the full default/Jolt/tool/windowed validation matrix, including explicit playtest/debug UI mode runs.
+8. Commit and push only after successful validation.
+
+## v0.17 Implementation Summary - 2026-05-15
+
+TDD checkpoint:
+
+- Added failing C++ tests for missing UI mode config parsing, missing F1 debug-overlay input edge state, missing playtest/debug/minimal text composition, and missing runtime overlay toggle behavior.
+- Added Python scene-tool tests for route endpoint validation and service-run route/checkpoint alignment.
+- Confirmed red results:
+  - `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: failed as expected before implementation because `AppConfig::uiMode`, `engine::UiMode`, `InputState::debugOverlayTogglePressed`, and the `SandboxLayer` UI-mode constructor did not exist.
+  - `python tests\test_scene_tools.py`: failed as expected before route endpoint validation existed.
+
+Implemented changes:
+
+- Bumped project version to `0.17.0`.
+- Added `engine::UiMode` with `playtest`, `debug`, and `minimal` modes.
+- Added command-line parsing for:
+  - `--ui-mode playtest`
+  - `--ui-mode debug`
+  - `--ui-mode minimal`
+  - `--playtest-ui`
+  - `--debug-ui`
+- Normal app config now defaults to `playtest` mode. Existing tests can still construct `SandboxLayer` in debug mode explicitly.
+- Added `F1` pressed-edge input tracking in the Win32 input snapshot.
+- Added `SandboxLayer` presentation/debug text composition:
+  - playtest mode prioritizes objective, focused prompt, job status, vehicle/checkpoint hints, and completion state.
+  - debug mode preserves the full raw telemetry wall for Codex/development validation.
+  - minimal mode keeps only objective, focused prompt, and job phase/completion status.
+- Added `F1` runtime overlay toggle from playtest/minimal to debug and back.
+- Reduced playtest-mode workbench clutter by reserving full grid/axes, collider boxes, world bounds, camera target, and physics debug lines for debug mode while keeping essential route, traversal, interaction, vehicle, and job markers visible.
+- Added route marker endpoint validation to `tools\scene_data.py`.
+- Updated runbook, architecture, roadmap, tech debt, manual checklist, decisions, and vertical-slice docs for v0.17.
+
+Targeted post-implementation checks:
+
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: passed.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 3/3 tests.
+- `python tests\test_scene_tools.py`: passed, 16 tests.
+- `powershell -ExecutionPolicy Bypass -File scripts\build.ps1`: passed after the new UI mode flags were added to the app executable.
+- `EngineApp.exe --renderer gdi --ui-mode playtest --frames 60`: passed after rebuild and showed the player-facing objective/prompt/job/status overlay.
+- `EngineApp.exe --renderer gdi --ui-mode debug --frames 60`: passed after rebuild and showed the full raw telemetry overlay.
+- `EngineApp.exe --renderer gdi --ui-mode minimal --frames 60`: passed after rebuild and showed the compact objective/prompt/job overlay.
+
+Known implementation limitations:
+
+- This is still GDI/debug-text presentation, not a real UI framework.
+- DX11 still has no text overlay, so overlay review should use GDI.
+- A full human-controlled v0.17 Ferry Office Service Call playthrough was not completed inside this automated Codex run; the user manually liked v0.16, and v0.17 bounded GDI runs verified startup/text modes.
+- Job #2 remains intentionally deferred.
+
+## v0.17 Final Validation - 2026-05-15
+
+Commands run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\doctor.ps1
+powershell -ExecutionPolicy Bypass -File scripts\configure.ps1
+powershell -ExecutionPolicy Bypass -File scripts\build.ps1
+ctest --preset windows-vs2022-debug --output-on-failure
+powershell -ExecutionPolicy Bypass -File scripts\verify.ps1
+cmake --preset windows-vs2022-debug-jolt
+cmake --build --preset windows-vs2022-debug-jolt
+ctest --preset windows-vs2022-debug-jolt --output-on-failure
+python tools\scene_report.py
+python tools\validate_scene.py
+python tools\scale_audit.py
+python tools\mesh_report.py
+python tools\status_report.py
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --frames 360
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --frames 360
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --scene data\scenes\ferry_office.scene.json --frames 360
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --ui-mode playtest --frames 360
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --ui-mode debug --frames 360
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --ui-mode minimal --frames 360
+```
+
+Results:
+
+- `scripts\doctor.ps1`: passed; expected PATH warnings remain for `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- `scripts\configure.ps1`: passed for `windows-vs2022-debug`.
+- `scripts\build.ps1`: passed.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 3/3 tests.
+- `scripts\verify.ps1`: passed; null smoke reported engine `v0.17.0`, loaded scene `ferry-office`, and the new playtest overlay text.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 3/3 tests.
+- `python tools\scene_report.py`: passed; scene reports 9 colliders, 21 visual placeholders, 1 mesh asset, 10 mesh instances, 6 interactables, 1 traversal affordance, 1 vehicle, 6 route markers, and 5 objective markers.
+- `python tools\validate_scene.py`: passed.
+- `python tools\scale_audit.py`: passed; no suspicious scale issues found.
+- `python tools\mesh_report.py`: passed; `unit-box-mesh` still has 10 uses.
+- `python tools\status_report.py`: completed and showed the expected v0.17 modified files before cleanup/commit.
+- `EngineApp.exe --renderer gdi --frames 360`: passed; default playtest overlay showed objective, prompt, job state, vehicle/checkpoint hints, service-gate/power status, and `F1` help.
+- `EngineApp.exe --renderer dx11 --frames 360`: passed; hardware DX11 device failed and WARP was used, then the bounded run completed cleanly.
+- `EngineApp.exe --renderer gdi --scene data\scenes\ferry_office.scene.json --frames 360`: passed; explicit scene path loaded and completed cleanly.
+- `EngineApp.exe --renderer gdi --ui-mode playtest --frames 360`: passed; player-facing overlay was shown.
+- `EngineApp.exe --renderer gdi --ui-mode debug --frames 360`: passed; full raw telemetry was shown.
+- `EngineApp.exe --renderer gdi --ui-mode minimal --frames 360`: passed; compact objective/prompt/job overlay was shown.
+
+Manual / visual notes:
+
+- Bounded GDI runs confirmed the default playtest overlay is much less noisy than the v0.16 debug wall.
+- Debug mode remains available and still exposes player/camera, traversal, vehicle, scene, world-state, physics, and job telemetry.
+- Minimal mode works as a small objective/prompt/job readout.
+- A new screenshot was not captured during this goal; the useful evidence for v0.17 was text/overlay behavior from bounded GDI runs rather than scene composition.
+
+Known remaining issues:
+
+- DX11 still falls back to WARP in this environment and still does not render text overlays.
+- Presentation remains debug-text based, not a real HUD/UI framework.
+- A full human-controlled v0.17 job playthrough should still be done on the target laptop before adding Job #2.
+- Job #2 remains intentionally deferred.
+
+Recommended next goal:
+
+Build v0.18 Island Service Road Visual Identity / First Real Prop Style Spike.

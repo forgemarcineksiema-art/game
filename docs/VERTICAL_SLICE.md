@@ -1,6 +1,6 @@
 # Vertical Slice
 
-Last updated: 2026-05-14
+Last updated: 2026-05-15
 
 ## Slice Name
 
@@ -76,6 +76,17 @@ It extends the micro-slice with one vehicle requirement while keeping the flow e
 8. Show `ferryOfficeJobComplete=true` in world/debug state.
 
 This is still not a mission scripting system. It is one authored job helper used to prove that movement, interaction, traversal, vehicle driving, scene data, and remembered state can combine into a playable task.
+
+## v0.17 Presentation Mode
+
+v0.17 keeps the Ferry Office Service Call as the only playable job and adds a first player-facing presentation mode:
+
+- `playtest` mode shows current objective, focused prompt, job status, vehicle/checkpoint hints, and completion state.
+- `debug` mode keeps full raw telemetry for Codex/development validation.
+- `minimal` mode keeps only objective, prompt, and job status.
+- `F1` toggles the debug overlay during play.
+
+The slice still uses debug text and markers, not a real UI framework. Job #2 remains intentionally deferred until the existing first job has stronger presentation, road identity, and prop style.
 
 ## Systems Explicitly Deferred
 

@@ -16,7 +16,13 @@ scripts/build.ps1
 Run GDI for readable debug text:
 
 ```powershell
-build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --ui-mode playtest
+```
+
+Run full debug telemetry:
+
+```powershell
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --ui-mode debug
 ```
 
 Run with visible desktop cursor for troubleshooting:
@@ -47,6 +53,18 @@ python tools/validate_scene.py
 python tools/scale_audit.py
 python tools/mesh_report.py
 ```
+
+## Presentation Mode
+
+- [ ] Default windowed play or `--ui-mode playtest` shows objective, focused prompt, job status, vehicle/checkpoint hints, completion state, and `F1` help without raw telemetry dominating the screen.
+- [ ] `--ui-mode debug` shows full development telemetry: player/camera, traversal, vehicle, world state, scene, physics, and job details.
+- [ ] `--ui-mode minimal` shows only objective, prompt, and job status.
+- [ ] Pressing `F1` in playtest mode switches to the debug overlay.
+- [ ] Pressing `F1` again returns to the previous playtest/minimal mode.
+- [ ] Playtest mode keeps important route, traversal, interactable, vehicle, checkpoint, and completion markers visible.
+- [ ] Playtest mode hides or reduces workbench clutter such as full collider boxes, world bounds, camera target, physics debug lines, and the full grid.
+- [ ] Objective/prompt text does not flicker, overlap, or become unreadable during the Ferry Office Service Call.
+- [ ] No Job #2 or extra objective chain appears.
 
 ## Player
 
@@ -131,7 +149,8 @@ python tools/mesh_report.py
 
 ## First Driver/Fixer Job
 
-- [ ] Initial GDI debug text shows `jobObjective` and `jobPhase=collectManifest`.
+- [ ] Initial playtest text says to check/collect the Ferry Manifest.
+- [ ] Debug mode still shows `jobObjective` and `jobPhase=collectManifest`.
 - [ ] Collecting the Ferry Manifest records `manifestCollected=true` and starts the Ferry Office Service Call.
 - [ ] Using the Service Barrier Vault records `serviceRouteUsed=true`.
 - [ ] Inspecting the Maintenance Box records `maintenanceBoxInspected=true` and `powerRestored=true`.

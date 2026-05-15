@@ -28,6 +28,8 @@ On Windows, `src/engine/platform/Win32Window.cpp` provides a small Win32 window 
 
 The Win32 layer maps `W/A/S/D`, `Shift`, `Space`, `E`, `Esc`, mouse/touchpad movement, and arrow-key camera fallback into this state. `E` is tracked as both held and pressed-edge state so gameplay code can trigger one interaction per key press. Windowed play captures and hides the cursor by default, confines it to the client area while focused, recenters it for relative mouse deltas, and restores it on focus loss or shutdown. `--free-cursor` / `--show-cursor` keep the old visible-cursor behavior for debugging.
 
+v0.17 adds an `F1` pressed-edge debug overlay toggle. It is intentionally part of the same input snapshot, not a full keybinding/settings system.
+
 ## Math
 
 `src/engine/math/Math.h` contains the intentionally small math foundation: `Vec2`, `Vec3`, basic operators, dot/cross/length/normalize, clamp/lerp, radians/degrees, yaw helpers, and exponential smoothing.
@@ -51,6 +53,10 @@ The Win32 layer maps `W/A/S/D`, `Shift`, `Space`, `E`, `Esc`, mouse/touchpad mov
 - `--capture-cursor`
 - `--free-cursor`
 - `--show-cursor`
+- `--scene <path>`
+- `--ui-mode <playtest|debug|minimal>`
+- `--playtest-ui`
+- `--debug-ui`
 - `--width <pixels>`
 - `--height <pixels>`
 - `--assets <path>`
@@ -135,6 +141,8 @@ v0.12 adds `IRenderer::drawDebugFlatTriangles` as a narrow immediate-mode static
 ## Game Layer
 
 `src/game/SandboxLayer.*` is the first game-facing layer. It owns the prototype scene, player controller, third-person camera, and the current placeholder service-yard vehicle spike.
+
+v0.17 also makes `SandboxLayer` the owner of presentation/debug text composition for the current prototype. It accepts an initial `UiMode`, builds separate playtest/minimal/debug text, and uses `F1` to toggle between the player-facing overlay and the full development overlay. This is not a UI framework; it is a small presentation layer over existing debug text.
 
 `src/game/PlayerController.*` implements deterministic camera-relative movement, sprint, jump, gravity, grounded state, facing yaw, and world-collision integration. It no longer owns static obstacle lists directly.
 
@@ -230,6 +238,14 @@ v0.10 adds a service-yard driving pad, a placeholder vehicle body/cabin, vehicle
 This is not a full asset pipeline. There are still no textures, materials, lighting, shadows, post-processing, scene editor, prefabs, or asset registry. Solid debug geometry should stay simple and disposable until later art/asset milestones prove what the engine actually needs.
 
 `docs/ASSET_GUIDE.md`, `docs/SCENE_AUTHORING.md`, and `docs/ART_DIRECTION.md` define the first scale, naming, Blender/glTF direction, scene editing workflow, and coastal-industrial mood target. These guide future asset/model work but do not add runtime model loading yet.
+
+v0.17 separates presentation from raw debugging:
+
+- `playtest`: objective, prompt, job state, vehicle/checkpoint hints, completion status, and only essential markers.
+- `minimal`: objective, prompt, and job status only.
+- `debug`: full telemetry for Codex/development work, including player/camera, world state, vehicle, traversal, scene, and physics details.
+
+Heavy workbench visuals such as the full grid, collider boxes, world bounds, camera target, and physics debug lines are debug-mode presentation. Core route, interaction, traversal, vehicle, and job markers remain visible in playtest mode.
 
 ## Interaction Focus Design Notes
 

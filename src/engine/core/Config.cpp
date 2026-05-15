@@ -39,7 +39,38 @@ bool ParsePositiveInt(std::string_view text, int& value)
     return true;
 }
 
+bool ParseUiMode(std::string_view text, UiMode& value)
+{
+    if (text == "playtest") {
+        value = UiMode::Playtest;
+        return true;
+    }
+    if (text == "debug") {
+        value = UiMode::Debug;
+        return true;
+    }
+    if (text == "minimal") {
+        value = UiMode::Minimal;
+        return true;
+    }
+    return false;
+}
+
 } // namespace
+
+std::string_view UiModeName(UiMode mode)
+{
+    switch (mode) {
+    case UiMode::Playtest:
+        return "playtest";
+    case UiMode::Debug:
+        return "debug";
+    case UiMode::Minimal:
+        return "minimal";
+    }
+
+    return "playtest";
+}
 
 ConfigParseResult ParseArguments(int argc, const char* const* argv)
 {
@@ -78,6 +109,16 @@ ConfigParseResult ParseArguments(int argc, const char* const* argv)
             continue;
         }
 
+        if (argument == "--playtest-ui") {
+            result.config.uiMode = UiMode::Playtest;
+            continue;
+        }
+
+        if (argument == "--debug-ui") {
+            result.config.uiMode = UiMode::Debug;
+            continue;
+        }
+
         if (ReadValue(argc, argv, index, argument, "--frames", value)) {
             if (!ParsePositiveInt(value, result.config.maxFrames)) {
                 result.errors.push_back("--frames must be a positive integer.");
@@ -104,6 +145,13 @@ ConfigParseResult ParseArguments(int argc, const char* const* argv)
                 result.config.rendererBackend = value;
             } else {
                 result.errors.push_back("--renderer must be one of: auto, null, gdi, dx11.");
+            }
+            continue;
+        }
+
+        if (ReadValue(argc, argv, index, argument, "--ui-mode", value)) {
+            if (!ParseUiMode(value, result.config.uiMode)) {
+                result.errors.push_back("--ui-mode must be one of: playtest, debug, minimal.");
             }
             continue;
         }
@@ -135,6 +183,9 @@ std::string BuildHelpText()
         << "  --capture-cursor      Hide and confine the cursor during windowed play (default).\n"
         << "  --free-cursor         Keep the cursor visible and uncaptured for desktop debugging.\n"
         << "  --show-cursor         Alias for --free-cursor.\n"
+        << "  --ui-mode <mode>      Select playtest, debug, or minimal overlay text (default: playtest).\n"
+        << "  --playtest-ui         Alias for --ui-mode playtest.\n"
+        << "  --debug-ui            Alias for --ui-mode debug.\n"
         << "  --renderer <backend>  Select auto, null, gdi, or dx11.\n"
         << "  --width <pixels>      Window width for windowed runs.\n"
         << "  --height <pixels>     Window height for windowed runs.\n"

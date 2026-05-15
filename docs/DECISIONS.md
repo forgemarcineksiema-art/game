@@ -455,3 +455,21 @@ Reason: The project needs one playable driver/fixer job loop before it needs a q
 Decision: Author the current service-run confirmation marker, dock-road checkpoint marker, and final route marker in `data/scenes/ferry_office.scene.json`, but keep the meaning of those markers in `PrototypeScene` / `FerryOfficeJob`.
 
 Reason: v0.15 made scene data the runtime source of truth for layout. v0.16 should use that for placement, but turning scene JSON into a mission script would be premature. This keeps Codex-friendly placement and validation while avoiding a hidden mission framework.
+
+## v0.17 Playtest Presentation Mode
+
+Decision: Add `--ui-mode playtest|debug|minimal`, make normal windowed play default to `playtest`, keep `debug` as the full telemetry view, and add an `F1` pressed-edge toggle between the current player-facing mode and debug mode.
+
+Reason: The first Ferry Office Service Call feels good enough to play, but the raw debug wall makes the build read like a workbench. A small UI mode switch gives players objective/prompt/job clarity while preserving the complete Codex/development telemetry needed for validation. This is deliberately not a UI framework, HUD system, or mission presentation layer.
+
+## v0.17 Debug Clutter Gating
+
+Decision: In playtest/minimal mode, reserve heavy workbench visuals such as full grid, world bounds, collider boxes, camera target, and physics debug lines for debug mode while keeping essential route, interaction, traversal, vehicle, job, and completion markers visible.
+
+Reason: The build should be understandable without hiding the systems Codex needs to inspect. Gating clutter by UI mode is smaller and safer than redesigning rendering, UI, markers, or scene data.
+
+## v0.17 Route Endpoint Validation
+
+Decision: Extend Python scene validation so route marker `from` / `to` ids must reference known scene ids.
+
+Reason: v0.15 made scene JSON the layout source of truth, and v0.16/v0.17 depend on route/checkpoint markers for player guidance. Catching stale route endpoint ids in tools is cheaper than discovering broken signposting at runtime.

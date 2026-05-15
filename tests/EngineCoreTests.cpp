@@ -175,6 +175,76 @@ void TestCursorCaptureArguments()
     }
 }
 
+void TestUiModeArguments()
+{
+    {
+        const char* argv[] = {"EngineApp"};
+        const auto result = engine::ParseArguments(1, argv);
+
+        Expect(result.errors.empty(), "TestUiModeArguments", "Default arguments should parse cleanly.");
+        Expect(result.config.uiMode == engine::UiMode::Playtest,
+            "TestUiModeArguments",
+            "Windowed play should default to player-facing playtest UI mode.");
+    }
+
+    {
+        const char* argv[] = {"EngineApp", "--ui-mode", "debug"};
+        const auto result = engine::ParseArguments(3, argv);
+
+        Expect(result.errors.empty(), "TestUiModeArguments", "Debug UI mode should parse cleanly.");
+        Expect(result.config.uiMode == engine::UiMode::Debug,
+            "TestUiModeArguments",
+            "Debug UI mode should preserve full development telemetry.");
+    }
+
+    {
+        const char* argv[] = {"EngineApp", "--ui-mode=minimal"};
+        const auto result = engine::ParseArguments(2, argv);
+
+        Expect(result.errors.empty(), "TestUiModeArguments", "Minimal UI mode should parse cleanly.");
+        Expect(result.config.uiMode == engine::UiMode::Minimal,
+            "TestUiModeArguments",
+            "Minimal UI mode should expose the smallest player-facing overlay.");
+    }
+
+    {
+        const char* argv[] = {"EngineApp", "--debug-ui"};
+        const auto result = engine::ParseArguments(2, argv);
+
+        Expect(result.errors.empty(), "TestUiModeArguments", "Debug UI alias should parse cleanly.");
+        Expect(result.config.uiMode == engine::UiMode::Debug,
+            "TestUiModeArguments",
+            "Debug UI alias should select full telemetry mode.");
+    }
+
+    {
+        const char* argv[] = {"EngineApp", "--playtest-ui"};
+        const auto result = engine::ParseArguments(2, argv);
+
+        Expect(result.errors.empty(), "TestUiModeArguments", "Playtest UI alias should parse cleanly.");
+        Expect(result.config.uiMode == engine::UiMode::Playtest,
+            "TestUiModeArguments",
+            "Playtest UI alias should select the player-facing overlay.");
+    }
+
+    {
+        const char* argv[] = {"EngineApp", "--ui-mode", "cinematic"};
+        const auto result = engine::ParseArguments(3, argv);
+
+        Expect(!result.errors.empty(), "TestUiModeArguments", "Invalid UI mode should emit an error.");
+    }
+}
+
+void TestInputStateTracksDebugOverlayToggleEdge()
+{
+    engine::InputState input;
+    input.debugOverlayTogglePressed = true;
+
+    Expect(input.debugOverlayTogglePressed,
+        "TestInputStateTracksDebugOverlayToggleEdge",
+        "InputState should expose a pressed-edge debug overlay toggle for F1.");
+}
+
 void TestSceneArgumentSelectsRuntimeScenePath()
 {
     const char* argv[] = {"EngineApp", "--scene", "data/scenes/ferry_office.scene.json"};
@@ -908,7 +978,7 @@ void TestSandboxLayerVehicleDebugTextIncludesRoadTestTelemetry()
 
 void TestSandboxLayerDebugTextIncludesDockRoadTelemetry()
 {
-    SandboxLayer layer(DefaultScenePathForTests());
+    SandboxLayer layer(DefaultScenePathForTests(), engine::UiMode::Debug);
     layer.onAttach();
 
     const std::string debug = layer.debugText();
@@ -923,6 +993,113 @@ void TestSandboxLayerDebugTextIncludesDockRoadTelemetry()
     Expect(debug.find("roadBounds=(3.35,-5.05)-(19.45,0.95)") != std::string::npos,
         "TestSandboxLayerDebugTextIncludesDockRoadTelemetry",
         "Sandbox debug text should expose the finite vehicle road-test bounds.");
+}
+
+void TestSandboxLayerPlaytestTextPrioritizesObjectiveAndPrompt()
+{
+    SandboxLayer layer(DefaultScenePathForTests(), engine::UiMode::Playtest);
+    layer.onAttach();
+
+    engine::InputState input;
+    layer.onUpdate(0.016, input);
+    const std::string text = layer.debugText();
+    layer.onDetach();
+
+    Expect(text.find("Objective: Check the Ferry Manifest") != std::string::npos,
+        "TestSandboxLayerPlaytestTextPrioritizesObjectiveAndPrompt",
+        "Playtest UI should lead with the current player-facing job objective.");
+    Expect(text.find("Press E: Collect Ferry Manifest") != std::string::npos,
+        "TestSandboxLayerPlaytestTextPrioritizesObjectiveAndPrompt",
+        "Playtest UI should keep the focused interaction prompt visible.");
+    Expect(text.find("F1: debug") != std::string::npos,
+        "TestSandboxLayerPlaytestTextPrioritizesObjectiveAndPrompt",
+        "Playtest UI should document the debug overlay toggle.");
+    Expect(text.find("player=(") == std::string::npos,
+        "TestSandboxLayerPlaytestTextPrioritizesObjectiveAndPrompt",
+        "Playtest UI should not expose raw player telemetry.");
+    Expect(text.find("worldState={") == std::string::npos,
+        "TestSandboxLayerPlaytestTextPrioritizesObjectiveAndPrompt",
+        "Playtest UI should not expose the raw world-state dump.");
+}
+
+void TestSandboxLayerDebugTextPreservesFullTelemetry()
+{
+    SandboxLayer layer(DefaultScenePathForTests(), engine::UiMode::Debug);
+    layer.onAttach();
+
+    engine::InputState input;
+    layer.onUpdate(0.016, input);
+    const std::string text = layer.debugText();
+    layer.onDetach();
+
+    Expect(text.find("jobObjective=") != std::string::npos,
+        "TestSandboxLayerDebugTextPreservesFullTelemetry",
+        "Debug UI should preserve the legacy job objective telemetry.");
+    Expect(text.find("player=(") != std::string::npos,
+        "TestSandboxLayerDebugTextPreservesFullTelemetry",
+        "Debug UI should preserve raw player telemetry.");
+    Expect(text.find("vehicle=(") != std::string::npos,
+        "TestSandboxLayerDebugTextPreservesFullTelemetry",
+        "Debug UI should preserve vehicle telemetry.");
+    Expect(text.find("worldState={") != std::string::npos,
+        "TestSandboxLayerDebugTextPreservesFullTelemetry",
+        "Debug UI should preserve the raw world-state dump.");
+}
+
+void TestSandboxLayerMinimalTextStaysSmallButUseful()
+{
+    SandboxLayer layer(DefaultScenePathForTests(), engine::UiMode::Minimal);
+    layer.onAttach();
+
+    engine::InputState input;
+    layer.onUpdate(0.016, input);
+    const std::string text = layer.debugText();
+    layer.onDetach();
+
+    Expect(text.find("Objective: Check the Ferry Manifest") != std::string::npos,
+        "TestSandboxLayerMinimalTextStaysSmallButUseful",
+        "Minimal UI should still show the current objective.");
+    Expect(text.find("Press E: Collect Ferry Manifest") != std::string::npos,
+        "TestSandboxLayerMinimalTextStaysSmallButUseful",
+        "Minimal UI should still show the focused prompt.");
+    Expect(text.find("F1: debug") == std::string::npos,
+        "TestSandboxLayerMinimalTextStaysSmallButUseful",
+        "Minimal UI should avoid extra helper text.");
+    Expect(text.find("jobPhase=") == std::string::npos && text.find("worldState={") == std::string::npos,
+        "TestSandboxLayerMinimalTextStaysSmallButUseful",
+        "Minimal UI should avoid raw debug telemetry.");
+}
+
+void TestSandboxLayerF1TogglesBetweenPlaytestAndDebugText()
+{
+    SandboxLayer layer(DefaultScenePathForTests(), engine::UiMode::Playtest);
+    layer.onAttach();
+
+    engine::InputState input;
+    layer.onUpdate(0.016, input);
+    const std::string playtestText = layer.debugText();
+
+    input.debugOverlayTogglePressed = true;
+    layer.onUpdate(0.016, input);
+    const std::string debugText = layer.debugText();
+
+    input.debugOverlayTogglePressed = false;
+    layer.onUpdate(0.016, input);
+
+    input.debugOverlayTogglePressed = true;
+    layer.onUpdate(0.016, input);
+    const std::string toggledBackText = layer.debugText();
+    layer.onDetach();
+
+    Expect(playtestText.find("worldState={") == std::string::npos,
+        "TestSandboxLayerF1TogglesBetweenPlaytestAndDebugText",
+        "Initial playtest UI should hide the raw world-state dump.");
+    Expect(debugText.find("worldState={") != std::string::npos,
+        "TestSandboxLayerF1TogglesBetweenPlaytestAndDebugText",
+        "F1 should switch playtest UI into full debug telemetry.");
+    Expect(toggledBackText.find("worldState={") == std::string::npos,
+        "TestSandboxLayerF1TogglesBetweenPlaytestAndDebugText",
+        "A second F1 press should return to playtest UI.");
 }
 
 void TestDebugWindowTitleUsesStableSingleLine()
@@ -2222,6 +2399,8 @@ int main()
     TestFramesArgumentOverridesSmokeDefault();
     TestInvalidRendererIsRejected();
     TestCursorCaptureArguments();
+    TestUiModeArguments();
+    TestInputStateTracksDebugOverlayToggleEdge();
     TestSceneArgumentSelectsRuntimeScenePath();
     TestNormalizePathKeepsAssetPathsInsideBase();
     TestClockStartsAtFrameZeroAndTicksForward();
@@ -2251,6 +2430,10 @@ int main()
     TestVehicleReverseSteeringIsPredictable();
     TestSandboxLayerVehicleDebugTextIncludesRoadTestTelemetry();
     TestSandboxLayerDebugTextIncludesDockRoadTelemetry();
+    TestSandboxLayerPlaytestTextPrioritizesObjectiveAndPrompt();
+    TestSandboxLayerDebugTextPreservesFullTelemetry();
+    TestSandboxLayerMinimalTextStaysSmallButUseful();
+    TestSandboxLayerF1TogglesBetweenPlaytestAndDebugText();
     TestDebugWindowTitleUsesStableSingleLine();
     TestGameCodeDoesNotReferenceJoltVendorApi();
     TestVec3NormalizationKeepsDiagonalMovementAtUnitLength();

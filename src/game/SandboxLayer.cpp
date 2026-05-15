@@ -294,8 +294,10 @@ void DrawUnitBoxMeshInstance(
 
 } // namespace
 
-SandboxLayer::SandboxLayer(std::filesystem::path scenePath)
+SandboxLayer::SandboxLayer(std::filesystem::path scenePath, engine::UiMode uiMode)
     : m_scenePath(std::move(scenePath))
+    , m_uiMode(uiMode)
+    , m_nonDebugUiMode(uiMode == engine::UiMode::Debug ? engine::UiMode::Playtest : uiMode)
 {
 }
 
@@ -369,6 +371,9 @@ void SandboxLayer::onUpdate(double deltaSeconds, const engine::InputState& input
 {
     ++m_frameIndex;
     m_worldStateChangedThisFrame = false;
+    if (input.debugOverlayTogglePressed) {
+        toggleDebugUiMode();
+    }
     const float dt = static_cast<float>(deltaSeconds);
     m_interactPressedThisFrame = input.interactPressed;
     m_traversalPressedThisFrame = false;
@@ -449,8 +454,11 @@ void SandboxLayer::onUpdate(double deltaSeconds, const engine::InputState& input
 
 void SandboxLayer::onRender(engine::IRenderer& renderer)
 {
+    const bool fullDebug = m_uiMode == engine::UiMode::Debug;
     renderer.setDebugCamera(m_camera.debugCamera());
-    renderer.drawDebugGridAndAxes();
+    if (fullDebug) {
+        renderer.drawDebugGridAndAxes();
+    }
     if (m_sceneDefinitionLoaded) {
         drawSceneVisualPlaceholders(renderer);
     } else {
@@ -459,14 +467,16 @@ void SandboxLayer::onRender(engine::IRenderer& renderer)
         DrawDockRoadBase(renderer, m_scene.world().floorHeight());
     }
     drawStaticMeshDebug(renderer);
-    renderer.drawDebugLine({-12.0f, m_scene.world().floorHeight(), -12.0f}, {12.0f, m_scene.world().floorHeight(), -12.0f}, {0.35f, 0.9f, 0.55f, 1.0f});
-    renderer.drawDebugLine({12.0f, m_scene.world().floorHeight(), -12.0f}, {12.0f, m_scene.world().floorHeight(), 12.0f}, {0.35f, 0.9f, 0.55f, 1.0f});
-    renderer.drawDebugLine({12.0f, m_scene.world().floorHeight(), 12.0f}, {-12.0f, m_scene.world().floorHeight(), 12.0f}, {0.35f, 0.9f, 0.55f, 1.0f});
-    renderer.drawDebugLine({-12.0f, m_scene.world().floorHeight(), 12.0f}, {-12.0f, m_scene.world().floorHeight(), -12.0f}, {0.35f, 0.9f, 0.55f, 1.0f});
-    const bool routeOpened = m_scene.worldState().isFlagSet(WorldFlag::RouteOpened);
-    for (const StaticCollider& collider : m_scene.world().colliders()) {
-        renderer.drawDebugSolidBox(collider.bounds.center, collider.bounds.halfExtents, ColliderSolidColor(collider, routeOpened));
-        renderer.drawDebugBox(collider.bounds.center, collider.bounds.halfExtents, ColliderWireColor(collider, routeOpened));
+    if (fullDebug) {
+        renderer.drawDebugLine({-12.0f, m_scene.world().floorHeight(), -12.0f}, {12.0f, m_scene.world().floorHeight(), -12.0f}, {0.35f, 0.9f, 0.55f, 1.0f});
+        renderer.drawDebugLine({12.0f, m_scene.world().floorHeight(), -12.0f}, {12.0f, m_scene.world().floorHeight(), 12.0f}, {0.35f, 0.9f, 0.55f, 1.0f});
+        renderer.drawDebugLine({12.0f, m_scene.world().floorHeight(), 12.0f}, {-12.0f, m_scene.world().floorHeight(), 12.0f}, {0.35f, 0.9f, 0.55f, 1.0f});
+        renderer.drawDebugLine({-12.0f, m_scene.world().floorHeight(), 12.0f}, {-12.0f, m_scene.world().floorHeight(), -12.0f}, {0.35f, 0.9f, 0.55f, 1.0f});
+        const bool routeOpened = m_scene.worldState().isFlagSet(WorldFlag::RouteOpened);
+        for (const StaticCollider& collider : m_scene.world().colliders()) {
+            renderer.drawDebugSolidBox(collider.bounds.center, collider.bounds.halfExtents, ColliderSolidColor(collider, routeOpened));
+            renderer.drawDebugBox(collider.bounds.center, collider.bounds.halfExtents, ColliderWireColor(collider, routeOpened));
+        }
     }
     drawWorldStateDebug(renderer);
     drawSliceDebug(renderer);
@@ -491,7 +501,9 @@ void SandboxLayer::onRender(engine::IRenderer& renderer)
     drawTraversalDebug(renderer);
     drawInteractionDebug(renderer);
     drawVehicleDebug(renderer);
-    renderer.drawDebugBox(m_camera.state().target, {0.08f, 0.08f, 0.08f}, {1.0f, 0.25f, 0.7f, 1.0f});
+    if (fullDebug) {
+        renderer.drawDebugBox(m_camera.state().target, {0.08f, 0.08f, 0.08f}, {1.0f, 0.25f, 0.7f, 1.0f});
+    }
     renderer.drawDebugText(m_debugText);
 }
 
@@ -510,6 +522,66 @@ std::string SandboxLayer::debugText() const
 }
 
 void SandboxLayer::updateDebugText()
+{
+    if (m_uiMode == engine::UiMode::Debug) {
+        m_debugText = buildFullDebugText();
+    } else {
+        m_debugText = buildPresentationText(m_uiMode == engine::UiMode::Minimal);
+    }
+}
+
+std::string SandboxLayer::buildPresentationText(bool minimal) const
+{
+    const PlayerState& player = m_player.state();
+    const VehicleState& vehicle = m_vehicle.state();
+    const VehicleFocus& vehicleFocus = m_vehicle.focus();
+    const InteractionFocus& focus = m_scene.interactions().focus();
+    const TraversalFocus& traversalFocus = m_scene.traversal().focus();
+
+    std::ostringstream output;
+    output << std::fixed << std::setprecision(1)
+           << "Objective: " << m_scene.currentJobObjectiveText() << "\n";
+
+    bool hasPrompt = false;
+    if (focus.hasFocus) {
+        output << "Prompt: Press E: " << focus.prompt << "\n";
+        hasPrompt = true;
+    } else if (traversalFocus.hasFocus && player.traversalMode == PlayerTraversalMode::Normal) {
+        output << "Prompt: Press Space: " << traversalFocus.prompt << "\n";
+        hasPrompt = true;
+    } else if (vehicle.occupied) {
+        output << "Prompt: Press E: Exit Service Yard Vehicle "
+               << (isVehicleExitPositionClear(m_vehicle.exitPosition()) ? "(clear)" : "(blocked)") << "\n";
+        hasPrompt = true;
+    } else if (vehicleFocus.canEnter) {
+        output << "Prompt: " << vehicleFocus.prompt << "\n";
+        hasPrompt = true;
+    }
+
+    if (!hasPrompt && !minimal) {
+        output << "Prompt: Move near highlighted markers, then press E or Space.\n";
+    }
+
+    output << "Job: phase=" << FerryOfficeJobPhaseName(m_scene.job().phase(m_scene.worldState()))
+           << " complete=" << (m_scene.isJobComplete() ? "yes" : "no");
+    if (!minimal) {
+        output << " | vehicle=" << (m_scene.worldState().isFlagSet(WorldFlag::ServiceVehicleUsed) ? "used" : "needed")
+               << " | checkpoint=" << (m_scene.worldState().isFlagSet(WorldFlag::DockRoadReached) ? "reached" : "needed")
+               << " | confirm=" << (m_scene.worldState().isFlagSet(WorldFlag::ServiceRunConfirmed) ? "done" : "needed");
+    }
+    output << "\n";
+
+    if (!minimal) {
+        output << "Status: service gate=" << (m_scene.worldState().isFlagSet(WorldFlag::RouteOpened) ? "open" : "closed")
+               << " | power=" << (m_scene.worldState().isFlagSet(WorldFlag::PowerRestored) ? "restored" : "offline")
+               << " | mode=" << (vehicle.occupied ? "driving" : "on foot") << "\n";
+        output << "F1: debug | Esc: quit";
+    }
+
+    return output.str();
+}
+
+std::string SandboxLayer::buildFullDebugText() const
 {
     const PlayerState& player = m_player.state();
     const VehicleState& vehicle = m_vehicle.state();
@@ -583,7 +655,20 @@ void SandboxLayer::updateDebugText()
            << "lastWorldEvent=\"" << m_lastWorldEventText << "\"\n"
            << "worldState={" << m_scene.worldState().debugSummary() << "}\n"
            << "slice={" << m_scene.completionSummary() << "}";
-    m_debugText = output.str();
+    return output.str();
+}
+
+void SandboxLayer::toggleDebugUiMode()
+{
+    if (m_uiMode == engine::UiMode::Debug) {
+        m_uiMode = m_nonDebugUiMode;
+        engine::Logger::info("UI mode: " + std::string(engine::UiModeName(m_uiMode)));
+        return;
+    }
+
+    m_nonDebugUiMode = m_uiMode;
+    m_uiMode = engine::UiMode::Debug;
+    engine::Logger::info("UI mode: debug");
 }
 
 void SandboxLayer::drawInteractionDebug(engine::IRenderer& renderer)
@@ -867,7 +952,7 @@ void SandboxLayer::drawVehicleDebug(engine::IRenderer& renderer)
     };
     renderer.drawDebugBox(boundsCenter, boundsHalf, vehicle.hitBoundsThisFrame ? engine::Color {1.0f, 0.3f, 0.2f, 1.0f} : engine::Color {0.40f, 0.90f, 0.70f, 1.0f});
 
-    if (m_vehiclePhysicsWorld) {
+    if (m_uiMode == engine::UiMode::Debug && m_vehiclePhysicsWorld) {
         for (const engine::physics::PhysicsDebugLine& line : m_vehiclePhysicsWorld->debugLines()) {
             renderer.drawDebugLine(line.from, line.to, {line.color.x, line.color.y, line.color.z, 1.0f});
         }

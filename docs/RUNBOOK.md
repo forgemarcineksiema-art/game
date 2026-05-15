@@ -64,6 +64,7 @@ Prototype controls:
 - `Shift`: sprint
 - `Space`: jump, or vault/mantle when a traversal affordance is focused
 - `E`: interact with the focused debug object
+- `F1`: toggle between the player-facing presentation overlay and full debug overlay
 - Mouse/touchpad movement: orbit camera. Windowed play captures and hides the cursor by default.
 - Arrow keys: camera fallback controls
 - `Esc`: quit and restore the cursor
@@ -86,6 +87,18 @@ First driver/fixer job loop:
 - Enter the service-yard vehicle and drive to the dock-road service checkpoint near the road-end marker.
 - Exit when the side marker is clear, then press `E` at the Service Run Marker to confirm the run.
 - GDI debug text shows `jobObjective`, `jobPhase`, `serviceVehicleUsed`, `dockRoadReached`, `serviceRunConfirmed`, and `jobComplete`.
+
+Presentation / debug UI mode:
+
+```powershell
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --ui-mode playtest
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --ui-mode debug
+build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --ui-mode minimal
+```
+
+Normal windowed play defaults to `playtest`, which keeps objective, prompt, job state, vehicle/checkpoint hints, and completion status visible without the raw telemetry wall. Use `--ui-mode debug` or `--debug-ui` for full development telemetry. Use `--ui-mode minimal` or `--playtest-ui --ui-mode minimal` only when you want the smallest objective/prompt/status readout. `F1` toggles from playtest/minimal to debug and back during a GDI run.
+
+GDI is the best renderer for overlay review because it supports debug text. DX11 bounded runs remain useful for renderer validation, but DX11 text is still intentionally absent.
 
 Headless smoke mode:
 
