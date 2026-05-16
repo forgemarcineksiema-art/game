@@ -57,6 +57,74 @@ where.exe ninja
 where.exe vswhere
 ```
 
+## v0.46 Vehicle Route Completion QA Proxy (2026-05-16)
+
+Selected milestone:
+
+- Add automated service-run route completion evidence to the existing deterministic-vs-Jolt vehicle runtime comparison.
+
+Why selected:
+
+- The recent repo state had strong tap/brake/reverse/coast controls QA, but still treated a human deterministic-vs-Jolt drive as the next decision gate.
+- This autonomous loop requires automated evidence when human feel comparison is unavailable, and the first driver/fixer job depends on reaching the dock-road service-run checkpoint.
+
+Definition of Done:
+
+- Runtime comparison report includes route-level checkpoint telemetry for deterministic and selected adapter backends.
+- `tools\vehicle_runtime_qa.py` rejects stale reports missing route checks.
+- Focused C++ and Python tests cover the new report contract.
+- Default validation and opt-in Jolt validation pass.
+- Docs record the provisional vehicle decision.
+
+Implementation notes:
+
+- Added `RouteCheck` telemetry to `FerryOfficeVehicleRuntimeComparisonResult`.
+- Added deterministic and adapter route checks that drive from the authored `service-yard-vehicle` spawn toward the scene-authored `service-run-checkpoint-marker`.
+- The route proxy records backend, checkpoint reached, frames to checkpoint, minimum checkpoint distance, final position/yaw, bounds hits, and pass/fail message.
+- `tools\vehicle_runtime_qa.py` now requires both deterministic and Jolt route checks before accepting a report.
+- `tests\test_vehicle_runtime_qa.py` rejects reports without route checks.
+- `tests\EngineCoreTests.cpp` expects route checks in the C++ report.
+
+Commands and results:
+
+- `python tests\test_vehicle_runtime_qa.py`: failed as expected before implementation because reports without route checks were still accepted.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: failed as expected before implementation because `FerryOfficeVehicleRuntimeComparisonResult::routeChecks` did not exist.
+- `python tests\test_vehicle_runtime_qa.py`: passed after implementation, 4 tests.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: passed.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- Parallel command attempt `cmake --build --preset windows-vs2022-debug-jolt --target EngineApp` while another Jolt build was running: failed with MSBuild file-lock/tlog errors (`CL.write.1.tlog` in use). This was a command scheduling mistake, not a source failure.
+- `cmake --build --preset windows-vs2022-debug-jolt --target EngineCoreTests`: passed.
+- Sequential `cmake --build --preset windows-vs2022-debug-jolt --target EngineApp`: passed.
+- `python tools\vehicle_runtime_qa.py`: initially failed with the new route proxy at a 240-frame route window; deterministic reached the checkpoint in 139 frames, Jolt did not reach it and got to about x=13.93. The route window was widened to 480 frames to measure route completion instead of deterministic-equivalent arrival time.
+- `python tools\vehicle_runtime_qa.py`: passed after widening the bounded route window; backend=`jolt`, samples=5, controlChecks=4, routeChecks=2, maxPositionDelta=2.95, recommendation=`promote`.
+- Route evidence from the passing report: deterministic reached the checkpoint in 139 frames; Jolt reached it in 301 frames; both stayed in bounds.
+- `python tools\playthrough_qa.py`: passed; phase=`complete`, events=10.
+- `scripts\verify.ps1`: passed; default CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke loaded the Ferry Office scene.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed; Jolt opt-in CTest passed 15/15.
+- `python tools\physics_parity_qa.py`: passed; backend=`jolt`, floor=4, raycast=4, overlap=4.
+- `python tools\character_contact_qa.py`: passed; backend=`jolt`, probes=7.
+- `python tools\vehicle_physics_qa.py`: passed; backend=`jolt`, samples=5, recommendation=`promote`.
+- `python tools\vehicle_runtime_qa.py`: passed; backend=`jolt`, samples=5, controlChecks=4, routeChecks=2, maxPositionDelta=2.95, recommendation=`promote`.
+- `rg -n "Jolt|JPH::|<Jolt/|JPH/" src\game`: returned no matches; no Jolt/vendor type leakage into game code.
+
+Provisional decision:
+
+- Keep deterministic vehicle gameplay as the default.
+- Keep Jolt live runtime as an opt-in candidate because it now passes controls QA and reaches the authored service-run checkpoint.
+- Do not promote Jolt to default yet; the route proxy shows Jolt is much slower to the checkpoint than deterministic and needs an acceleration/route-pace tuning pass before default replacement.
+
+Remaining limitations:
+
+- The route proxy is a straight scripted drive to the checkpoint, not a full keyboard/mouse navigation replay, obstacle avoidance test, camera comfort test, or human feel substitute.
+- The Jolt runtime still only affects the opt-in service vehicle path; player collision, traversal, gates, traffic, damage, audio, and production tuning remain unchanged.
+- Human playtest is still useful later, but it is no longer the only evidence for the next vehicle decision.
+
+Next direction:
+
+- Either tune the opt-in Jolt route pace against deterministic arrival evidence, or build a fuller input-scripted Ferry Office runtime QA path that exercises enter, drive, exit, and confirmation through the live loop.
+
 ## Changes Made for v0.1
 
 - Added CMake project files: `CMakeLists.txt`, `CMakePresets.json`.

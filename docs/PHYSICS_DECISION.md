@@ -207,14 +207,16 @@ Validated so far:
 
 - Default dependency-free build passes with the simple runtime adapter and reports the opt-in runtime backend unavailable when requested without the Jolt preset.
 - Opt-in Jolt configure/build passes.
-- The Jolt runtime comparison report records 5 paired samples against the deterministic `VehicleController` baseline, 4 wheel contacts per adapter sample, max position delta about 2.54 meters in the compact service-yard script, and recommendation `promote`.
+- The Jolt runtime comparison report records 5 paired samples against the deterministic `VehicleController` baseline, 4 wheel contacts per adapter sample, max position delta about 2.95 meters in the compact service-yard script, and recommendation `promote`.
+- v0.45 added controls checks for tap/coast, brake, reverse, and reverse coast-down.
+- v0.46 added service-run route checks: deterministic reaches the authored checkpoint in 139 frames and Jolt reaches it in 301 frames, both in bounds.
 - `rg -n "Jolt|JPH::|<Jolt/|JPH/" src\game` returns no matches; Jolt types remain private to engine-owned physics code.
 
 Important limits:
 
 - This is still a QA/runtime comparison switch, not a normal play-mode replacement.
 - The deterministic `VehicleController` remains the live gameplay fallback.
-- The Jolt runtime adapter is proven only against the compact scripted Ferry Office service-yard comparison. It still needs a live switch/human-feel pass before it becomes the default vehicle path.
+- The Jolt runtime adapter is proven against compact controls checks and a straight service-run route proxy. It still needs route-pace tuning or fuller live-loop replay evidence before it becomes the default vehicle path.
 
 ## v0.37 Live Opt-in Vehicle Runtime Switch Result
 
@@ -236,7 +238,7 @@ Important limits:
 
 - This is a manual playtest switch, not default vehicle promotion.
 - The switched vehicle uses the v0.36 runtime adapter state for live driving, but player collision, traversal, service-gate behavior, dynamic objects, traffic, damage, audio, and production vehicle tuning remain unchanged.
-- The next decision should come from comparing a bounded human drive on deterministic versus `jolt-live`, backed by the existing automated vehicle runtime QA.
+- The next decision should come from automated route-pace tuning or fuller input-scripted live-loop replay evidence for deterministic versus `jolt-live`, with human playtest as useful follow-up rather than the only gate.
 
 Important implementation choices:
 
@@ -264,4 +266,4 @@ v0.10 used the physics foundation without promoting full Jolt vehicle constraint
 - Tests scan `src/game` to prevent accidental `Jolt` / `JPH::*` vendor references.
 - The opt-in `windows-vs2022-debug-jolt` preset remains the proof that the Jolt backend still configures, builds, and tests through the engine API.
 
-Next recommendation: run a bounded human comparison between default deterministic driving and the `--vehicle-runtime jolt` opt-in path. Keep deterministic vehicle gameplay as the default unless the switched path is clearly more trustworthy by hand and still passes the automated runtime QA.
+Next recommendation: keep deterministic vehicle gameplay as the default and run a narrow Jolt route-pace tuning or fuller input-scripted live-loop replay milestone. The v0.46 route proxy proves Jolt can reach the service-run checkpoint, but it does so much slower than deterministic, so default promotion remains premature.

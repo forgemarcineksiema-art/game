@@ -46,7 +46,19 @@ struct FerryOfficeVehicleRuntimeComparisonResult {
         float distance = 0.0f;
         std::string message;
     };
+    struct RouteCheck {
+        std::string backendName;
+        bool passed = false;
+        bool checkpointReached = false;
+        int framesToCheckpoint = 0;
+        float minDistanceToCheckpoint = 0.0f;
+        engine::Vec3 finalPosition;
+        float finalYawRadians = 0.0f;
+        bool hitBounds = false;
+        std::string message;
+    };
     std::vector<ControlCheck> controlChecks;
+    std::vector<RouteCheck> routeChecks;
     float maxPositionDelta = 0.0f;
     float maxYawDeltaDegrees = 0.0f;
     float maxSpeedDelta = 0.0f;

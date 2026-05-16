@@ -3750,6 +3750,14 @@ void TestFerryOfficeVehicleRuntimeComparisonQaWritesReport()
             "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
             check.message);
     }
+    Expect(result.routeChecks.size() == 2,
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Runtime comparison QA should include deterministic and adapter service-run route checks.");
+    for (const auto& check : result.routeChecks) {
+        Expect(check.passed && check.checkpointReached,
+            "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+            check.message);
+    }
     Expect(result.maxPositionDelta <= 0.75f,
         "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
         "Simple runtime adapter should stay close to the deterministic fallback path.");
@@ -3775,6 +3783,9 @@ void TestFerryOfficeVehicleRuntimeComparisonQaWritesReport()
     Expect(report["controlChecks"].size() >= 3,
         "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
         "Runtime comparison report should include controls-focused QA checks.");
+    Expect(report["routeChecks"].size() == 2,
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Runtime comparison report should include service-run route completion checks.");
 
     std::filesystem::remove(reportPath);
 }

@@ -366,13 +366,13 @@ Validation:
 
 ## Recommendation
 
-Best next move: bounded human comparison of deterministic driving versus the live opt-in Jolt vehicle runtime switch.
+Best next move: tune or further replay-test the opt-in Jolt vehicle route pace against deterministic evidence.
 
-Reason: v0.35 proved Jolt vehicle feasibility, v0.36 proved a frame-stepped runtime adapter comparison, and v0.37 exposes that adapter through `--vehicle-runtime jolt` without changing the default. The missing evidence is now hand-play confidence, not another QA-only probe or more deterministic placeholder tuning.
+Reason: v0.35 proved Jolt vehicle feasibility, v0.36 proved a frame-stepped runtime adapter comparison, v0.37 exposed that adapter through `--vehicle-runtime jolt`, v0.45 hardened tap/brake/reverse/coast checks, and v0.46 added automated service-run route checks. The route proxy shows deterministic reaches the checkpoint in 139 frames while Jolt reaches it in 301 frames. That supports keeping deterministic as default and tuning or replay-testing Jolt before default promotion.
 
-Second-best: one narrow switched-path tuning/fix pass, but only after the manual comparison records concrete Jolt-live problems.
+Second-best: fuller input-scripted runtime QA that exercises enter, drive, exit, and service-run confirmation through the live loop before adding Job #2.
 
-Do not start Job #2, map expansion, renderer polish, or more authored props while the first service vehicle path is still waiting for this comparison.
+Do not start Job #2, map expansion, renderer polish, or more authored props while the first service vehicle path still has a clear route-pace confidence gap.
 
 Ready next-goal prompt:
 
@@ -388,22 +388,21 @@ Repository rules:
 - Commit and push only if validation passes and there are no unrelated user changes.
 
 Goal:
-Run and document a bounded deterministic-vs-Jolt-live vehicle playtest comparison for the Ferry Office service vehicle.
+Tune or score the opt-in Jolt vehicle route pace for the Ferry Office service vehicle.
 
 Why now:
-The Jolt vehicle path now has feasibility, runtime-comparison, and live opt-in switch evidence. The next useful decision is whether the switched path is actually playable by hand compared with the deterministic fallback.
+The Jolt vehicle path now has feasibility, runtime-comparison, live opt-in switch, controls, and service-run route completion evidence. It reaches the checkpoint in the automated route proxy, but takes 301 frames versus deterministic's 139 frames.
 
 Scope:
-- Run baseline deterministic play with `scripts/play.ps1 -DebugUi`.
-- Run opt-in Jolt live play with `scripts/play.ps1 -VehicleRuntime jolt -ExecutablePath build\windows-vs2022-debug-jolt\Debug\EngineApp.exe -DebugUi`.
-- Compare enter/exit, low-speed control, throttle/brake/reverse, steering, camera target behavior, route completion, and debug telemetry.
-- Record concrete promote/defer/tune evidence in `docs/STATUS.md`.
-- Keep automated QA fresh before and after the manual comparison.
+- Use the existing routeChecks in `tools\vehicle_runtime_qa.py` as the primary evidence.
+- Tune only the opt-in Jolt runtime or its route-control proxy if evidence shows the script is unfair.
+- Keep deterministic vehicle gameplay as the default.
+- Record whether Jolt should remain opt-in, get another tuning pass, or be considered for a fuller live-loop replay.
 
 Non-goals:
 - No new job content.
 - No traffic, NPCs, damage, garage, economy, save/load, or Job #2.
-- No default vehicle replacement unless the comparison clearly supports it and validation remains clean.
+- No default vehicle replacement unless automated route/control evidence clearly supports it and validation remains clean.
 - No extra deterministic vehicle polish unless it blocks a fair comparison.
 - No Jolt vendor types leaking into game-facing APIs.
 
@@ -436,5 +435,5 @@ Validation:
 - python tools/vehicle_runtime_qa.py
 
 Use subagents:
-- Reviewer: check the manual comparison notes for scope creep, premature default-promotion, and missing validation evidence.
+- Reviewer: check route/control evidence for scope creep, premature default-promotion, and missing validation evidence.
 ```

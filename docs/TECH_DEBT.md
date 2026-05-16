@@ -13,14 +13,14 @@ This file lists known foundation issues during the current playable-build phase.
 
 ### Fix Soon
 
-1. Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded visual/behavioral/physics evidence before asking for a manual pass. The vehicle runtime QA now also rejects reports missing tap/brake/reverse/coast control checks.
-2. The live opt-in Jolt vehicle switch now exists and has stronger automated controls evidence. The next non-packaging vehicle/physics pass should compare deterministic versus `jolt-live` by hand, record concrete feel/control issues, and only then decide whether to promote, tune, or defer the switched path. Do not mix this with Job #2, map expansion, renderer polish, or extra authored props.
+1. Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded visual/behavioral/physics evidence before asking for a manual pass. The vehicle runtime QA now rejects reports missing tap/brake/reverse/coast control checks or service-run route completion checks.
+2. The live opt-in Jolt vehicle switch now exists and has stronger automated controls plus route evidence. Deterministic reaches the service-run checkpoint in 139 frames; Jolt reaches it in 301 frames. Keep deterministic default, keep Jolt opt-in, and make the next vehicle/physics pass either Jolt route-pace tuning or fuller input-scripted runtime replay evidence. Do not mix this with Job #2, map expansion, renderer polish, or extra authored props.
 3. Keep the Blender/static mesh path narrow and honest. v0.27 adds one controlled original Blender prop; avoid more quantity until visual evidence proves prop language, not renderer readability or vehicle feel, is the blocker.
 
 ### Acceptable For Now
 
 1. No Job #2 yet. The existing first job needs polish and control confidence before more content.
-2. Deterministic vehicle movement remains the default live fallback after v0.37. Jolt VehicleConstraint now has feasibility, runtime-comparison, opt-in live-switch, and controls-focused runtime QA evidence, but it still should not replace default gameplay until a bounded human drive proves hand-play confidence.
+2. Deterministic vehicle movement remains the default live fallback after v0.46. Jolt VehicleConstraint now has feasibility, runtime-comparison, opt-in live-switch, controls-focused runtime QA, and service-run route completion evidence, but it still should not replace default gameplay until route pace and live-loop confidence improve.
 3. `WorldState` and `FerryOfficeJob` remain explicit in-memory prototype systems, not a save/load or mission framework.
 4. The tiny custom `.gltf` subset remains acceptable while assets are simple embedded-buffer static props.
 5. GDI remains the most battle-tested visual/playtest renderer, but DX11 now has a tiny renderer-owned bitmap debug text overlay and can be used for bounded playtest checks. DX11 still often falls back to WARP on this laptop.

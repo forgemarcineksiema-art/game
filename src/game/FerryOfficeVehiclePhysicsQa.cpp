@@ -8,6 +8,7 @@
 #include <cmath>
 #include <filesystem>
 #include <fstream>
+#include <limits>
 #include <memory>
 #include <nlohmann/json.hpp>
 #include <string_view>
@@ -17,9 +18,13 @@ namespace {
 constexpr std::string_view ScenarioName = "ferry-office-vehicle-feasibility";
 constexpr std::string_view RuntimeComparisonScenarioName = "ferry-office-vehicle-runtime-comparison";
 constexpr std::string_view ServiceVehicleId = "service-yard-vehicle";
+constexpr std::string_view ServiceRunCheckpointMarkerId = "service-run-checkpoint-marker";
+constexpr std::string_view ServiceRunConfirmMarkerId = "service-run-confirm-marker";
 constexpr float RuntimePositionDeltaLimit = 4.0f;
 constexpr float RuntimeYawDeltaLimitDegrees = 130.0f;
 constexpr float RuntimeSpeedDeltaLimit = 5.0f;
+constexpr int RouteCheckMaxFrames = 480;
+constexpr float RouteCheckThrottle = 0.72f;
 
 nlohmann::json Vec3Json(engine::Vec3 value)
 {
@@ -50,6 +55,21 @@ nlohmann::json ControlCheckJson(const FerryOfficeVehicleRuntimeComparisonResult:
         {"frameIndex", check.frameIndex},
         {"speed", check.speed},
         {"distance", check.distance},
+        {"message", check.message},
+    };
+}
+
+nlohmann::json RouteCheckJson(const FerryOfficeVehicleRuntimeComparisonResult::RouteCheck& check)
+{
+    return {
+        {"backend", check.backendName},
+        {"passed", check.passed},
+        {"checkpointReached", check.checkpointReached},
+        {"framesToCheckpoint", check.framesToCheckpoint},
+        {"minDistanceToCheckpoint", check.minDistanceToCheckpoint},
+        {"finalPosition", Vec3Json(check.finalPosition)},
+        {"finalYawDegrees", engine::Degrees(check.finalYawRadians)},
+        {"hitBounds", check.hitBounds},
         {"message", check.message},
     };
 }
@@ -122,6 +142,8 @@ bool StepRuntimeAdapter(
     }
     return true;
 }
+
+VehicleController BuildDeterministicVehicle(const SceneVehicleDefinition& vehicle);
 
 FerryOfficeVehicleRuntimeComparisonResult::ControlCheck MakeControlCheck(
     std::string name,
@@ -279,6 +301,90 @@ std::vector<FerryOfficeVehicleRuntimeComparisonResult::ControlCheck> RunVehicleR
     return checks;
 }
 
+FerryOfficeVehicleRuntimeComparisonResult::RouteCheck RunDeterministicRouteCheck(
+    const SceneVehicleDefinition& vehicle,
+    engine::Vec3 checkpointPosition,
+    float checkpointRadius)
+{
+    FerryOfficeVehicleRuntimeComparisonResult::RouteCheck check;
+    check.backendName = "deterministic";
+    check.framesToCheckpoint = -1;
+    check.minDistanceToCheckpoint = std::numeric_limits<float>::max();
+
+    VehicleController controller = BuildDeterministicVehicle(vehicle);
+    engine::InputState input;
+    input.moveForward = RouteCheckThrottle;
+
+    for (int frame = 0; frame < RouteCheckMaxFrames; ++frame) {
+        controller.beginFrame();
+        controller.updateDriving(1.0f / 60.0f, input);
+        const VehicleState& state = controller.state();
+        const float distance = HorizontalDistance(state.position, checkpointPosition);
+        check.minDistanceToCheckpoint = std::min(check.minDistanceToCheckpoint, distance);
+        check.finalPosition = state.position;
+        check.finalYawRadians = state.yawRadians;
+        check.hitBounds = check.hitBounds || state.hitBoundsThisFrame;
+        if (distance <= checkpointRadius) {
+            check.checkpointReached = true;
+            check.framesToCheckpoint = frame + 1;
+            break;
+        }
+    }
+
+    check.passed = check.checkpointReached && !check.hitBounds;
+    check.message = check.passed
+        ? "Deterministic route reached the authored service-run checkpoint."
+        : "Deterministic route did not reach the authored service-run checkpoint cleanly.";
+    return check;
+}
+
+FerryOfficeVehicleRuntimeComparisonResult::RouteCheck RunAdapterRouteCheck(
+    const engine::physics::VehicleRuntimeConfig& config,
+    engine::physics::PhysicsBackend backend,
+    engine::Vec3 checkpointPosition,
+    float checkpointRadius)
+{
+    FerryOfficeVehicleRuntimeComparisonResult::RouteCheck check;
+    check.backendName = "unavailable";
+    check.framesToCheckpoint = -1;
+    check.minDistanceToCheckpoint = std::numeric_limits<float>::max();
+    check.finalPosition = config.spawnPosition;
+    check.finalYawRadians = config.spawnYawRadians;
+
+    std::unique_ptr<engine::physics::IVehicleRuntimeAdapter> adapter =
+        engine::physics::CreateVehicleRuntimeAdapter(backend);
+    if (!adapter || !adapter->initialize(config)) {
+        check.message = "Runtime adapter was unavailable for service-run route QA.";
+        return check;
+    }
+
+    check.backendName = std::string(adapter->backendName());
+    for (int frame = 0; frame < RouteCheckMaxFrames; ++frame) {
+        const bool stepped = adapter->step({RouteCheckThrottle, 0.0f, 0.0f}, config.fixedStepSeconds);
+        const engine::physics::VehicleRuntimeState state = adapter->state();
+        const float distance = HorizontalDistance(state.position, checkpointPosition);
+        check.minDistanceToCheckpoint = std::min(check.minDistanceToCheckpoint, distance);
+        check.finalPosition = state.position;
+        check.finalYawRadians = state.yawRadians;
+        check.hitBounds = check.hitBounds || state.outOfBounds;
+        if (!stepped || state.wheelContactCount < 2) {
+            break;
+        }
+        if (distance <= checkpointRadius) {
+            check.checkpointReached = true;
+            check.framesToCheckpoint = frame + 1;
+            break;
+        }
+    }
+    adapter->shutdown();
+
+    check.passed = check.checkpointReached && !check.hitBounds;
+    check.message = check.passed
+        ? "Runtime adapter route reached the authored service-run checkpoint."
+        : "Runtime adapter route did not reach the authored service-run checkpoint cleanly.";
+    return check;
+}
+
 VehicleController BuildDeterministicVehicle(const SceneVehicleDefinition& vehicle)
 {
     VehicleController controller;
@@ -293,6 +399,26 @@ VehicleController BuildDeterministicVehicle(const SceneVehicleDefinition& vehicl
     controller.setYawRadians(vehicle.spawnYawRadians);
     controller.setOccupiedForTesting(true);
     return controller;
+}
+
+engine::Vec3 ServiceRunCheckpointFromScene(const SceneDefinition& scene)
+{
+    for (const SceneObjectiveMarkerDefinition& marker : scene.objectiveMarkers) {
+        if (marker.id == ServiceRunCheckpointMarkerId) {
+            return marker.position;
+        }
+    }
+    return {19.35f, 0.08f, -2.2f};
+}
+
+float ServiceRunCheckpointRadiusFromScene(const SceneDefinition& scene)
+{
+    for (const SceneInteractableDefinition& interactable : scene.interactables) {
+        if (interactable.id == ServiceRunConfirmMarkerId) {
+            return std::max(1.5f, interactable.radius);
+        }
+    }
+    return 1.5f;
 }
 
 engine::physics::VehicleRuntimeConfig RuntimeConfigFromSceneVehicle(const SceneVehicleDefinition& vehicle)
@@ -392,6 +518,11 @@ bool WriteReport(const FerryOfficeVehicleRuntimeComparisonResult& result)
         controlChecks.push_back(ControlCheckJson(check));
     }
 
+    nlohmann::json routeChecks = nlohmann::json::array();
+    for (const FerryOfficeVehicleRuntimeComparisonResult::RouteCheck& check : result.routeChecks) {
+        routeChecks.push_back(RouteCheckJson(check));
+    }
+
     const nlohmann::json report = {
         {"schema", "v0.36-ferry-office-vehicle-runtime-comparison"},
         {"scenario", result.scenario},
@@ -407,6 +538,7 @@ bool WriteReport(const FerryOfficeVehicleRuntimeComparisonResult& result)
             {"backend", result.adapterBackendName},
             {"samples", adapterSamples},
         }},
+        {"routeChecks", routeChecks},
         {"controlChecks", controlChecks},
         {"comparison", {
             {"maxPositionDelta", result.maxPositionDelta},
@@ -580,6 +712,10 @@ FerryOfficeVehicleRuntimeComparisonResult RunFerryOfficeVehicleRuntimeComparison
 
     adapter->shutdown();
     result.controlChecks = RunVehicleRuntimeControlChecks(config, backend);
+    const engine::Vec3 checkpointPosition = ServiceRunCheckpointFromScene(loadedScene.scene);
+    const float checkpointRadius = ServiceRunCheckpointRadiusFromScene(loadedScene.scene);
+    result.routeChecks.push_back(RunDeterministicRouteCheck(*vehicle, checkpointPosition, checkpointRadius));
+    result.routeChecks.push_back(RunAdapterRouteCheck(config, backend, checkpointPosition, checkpointRadius));
 
     const bool closeEnough = result.maxPositionDelta <= RuntimePositionDeltaLimit
         && result.maxYawDeltaDegrees <= RuntimeYawDeltaLimitDegrees
@@ -588,10 +724,14 @@ FerryOfficeVehicleRuntimeComparisonResult RunFerryOfficeVehicleRuntimeComparison
         && std::all_of(result.controlChecks.begin(), result.controlChecks.end(), [](const auto& check) {
                return check.passed;
            });
-    result.passed = deterministicStable && adapterStable && closeEnough && controlsStable && !result.deterministicSamples.empty();
+    const bool routeStable = result.routeChecks.size() == 2
+        && std::all_of(result.routeChecks.begin(), result.routeChecks.end(), [](const auto& check) {
+               return check.passed;
+           });
+    result.passed = deterministicStable && adapterStable && closeEnough && controlsStable && routeStable && !result.deterministicSamples.empty();
     result.recommendation = result.passed ? "promote" : "defer";
     result.recommendationReason = result.passed
-        ? "The selected vehicle runtime adapter stayed stable, close enough to compare, and passed compact service-yard control checks."
+        ? "The selected vehicle runtime adapter stayed stable, close enough to compare, passed compact control checks, and reached the authored service-run checkpoint."
         : "The selected vehicle runtime adapter needs more work before live switch promotion.";
     if (!result.passed) {
         result.error = "Vehicle runtime comparison did not meet stability or comparison thresholds.";
