@@ -77,6 +77,11 @@ Recent history forms a clear arc:
 - Runtime scene data structs and JSON loading.
 - Third-party JSON types stay inside the loader boundary.
 
+`src/game/ScenePresentation.*`
+
+- Current game-layer presentation boundary for scene color keys, dynamic palette state, and fixed overcast face shading.
+- This is the staging point for future material or lighting handoff work before those rules belong in the renderer.
+
 `data/scenes/ferry_office.scene.json`
 
 - Current source of truth for Ferry Office layout: player start, colliders, visual placeholders, mesh assets/instances, interactables, traversal, vehicle, route markers, objective markers.

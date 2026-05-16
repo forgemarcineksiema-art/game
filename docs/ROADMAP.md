@@ -468,6 +468,16 @@ Status: implemented as a manual-playtest switch. `--vehicle-runtime jolt` and `s
 
 Status: implemented as a first presentation upgrade toward a scene that reads like a game rather than an editor/debug view. Playtest mode suppresses raw wire boxes, trigger radii, route lines, and debug marker beacons; debug mode keeps them behind F1. Existing scene geometry now gets simple face shading, and the dock road reports 37 mesh instances while still using the same 8 referenced model files.
 
+## v0.39 - Scene Presentation Material Boundary
+
+- Move current scene palette and overcast face-shading rules out of `SandboxLayer`.
+- Add a small `ScenePresentation` boundary for color-key lookup, dynamic state colors, and shaded scene submissions.
+- Add focused regression coverage for authored color keys, dynamic palette differences, overcast volume cues, and shaded box triangle submission.
+- Preserve renderer behavior, scene data, gameplay, collision, asset formats, GDI/DX11 visual capture validation, and debug overlay behavior.
+- Avoid a real material system, textures, PBR, shader pipeline, renderer rewrite, new authored assets, gameplay changes, or map expansion.
+
+Status: implemented as a code-ownership step after v0.38. `SandboxLayer` now asks `ScenePresentation` for scene colors and shaded geometry submission, which gives later material/lighting work a clear game-layer staging point before any renderer-level material system exists.
+
 ## Recommended Next Goal
 
 Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. The next vehicle decision should be a short human comparison pass between normal deterministic driving and `--vehicle-runtime jolt`, then either defer Jolt vehicle promotion with concrete feel issues or promote one narrow follow-up to improve the switched path. Avoid Job #2 until the first job is automatically validated, comfortable by hand, and no longer blocked by core movement/vehicle confidence.

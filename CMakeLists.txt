@@ -133,6 +133,7 @@ add_library(GamePrototype STATIC
     src/game/SandboxLayer.cpp
     src/game/SceneDefinition.cpp
     src/game/SceneLoader.cpp
+    src/game/ScenePresentation.cpp
     src/game/PrototypeScene.cpp
     src/game/PrototypeWorld.cpp
     src/game/ThirdPersonCamera.cpp

@@ -565,3 +565,11 @@ Decision: Keep raw route lines, wire boxes, trigger radii, and marker beacons be
 Reason: The current visual blocker is that normal play still looks like an editor/debug capture. A clean playtest render plus fixed overcast shading makes existing scene geometry read as volume without pretending the engine has a material, texture, lighting, terrain, or production asset system. Reusing the existing dock-road props for a storm-wet work-zone cue improves place identity without growing the loader or adding unvalidated art.
 
 Dependency impact: no new dependency or asset format was added. The v0.38 dock-road work-zone uses the existing 8 referenced `.gltf` files and raises scene mesh instances from 32 to 37.
+
+## v0.39 Scene Presentation Boundary Before Materials
+
+Decision: Move scene color-key mapping and fixed overcast face shading from `SandboxLayer` into `src/game/ScenePresentation.*`, with focused tests that every authored scene color key is known and dynamic state palettes still differ.
+
+Reason: `SandboxLayer` should not become the permanent home for palette, fake material, and lighting rules. A small scene-presentation boundary gives the next visual iterations a stable place to grow authored material presets, lighting inputs, or renderer handoff data while keeping the current renderer and scene format unchanged.
+
+Dependency impact: no new dependency, asset format, renderer feature, texture path, or material system was added.

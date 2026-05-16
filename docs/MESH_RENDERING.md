@@ -1,8 +1,8 @@
 # Static Mesh Rendering
 
-Last updated: 2026-05-15
+Last updated: 2026-05-16
 
-v0.12 adds the first narrow static mesh path. v0.19 stabilizes the surrounding asset workflow, v0.20 proves the Blender gap plus a small fallback prop workflow, v0.20.1 proves one real headless Blender export, and v0.27 adds a tiny painter-depth presentation spike plus one more Blender prop. This remains a render spike and authoring bridge, not a full asset pipeline.
+v0.12 adds the first narrow static mesh path. v0.19 stabilizes the surrounding asset workflow, v0.20 proves the Blender gap plus a small fallback prop workflow, v0.20.1 proves one real headless Blender export, v0.27 adds a tiny painter-depth presentation spike plus one more Blender prop, and v0.39 moves scene palette/shading rules into a game-layer presentation boundary. This remains a render spike and authoring bridge, not a full asset pipeline.
 
 ## What Exists
 
@@ -15,7 +15,7 @@ v0.12 adds the first narrow static mesh path. v0.19 stabilizes the surrounding a
   - `BuildFlatTriangleList`.
 - `IRenderer::drawDebugFlatTriangles` submits immediate flat-colored triangle lists.
 - DX11 now renders debug solid boxes and flat mesh triangles through a real world-to-clip matrix path with a depth buffer. Lines, wire boxes, grid/axes, and debug text still use the existing debug projection / overlay path.
-- v0.38 adds a small game-layer overcast face-shading pass before submitting scene boxes and static mesh triangles. It derives shading from triangle normals and existing color keys; it is presentation shading only, not a renderer lighting/material system.
+- `src/game/ScenePresentation.*` owns current scene color-key mapping and fixed overcast face shading before scene boxes and static mesh triangles are submitted. It derives shading from triangle normals and existing color keys; it is presentation shading only, not a renderer lighting/material system.
 - GDI renders projected triangle polygons as a fallback.
 - Null renderer accepts the call and counts it for smoke/test visibility.
 - `assets/models/unit_box.gltf` is a tiny original project-owned placeholder mesh.
@@ -69,7 +69,7 @@ Use:
 - `meshAssets` for source files, license/provenance, and authored bounds.
 - `meshInstances` for position, yaw, scale, tint/color key, and optional links back to placeholders/colliders.
 
-v0.15 loads these mesh asset and mesh instance records through the runtime scene loader. v0.18 loads every referenced scene mesh asset by id, not just `unit-box-mesh`. `SandboxLayer::drawStaticMeshDebug` still applies dynamic state rules, such as service-gate color and moving vehicle body/cabin placement, but the authored mesh instance list now comes from `data/scenes/ferry_office.scene.json`.
+v0.15 loads these mesh asset and mesh instance records through the runtime scene loader. v0.18 loads every referenced scene mesh asset by id, not just `unit-box-mesh`. `SandboxLayer::drawStaticMeshDebug` still applies moving vehicle body/cabin placement, but `ScenePresentation` now owns color-key and dynamic palette choices such as service-gate, maintenance-power, and vehicle-occupied colors. The authored mesh instance list comes from `data/scenes/ferry_office.scene.json`.
 
 ## Renderer Notes
 
@@ -79,7 +79,7 @@ There is still no material system, texture path, lighting, shader file pipeline,
 
 Keep wire/debug markers visible until a later overlay and asset pipeline exist.
 
-The v0.12.1, v0.18, v0.20, v0.20.1, v0.27, and v0.38 mesh instances are still composition placeholders. v0.38 shades their submitted faces enough to improve volume readability, but they are not final art, material assets, or collision sources.
+The v0.12.1, v0.18, v0.20, v0.20.1, v0.27, and v0.38 mesh instances are still composition placeholders. `ScenePresentation` shades their submitted faces enough to improve volume readability, but they are not final art, material assets, or collision sources.
 
 ## How To Add A Simple Mesh
 

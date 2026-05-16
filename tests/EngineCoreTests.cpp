@@ -25,6 +25,7 @@
 #include "game/SandboxLayer.h"
 #include "game/SceneDefinition.h"
 #include "game/SceneLoader.h"
+#include "game/ScenePresentation.h"
 #include "game/ThirdPersonCamera.h"
 #include "game/TraversalSystem.h"
 #include "game/VehicleController.h"
@@ -209,6 +210,11 @@ bool ColorNear(engine::Color actual, engine::Color expected, float tolerance = 0
         && std::abs(actual.g - expected.g) <= tolerance
         && std::abs(actual.b - expected.b) <= tolerance
         && std::abs(actual.a - expected.a) <= tolerance;
+}
+
+float Luminance(engine::Color color)
+{
+    return color.r * 0.2126f + color.g * 0.7152f + color.b * 0.0722f;
 }
 
 std::size_t CountLinesWithColor(const CountingRenderer& renderer, engine::Color color)
@@ -1835,6 +1841,85 @@ void TestSandboxLayerDebugTextIncludesDockRoadTelemetry()
     Expect(debug.find("roadBounds=(3.35,-5.05)-(19.45,0.95)") != std::string::npos,
         "TestSandboxLayerDebugTextIncludesDockRoadTelemetry",
         "Sandbox debug text should expose the finite vehicle road-test bounds.");
+}
+
+void TestScenePresentationKnowsEveryAuthoredSceneColorKey()
+{
+    const SceneLoadResult loadedScene = LoadSceneDefinition(DefaultScenePathForTests());
+    Expect(loadedScene.ok(),
+        "TestScenePresentationKnowsEveryAuthoredSceneColorKey",
+        "Default scene should load before checking presentation color keys.");
+    if (!loadedScene.ok()) {
+        return;
+    }
+
+    for (const SceneVisualPlaceholderDefinition& placeholder : loadedScene.scene.visualPlaceholders) {
+        Expect(IsKnownSceneColorKey(placeholder.colorKey),
+            "TestScenePresentationKnowsEveryAuthoredSceneColorKey",
+            "Every authored visual placeholder color key should be handled by the scene presentation palette.");
+    }
+    for (const SceneMeshInstanceDefinition& instance : loadedScene.scene.meshInstances) {
+        Expect(IsKnownSceneColorKey(instance.colorKey),
+            "TestScenePresentationKnowsEveryAuthoredSceneColorKey",
+            "Every authored mesh instance color key should be handled by the scene presentation palette.");
+    }
+}
+
+void TestScenePresentationDynamicPaletteStatesRemainDistinct()
+{
+    ScenePresentationState openGateState;
+    openGateState.routeOpened = true;
+    ScenePresentationState restoredPowerState;
+    restoredPowerState.powerRestored = true;
+    ScenePresentationState occupiedVehicleState;
+    occupiedVehicleState.vehicleOccupied = true;
+
+    const engine::Color closedGate = SceneColorForKey("service-gate-state", {});
+    const engine::Color openGate = SceneColorForKey("service-gate-state", openGateState);
+    const engine::Color offlinePower = SceneColorForKey("oxidized-service-green", {});
+    const engine::Color restoredPower = SceneColorForKey("oxidized-service-green", restoredPowerState);
+    const engine::Color emptyVehicle = SceneColorForKey("service-vehicle-placeholder", {});
+    const engine::Color occupiedVehicle = SceneColorForKey("service-vehicle-placeholder", occupiedVehicleState);
+
+    Expect(!ColorNear(closedGate, openGate),
+        "TestScenePresentationDynamicPaletteStatesRemainDistinct",
+        "Service gate palette should still communicate closed versus open state.");
+    Expect(!ColorNear(offlinePower, restoredPower),
+        "TestScenePresentationDynamicPaletteStatesRemainDistinct",
+        "Maintenance palette should still communicate offline versus restored power.");
+    Expect(!ColorNear(emptyVehicle, occupiedVehicle),
+        "TestScenePresentationDynamicPaletteStatesRemainDistinct",
+        "Vehicle palette should still communicate empty versus occupied state.");
+}
+
+void TestScenePresentationOvercastShadingAddsVolumeCue()
+{
+    const engine::Color base {0.50f, 0.50f, 0.50f, 1.0f};
+    const engine::Color top = SceneShadedColor(
+        base,
+        {-1.0f, 0.0f, -1.0f},
+        {1.0f, 0.0f, 1.0f},
+        {1.0f, 0.0f, -1.0f});
+    const engine::Color underside = SceneShadedColor(
+        base,
+        {-1.0f, 0.0f, -1.0f},
+        {1.0f, 0.0f, -1.0f},
+        {1.0f, 0.0f, 1.0f});
+
+    Expect(Luminance(top) > Luminance(underside),
+        "TestScenePresentationOvercastShadingAddsVolumeCue",
+        "Overcast shading should make upward faces read brighter than undersides.");
+}
+
+void TestScenePresentationShadedBoxSubmitsTwelveFaces()
+{
+    CountingRenderer renderer;
+    renderer.initialize({});
+    DrawSceneShadedBox(renderer, {0.0f, 0.5f, 0.0f}, {0.5f, 0.5f, 0.5f}, {0.50f, 0.50f, 0.50f, 1.0f});
+
+    Expect(renderer.flatTriangleDrawCount == 12,
+        "TestScenePresentationShadedBoxSubmitsTwelveFaces",
+        "A shaded presentation box should submit exactly twelve face triangles.");
 }
 
 void TestSandboxLayerDrawsEveryLoadedSceneMeshInstance()
@@ -3983,6 +4068,10 @@ int main()
     TestSandboxLayerVehicleDebugTextIncludesRoadTestTelemetry();
     TestSandboxLayerDebugTextMarksLiveVehicleRuntimeAdapterWhenOptedIn();
     TestSandboxLayerDebugTextIncludesDockRoadTelemetry();
+    TestScenePresentationKnowsEveryAuthoredSceneColorKey();
+    TestScenePresentationDynamicPaletteStatesRemainDistinct();
+    TestScenePresentationOvercastShadingAddsVolumeCue();
+    TestScenePresentationShadedBoxSubmitsTwelveFaces();
     TestSandboxLayerDrawsEveryLoadedSceneMeshInstance();
     TestSandboxLayerPlaytestRenderSuppressesRawDebugScaffolding();
     TestSandboxLayerDebugRenderKeepsRawDebugScaffolding();

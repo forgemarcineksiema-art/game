@@ -5508,6 +5508,43 @@ Validation:
 - python tools\vehicle_runtime_qa.py
 ```
 
+## v0.39 Scene Presentation Material Boundary (2026-05-16)
+
+Goal attempted:
+
+- Move current scene palette and fake overcast shading out of `SandboxLayer`.
+- Create a small game-layer boundary where later material, lighting, or renderer handoff work can start without bloating the main runtime integration file.
+- Preserve gameplay, scene data, asset formats, GDI/DX11 capture behavior, and debug/playtest UI behavior.
+
+Implementation notes:
+
+- Added `src\game\ScenePresentation.h` and `src\game\ScenePresentation.cpp`.
+- Moved scene color-key lookup, dynamic state colors, shaded box submission, triangle-list shading, and overcast triangle shading into `ScenePresentation`.
+- `SandboxLayer` now builds a `ScenePresentationState` from route-open, power-restored, and vehicle-occupied state, then asks `ScenePresentation` for scene colors and shaded geometry.
+- Added `ScenePresentation.cpp` to the `GamePrototype` CMake target.
+- Updated `docs\DECISIONS.md`, `docs\MESH_RENDERING.md`, `docs\ROADMAP.md`, and `docs\CONTEXT_MAP.md`.
+
+Focused test coverage:
+
+- `TestScenePresentationKnowsEveryAuthoredSceneColorKey` checks that every authored visual-placeholder and mesh-instance color key in the default scene is handled by the presentation palette.
+- `TestScenePresentationDynamicPaletteStatesRemainDistinct` checks service-gate, maintenance-power, and vehicle-occupied palette changes.
+- `TestScenePresentationOvercastShadingAddsVolumeCue` checks that upward-facing triangles shade brighter than undersides.
+- `TestScenePresentationShadedBoxSubmitsTwelveFaces` checks that shaded boxes submit the expected 12 face triangles.
+
+Validation:
+
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests; build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `cmake --build --preset windows-vs2022-debug --target EngineApp; python tools\capture_visual_smoke.py`: passed; GDI and DX11 captures were nonblank and DX11 still used WARP fallback on this laptop.
+- `python tools\playthrough_qa.py`: passed; phase=`complete`, events=10.
+- `scripts\verify.ps1`: passed; doctor completed with known PATH warnings, configure/build succeeded, CTest passed 11/11, scene validation passed, asset validation passed, mesh report found 8 model files and 37 mesh instances, and null smoke loaded the Ferry Office scene.
+- `git diff --check`: passed with only expected CRLF normalization warnings.
+
+Remaining limitations:
+
+- This is an ownership/refactor step, not a real material system.
+- There are still no textures, normals in renderer input, shader material presets, PBR, terrain, production static mesh resources, or authored light sources.
+- The next visual work should use this boundary to introduce a tiny material/preset data shape or move another obvious placeholder cluster toward authored geometry, depending on the latest capture evidence.
+
 ## v0.38 Clean Playtest Presentation / Overcast Scene Shading (2026-05-16)
 
 Goal:
