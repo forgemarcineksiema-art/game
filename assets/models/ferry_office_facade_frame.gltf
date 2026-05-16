@@ -1,0 +1,90 @@
+{
+  "asset": {
+    "version": "2.0",
+    "generator": "Tidebreak tools/create_simple_prop_gltf.py v0.87 ferry office facade frame fallback helper",
+    "extras": {
+      "tidebreakSource": "project-original fallback geometry",
+      "notBlenderExport": true
+    }
+  },
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "mesh": 0,
+      "name": "ferry_office_facade_frame"
+    }
+  ],
+  "meshes": [
+    {
+      "name": "ferry_office_facade_frame",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0
+          },
+          "indices": 1,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 1680,
+      "uri": "data:application/octet-stream;base64,SOEawAAAAACamZm9SOEaQAAAAACamZm9SOEaQBSuB0CamZm9SOEawBSuB0CamZm9SOEawAAAAACamZk9SOEaQAAAAACamZk9SOEaQBSuB0CamZk9SOEawBSuB0CamZk9w/UYwI/CdT24HoW+4XoEwI/CdT24HoW+4XoEwGZmBkC4HoW+w/UYwGZmBkC4HoW+w/UYwI/CdT2PwnU94XoEwI/CdT2PwnU94XoEwGZmBkCPwnU9w/UYwGZmBkCPwnU94XoEQI/CdT24HoW+w/UYQI/CdT24HoW+w/UYQGZmBkC4HoW+4XoEQGZmBkC4HoW+4XoEQI/CdT2PwnU9w/UYQI/CdT2PwnU9w/UYQGZmBkCPwnU94XoEQGZmBkCPwnU9MzMTwGZm5j8pXI++MzMTQGZm5j8pXI++MzMTQBSuB0ApXI++MzMTwBSuB0ApXI++MzMTwGZm5j+PwnU9MzMTQGZm5j+PwnU9MzMTQBSuB0CPwnU9MzMTwBSuB0CPwnU9AAAQwArXozy4HoW+AAAQQArXozy4HoW+AAAQQHsUrj64HoW+AAAQwHsUrj64HoW+AAAQwArXozwK1yM9AAAQQArXozwK1yM9AAAQQHsUrj4K1yM9AAAQwHsUrj4K1yM9ZmbGv+xROD7D9ai+SOGav+xROD7D9ai+SOGav1K43j/D9ai+ZmbGv1K43j/D9ai+ZmbGv+xROD6PwvU8SOGav+xROD6PwvU8SOGav1K43j+PwvU8ZmbGv1K43j+PwvU8SOGaP+xROD7D9ai+ZmbGP+xROD7D9ai+ZmbGP1K43j/D9ai+SOGaP1K43j/D9ai+SOGaP+xROD6PwvU8ZmbGP+xROD6PwvU8ZmbGP1K43j+PwvU8SOGaP1K43j+PwvU8heuRvwrXIz/Xo3C+mpmZvgrXIz/Xo3C+mpmZvs3MzD/Xo3C+heuRv83MzD/Xo3C+heuRvwrXIz8AAAC+mpmZvgrXIz8AAAC+mpmZvs3MzD8AAAC+heuRv83MzD8AAAC+mpmZPgrXIz/Xo3C+heuRPwrXIz/Xo3C+heuRP83MzD/Xo3C+mpmZPs3MzD/Xo3C+mpmZPgrXIz8AAAC+heuRPwrXIz8AAAC+heuRP83MzD8AAAC+mpmZPs3MzD8AAAC+9iicv2Zmxj9xPYq+9iicP2Zmxj9xPYq+9iicP+xR2D9xPYq+9iicv+xR2D9xPYq+9iicv2Zmxj+4HgW+9iicP2Zmxj+4HgW+9iicP+xR2D+4HgW+9iicv+xR2D+4HgW+AAABAAIAAAACAAMABQAEAAcABQAHAAYABAAAAAMABAADAAcAAQAFAAYAAQAGAAIAAwACAAYAAwAGAAcABAAFAAEABAABAAAACAAJAAoACAAKAAsADQAMAA8ADQAPAA4ADAAIAAsADAALAA8ACQANAA4ACQAOAAoACwAKAA4ACwAOAA8ADAANAAkADAAJAAgAEAARABIAEAASABMAFQAUABcAFQAXABYAFAAQABMAFAATABcAEQAVABYAEQAWABIAEwASABYAEwAWABcAFAAVABEAFAARABAAGAAZABoAGAAaABsAHQAcAB8AHQAfAB4AHAAYABsAHAAbAB8AGQAdAB4AGQAeABoAGwAaAB4AGwAeAB8AHAAdABkAHAAZABgAIAAhACIAIAAiACMAJQAkACcAJQAnACYAJAAgACMAJAAjACcAIQAlACYAIQAmACIAIwAiACYAIwAmACcAJAAlACEAJAAhACAAKAApACoAKAAqACsALQAsAC8ALQAvAC4ALAAoACsALAArAC8AKQAtAC4AKQAuACoAKwAqAC4AKwAuAC8ALAAtACkALAApACgAMAAxADIAMAAyADMANQA0ADcANQA3ADYANAAwADMANAAzADcAMQA1ADYAMQA2ADIAMwAyADYAMwA2ADcANAA1ADEANAAxADAAOAA5ADoAOAA6ADsAPQA8AD8APQA/AD4APAA4ADsAPAA7AD8AOQA9AD4AOQA+ADoAOwA6AD4AOwA+AD8APAA9ADkAPAA5ADgAQABBAEIAQABCAEMARQBEAEcARQBHAEYARABAAEMARABDAEcAQQBFAEYAQQBGAEIAQwBCAEYAQwBGAEcARABFAEEARABBAEAASABJAEoASABKAEsATQBMAE8ATQBPAE4ATABIAEsATABLAE8ASQBNAE4ASQBOAEoASwBKAE4ASwBOAE8ATABNAEkATABJAEgA"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 960,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 960,
+      "byteLength": 720,
+      "target": 34963
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 80,
+      "type": "VEC3",
+      "min": [
+        -2.42,
+        0.0,
+        -0.33
+      ],
+      "max": [
+        2.42,
+        2.12,
+        0.075
+      ]
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 0,
+      "componentType": 5123,
+      "count": 360,
+      "type": "SCALAR",
+      "min": [
+        0
+      ],
+      "max": [
+        79
+      ]
+    }
+  ]
+}

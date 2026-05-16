@@ -231,8 +231,7 @@ class SceneToolTests(unittest.TestCase):
             "office-approach-runner",
             "office-front-threshold",
             "service-yard-entry-lane-cue",
-            "mesh-ferry-office-left-entry-post",
-            "mesh-ferry-office-right-entry-post",
+            "mesh-ferry-office-facade-panel",
             "mesh-ferry-office-approach-notice-board",
             "mesh-service-yard-entry-post-a",
             "mesh-service-yard-entry-post-b",
@@ -418,6 +417,27 @@ class SceneToolTests(unittest.TestCase):
         self.assertNotIn("mesh-service-gate-upper-slat", ids)
         self.assertNotIn("mesh-service-gate-lower-slat", ids)
         self.assertNotIn("mesh-service-gate-center-seam", ids)
+
+    def test_v087_facade_frame_mesh_replaces_entry_post_boxout(self) -> None:
+        ids = scene_data.collect_ids(self.scene)
+        mesh_assets = {asset["id"]: asset for asset in self.scene["meshAssets"]}
+        mesh_instances = {instance["id"]: instance for instance in self.scene["meshInstances"]}
+
+        self.assertIn("ferry-office-facade-frame-mesh", mesh_assets)
+        self.assertEqual(
+            "assets/models/ferry_office_facade_frame.gltf",
+            mesh_assets["ferry-office-facade-frame-mesh"]["path"],
+        )
+        self.assertIn("v0.87", mesh_assets["ferry-office-facade-frame-mesh"]["provenance"])
+        self.assertIn("not a blender export", mesh_assets["ferry-office-facade-frame-mesh"]["provenance"].lower())
+        self.assertIn("mesh-ferry-office-facade-panel", ids)
+        self.assertEqual(
+            "ferry-office-facade-frame-mesh",
+            mesh_instances["mesh-ferry-office-facade-panel"]["assetId"],
+        )
+        self.assertEqual("office-muted-concrete", mesh_instances["mesh-ferry-office-facade-panel"]["colorKey"])
+        self.assertNotIn("mesh-ferry-office-left-entry-post", ids)
+        self.assertNotIn("mesh-ferry-office-right-entry-post", ids)
 
     def test_duplicate_mesh_replacement_links_are_reported(self) -> None:
         scene = copy.deepcopy(self.scene)

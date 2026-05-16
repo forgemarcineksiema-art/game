@@ -892,6 +892,14 @@ Status: implemented and validated. The Ferry Office front now uses a single inse
 
 Status: implemented and validated. The first-frame player proxy now has a clearer tapered body silhouette instead of a rectangular torso stack; `scripts/verify.ps1`, playthrough QA, scene/asset/mesh/scale checks, and GDI/DX11 visual smoke pass.
 
+## v0.87 - Ferry Office Facade Frame Mesh Pass
+
+- Replace the broad Ferry Office facade panel and entry-post unit-box pair with one original low-poly facade-frame mesh.
+- Preserve Ferry Office collision, prompts, route space, service-gate state, canopy placement, and the existing sign cue.
+- Keep the asset inside the current embedded-buffer `.gltf` static mesh subset.
+
+Status: implemented and validated. The office front now has a raised surround, side piers, inset panel breaks, and a lintel around the improved gate/canopy instead of a flat wall plus two post boxes; `scripts/verify.ps1`, scene/asset/mesh/scale checks, and GDI/DX11 visual smoke pass.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.86, the next useful future milestone should either strengthen Ferry Office facade material hierarchy, replace another high-visibility repeated unit-box cue with a purposeful original mesh, improve dock foreground/approach cohesion without micro-trim noise, or use preferred-runtime evidence to harden Jolt road-edge/live-control behavior.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.87, the next useful future milestone should either improve dock foreground/approach cohesion without micro-trim noise, replace another high-visibility repeated unit-box cue with a purposeful original mesh, add restrained material contrast to the Ferry Office sign/notice band, or use preferred-runtime evidence to harden Jolt road-edge/live-control behavior.
