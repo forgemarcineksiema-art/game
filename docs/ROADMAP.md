@@ -638,6 +638,15 @@ Status: implemented and validated. Playtest mode now adds `Follow-up: relay=... 
 
 Status: implemented and validated. Both deterministic and Jolt obstacle checks stay camera-readable, with max camera yaw deltas of 4.8 and 2.9 degrees respectively, but Jolt still finishes much earlier on the route proxy (`x=11.97` versus deterministic `x=18.82`), so deterministic remains default and Jolt remains opt-in.
 
+## v0.57 - Clearance Tag Visual Cue
+
+- Add a small scene-authored status placeholder beside the Dock Road Clearance Tag endpoint.
+- Add `dock-road-clearance-state` to scene materials, dynamic presentation colors, and scene validation tooling.
+- Turn the clearance cue from inactive metal to clear cyan when `dockRoadClearanceTagged` is true.
+- Keep this as spatial endpoint readability, not a lighting system, bespoke mesh asset, save/load state, or longer content chain.
+
+Status: implemented and validated. Scene data now has 20 scene materials and 26 visual placeholders; deterministic playthrough QA still completes the 13-event service-call follow-up chain, and GDI/DX11 visual smoke remains green.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. With v0.56 proving Jolt is camera-readable but still under-progresses in the obstacle proxy, the next useful vehicle milestone is Jolt steering/acceleration tuning or a collision-backed obstacle route. If staying content-facing, add a small visual cue for the clearance tag rather than extending the chain again.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. With v0.56 proving Jolt is camera-readable but still under-progresses in the obstacle proxy, the next useful vehicle milestone is Jolt steering/acceleration tuning or a collision-backed obstacle route. If staying presentation-facing, replace the clearance-tag placeholder with a small original mesh prop before extending the chain again.

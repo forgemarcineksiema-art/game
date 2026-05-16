@@ -107,6 +107,11 @@
       "baseColor": [0.82, 0.46, 0.12, 1.0]
     },
     {
+      "key": "dock-road-clearance-state",
+      "response": "painted",
+      "baseColor": [0.44, 0.50, 0.48, 1.0]
+    },
+    {
       "key": "service-gate-state",
       "response": "painted",
       "baseColor": [0.42, 0.12, 0.08, 1.0]
@@ -364,6 +369,13 @@
       "center": [18.05, 0.72, 0.25],
       "halfExtents": [0.16, 0.08, 0.16],
       "colorKey": "dock-road-relay-state"
+    },
+    {
+      "id": "dock-road-clearance-status-tag",
+      "role": "clearance-status-tag",
+      "center": [17.10, 0.78, 0.08],
+      "halfExtents": [0.14, 0.09, 0.14],
+      "colorKey": "dock-road-clearance-state"
     }
   ],
   "meshAssets": [

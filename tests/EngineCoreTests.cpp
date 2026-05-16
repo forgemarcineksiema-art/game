@@ -1095,10 +1095,10 @@ void TestSceneLoaderLoadsDefaultFerryOfficeScene()
     Expect(result.scene.colliders.size() == 9,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored static colliders.");
-    Expect(result.scene.visualPlaceholders.size() == 25,
+    Expect(result.scene.visualPlaceholders.size() == 26,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored visual placeholders.");
-    Expect(result.scene.sceneMaterials.size() == 19,
+    Expect(result.scene.sceneMaterials.size() == 20,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored presentation materials for every current scene color key.");
     Expect(result.scene.meshInstances.size() >= 15,
@@ -1958,6 +1958,8 @@ void TestScenePresentationDynamicPaletteStatesRemainDistinct()
     occupiedVehicleState.vehicleOccupied = true;
     ScenePresentationState relayResetState;
     relayResetState.dockRoadRelayReset = true;
+    ScenePresentationState clearanceTaggedState;
+    clearanceTaggedState.dockRoadClearanceTagged = true;
 
     const engine::Color closedGate = SceneColorForKey("service-gate-state", {});
     const engine::Color openGate = SceneColorForKey("service-gate-state", openGateState);
@@ -1967,6 +1969,8 @@ void TestScenePresentationDynamicPaletteStatesRemainDistinct()
     const engine::Color occupiedVehicle = SceneColorForKey("service-vehicle-placeholder", occupiedVehicleState);
     const engine::Color relayWaiting = SceneColorForKey("dock-road-relay-state", {});
     const engine::Color relayReset = SceneColorForKey("dock-road-relay-state", relayResetState);
+    const engine::Color clearanceWaiting = SceneColorForKey("dock-road-clearance-state", {});
+    const engine::Color clearanceTagged = SceneColorForKey("dock-road-clearance-state", clearanceTaggedState);
 
     Expect(!ColorNear(closedGate, openGate),
         "TestScenePresentationDynamicPaletteStatesRemainDistinct",
@@ -1980,6 +1984,9 @@ void TestScenePresentationDynamicPaletteStatesRemainDistinct()
     Expect(relayReset.g > relayWaiting.g && relayReset.r < relayWaiting.r,
         "TestScenePresentationDynamicPaletteStatesRemainDistinct",
         "Dock Road Relay palette should shift from warning amber toward active green after reset.");
+    Expect(clearanceTagged.g > clearanceWaiting.g && clearanceTagged.b > clearanceWaiting.b,
+        "TestScenePresentationDynamicPaletteStatesRemainDistinct",
+        "Dock Road clearance tag palette should shift from inactive metal toward clear cyan after tagging.");
 }
 
 void TestScenePresentationMaterialPresetsStayBoundedForAuthoredKeys()

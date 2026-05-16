@@ -230,6 +230,73 @@ Next direction:
 
 - Tune Jolt steering/acceleration for obstacle-route forward progress, or add a collision-backed obstacle route before revisiting default promotion.
 
+## v0.57 Clearance Tag Visual Cue (2026-05-16)
+
+Selected milestone:
+
+- Add a small scene-authored visual cue for the Dock Road Clearance Tag endpoint.
+
+Candidate triage:
+
+- Clearance-tag visual cue: medium player-facing impact, low risk, validates through scene tools, C++ presentation tests, visual smoke, playthrough QA, and `scripts\verify.ps1`.
+- Jolt steering/acceleration tuning: high vehicle impact, medium risk, but v0.56 was already a vehicle-evidence milestone.
+- Another content beat: medium content impact, but the endpoint chain needed more spatial feedback before growing longer.
+
+Why selected:
+
+- v0.56 closed a technical evidence loop, so the next best move was player-facing presentation.
+- v0.54 added a remembered clearance consequence and v0.55 made it readable in text; a tiny spatial cue makes the authored endpoint more visible without introducing a full HUD, lighting system, or new asset pipeline.
+
+Definition of Done:
+
+- Scene data exposes one authored clearance status placeholder and material.
+- Runtime presentation changes that cue from inactive metal to clear cyan when `dockRoadClearanceTagged=true`.
+- Scene-tool and C++ tests require the new material, placeholder, and dynamic color state.
+- Playthrough QA, visual smoke, scene/asset/mesh/scale validation, `scripts\verify.ps1`, and `git diff --check` pass.
+
+Implementation notes:
+
+- Added `dockRoadClearanceTagged` to `ScenePresentationState`.
+- Added `dock-road-clearance-state` to runtime dynamic scene colors, material lookup, and the Python scene tool known-color registry.
+- Passed the clearance flag from `SandboxLayer` into both visual placeholder and static mesh presentation state.
+- Added `dock-road-clearance-status-tag` beside the authored clearance-tag interaction in `data\scenes\ferry_office.scene.json`.
+- Updated scene count and required-id tests to expect 20 scene materials and 26 visual placeholders.
+
+Commands and results:
+
+- `python tests\test_scene_tools.py`: failed as expected before implementation because `dock-road-clearance-status-tag` and the new scene material were missing.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: failed as expected before implementation because `ScenePresentationState::dockRoadClearanceTagged` did not exist.
+- `python tests\test_scene_tools.py`: initially failed after implementation because `tools\scene_data.py` did not know `dock-road-clearance-state`; fixed the tool registry.
+- `python tests\test_scene_tools.py`: passed after the registry fix, 40 tests.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: passed.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `python tools\validate_scene.py`: passed.
+- `python tools\scene_report.py`: passed; scene now reports 20 scene materials, 26 visual placeholders, 11 mesh assets, 46 mesh instances, 9 interactables, 9 routes, and 8 objective markers.
+- `python tools\playthrough_qa.py`: passed; phase=`complete`, events=13, vehicleRuntime=`deterministic`, framesToCheckpoint=139.
+- `python tools\capture_visual_smoke.py`: passed for GDI and DX11 captures; DX11 used WARP in this environment.
+- `python tools\validate_assets.py`: passed; 11 model files.
+- `python tools\mesh_report.py`: passed; 11 referenced model files.
+- `python tools\scale_audit.py`: passed; no suspicious scale issues.
+- `scripts\verify.ps1`: passed; doctor, configure, build, CTest 11/11, scene validation, asset validation, mesh report, and smoke run completed.
+
+Automated evidence generated:
+
+- `build\playthroughs\ferry-office-service-call-report.json` still completes the 13-event service-call follow-up chain with `dockRoadClearanceTagged=true`.
+- `build\captures\capture_visual_smoke_report.json` confirms the updated scene still renders with readable text and nonblank GDI/DX11 captures.
+
+Provisional decision:
+
+- Keep the clearance cue as a lightweight scene-authored placeholder for now. It improves spatial readability at the endpoint while preserving the current low-risk presentation path.
+
+Remaining limitations:
+
+- The cue is still a simple placeholder block, not a bespoke mesh prop, decal, material animation, light source, or persistent save-state visualization.
+- The automated capture proves the scene renders, but not whether the cue is subjectively ideal from every camera angle.
+
+Next direction:
+
+- Either replace the clearance cue with a small original mesh prop, or return to Jolt steering/acceleration tuning with the obstacle-proxy evidence from v0.56.
+
 ## v0.49 Opt-in Jolt Live-loop Playthrough QA (2026-05-16)
 
 Selected milestone:

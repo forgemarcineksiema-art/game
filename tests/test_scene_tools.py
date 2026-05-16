@@ -48,6 +48,7 @@ class SceneToolTests(unittest.TestCase):
             "dock-road-relay",
             "relay-service-log",
             "dock-road-clearance-tag",
+            "dock-road-clearance-status-tag",
             "route-service-confirm-to-relay",
             "route-relay-to-service-log",
             "route-service-log-to-clearance-tag",
@@ -79,9 +80,9 @@ class SceneToolTests(unittest.TestCase):
         summary = scene_data.build_summary(self.scene)
 
         self.assertEqual("ferry-office", summary.scene_id)
-        self.assertEqual(19, summary.material_count)
+        self.assertEqual(20, summary.material_count)
         self.assertGreaterEqual(summary.collider_count, 9)
-        self.assertEqual(25, summary.visual_count)
+        self.assertEqual(26, summary.visual_count)
         self.assertEqual(9, summary.interactable_count)
         self.assertEqual(1, summary.traversal_count)
         self.assertEqual(1, summary.vehicle_count)

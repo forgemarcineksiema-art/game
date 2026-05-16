@@ -85,6 +85,11 @@ engine::Color DynamicSceneColor(std::string_view key, engine::Color authoredBase
             ? engine::Color {0.18f, 0.78f, 0.42f, 1.0f}
             : engine::Color {0.82f, 0.46f, 0.12f, 1.0f};
     }
+    if (key == "dock-road-clearance-state") {
+        return state.dockRoadClearanceTagged
+            ? engine::Color {0.16f, 0.72f, 0.82f, 1.0f}
+            : engine::Color {0.44f, 0.50f, 0.48f, 1.0f};
+    }
     if (key == "service-vehicle-cabin-placeholder") {
         const engine::Color body = state.vehicleOccupied
             ? engine::Color {0.18f, 0.58f, 0.95f, 1.0f}
@@ -122,7 +127,8 @@ bool IsKnownSceneColorKey(std::string_view key)
         || key == "service-gate-state"
         || key == "service-vehicle-placeholder"
         || key == "service-vehicle-cabin-placeholder"
-        || key == "dock-road-relay-state";
+        || key == "dock-road-relay-state"
+        || key == "dock-road-clearance-state";
 }
 
 SceneMaterial SceneMaterialForKey(std::string_view key, ScenePresentationState state)
@@ -192,6 +198,11 @@ SceneMaterial SceneMaterialForKey(std::string_view key, ScenePresentationState s
         return PaintedMaterial(state.dockRoadRelayReset
             ? engine::Color {0.18f, 0.78f, 0.42f, 1.0f}
             : engine::Color {0.82f, 0.46f, 0.12f, 1.0f});
+    }
+    if (key == "dock-road-clearance-state") {
+        return PaintedMaterial(state.dockRoadClearanceTagged
+            ? engine::Color {0.16f, 0.72f, 0.82f, 1.0f}
+            : engine::Color {0.44f, 0.50f, 0.48f, 1.0f});
     }
 
     return DefaultMaterial({0.35f, 0.42f, 0.40f, 1.0f});

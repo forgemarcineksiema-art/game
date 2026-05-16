@@ -19,7 +19,7 @@ This file lists known foundation issues during the current playable-build phase.
 
 ### Acceptable For Now
 
-1. No broad Job #2 framework yet. v0.54 keeps the Dock Road endpoint follow-up as a reset, log, and clear-tag chain, but new content should stay compact and extend playthrough QA instead of bypassing it.
+1. No broad Job #2 framework yet. v0.54 keeps the Dock Road endpoint follow-up as a reset, log, and clear-tag chain, and v0.57 adds only a small dynamic visual cue for the endpoint. New content should stay compact and extend playthrough QA instead of bypassing it.
 2. Deterministic vehicle movement remains the default live fallback after v0.56. Jolt VehicleConstraint now has feasibility, runtime-comparison, opt-in live-switch, controls-focused runtime QA, 240-frame service-run route evidence, the same first-job enter-drive-exit-confirm playthrough evidence, and camera-aware obstacle-proxy steering evidence, but it still should not replace default gameplay until Jolt tuning or collision-backed obstacle replay narrows the response gap.
 3. `WorldState` and `FerryOfficeJob` remain explicit in-memory prototype systems, not a save/load or mission framework.
 4. The tiny custom `.gltf` subset remains acceptable while assets are simple embedded-buffer static props.
@@ -43,6 +43,7 @@ This file lists known foundation issues during the current playable-build phase.
 - v0.29 adds renderer-owned 32-bit BMP capture for bounded local validation. GDI capture includes the GDI text overlay; v0.31 means DX11 capture now includes the renderer-owned bitmap text overlay as well as geometry/depth presentation.
 - v0.30 strengthens the capture harness with dimension, color-diversity, luminance, broad scene-presence, GDI/DX11 dimension parity, and JSON report checks. v0.31 adds a conservative bright text-signal heuristic without OCR or pixel-perfect golden images.
 - Debug boxes/lines/solid boxes and v0.12 flat mesh triangles are enough for prototypes but not a real mesh/material pipeline.
+- v0.57 adds `dock-road-clearance-state` as another dynamic placeholder material cue, not a real lighting, decal, or bespoke prop-material system.
 - v0.38 makes playtest rendering cleaner and adds fixed overcast face shading for existing scene geometry, but this is still not real lighting, materials, textures, terrain, a production character model, or an art pipeline.
 - v0.9 solid debug boxes and v0.12 mesh triangles remain placeholder geometry. v0.27 adds a small painter-depth sort for projected solid-box and flat-mesh triangle batches; v0.28 adds a DX11-only real world-to-clip matrix and depth-buffer path for solid boxes and flat mesh triangles.
 - GDI remains on CPU projection/painter-depth. DX11 lines, wire boxes, grid, route/debug lines, and bitmap text are still overlay/debug-projection rendering rather than fully depth-aware renderer primitives.
