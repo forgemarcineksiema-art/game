@@ -6,7 +6,7 @@ Purpose: keep future Codex runs honest about Tidebreak as a game, not only as a 
 
 ## Current Read
 
-Tidebreak now has a real prototype loop, not just isolated systems. The Ferry Office scene has a validated 21-event chain, one service vehicle route, active route guidance, remembered local flags, visible state cues, original placeholder props, GDI/DX11 capture evidence, and a green `scripts/verify.ps1` gate.
+Tidebreak now has a real prototype loop, not just isolated systems. The Ferry Office scene has a validated 21-event chain, one service vehicle route, active route guidance, remembered local flags, visible state cues, original placeholder props, GDI/DX11 capture evidence, and after v0.95 one repaired state that changes traversable space by opening Low Dock Drain access.
 
 The strongest playable identity is:
 
@@ -33,9 +33,9 @@ The weakest current identity is also clear: too many recent beats are administra
 
    A 21-event report proves coverage, not fun. Future content should add a new verb, spatial problem, route change, delivery constraint, driving challenge, or visible consequence. Do not add another log/sign/tag endpoint unless it unlocks one of those.
 
-2. World consequences are often too small.
+2. World consequences are still rare.
 
-   Tiny color cues and text are acceptable prototype evidence, but the game fantasy wants visible local change. Favor physical route changes, blocked/unblocked spaces, moved objects, new access, or changed work zones.
+   v0.95 proves the right shape by opening Low Dock Drain access after the Storm Pump Ticket. Do not stop there. Future content should keep favoring physical route changes, blocked/unblocked spaces, moved objects, new access, or changed work zones over tiny color cues and text-only state.
 
 3. The UI still carries too much design weight.
 
@@ -162,21 +162,21 @@ Improve:
 
 Do not treat another Relay Service Log prop as the default next move. It is defensible only if a capture shows that specific destination is unreadable.
 
-The better next goal is probably:
+After v0.95, the better next goal is probably:
 
 ```text
-v0.95 Service Route Consequence / Physical World Change
+v0.96 Driving Feel Road-Test Pass
 ```
 
-Make one existing repaired state alter the traversable or drivable world, and prove it with playthrough QA plus visual evidence. This advances the core fantasy more than extending the chain with another administrative endpoint.
+Build automated steering/braking/reverse/route-deviation/bounds/camera evidence before tuning or promoting vehicle runtime. This advances the most kinetic player verb instead of making the follow-up checklist longer.
 
-If the goal runner chooses vehicle work instead, the strongest alternate is:
+If capture evidence shows the new Low Dock Drain access consequence is hard to read, the strongest alternate is:
 
 ```text
-v0.95 Driving Feel Road-Test Pass
+v0.96 Low Dock Access Readability Pass
 ```
 
-Create measurable steering/braking/reverse/camera evidence before tuning or promoting a vehicle runtime further.
+Keep that alternate bounded to in-world readability and validation; do not add another administrative endpoint.
 
 ## Review Questions Before Any Next Goal
 

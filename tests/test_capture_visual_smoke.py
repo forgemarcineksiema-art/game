@@ -186,6 +186,10 @@ class CaptureVisualSmokeTests(unittest.TestCase):
             ["--qa-capture-state", "relay-to-service-log"],
             capture_visual_smoke.qa_capture_state_args("relay-to-service-log"),
         )
+        self.assertEqual(
+            ["--qa-capture-state", "low-dock-drain-access"],
+            capture_visual_smoke.qa_capture_state_args("low-dock-drain-access"),
+        )
 
         with self.assertRaisesRegex(ValueError, "scenario"):
             capture_visual_smoke.qa_capture_state_args("unknown")

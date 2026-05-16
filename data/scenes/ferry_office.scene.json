@@ -217,6 +217,15 @@
       "center": [3.6, 0.45, 0.55],
       "halfExtents": [0.45, 0.45, 0.45],
       "blocksPlayer": true
+    },
+    {
+      "id": "low-dock-drain-flood-barrier",
+      "kind": "box",
+      "center": [18.82, 0.35, -1.66],
+      "halfExtents": [0.82, 0.35, 0.12],
+      "blocksPlayer": true,
+      "stateFlag": "stormPumpTicketClosed",
+      "blocksWhenFlagFalse": true
     }
   ],
   "visualPlaceholders": [
@@ -421,6 +430,13 @@
       "role": "storm-pump-ticket-status-light",
       "center": [-1.92, 0.92, 2.56],
       "halfExtents": [0.16, 0.08, 0.05],
+      "colorKey": "storm-pump-ticket-state"
+    },
+    {
+      "id": "low-dock-drain-access-barrier",
+      "role": "ticket-cleared-flood-barrier",
+      "center": [18.82, 0.28, -1.66],
+      "halfExtents": [0.82, 0.28, 0.12],
       "colorKey": "storm-pump-ticket-state"
     },
     {

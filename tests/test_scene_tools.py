@@ -108,7 +108,7 @@ class SceneToolTests(unittest.TestCase):
         self.assertEqual("ferry-office", summary.scene_id)
         self.assertEqual(25, summary.material_count)
         self.assertGreaterEqual(summary.collider_count, 9)
-        self.assertEqual(31, summary.visual_count)
+        self.assertEqual(32, summary.visual_count)
         self.assertEqual(17, summary.interactable_count)
         self.assertEqual(1, summary.traversal_count)
         self.assertEqual(1, summary.vehicle_count)
@@ -471,6 +471,19 @@ class SceneToolTests(unittest.TestCase):
             visual_placeholders["ferry-office-drain-log-status-light"]["colorKey"],
         )
         self.assertIn("ferry-office-drain-log-state", material_keys)
+
+    def test_v095_low_dock_drain_access_barrier_is_authored(self) -> None:
+        colliders = {collider["id"]: collider for collider in self.scene["colliders"]}
+        visual_placeholders = {placeholder["id"]: placeholder for placeholder in self.scene["visualPlaceholders"]}
+
+        self.assertIn("low-dock-drain-flood-barrier", colliders)
+        self.assertEqual("stormPumpTicketClosed", colliders["low-dock-drain-flood-barrier"]["stateFlag"])
+        self.assertTrue(colliders["low-dock-drain-flood-barrier"]["blocksWhenFlagFalse"])
+        self.assertIn("low-dock-drain-access-barrier", visual_placeholders)
+        self.assertEqual(
+            "storm-pump-ticket-state",
+            visual_placeholders["low-dock-drain-access-barrier"]["colorKey"],
+        )
 
     def test_v093_office_service_panel_mesh_replaces_generic_utility_box(self) -> None:
         ids = scene_data.collect_ids(self.scene)

@@ -406,7 +406,32 @@ void SandboxLayer::applyQaCaptureState()
         m_player.setFacingYawRadians(0.0f);
         m_camera.setYawRadians(0.0f);
         engine::Logger::info("QA capture state applied: relay-to-service-log.");
+    } else if (m_qaCaptureState == "low-dock-drain-access") {
+        setFlag(WorldFlag::FerryOfficeJobStarted);
+        setFlag(WorldFlag::ManifestCollected);
+        setFlag(WorldFlag::ServiceRouteUsed);
+        setFlag(WorldFlag::MaintenanceBoxInspected);
+        setFlag(WorldFlag::PowerRestored);
+        setFlag(WorldFlag::RouteOpened);
+        setFlag(WorldFlag::ServiceVehicleUsed);
+        setFlag(WorldFlag::DockRoadReached);
+        setFlag(WorldFlag::ServiceRunConfirmed);
+        setFlag(WorldFlag::FerryOfficeJobComplete);
+        setFlag(WorldFlag::DockRoadRelayReset);
+        setFlag(WorldFlag::DockRoadRelayLogged);
+        setFlag(WorldFlag::DockRoadClearanceTagged);
+        setFlag(WorldFlag::HarborPartsPickedUp);
+        setFlag(WorldFlag::HarborPartsDelivered);
+        setFlag(WorldFlag::FerryOfficeBoardUpdated);
+        setFlag(WorldFlag::FerryOfficeHandoffFiled);
+        setFlag(WorldFlag::StormPumpReset);
+        setFlag(WorldFlag::StormPumpTicketClosed);
+        m_player.setPosition({18.75f, 0.0f, -2.05f});
+        m_player.setFacingYawRadians(0.0f);
+        m_camera.setYawRadians(0.0f);
+        engine::Logger::info("QA capture state applied: low-dock-drain-access.");
     }
+    m_scene.syncWorldStateColliders();
 }
 
 void SandboxLayer::onUpdate(double deltaSeconds, const engine::InputState& input)

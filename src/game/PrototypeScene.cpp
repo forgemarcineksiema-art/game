@@ -273,7 +273,7 @@ void PrototypeScene::buildFromFerryOfficeData()
     jobConfig.vehicleCheckpointRadius = FerryOffice::Radii::ServiceRunCheckpoint;
     m_job.configure(std::move(jobConfig));
 
-    syncRouteGateCollider();
+    syncWorldStateColliders();
 }
 
 namespace {
@@ -334,7 +334,7 @@ void PrototypeScene::loadFromDefinition(const SceneDefinition& sceneDefinition)
     }
 
     configureJobFromDefinition(sceneDefinition);
-    syncRouteGateCollider();
+    syncWorldStateColliders();
 }
 
 PrototypeWorld& PrototypeScene::world()
@@ -408,8 +408,8 @@ bool PrototypeScene::applyInteractionResult(const InteractionResult& result)
     }
 
     changed |= applyAuthoredInteractionBinding(result.name, result.name);
-    if (result.name == FerryOffice::Names::WallButton) {
-        syncRouteGateCollider();
+    if (changed) {
+        syncWorldStateColliders();
     }
 
     return changed;
@@ -417,7 +417,12 @@ bool PrototypeScene::applyInteractionResult(const InteractionResult& result)
 
 bool PrototypeScene::recordServiceRouteUsed()
 {
-    return m_worldState.setFlag(WorldFlag::ServiceRouteUsed, true, std::string(FerryOffice::Messages::ServiceVault));
+    const bool changed =
+        m_worldState.setFlag(WorldFlag::ServiceRouteUsed, true, std::string(FerryOffice::Messages::ServiceVault));
+    if (changed) {
+        syncWorldStateColliders();
+    }
+    return changed;
 }
 
 bool PrototypeScene::recordTraversalCompleted(int affordanceId)
@@ -431,17 +436,28 @@ bool PrototypeScene::recordTraversalCompleted(int affordanceId)
             changed |= m_worldState.setFlag(flag, true, binding.source);
         }
     }
+    if (changed) {
+        syncWorldStateColliders();
+    }
     return changed;
 }
 
 bool PrototypeScene::recordServiceVehicleUsed()
 {
-    return m_job.recordServiceVehicleUsed(m_worldState);
+    const bool changed = m_job.recordServiceVehicleUsed(m_worldState);
+    if (changed) {
+        syncWorldStateColliders();
+    }
+    return changed;
 }
 
 bool PrototypeScene::updateJobVehicleCheckpoint(engine::Vec3 vehiclePosition, bool vehicleOccupied)
 {
-    return m_job.updateVehicleCheckpoint(m_worldState, vehiclePosition, vehicleOccupied);
+    const bool changed = m_job.updateVehicleCheckpoint(m_worldState, vehiclePosition, vehicleOccupied);
+    if (changed) {
+        syncWorldStateColliders();
+    }
+    return changed;
 }
 
 bool PrototypeScene::recordExitReached()
@@ -450,7 +466,11 @@ bool PrototypeScene::recordExitReached()
         return false;
     }
 
-    return m_worldState.setFlag(WorldFlag::ExitReached, true, std::string(FerryOffice::Names::ExitMarker));
+    const bool changed = m_worldState.setFlag(WorldFlag::ExitReached, true, std::string(FerryOffice::Names::ExitMarker));
+    if (changed) {
+        syncWorldStateColliders();
+    }
+    return changed;
 }
 
 bool PrototypeScene::isSliceReadyForExit() const
@@ -691,7 +711,31 @@ void PrototypeScene::configureJobFromDefinition(const SceneDefinition& sceneDefi
     m_job.configure(std::move(config));
 }
 
-void PrototypeScene::syncRouteGateCollider()
+void PrototypeScene::syncWorldStateColliders()
 {
-    m_world.setColliderBlocksPlayer(FerryOffice::Names::ServiceGateCollider, !m_worldState.isFlagSet(WorldFlag::RouteOpened));
+    std::vector<std::pair<std::string, bool>> updates;
+    for (const StaticCollider& collider : m_world.colliders()) {
+        if (collider.stateFlag.empty()) {
+            continue;
+        }
+
+        WorldFlag flag = WorldFlag::PowerRestored;
+        if (!TryWorldFlagFromName(collider.stateFlag, flag)) {
+            continue;
+        }
+
+        const bool isSet = m_worldState.isFlagSet(flag);
+        updates.emplace_back(collider.name, collider.blocksWhenFlagFalse ? !isSet : isSet);
+    }
+
+    for (const auto& [name, blocksPlayer] : updates) {
+        m_world.setColliderBlocksPlayer(name, blocksPlayer);
+    }
+
+    const StaticCollider* serviceGate = m_world.colliderByName(FerryOffice::Names::ServiceGateCollider);
+    if (serviceGate != nullptr && serviceGate->stateFlag.empty()) {
+        m_world.setColliderBlocksPlayer(
+            FerryOffice::Names::ServiceGateCollider,
+            !m_worldState.isFlagSet(WorldFlag::RouteOpened));
+    }
 }

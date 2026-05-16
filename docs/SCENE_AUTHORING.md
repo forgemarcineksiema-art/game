@@ -105,7 +105,7 @@ Required fields:
 - `halfExtents`,
 - `blocksPlayer`.
 
-For route-changing blockers, document the controlling flag with fields such as `stateFlag` and `blocksWhenFlagFalse`.
+For route-changing blockers, document the controlling flag with `stateFlag` and `blocksWhenFlagFalse`. Runtime `PrototypeScene` syncs these authored AABBs from `WorldState`: when `blocksWhenFlagFalse` is true, the collider blocks until the named flag is set. v0.95 uses this for `low-dock-drain-flood-barrier`, which opens after `stormPumpTicketClosed`.
 
 ## Visual Placeholders
 

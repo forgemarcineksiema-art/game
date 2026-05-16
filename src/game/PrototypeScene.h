@@ -51,6 +51,7 @@ public:
     bool recordServiceVehicleUsed();
     bool updateJobVehicleCheckpoint(engine::Vec3 vehiclePosition, bool vehicleOccupied);
     bool recordExitReached();
+    void syncWorldStateColliders();
 
     bool isJobComplete() const;
     bool isSliceReadyForExit() const;
@@ -74,7 +75,6 @@ private:
     bool applyAuthoredInteractionBinding(std::string_view name, const std::string& source);
     bool hasRequiredWorldFlags(const InteractableActionBinding& binding) const;
     void configureJobFromDefinition(const SceneDefinition& sceneDefinition);
-    void syncRouteGateCollider();
 
     PrototypeWorld m_world;
     InteractionSystem m_interactions;

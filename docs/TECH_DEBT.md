@@ -13,7 +13,7 @@ This file lists known foundation issues during the current playable-build phase.
 
 ### Fix Soon
 
-1. Use `docs\GAMEPLAY_REVIEW.md` before selecting another autonomous milestone. The current biggest game-design debt is not lack of more chain length; it is that many recent beats are administrative sign-offs. Prefer a physical world consequence, driving-feel evidence, or objective readability without more text before adding another `E` prompt, log, tag, or small prop.
+1. Use `docs\GAMEPLAY_REVIEW.md` before selecting another autonomous milestone. v0.95 addressed the first physical-world-consequence gap by opening Low Dock Drain access after the Storm Pump Ticket, so the next likely high-value debt is vehicle feel evidence. Prefer a Driving Feel Road-Test Pass, or a bounded Low Dock readability fix if capture evidence shows the new consequence is unclear, before adding another `E` prompt, log, tag, or small prop.
 2. Use `python tools\capture_visual_smoke.py`, `python tools\capture_visual_smoke.py --scenario relay-to-service-log --report-json build\captures\capture_visual_smoke_midchain_report.json`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded visual/behavioral/physics evidence before asking for a manual pass. The playthrough QA now rejects reports missing runtime service-vehicle enter, dock-road checkpoint, and exit steps; the vehicle runtime QA rejects reports missing tap/brake/reverse/coast control checks, service-run route completion checks, or a Jolt route that misses the 240-frame route budget.
 3. The Jolt vehicle switch now has comparable first-job live-loop evidence, camera-aware obstacle-proxy steering evidence, and v0.65 collision-backed obstacle replay telemetry. Deterministic reaches the service-run checkpoint in 139 frames through the runtime playthrough; after v0.59 Jolt reaches it in 212 frames through the same QA with no fallback or bounds hit. v0.59 also closes the obstacle proxy final-X progress gap to about 2.91 units, and v0.65 records zero overlap frames for deterministic and Jolt obstacle replays. v0.70 makes `scripts\play.ps1` prefer Jolt only when the selected executable was built with Jolt; keep direct app/QA defaults deterministic until preferred-runtime evidence proves the next migration step.
 4. Keep the Blender/static mesh path narrow and honest. v0.27 adds one controlled original Blender prop; avoid more quantity until visual evidence proves prop language, not renderer readability, world consequence, or vehicle feel is the blocker.
@@ -79,7 +79,7 @@ This file lists known foundation issues during the current playable-build phase.
 - No slopes, ramps, stairs, moving platforms, or step-up behavior.
 - Raycast only checks static AABB colliders.
 - Collision layouts are hardcoded in `PrototypeWorld::buildDefaultCollisionTestLayout` and `PrototypeWorld::buildFerryOfficePrototypeLayout`.
-- The `service-gate` collider can be latched open by scene state, but there is no general dynamic-collider or door system.
+- Scene-authored colliders with `stateFlag` / `blocksWhenFlagFalse` can now toggle simple AABB blocking for route consequences such as the service gate and Low Dock Drain access barrier. There is still no animated door, moving platform, swept dynamic collider, or production dynamic-collider system.
 
 ## Physics Backend
 

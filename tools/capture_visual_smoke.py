@@ -252,6 +252,8 @@ def qa_capture_state_args(scenario: str) -> list[str]:
         return []
     if scenario == "relay-to-service-log":
         return ["--qa-capture-state", "relay-to-service-log"]
+    if scenario == "low-dock-drain-access":
+        return ["--qa-capture-state", "low-dock-drain-access"]
     raise ValueError(f"Unsupported capture scenario '{scenario}'.")
 
 
@@ -317,9 +319,12 @@ def main() -> int:
     parser.add_argument("--frames", type=int, default=6, help="Bounded run length; capture occurs after a stable frame.")
     parser.add_argument(
         "--scenario",
-        choices=("initial", "relay-to-service-log"),
+        choices=("initial", "relay-to-service-log", "low-dock-drain-access"),
         default="initial",
-        help="Capture state to preload. 'relay-to-service-log' exercises mid-chain playtest route guidance.",
+        help=(
+            "Capture state to preload. 'relay-to-service-log' checks mid-chain route guidance; "
+            "'low-dock-drain-access' checks the v0.95 opened-access consequence."
+        ),
     )
     parser.add_argument("--expected-width", type=int, default=1280, help="Expected capture width.")
     parser.add_argument("--expected-height", type=int, default=720, help="Expected capture height.")
@@ -350,7 +355,8 @@ def main() -> int:
         for renderer in renderers:
             capture_name = f"v0.31-{renderer}-capture.bmp"
             if args.scenario != "initial":
-                capture_name = f"v0.94-{args.scenario}-{renderer}-capture.bmp"
+                milestone = "v0.95" if args.scenario == "low-dock-drain-access" else "v0.94"
+                capture_name = f"{milestone}-{args.scenario}-{renderer}-capture.bmp"
             captures[renderer] = run_capture(
                 exe,
                 scene,

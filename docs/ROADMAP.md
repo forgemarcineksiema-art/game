@@ -959,10 +959,19 @@ Status: implemented and validated. The office-side service panel now uses `ferry
 
 Status: implemented and validated. `tools\capture_visual_smoke.py --scenario relay-to-service-log` captures the active Relay Service Log route state through the same renderer-owned capture path as the default initial frame; `scripts\verify.ps1`, default visual smoke, and playthrough QA pass.
 
+## v0.95 - Low Dock Access Consequence
+
+- Make an existing repaired Ferry Office state visibly alter traversable space.
+- Use scene-authored collider state instead of a one-off runtime exception.
+- Add a QA capture state for the opened Low Dock Drain access view.
+- Preserve the current Ferry Office playthrough and route guidance.
+
+Status: implemented and validated. Closing the Storm Pump Ticket now opens the scene-authored Low Dock Drain access barrier via `stormPumpTicketClosed`; C++ tests, scene tools, playthrough QA, `low-dock-drain-access` visual smoke, and `scripts\verify.ps1` pass.
+
 ## Recommended Next Goal
 
-Read `docs\GAMEPLAY_REVIEW.md` before choosing the next milestone. Use `python tools\capture_visual_smoke.py`, `python tools\capture_visual_smoke.py --scenario relay-to-service-log --report-json build\captures\capture_visual_smoke_midchain_report.json`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play.
+Read `docs\GAMEPLAY_REVIEW.md` before choosing the next milestone. Use `python tools\capture_visual_smoke.py`, `python tools\capture_visual_smoke.py --scenario relay-to-service-log --report-json build\captures\capture_visual_smoke_midchain_report.json`, `python tools\capture_visual_smoke.py --scenario low-dock-drain-access --report-json build\captures\capture_visual_smoke_low_dock_report.json`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play.
 
-After v0.94, the preferred next goal is `v0.95 Service Route Consequence / Physical World Change`: make one existing repaired state visibly alter a route, obstruction, work zone, or traversable/drivable space. This is stronger than another small prop or administrative sign-off because it advances the driver/fixer fantasy: the player fixes something, and the place changes.
+After v0.95, the preferred next goal is `v0.96 Driving Feel Road-Test Pass`: build measurable steering, braking, reverse, route-deviation, bounds-hit, and camera-target evidence before tuning or promoting the vehicle runtime further.
 
-If vehicle quality is judged the sharper bottleneck during goal orientation, choose `v0.95 Driving Feel Road-Test Pass` instead and build measurable steering/braking/reverse/camera evidence before tuning.
+If the new Low Dock Drain access consequence exposes route/objective readability issues during capture review, choose a bounded readability pass instead, but do not add another administrative endpoint by default.

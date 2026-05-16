@@ -2,6 +2,88 @@
 
 Last updated: 2026-05-16
 
+## v0.95 Low Dock Access Consequence (2026-05-16)
+
+Selected milestone:
+
+- Make one existing Ferry Office repaired state produce a visible, spatial world consequence instead of adding another administrative sign-off.
+
+Candidate milestone triage:
+
+- Low Dock Drain access consequence: impact high because the player sees a repaired state open real space; risk medium because it touches scene data, runtime collider sync, capture QA, and tests; validation path = C++ scene/runtime tests, scene tools, playthrough QA, visual capture, `scripts\verify.ps1`.
+- Driving Feel Road-Test Pass: impact high for the vehicle identity; risk medium/high because it requires new telemetry and later tuning; validation path = road-test report, vehicle runtime QA, playthrough QA.
+- Follow-up content boundary: impact medium because it reduces hardcoding pressure, but less player-facing unless paired with a world consequence; validation path = red/green route/objective tests and playthrough QA.
+
+Why selected:
+
+- `docs\GAMEPLAY_REVIEW.md` identified shallow checklist growth as the current game-design risk. The Storm Pump Ticket already represented a repaired state, so using it to open the Low Dock Drain access barrier created a concrete payoff without extending the chain.
+
+What changed:
+
+- Added a scene-authored `low-dock-drain-flood-barrier` collider controlled by `stormPumpTicketClosed`, plus a matching visible access barrier placeholder tinted by the existing storm-pump-ticket state.
+- Replaced the one-off service-gate collider sync with `PrototypeScene::syncWorldStateColliders()`, which applies any scene collider with `stateFlag` / `blocksWhenFlagFalse` and preserves the built-in fallback service gate.
+- Synced state-controlled colliders after interaction, traversal, vehicle, checkpoint, exit, and QA capture state changes.
+- Added `--qa-capture-state low-dock-drain-access` and `tools\capture_visual_smoke.py --scenario low-dock-drain-access` so automated visual evidence can start at the opened-access follow-up state.
+- Added/updated Python and C++ tests for scene authoring, config parsing, QA capture argument mapping, low-dock runtime guidance, and the barrier opening after the Storm Pump Ticket.
+
+Files changed:
+
+- `data\scenes\ferry_office.scene.json`
+- `src\game\PrototypeScene.h`
+- `src\game\PrototypeScene.cpp`
+- `src\game\SandboxLayer.cpp`
+- `src\engine\core\Config.cpp`
+- `tools\capture_visual_smoke.py`
+- `tests\EngineCoreTests.cpp`
+- `tests\test_capture_visual_smoke.py`
+- `tests\test_scene_tools.py`
+- `docs\STATUS.md`
+- `docs\ROADMAP.md`
+- `docs\CONTEXT_MAP.md`
+- `docs\GAMEPLAY_REVIEW.md`
+- `docs\TECH_DEBT.md`
+- `docs\SCENE_AUTHORING.md`
+
+Validation so far:
+
+- `python tests\test_capture_visual_smoke.py`: passed, 7 tests.
+- `python tests\test_scene_tools.py`: passed, 51 tests.
+- `cmake --build --preset windows-vs2022-debug --target EngineApp EngineCoreTests`: passed.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `python tools\validate_scene.py`: passed.
+- `python tools\scene_report.py`: passed; sceneMaterials=25, colliders=10, visualPlaceholders=32, meshAssets=20, meshInstances=66, interactables=17, routeMarkers=17, objectiveMarkers=16.
+- `python tools\scale_audit.py`: passed.
+- `python tools\mesh_report.py`: passed; 20 model files.
+- `python tools\validate_assets.py`: passed; 20 model files.
+- `python tools\playthrough_qa.py`: passed; phase=complete, events=21, vehicleRuntime=deterministic, framesToCheckpoint=139.
+- `python tools\capture_visual_smoke.py --scenario low-dock-drain-access --report-json build\captures\capture_visual_smoke_low_dock_report.json`: passed for GDI and DX11; captures are nonblank and show the active Low Dock Drain objective/prompt state.
+- `scripts\verify.ps1`: passed; doctor/configure/build succeeded, 11/11 CTest tests passed, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke completed.
+
+Automated evidence generated:
+
+- C++ test evidence proves `low-dock-drain-flood-barrier` starts blocking, remains blocking after the storm pump reset, and becomes passable after `stormPumpTicketClosed`.
+- Scene-tool evidence proves the new collider and visual placeholder are authored in the Ferry Office source-of-truth scene.
+- Visual smoke evidence generated `build\captures\v0.95-low-dock-drain-access-gdi-capture.bmp`, `build\captures\v0.95-low-dock-drain-access-dx11-capture.bmp`, and `build\captures\capture_visual_smoke_low_dock_report.json`.
+- Playthrough QA still completes the full 21-event chain after the physical access consequence was added.
+
+Provisional decision:
+
+- `stateFlag` / `blocksWhenFlagFalse` colliders are now the preferred small data boundary for simple physical route consequences. Rich doors, moving geometry, and animation are still out of scope until a second consequence proves the shape needs more than AABB blocking.
+
+Remaining limitations:
+
+- The visual barrier is still a placeholder box, not an animated lowered barrier or bespoke prop.
+- The normal full playthrough proves the state chain, while the named capture state proves the opened-access view; it does not record a before/after human-readable video comparison.
+
+Final validation:
+
+- `scripts\verify.ps1`: passed.
+- `git diff --check`: passed with expected CRLF normalization warnings only.
+
+Next direction:
+
+- After validation, prefer a Driving Feel Road-Test Pass unless fresh inspection shows the new physical consequence exposed a scene-readability problem that blocks play.
+
 ## v0.94.1 Gameplay Review Methodology Pass (2026-05-16)
 
 Selected milestone:

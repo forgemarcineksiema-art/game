@@ -20,8 +20,8 @@ Recent history forms a clear arc:
 - v0.32: deterministic Ferry Office playthrough QA.
 - v0.33: Jolt static scene-query parity QA.
 - v0.34: Jolt character/contact probe QA.
-- v0.45-v0.94: Jolt vehicle runtime controls, service-run route proxy, route-pace tuning, deterministic service-vehicle runtime playthrough QA, opt-in Jolt first-job live-loop QA, the Dock Road Relay follow-up beat, relay/log/clearance endpoint consequences, compact playtest follow-up text, camera-aware obstacle-proxy vehicle steering evidence, a clearance-tag visual cue, a tiny original clearance-tag mesh prop, Jolt obstacle-progress tuning, a compact Harbor Parts return micro-slice, a follow-up next-step readability line, scene-authored action bindings for simple/gated flag beats, a Ferry Office Work Board signoff endpoint, a Ferry Office handoff note endpoint, collision-backed obstacle replay telemetry in vehicle runtime QA, a dynamic handoff-filed visual state cue, a storm pump job seed, a provisional Jolt vehicle-runtime direction decision, visible storm pump/ticket state cues, a preferred play-wrapper runtime trial for Jolt-enabled executables, a Low Dock Drain clear-tag follow-up, a Ferry Office Drain Log closeout, a visible office-side Drain Log state cue, a refreshed preferred Jolt evidence decision, active late-chain route guidance in playtest mode, a purpose-built office-side service-panel mesh cue, and QA-only mid-chain route capture evidence for the Relay Service Log state.
-- Post-v0.94: `docs/GAMEPLAY_REVIEW.md` is the gameplay diagnosis gate. Before selecting another autonomous milestone, check whether the next change adds a player verb, stronger feel, visible world consequence, clearer objective understanding, or safer content growth. Do not default to another small prop or administrative sign-off just because validation is green.
+- v0.45-v0.95: Jolt vehicle runtime controls, service-run route proxy, route-pace tuning, deterministic service-vehicle runtime playthrough QA, opt-in Jolt first-job live-loop QA, the Dock Road Relay follow-up beat, relay/log/clearance endpoint consequences, compact playtest follow-up text, camera-aware obstacle-proxy vehicle steering evidence, a clearance-tag visual cue, a tiny original clearance-tag mesh prop, Jolt obstacle-progress tuning, a compact Harbor Parts return micro-slice, a follow-up next-step readability line, scene-authored action bindings for simple/gated flag beats, a Ferry Office Work Board signoff endpoint, a Ferry Office handoff note endpoint, collision-backed obstacle replay telemetry in vehicle runtime QA, a dynamic handoff-filed visual state cue, a storm pump job seed, a provisional Jolt vehicle-runtime direction decision, visible storm pump/ticket state cues, a preferred play-wrapper runtime trial for Jolt-enabled executables, a Low Dock Drain clear-tag follow-up, a Ferry Office Drain Log closeout, a visible office-side Drain Log state cue, a refreshed preferred Jolt evidence decision, active late-chain route guidance in playtest mode, a purpose-built office-side service-panel mesh cue, QA-only mid-chain route capture evidence for the Relay Service Log state, and a state-controlled Low Dock Drain access barrier that opens after the Storm Pump Ticket closes.
+- Post-v0.95: `docs\GAMEPLAY_REVIEW.md` remains the gameplay diagnosis gate. The physical-consequence milestone landed, so the next default should shift toward driving-feel road-test evidence unless fresh capture review shows the Low Dock Drain access view needs a bounded readability fix.
 
 ## Architecture Map
 
@@ -87,7 +87,7 @@ Recent history forms a clear arc:
 
 `data/scenes/ferry_office.scene.json`
 
-- Current source of truth for Ferry Office layout and presentation intent: player start, scene materials, colliders, visual placeholders, mesh assets/instances, interactables, traversal, vehicle, route markers, objective markers. After v0.94 it includes 25 scene materials, 31 visual placeholders, 20 mesh assets, 66 mesh instances, 17 interactables, 17 route markers, and 16 objective markers, including the handoff-filed status cue, storm pump job seed, storm pump/ticket state cues, low dock drain clear-tag cue, Ferry Office Drain Log closeout, a visible office-side Drain Log state cue, active playtest route guidance, a purpose-built office-side service-panel mesh, and a QA capture path for the Relay Service Log route state.
+- Current source of truth for Ferry Office layout and presentation intent: player start, scene materials, colliders, visual placeholders, mesh assets/instances, interactables, traversal, vehicle, route markers, objective markers. After v0.95 it includes 25 scene materials, 10 colliders, 32 visual placeholders, 20 mesh assets, 66 mesh instances, 17 interactables, 17 route markers, and 16 objective markers, including the handoff-filed status cue, storm pump job seed, storm pump/ticket state cues, low dock drain clear-tag cue, Ferry Office Drain Log closeout, a visible office-side Drain Log state cue, active playtest route guidance, a purpose-built office-side service-panel mesh, a QA capture path for the Relay Service Log route state, and the Storm Pump Ticket controlled Low Dock Drain access barrier.
 
 `src/game/PrototypeWorld.*`
 
@@ -255,7 +255,7 @@ Use this when time or token budget is tight:
 - Small goals are valid when they remove uncertainty or create validation.
 - Powerful goals are preferred when they have a clear system boundary and acceptance criteria.
 - Repeated investment in a prototype area should trigger a promote/replace/stop decision.
-- After v0.94, every autonomous milestone choice should include a gameplay diagnosis from `docs/GAMEPLAY_REVIEW.md`; green validation alone is not a sufficient reason to pick the smallest safe visual/data cleanup.
+- After v0.95, every autonomous milestone choice should include a gameplay diagnosis from `docs\GAMEPLAY_REVIEW.md`; green validation alone is not a sufficient reason to pick the smallest safe visual/data cleanup.
 - Older roadmap/debt "do not do this yet" notes are context, not permanent vetoes. Re-check them against current evidence before choosing a goal.
 - When a prototype path has enough validation, prefer a target-system promotion goal over more placeholder tuning.
 - Every completed goal ends with validation, `docs/STATUS.md`, guarded commit/push when allowed by `AGENTS.md`, and a ready prompt for the next goal.
@@ -367,9 +367,9 @@ Validation:
 
 ## Recommendation
 
-Best next move after v0.94: `Service Route Consequence / Physical World Change`.
+Best next move after v0.95: `Driving Feel Road-Test Pass`, unless Low Dock Drain capture evidence shows a blocking route/readability issue.
 
-Reason: the current 21-event chain is technically strong and validated, but the game needs stronger visible local consequence and more player-facing payoff, not another administrative endpoint. Pick driving-feel evidence instead if the next goal owner decides vehicle quality is the sharper bottleneck.
+Reason: the current 21-event chain now has one physical local consequence, and the strongest under-tested player verb is driving. Build evidence before tuning by hand or promoting a runtime.
 
 Do not start broad map expansion, a generic mission framework, a big asset pass, or another small prop by default. A prop/readability pass is fine only when capture evidence proves an active objective is visually weak.
 
@@ -388,21 +388,21 @@ Repository rules:
 - Commit and push only if validation passes and there are no unrelated user changes.
 
 Goal:
-Make one existing Ferry Office repaired state produce a visible, spatial world consequence.
+Build an automated Ferry Office driving-feel road-test report.
 
 Why now:
-The current Ferry Office chain is technically strong and validated, but several recent beats are administrative sign-offs. Tidebreak needs the player to see that fixing something changes the local world, not only the overlay or event ledger.
+v0.95 added the requested physical world consequence. The next player-facing bottleneck is likely vehicle quality: Tidebreak needs measurable steering, braking, reverse, bounds, route-deviation, and camera-target evidence before tuning or promoting vehicle runtime further.
 
 Scope:
-- Choose one existing state such as `stormPumpReset`, `stormPumpTicketClosed`, `lowDockDrainCleared`, `lowDockDrainLogged`, or relay service work.
-- Make that state visibly alter a route, obstruction, work zone, or traversable/drivable space.
-- Prove the change through tests, playthrough QA, and visual capture.
-- Keep the change compact and authored in the current Ferry Office scene.
+- Add or extend a QA report for the existing Ferry Office service-yard/dock-road drive.
+- Record deterministic metrics such as time to checkpoint, steering/yaw response, stop distance, reverse behavior, route deviation, bounds hits, and camera target stability.
+- Compare Jolt only if the default evidence is cheap and the preset is already available; keep deterministic as the direct-app baseline.
+- Use the evidence to choose a provisional tuning/runtime next action.
 
 Non-goals:
 - No broad new job arc.
 - No traffic, NPCs, damage, garage, economy, save/load, or multi-job framework.
-- No new administrative sign-off beat unless it is required by the physical consequence.
+- No new administrative sign-off beat.
 - No generic mission framework.
 - No default vehicle replacement.
 - No Jolt vendor types leaking into game-facing APIs.
@@ -416,23 +416,21 @@ Files/docs to read first:
 - docs/TECH_DEBT.md
 - docs/ROADMAP.md
 - src/game/SandboxLayer.*
-- src/game/PrototypeWorld.*
-- tools/physics_parity_qa.py
-- src/game/FerryOfficeJob.*
-- src/game/SceneDefinition.*
-- src/game/SceneLoader.*
+- src/game/VehicleController.*
+- src/game/ThirdPersonCamera.*
+- src/game/FerryOfficeVehicle*Qa.*
+- tools/vehicle_runtime_qa.py
+- tools/vehicle_physics_qa.py
 - data/scenes/ferry_office.scene.json
 - tests/EngineCoreTests.cpp
 
 Validation:
 - scripts/verify.ps1
 - python tools/playthrough_qa.py
-- python tools/capture_visual_smoke.py
-- python tools/validate_scene.py
-- python tools/scene_report.py
-- python tools/scale_audit.py
-- python tools/mesh_report.py
+- python tools/vehicle_runtime_qa.py
+- python tools/vehicle_physics_qa.py if the touched path uses opt-in physics evidence
+- cmake/ctest with `windows-vs2022-debug-jolt` if Jolt behavior is changed
 
 Use subagents:
-- Reviewer: check that the result creates visible player-facing consequence rather than another checklist beat, and that validation proves the changed state.
+- Reviewer: check that the report measures useful driving behavior and does not smuggle in subjective tuning without evidence.
 ```

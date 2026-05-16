@@ -494,6 +494,15 @@ void TestQaCaptureStateArgumentsSelectMidChainRouteState()
         "TestQaCaptureStateArgumentsSelectMidChainRouteState",
         "Config should preserve the requested route-guidance capture state.");
 
+    const char* lowDockArgv[] = {"EngineApp", "--qa-capture-state", "low-dock-drain-access"};
+    const auto lowDockResult = engine::ParseArguments(3, lowDockArgv);
+    Expect(lowDockResult.errors.empty(),
+        "TestQaCaptureStateArgumentsSelectMidChainRouteState",
+        "QA capture state should accept the low dock drain access scenario.");
+    Expect(lowDockResult.config.qaCaptureState == "low-dock-drain-access",
+        "TestQaCaptureStateArgumentsSelectMidChainRouteState",
+        "Config should preserve the requested low dock drain access capture state.");
+
     const char* badArgv[] = {"EngineApp", "--qa-capture-state", "unknown"};
     const auto badResult = engine::ParseArguments(3, badArgv);
     Expect(!badResult.errors.empty(),
@@ -1173,10 +1182,10 @@ void TestSceneLoaderLoadsDefaultFerryOfficeScene()
     Expect(result.scene.id == "ferry-office",
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose the authored scene id.");
-    Expect(result.scene.colliders.size() == 9,
+    Expect(result.scene.colliders.size() == 10,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored static colliders.");
-    Expect(result.scene.visualPlaceholders.size() == 31,
+    Expect(result.scene.visualPlaceholders.size() == 32,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored visual placeholders.");
     Expect(result.scene.sceneMaterials.size() == 25,
@@ -1525,6 +1534,15 @@ void TestPrototypeWorldBuildsFerryOfficeCollidersFromSceneData()
     Expect(gate != nullptr && gate->blocksPlayer,
         "TestPrototypeWorldBuildsFerryOfficeCollidersFromSceneData",
         "Service gate collider should be loaded from scene data and start blocking.");
+    const StaticCollider* lowDockAccess = world.colliderByName("low-dock-drain-flood-barrier");
+    Expect(lowDockAccess != nullptr && lowDockAccess->blocksPlayer,
+        "TestPrototypeWorldBuildsFerryOfficeCollidersFromSceneData",
+        "Low dock drain access barrier should start as a blocking authored collider.");
+    if (lowDockAccess != nullptr) {
+        Expect(lowDockAccess->stateFlag == "stormPumpTicketClosed" && lowDockAccess->blocksWhenFlagFalse,
+            "TestPrototypeWorldBuildsFerryOfficeCollidersFromSceneData",
+            "Low dock drain access barrier should be tied to the storm pump ticket closeout state.");
+    }
 }
 
 void TestPrototypeSceneLoadsInteractionsAndTraversalFromSceneData()
@@ -2684,6 +2702,33 @@ void TestSandboxLayerQaCaptureStateDrawsMidChainRouteGuidance()
     Expect(text.find("Relay Service Log") != std::string::npos,
         "TestSandboxLayerQaCaptureStateDrawsMidChainRouteGuidance",
         "QA capture state should preload the follow-up step that points to the Relay Service Log.");
+}
+
+void TestSandboxLayerQaCaptureStateDrawsLowDockDrainAccessGuidance()
+{
+    SandboxLayer layer(
+        DefaultScenePathForTests(),
+        engine::UiMode::Playtest,
+        engine::physics::PhysicsBackend::Simple,
+        false,
+        "low-dock-drain-access");
+    layer.onAttach();
+
+    CountingRenderer renderer;
+    renderer.initialize({});
+    renderer.beginFrame(1);
+    layer.onRender(renderer);
+    renderer.endFrame();
+    const std::string text = layer.debugText();
+    layer.onDetach();
+
+    const engine::Color routeColor {0.70f, 0.92f, 1.0f, 1.0f};
+    Expect(CountLinesWithColor(renderer, routeColor) > 0,
+        "TestSandboxLayerQaCaptureStateDrawsLowDockDrainAccessGuidance",
+        "QA capture state should draw the active low-dock-drain route guidance in playtest mode.");
+    Expect(text.find("low dock drain") != std::string::npos,
+        "TestSandboxLayerQaCaptureStateDrawsLowDockDrainAccessGuidance",
+        "QA capture state should preload the opened-access follow-up step that points to the Low Dock Drain.");
 }
 
 void TestSandboxLayerDebugTextPreservesFullTelemetry()
@@ -3912,6 +3957,49 @@ void TestWallButtonOpenLatchesServiceGateColliderState()
         "Repeated wall button interactions should leave the service gate open.");
 }
 
+void TestStormPumpTicketOpensLowDockDrainAccessBarrier()
+{
+    const SceneLoadResult result = LoadSceneDefinition(DefaultScenePathForTests());
+    PrototypeScene scene;
+    scene.loadFromDefinition(result.scene);
+
+    const StaticCollider* barrierBefore = scene.world().colliderByName("low-dock-drain-flood-barrier");
+    Expect(barrierBefore != nullptr && barrierBefore->blocksPlayer,
+        "TestStormPumpTicketOpensLowDockDrainAccessBarrier",
+        "Low dock drain access should be blocked before the storm pump ticket is closed.");
+
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::FerryManifest), InteractableType::Pickup));
+    scene.recordServiceRouteUsed();
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::MaintenanceBox), InteractableType::Info));
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::WallButton), InteractableType::Info));
+    scene.recordServiceVehicleUsed();
+    scene.updateJobVehicleCheckpoint({19.0f, 0.0f, -2.2f}, true);
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::ServiceRunMarker), InteractableType::Info));
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::DockRoadRelay), InteractableType::Info));
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::RelayServiceLog), InteractableType::Info));
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::DockRoadClearanceTag), InteractableType::Info));
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::HarborPartsCrate), InteractableType::Info));
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::FerryOfficePartsShelf), InteractableType::Info));
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::FerryOfficeWorkBoard), InteractableType::Info));
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::FerryOfficeHandoffNote), InteractableType::Info));
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::StormPumpSwitch), InteractableType::Info));
+
+    const StaticCollider* barrierBeforeTicket = scene.world().colliderByName("low-dock-drain-flood-barrier");
+    Expect(barrierBeforeTicket != nullptr && barrierBeforeTicket->blocksPlayer,
+        "TestStormPumpTicketOpensLowDockDrainAccessBarrier",
+        "Resetting the pump alone should not open the low dock drain access barrier.");
+
+    const bool closedTicket = scene.applyInteractionResult(
+        MakeSceneInteraction(std::string(FerryOffice::Names::StormPumpTicket), InteractableType::Info));
+    const StaticCollider* barrierAfter = scene.world().colliderByName("low-dock-drain-flood-barrier");
+    Expect(closedTicket && scene.worldState().isFlagSet(WorldFlag::StormPumpTicketClosed),
+        "TestStormPumpTicketOpensLowDockDrainAccessBarrier",
+        "Closing the storm pump ticket should set the remembered state that opens the low dock route.");
+    Expect(barrierAfter != nullptr && !barrierAfter->blocksPlayer,
+        "TestStormPumpTicketOpensLowDockDrainAccessBarrier",
+        "Closing the storm pump ticket should make the low dock drain access barrier passable.");
+}
+
 void TestFerryOfficeServiceVaultFocusesFromAccessibleSide()
 {
     PrototypeScene scene;
@@ -4357,7 +4445,7 @@ void TestFerryOfficePhysicsParityBuildsSceneStaticWorldAndWritesReport()
     Expect(result.sceneId == "ferry-office",
         "TestFerryOfficePhysicsParityBuildsSceneStaticWorldAndWritesReport",
         "Physics parity should report the loaded Ferry Office scene.");
-    Expect(result.staticColliderCount == 9,
+    Expect(result.staticColliderCount == 10,
         "TestFerryOfficePhysicsParityBuildsSceneStaticWorldAndWritesReport",
         "Physics parity should mirror all authored static colliders.");
     Expect(result.floorProbes.size() >= 3,
@@ -4425,7 +4513,7 @@ void TestFerryOfficeCharacterContactQaComparesPlayerProxyAndWritesReport()
     Expect(result.sceneId == "ferry-office",
         "TestFerryOfficeCharacterContactQaComparesPlayerProxyAndWritesReport",
         "Character contact QA should report the loaded Ferry Office scene.");
-    Expect(result.staticColliderCount == 9,
+    Expect(result.staticColliderCount == 10,
         "TestFerryOfficeCharacterContactQaComparesPlayerProxyAndWritesReport",
         "Character contact QA should mirror authored static colliders.");
     Expect(result.probes.size() >= 7,
@@ -5236,6 +5324,7 @@ int main()
     TestSandboxLayerUsesScenePlayerStartYawForInitialComposition();
     TestSandboxLayerPlaytestKeepsRouteDebugHiddenAfterManifest();
     TestSandboxLayerQaCaptureStateDrawsMidChainRouteGuidance();
+    TestSandboxLayerQaCaptureStateDrawsLowDockDrainAccessGuidance();
     TestSandboxLayerDebugTextPreservesFullTelemetry();
     TestSandboxLayerMinimalTextStaysSmallButUseful();
     TestSandboxLayerF1TogglesBetweenPlaytestAndDebugText();
@@ -5281,6 +5370,7 @@ int main()
     TestPrototypeSceneAppliesAuthoredInteractableFlagBindings();
     TestFerryOfficeExitMarkerRequiresReadyState();
     TestWallButtonOpenLatchesServiceGateColliderState();
+    TestStormPumpTicketOpensLowDockDrainAccessBarrier();
     TestFerryOfficeServiceVaultFocusesFromAccessibleSide();
     TestMaintenanceBoxIsNotFocusedBeforeServiceVault();
     TestFerryOfficeLoopCanCompleteThroughSceneSystems();
