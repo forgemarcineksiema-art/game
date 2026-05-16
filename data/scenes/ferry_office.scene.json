@@ -957,7 +957,7 @@
       "radius": 1.8,
       "oneShot": true,
       "message": "Collected Ferry Manifest.",
-      "worldFlagsSet": ["manifestCollected"]
+      "worldFlagsSet": ["ferryOfficeJobStarted", "manifestCollected"]
     },
     {
       "id": "wall-button",
@@ -1000,6 +1000,7 @@
       "radius": 1.8,
       "oneShot": false,
       "message": "Ferry Office summary marker reached.",
+      "requiredWorldFlags": ["manifestCollected", "serviceRouteUsed", "maintenanceBoxInspected", "powerRestored", "routeOpened"],
       "worldFlagsSetWhenReady": ["exitReached"]
     },
     {
@@ -1011,6 +1012,16 @@
       "radius": 1.8,
       "oneShot": false,
       "message": "Service run marker checked. Complete the service route and vehicle checkpoint before final confirmation.",
+      "requiredWorldFlags": [
+        "ferryOfficeJobStarted",
+        "manifestCollected",
+        "serviceRouteUsed",
+        "maintenanceBoxInspected",
+        "powerRestored",
+        "routeOpened",
+        "serviceVehicleUsed",
+        "dockRoadReached"
+      ],
       "worldFlagsSetWhenReady": ["serviceRunConfirmed", "ferryOfficeJobComplete"]
     },
     {
@@ -1022,6 +1033,7 @@
       "radius": 1.4,
       "oneShot": false,
       "message": "Dock road relay reset: service-yard lights are back on.",
+      "requiredWorldFlags": ["ferryOfficeJobComplete"],
       "worldFlagsSetWhenReady": ["dockRoadRelayReset"]
     },
     {
@@ -1033,6 +1045,7 @@
       "radius": 1.4,
       "oneShot": false,
       "message": "Relay reset logged for the Ferry Office service board.",
+      "requiredWorldFlags": ["dockRoadRelayReset"],
       "worldFlagsSetWhenReady": ["dockRoadRelayLogged"]
     },
     {
@@ -1044,6 +1057,7 @@
       "radius": 1.4,
       "oneShot": false,
       "message": "Dock road tagged clear for the next ferry run.",
+      "requiredWorldFlags": ["dockRoadRelayLogged"],
       "worldFlagsSetWhenReady": ["dockRoadClearanceTagged"]
     },
     {
@@ -1055,6 +1069,7 @@
       "radius": 1.4,
       "oneShot": false,
       "message": "Harbor parts crate picked up for the Ferry Office shelf.",
+      "requiredWorldFlags": ["dockRoadClearanceTagged"],
       "worldFlagsSetWhenReady": ["harborPartsPickedUp"]
     },
     {
@@ -1066,6 +1081,7 @@
       "radius": 1.5,
       "oneShot": false,
       "message": "Harbor parts delivered to the Ferry Office shelf.",
+      "requiredWorldFlags": ["harborPartsPickedUp"],
       "worldFlagsSetWhenReady": ["harborPartsDelivered"]
     }
   ],

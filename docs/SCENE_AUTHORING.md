@@ -182,7 +182,13 @@ Required fields:
 - `position`,
 - `radius`.
 
-Optional fields can document world-state effects such as `worldFlagsSet` or `worldFlagsSetWhenReady`. Keep action meaning scene-owned; do not make `InteractionSystem` know Tidebreak-specific flags.
+Optional action-binding fields can record simple world-state effects:
+
+- `worldFlagsSet`: flags set immediately when the interaction fires.
+- `requiredWorldFlags`: flags that must already be true before ready-state flags fire.
+- `worldFlagsSetWhenReady`: flags set only after every `requiredWorldFlags` entry is true.
+
+Keep action meaning scene-owned; do not make `InteractionSystem` know Tidebreak-specific flags. These bindings are for small boolean world-state beats only; richer job behavior still belongs in C++ until a more stable data shape emerges.
 
 ## Traversal Affordances
 
@@ -224,9 +230,9 @@ The service-yard vehicle bounds include the original yard plus the short dock ro
 
 ## First Driver/Fixer Job Markers
 
-v0.16 keeps job behavior in C++ while authoring the current job markers in scene data:
+v0.16 keeps rich job behavior in C++ while authoring the current job markers in scene data. v0.62 adds simple scene action bindings for boolean state beats and prerequisites:
 
-- `service-run-confirm-marker`: an `interactables` entry used to review/confirm the Ferry Office Service Call after the required loop. Its authored prompt/message should stay status-neutral because job readiness is enforced by `FerryOfficeJob`, not by scene data alone.
+- `service-run-confirm-marker`: an `interactables` entry used to review/confirm the Ferry Office Service Call after the required loop. Its authored prompt/message should stay status-neutral because job readiness is still enforced by `FerryOfficeJob`, while scene data mirrors the required flags for validation and simple binding.
 - `service-run-checkpoint-marker`: an `objectiveMarkers` entry used by `FerryOfficeJob` as the vehicle checkpoint position.
 - `route-dock-road-to-service-confirm`: a `routeMarkers` entry that makes the final dock-road-to-confirmation path visible to Codex tools and debug rendering.
 
@@ -280,7 +286,7 @@ After v0.15, new layout edits should start in `data/scenes/ferry_office.scene.js
 Remaining drift risks:
 
 - `FerryOfficeData` still contains stable names and fallback positions for behavior/tests.
-- `PrototypeScene` still maps known interaction names to world-state flags.
+- `PrototypeScene` now applies simple scene-authored action bindings for known flag names, but it still owns richer job helpers, traversal completion, service-gate collider sync, objective text, and vehicle checkpoint behavior.
 - `SandboxLayer` still owns dynamic coloring, vehicle camera behavior, exit safety, and fallback values.
 - There is no editor, prefab system, runtime scene reload, or schema file beyond code and Python validation.
 

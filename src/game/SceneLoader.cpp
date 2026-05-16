@@ -232,6 +232,7 @@ SceneInteractableDefinition ParseInteractable(const json& value, std::size_t ind
     interactable.oneShot = ReadOptionalBool(value, "oneShot", false, path);
     interactable.message = ReadOptionalString(value, "message", path);
     interactable.worldFlagsSet = ReadOptionalStringArray(value, "worldFlagsSet", path);
+    interactable.requiredWorldFlags = ReadOptionalStringArray(value, "requiredWorldFlags", path);
     interactable.worldFlagsSetWhenReady = ReadOptionalStringArray(value, "worldFlagsSetWhenReady", path);
     return interactable;
 }

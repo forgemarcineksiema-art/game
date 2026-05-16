@@ -33,6 +33,73 @@ Last updated: 2026-05-16
 6. Add PowerShell/Python workbench commands for doctor, configure/build, verify, and status reporting.
 7. Run the available validation commands, record exact results here, and keep any compiler/graphics blockers honest.
 
+## v0.62 Scene Action Bindings (2026-05-16)
+
+Selected milestone:
+
+- Move repeated interactable flag writes and follow-up prerequisites toward scene-authored action bindings.
+
+Candidate triage:
+
+- Scene action bindings: high content-growth impact, moderate risk, validates through scene loader tests, runtime binding tests, playthrough QA, scene tools, and `scripts\verify.ps1`.
+- Collision-backed Jolt obstacle route: high vehicle-promotion impact, medium risk, better as a separate vehicle milestone.
+- Another content beat: medium player-facing impact, but it would add more `PrototypeScene` gating before fixing the pattern v0.60 exposed.
+
+Why selected:
+
+- v0.60 added a compact second content loop and v0.61 made it readable. The next useful content-growth unlock was reducing hardcoded interaction flag branches before adding more beats.
+
+Definition of Done:
+
+- Scene interactables can declare `requiredWorldFlags` alongside `worldFlagsSet` and `worldFlagsSetWhenReady`.
+- Runtime scene loading preserves those prerequisites.
+- `PrototypeScene` converts authored flag names to `WorldFlag` values and applies simple/gated flag bindings for scene-loaded interactables.
+- Existing Ferry Office service, relay, clearance, and Harbor Parts behavior remains green.
+- Docs, `scripts\verify.ps1`, and `git diff --check` pass before commit.
+
+Implementation notes:
+
+- Added `SceneInteractableDefinition::requiredWorldFlags` and parsing in `SceneLoader`.
+- Added `TryWorldFlagFromName()` in `WorldState` so scene-authored strings convert through a central world-state table.
+- Added `InteractableActionBinding` storage in `PrototypeScene` for immediate flags, prerequisites, and ready flags.
+- Added built-in bindings for the fallback Ferry Office scene and loader-driven bindings for authored scene data.
+- Updated `ferry_office.scene.json` so exit, service confirmation, relay, log, clearance tag, Harbor Parts crate, and parts shelf declare their prerequisites in data.
+- Kept special C++ helpers only where they still add behavior, such as job-start bookkeeping, service-run confirmation, exit readiness, and gate collider sync.
+
+Commands and results:
+
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: failed as expected before implementation because `requiredWorldFlags` did not exist.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests EngineApp`: passed after implementation.
+- `python tests\test_scene_tools.py`: passed, 42 tests.
+- `python tests\test_playthrough_qa.py`: passed, 5 tests.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `python tools\validate_scene.py`: passed.
+- `python tools\playthrough_qa.py`: passed; phase=`complete`, events=15, vehicleRuntime=`deterministic`, framesToCheckpoint=139.
+- `python tools\scene_report.py`: passed; scene counts unchanged at 11 interactables, 11 route markers, and 10 objective markers.
+- `python tools\scale_audit.py`: passed; no suspicious scale issues.
+- `python tools\validate_assets.py`: passed; 12 model files.
+- `python tools\capture_visual_smoke.py`: passed for GDI and DX11 captures; DX11 used WARP in this environment.
+- `scripts\verify.ps1`: passed; doctor, configure, build, CTest 11/11, scene validation, asset validation, mesh report, and smoke run completed.
+
+Automated evidence generated:
+
+- New C++ tests prove scene-loaded prerequisites exist for the Dock Road and Harbor Parts chain.
+- New C++ tests prove a custom non-Ferry-Office interactable can set immediate and prerequisite-gated flags without a hardcoded gameplay name.
+- Existing playthrough QA still completes the 15-event chain after the binding migration.
+
+Provisional decision:
+
+- Use scene-authored action bindings for simple flag-setting and prerequisite-gated interactables.
+- Keep richer job helper code in C++ until a second independent job proves a stable generic job shape.
+
+Remaining limitations:
+
+- Bindings only set boolean world flags. They do not support branching dialogue, inventory, timers, rewards, save/load persistence, conditions beyond all-required flags, or arbitrary scripted actions.
+
+Next direction:
+
+- With bindings in place, the next content milestone can safely add another small authored beat, or vehicle work can resume with collision-backed Jolt obstacle replay.
+
 ## v0.61 Follow-up Next-step Readability (2026-05-16)
 
 Selected milestone:

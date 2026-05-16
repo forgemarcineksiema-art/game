@@ -683,6 +683,15 @@ Status: implemented and validated. Scene data now has 11 interactables, 11 route
 
 Status: implemented and validated. Playtest text now pairs the compact `Follow-up:` state summary with a `Next:` line for relay, log, clear tag, Harbor Parts pickup, Harbor Parts delivery, and completion; focused tests, deterministic playthrough QA, visual smoke, and `scripts\verify.ps1` pass.
 
+## v0.62 - Scene Action Bindings
+
+- Let interactables declare immediate world flags, prerequisite world flags, and ready-state world flags in scene data.
+- Convert authored flag strings through the engine/game world-state table instead of ad hoc per-interactable string handling.
+- Keep rich job behavior in C++ where it still adds logic, but remove the need for every simple flag beat to become another hardcoded branch.
+- Preserve the existing Ferry Office, Dock Road, and Harbor Parts playthrough behavior.
+
+Status: implemented and validated. Ferry Office scene data now declares prerequisites for exit, service confirmation, relay, log, clear tag, Harbor Parts pickup, and Harbor Parts delivery; custom binding tests prove non-hardcoded immediate and gated interactables work; the 15-event playthrough remains green.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. With v0.61 covering the 15-event chain's next-step readability, the next useful content-growth milestone is scene action bindings to reduce `PrototypeScene` hardcoding before adding another beat. For vehicle promotion, the next useful milestone remains a collision-backed obstacle route before default Jolt promotion.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. With v0.62 reducing simple interaction hardcoding, the next useful content milestone can be another compact authored beat covered by playthrough QA. For vehicle promotion, the next useful milestone remains a collision-backed obstacle route before default Jolt promotion.

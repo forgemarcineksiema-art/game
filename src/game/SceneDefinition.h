@@ -72,6 +72,7 @@ struct SceneInteractableDefinition {
     bool oneShot = false;
     std::string message;
     std::vector<std::string> worldFlagsSet;
+    std::vector<std::string> requiredWorldFlags;
     std::vector<std::string> worldFlagsSetWhenReady;
 };
 

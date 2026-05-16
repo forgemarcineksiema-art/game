@@ -124,6 +124,16 @@ const SceneObjectiveMarkerDefinition* FindObjectiveMarker(const SceneDefinition&
     return nullptr;
 }
 
+bool ContainsString(const std::vector<std::string>& values, std::string_view expected)
+{
+    for (const std::string& value : values) {
+        if (value == expected) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void Expect(bool condition, const std::string& name, const std::string& message)
 {
     if (!condition) {
@@ -1259,6 +1269,31 @@ void TestSceneLoaderLoadsHarborPartsJobBeat()
     Expect(crateMarker != nullptr && shelfMarker != nullptr,
         "TestSceneLoaderLoadsHarborPartsJobBeat",
         "Scene data should expose objective markers for the second job beat.");
+}
+
+void TestSceneLoaderLoadsInteractableActionPrerequisites()
+{
+    const SceneLoadResult result = LoadSceneDefinition(DefaultScenePathForTests());
+    const SceneInteractableDefinition* relay = FindSceneInteractable(result.scene, "dock-road-relay");
+    const SceneInteractableDefinition* clearanceTag = FindSceneInteractable(result.scene, "dock-road-clearance-tag");
+    const SceneInteractableDefinition* partsCrate = FindSceneInteractable(result.scene, "harbor-parts-crate");
+    const SceneInteractableDefinition* partsShelf = FindSceneInteractable(result.scene, "ferry-office-parts-shelf");
+
+    Expect(result.ok(),
+        "TestSceneLoaderLoadsInteractableActionPrerequisites",
+        "Default scene should load before checking authored action prerequisites.");
+    Expect(relay != nullptr && ContainsString(relay->requiredWorldFlags, "ferryOfficeJobComplete"),
+        "TestSceneLoaderLoadsInteractableActionPrerequisites",
+        "Dock Road Relay should declare that the first service call must be complete.");
+    Expect(clearanceTag != nullptr && ContainsString(clearanceTag->requiredWorldFlags, "dockRoadRelayLogged"),
+        "TestSceneLoaderLoadsInteractableActionPrerequisites",
+        "Dock Road Clearance Tag should declare the relay log prerequisite.");
+    Expect(partsCrate != nullptr && ContainsString(partsCrate->requiredWorldFlags, "dockRoadClearanceTagged"),
+        "TestSceneLoaderLoadsInteractableActionPrerequisites",
+        "Harbor Parts Crate should declare the dock-road clearance prerequisite.");
+    Expect(partsShelf != nullptr && ContainsString(partsShelf->requiredWorldFlags, "harborPartsPickedUp"),
+        "TestSceneLoaderLoadsInteractableActionPrerequisites",
+        "Ferry Office Parts Shelf should declare the parts pickup prerequisite.");
 }
 
 void TestSceneLoaderReportsMissingSceneFile()
@@ -3586,6 +3621,50 @@ void TestHarborPartsJobRequiresClearedDockRoad()
         "The Ferry Office parts shelf should remember the delivered crate.");
 }
 
+void TestPrototypeSceneAppliesAuthoredInteractableFlagBindings()
+{
+    SceneDefinition sceneDefinition;
+    sceneDefinition.id = "binding-test";
+
+    SceneInteractableDefinition immediate;
+    immediate.id = "custom-power-switch";
+    immediate.name = "Custom Power Switch";
+    immediate.prompt = "Use Custom Power Switch";
+    immediate.type = "info";
+    immediate.position = {0.0f, 0.0f, 0.0f};
+    immediate.radius = 1.0f;
+    immediate.worldFlagsSet = {"powerRestored"};
+    sceneDefinition.interactables.push_back(immediate);
+
+    SceneInteractableDefinition gated;
+    gated.id = "custom-route-switch";
+    gated.name = "Custom Route Switch";
+    gated.prompt = "Use Custom Route Switch";
+    gated.type = "info";
+    gated.position = {1.0f, 0.0f, 0.0f};
+    gated.radius = 1.0f;
+    gated.requiredWorldFlags = {"powerRestored"};
+    gated.worldFlagsSetWhenReady = {"routeOpened"};
+    sceneDefinition.interactables.push_back(gated);
+
+    PrototypeScene scene(sceneDefinition);
+
+    const bool blocked = scene.applyInteractionResult(MakeSceneInteraction("Custom Route Switch", InteractableType::Info));
+    Expect(!blocked && !scene.worldState().isFlagSet(WorldFlag::RouteOpened),
+        "TestPrototypeSceneAppliesAuthoredInteractableFlagBindings",
+        "Authored gated bindings should not fire before their required flags are set.");
+
+    const bool powered = scene.applyInteractionResult(MakeSceneInteraction("Custom Power Switch", InteractableType::Info));
+    Expect(powered && scene.worldState().isFlagSet(WorldFlag::PowerRestored),
+        "TestPrototypeSceneAppliesAuthoredInteractableFlagBindings",
+        "Authored immediate bindings should set their world flags without a hardcoded interaction name.");
+
+    const bool opened = scene.applyInteractionResult(MakeSceneInteraction("Custom Route Switch", InteractableType::Info));
+    Expect(opened && scene.worldState().isFlagSet(WorldFlag::RouteOpened),
+        "TestPrototypeSceneAppliesAuthoredInteractableFlagBindings",
+        "Authored gated bindings should set ready flags after their prerequisites are met.");
+}
+
 void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
 {
     const std::filesystem::path reportPath =
@@ -4560,6 +4639,7 @@ int main()
     TestSceneLoaderLoadsFirstJobMarkers();
     TestSceneLoaderLoadsDockRoadRelayBeat();
     TestSceneLoaderLoadsHarborPartsJobBeat();
+    TestSceneLoaderLoadsInteractableActionPrerequisites();
     TestSceneLoaderReportsMissingSceneFile();
     TestSceneLoaderLoadsVehicleBoundsAndRoadMarkers();
     TestPrototypeWorldBuildsFerryOfficeCollidersFromSceneData();
@@ -4640,6 +4720,7 @@ int main()
     TestFerryOfficeCompletionRequiresRememberedLoop();
     TestDockRoadRelayRequiresCompletedServiceCall();
     TestHarborPartsJobRequiresClearedDockRoad();
+    TestPrototypeSceneAppliesAuthoredInteractableFlagBindings();
     TestFerryOfficeExitMarkerRequiresReadyState();
     TestWallButtonOpenLatchesServiceGateColliderState();
     TestFerryOfficeServiceVaultFocusesFromAccessibleSide();

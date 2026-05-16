@@ -68,6 +68,17 @@ std::string_view WorldFlagName(WorldFlag flag)
     }
 }
 
+bool TryWorldFlagFromName(std::string_view name, WorldFlag& flag)
+{
+    for (WorldFlag candidate : AllFlags) {
+        if (WorldFlagName(candidate) == name) {
+            flag = candidate;
+            return true;
+        }
+    }
+    return false;
+}
+
 void WorldState::clear()
 {
     m_flags = {};

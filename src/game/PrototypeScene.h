@@ -8,8 +8,18 @@
 #include "game/WorldState.h"
 
 #include <string>
+#include <string_view>
+#include <vector>
 
 struct SceneDefinition;
+struct SceneInteractableDefinition;
+
+struct InteractableActionBinding {
+    std::string name;
+    std::vector<WorldFlag> worldFlagsSet;
+    std::vector<WorldFlag> requiredWorldFlags;
+    std::vector<WorldFlag> worldFlagsSetWhenReady;
+};
 
 class PrototypeScene {
 public:
@@ -45,6 +55,14 @@ public:
 
 private:
     void buildFromFerryOfficeData();
+    void addInteractableActionBinding(
+        std::string name,
+        std::vector<WorldFlag> worldFlagsSet,
+        std::vector<WorldFlag> requiredWorldFlags,
+        std::vector<WorldFlag> worldFlagsSetWhenReady);
+    void addInteractableActionBinding(const SceneInteractableDefinition& interactable);
+    bool applyAuthoredInteractionBinding(std::string_view name, const std::string& source);
+    bool hasRequiredWorldFlags(const InteractableActionBinding& binding) const;
     void configureJobFromDefinition(const SceneDefinition& sceneDefinition);
     void syncRouteGateCollider();
 
@@ -53,4 +71,5 @@ private:
     TraversalSystem m_traversal;
     WorldState m_worldState;
     FerryOfficeJob m_job;
+    std::vector<InteractableActionBinding> m_interactableActionBindings;
 };

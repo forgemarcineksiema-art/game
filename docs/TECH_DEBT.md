@@ -19,12 +19,12 @@ This file lists known foundation issues during the current playable-build phase.
 
 ### Acceptable For Now
 
-1. No broad job framework yet. v0.60 adds a compact Harbor Parts return micro-slice after the Dock Road reset/log/clear-tag chain, but it deliberately stays in explicit C++ gating plus scene-authored interactables/routes/markers. The next content beat should either introduce scene action bindings for repeated gating patterns or remain similarly small and extend playthrough QA.
+1. No broad job framework yet. v0.62 adds scene action bindings for simple/gated world-flag beats, but richer job behavior still belongs in explicit C++ until a second independent job proves a stable generic shape. New content should stay compact and extend playthrough QA.
 2. Deterministic vehicle movement remains the default live fallback after v0.59. Jolt VehicleConstraint now has feasibility, runtime-comparison, opt-in live-switch, controls-focused runtime QA, 240-frame service-run route evidence, the same first-job enter-drive-exit-confirm playthrough evidence, camera-aware obstacle-proxy steering evidence, and tuned obstacle proxy progress, but it still should not replace default gameplay until collision-backed obstacle replay proves the switched path in a less synthetic route.
 3. `WorldState` and `FerryOfficeJob` remain explicit in-memory prototype systems, not a save/load, inventory, economy, or mission framework.
 4. The tiny custom `.gltf` subset remains acceptable while assets are simple embedded-buffer static props.
 5. GDI remains the most battle-tested visual/playtest renderer, but DX11 now has a tiny renderer-owned bitmap debug text overlay and can be used for bounded playtest checks. DX11 still often falls back to WARP on this laptop.
-6. Scene data is the runtime source of truth for layout, while behavior mappings stay in C++ until more job types prove a stable data shape. After v0.61, the follow-up chain is readable enough that scene action bindings are the likely next content-growth cleanup before another authored beat.
+6. Scene data is the runtime source of truth for layout and simple/gated interactable flag bindings, while richer behavior mappings stay in C++ until more job types prove a stable data shape.
 7. v0.23 adds launch scripts, not release packaging, an installer, signing, updater, config UI, or save/settings persistence.
 8. v0.32 adds deterministic first-job QA coverage, not a replacement for human feel testing.
 9. v0.33 adds opt-in Jolt static-collision parity coverage for Ferry Office scene queries, not a migration of live player, traversal, gate, or vehicle behavior.
@@ -117,7 +117,7 @@ This file lists known foundation issues during the current playable-build phase.
 
 - `WorldState` is an in-memory local event ledger, not a save/load system.
 - v0.32 adds an automated QA-only Ferry Office Service Call path that validates the first job's state chain and report output. It is deterministic behavioral coverage, not mission scripting or save/load.
-- Flag mappings are hardcoded in `PrototypeScene`; v0.8 reduced string-id repetition by using centralized Ferry Office names, and v0.60 shows the pattern stretching with Harbor Parts pickup/delivery gating.
+- Simple interactable flag mappings can now come from scene action bindings. `PrototypeScene` still owns richer Ferry Office job helpers, traversal completion, vehicle checkpoint, objective text, and service-gate collider sync.
 - `FerryOfficeJob` is one explicit scene-owned job helper for the Ferry Office Service Call. It is not a generic mission graph, quest scripting layer, reward system, or persistence layer.
 - Repeated same-value flag writes are ignored, which is correct for v0.6 but may need richer event semantics later.
 - Debug summary text became longer in v0.7 because it now includes objective, completion, and `exitReached`. v0.17 adds playtest/minimal/debug text modes, v0.55 adds compact follow-up status, and v0.61 adds compact follow-up next-step text, but there is still no real UI overlay, HUD framework, minimap, or route-arrow system.

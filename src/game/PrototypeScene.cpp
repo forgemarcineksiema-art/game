@@ -19,6 +19,7 @@ PrototypeScene::PrototypeScene(const SceneDefinition& sceneDefinition)
 void PrototypeScene::buildFromFerryOfficeData()
 {
     m_world.buildFerryOfficePrototypeLayout();
+    m_interactableActionBindings.clear();
 
     Interactable pickup;
     pickup.name = FerryOffice::Names::FerryManifest;
@@ -111,6 +112,58 @@ void PrototypeScene::buildFromFerryOfficeData()
     ferryOfficePartsShelf.message = FerryOffice::Messages::FerryOfficePartsShelf;
     m_interactions.addInteractable(ferryOfficePartsShelf);
 
+    addInteractableActionBinding(std::string(FerryOffice::Names::FerryManifest),
+        {WorldFlag::ManifestCollected},
+        {},
+        {});
+    addInteractableActionBinding(std::string(FerryOffice::Names::MaintenanceBox),
+        {WorldFlag::MaintenanceBoxInspected, WorldFlag::PowerRestored},
+        {},
+        {});
+    addInteractableActionBinding(std::string(FerryOffice::Names::WallButton),
+        {WorldFlag::RouteOpened},
+        {},
+        {});
+    addInteractableActionBinding(std::string(FerryOffice::Names::ExitMarker),
+        {},
+        {WorldFlag::ManifestCollected,
+            WorldFlag::ServiceRouteUsed,
+            WorldFlag::MaintenanceBoxInspected,
+            WorldFlag::PowerRestored,
+            WorldFlag::RouteOpened},
+        {WorldFlag::ExitReached});
+    addInteractableActionBinding(std::string(FerryOffice::Names::ServiceRunMarker),
+        {},
+        {WorldFlag::FerryOfficeJobStarted,
+            WorldFlag::ManifestCollected,
+            WorldFlag::ServiceRouteUsed,
+            WorldFlag::MaintenanceBoxInspected,
+            WorldFlag::PowerRestored,
+            WorldFlag::RouteOpened,
+            WorldFlag::ServiceVehicleUsed,
+            WorldFlag::DockRoadReached},
+        {WorldFlag::ServiceRunConfirmed, WorldFlag::FerryOfficeJobComplete});
+    addInteractableActionBinding(std::string(FerryOffice::Names::DockRoadRelay),
+        {},
+        {WorldFlag::FerryOfficeJobComplete},
+        {WorldFlag::DockRoadRelayReset});
+    addInteractableActionBinding(std::string(FerryOffice::Names::RelayServiceLog),
+        {},
+        {WorldFlag::DockRoadRelayReset},
+        {WorldFlag::DockRoadRelayLogged});
+    addInteractableActionBinding(std::string(FerryOffice::Names::DockRoadClearanceTag),
+        {},
+        {WorldFlag::DockRoadRelayLogged},
+        {WorldFlag::DockRoadClearanceTagged});
+    addInteractableActionBinding(std::string(FerryOffice::Names::HarborPartsCrate),
+        {},
+        {WorldFlag::DockRoadClearanceTagged},
+        {WorldFlag::HarborPartsPickedUp});
+    addInteractableActionBinding(std::string(FerryOffice::Names::FerryOfficePartsShelf),
+        {},
+        {WorldFlag::HarborPartsPickedUp},
+        {WorldFlag::HarborPartsDelivered});
+
     TraversalAffordance serviceVault;
     serviceVault.name = FerryOffice::Names::ServiceVault;
     serviceVault.prompt = FerryOffice::Prompts::ServiceVault;
@@ -157,6 +210,7 @@ void PrototypeScene::loadFromDefinition(const SceneDefinition& sceneDefinition)
     m_world.buildFromSceneDefinition(sceneDefinition);
     m_interactions.clear();
     m_traversal.clear();
+    m_interactableActionBindings.clear();
 
     for (const SceneInteractableDefinition& authored : sceneDefinition.interactables) {
         Interactable interactable;
@@ -168,6 +222,7 @@ void PrototypeScene::loadFromDefinition(const SceneDefinition& sceneDefinition)
         interactable.oneShot = authored.oneShot;
         interactable.message = authored.message;
         m_interactions.addInteractable(std::move(interactable));
+        addInteractableActionBinding(authored);
     }
 
     for (const SceneTraversalAffordanceDefinition& authored : sceneDefinition.traversalAffordances) {
@@ -247,39 +302,20 @@ bool PrototypeScene::applyInteractionResult(const InteractionResult& result)
     bool changed = false;
     if (result.name == FerryOffice::Names::FerryManifest || result.name == "Test Pickup") {
         changed |= m_job.recordJobStarted(m_worldState, result.name);
-        changed |= m_worldState.setFlag(WorldFlag::ManifestCollected, true, result.name);
+        if (result.name == "Test Pickup") {
+            changed |= m_worldState.setFlag(WorldFlag::ManifestCollected, true, result.name);
+        }
     } else if (result.name == FerryOffice::Names::FerryOfficeNotice) {
         changed |= m_job.recordJobStarted(m_worldState, result.name);
-    } else if (result.name == FerryOffice::Names::MaintenanceBox) {
-        changed |= m_worldState.setFlag(WorldFlag::MaintenanceBoxInspected, true, result.name);
-        changed |= m_worldState.setFlag(WorldFlag::PowerRestored, true, result.name);
-    } else if (result.name == FerryOffice::Names::WallButton) {
-        changed |= m_worldState.setFlag(WorldFlag::RouteOpened, true, result.name);
-        syncRouteGateCollider();
     } else if (result.name == FerryOffice::Names::ExitMarker) {
         changed |= recordExitReached();
     } else if (result.name == FerryOffice::Names::ServiceRunMarker) {
         changed |= m_job.confirmServiceRun(m_worldState, result.name);
-    } else if (result.name == FerryOffice::Names::DockRoadRelay) {
-        if (m_job.isComplete(m_worldState)) {
-            changed |= m_worldState.setFlag(WorldFlag::DockRoadRelayReset, true, result.name);
-        }
-    } else if (result.name == FerryOffice::Names::RelayServiceLog) {
-        if (m_worldState.isFlagSet(WorldFlag::DockRoadRelayReset)) {
-            changed |= m_worldState.setFlag(WorldFlag::DockRoadRelayLogged, true, result.name);
-        }
-    } else if (result.name == FerryOffice::Names::DockRoadClearanceTag) {
-        if (m_worldState.isFlagSet(WorldFlag::DockRoadRelayLogged)) {
-            changed |= m_worldState.setFlag(WorldFlag::DockRoadClearanceTagged, true, result.name);
-        }
-    } else if (result.name == FerryOffice::Names::HarborPartsCrate) {
-        if (m_worldState.isFlagSet(WorldFlag::DockRoadClearanceTagged)) {
-            changed |= m_worldState.setFlag(WorldFlag::HarborPartsPickedUp, true, result.name);
-        }
-    } else if (result.name == FerryOffice::Names::FerryOfficePartsShelf) {
-        if (m_worldState.isFlagSet(WorldFlag::HarborPartsPickedUp)) {
-            changed |= m_worldState.setFlag(WorldFlag::HarborPartsDelivered, true, result.name);
-        }
+    }
+
+    changed |= applyAuthoredInteractionBinding(result.name, result.name);
+    if (result.name == FerryOffice::Names::WallButton) {
+        syncRouteGateCollider();
     }
 
     return changed;
@@ -398,6 +434,79 @@ std::string PrototypeScene::completionSummary() const
 std::string PrototypeScene::jobDebugSummary() const
 {
     return m_job.debugSummary(m_worldState);
+}
+
+void PrototypeScene::addInteractableActionBinding(
+    std::string name,
+    std::vector<WorldFlag> worldFlagsSet,
+    std::vector<WorldFlag> requiredWorldFlags,
+    std::vector<WorldFlag> worldFlagsSetWhenReady)
+{
+    if (worldFlagsSet.empty() && worldFlagsSetWhenReady.empty()) {
+        return;
+    }
+
+    InteractableActionBinding binding;
+    binding.name = std::move(name);
+    binding.worldFlagsSet = std::move(worldFlagsSet);
+    binding.requiredWorldFlags = std::move(requiredWorldFlags);
+    binding.worldFlagsSetWhenReady = std::move(worldFlagsSetWhenReady);
+    m_interactableActionBindings.push_back(std::move(binding));
+}
+
+void PrototypeScene::addInteractableActionBinding(const SceneInteractableDefinition& interactable)
+{
+    std::vector<WorldFlag> worldFlagsSet;
+    std::vector<WorldFlag> requiredWorldFlags;
+    std::vector<WorldFlag> worldFlagsSetWhenReady;
+
+    const auto appendKnownFlags = [](const std::vector<std::string>& names, std::vector<WorldFlag>& flags) {
+        for (const std::string& name : names) {
+            WorldFlag flag = WorldFlag::PowerRestored;
+            if (TryWorldFlagFromName(name, flag)) {
+                flags.push_back(flag);
+            }
+        }
+    };
+
+    appendKnownFlags(interactable.worldFlagsSet, worldFlagsSet);
+    appendKnownFlags(interactable.requiredWorldFlags, requiredWorldFlags);
+    appendKnownFlags(interactable.worldFlagsSetWhenReady, worldFlagsSetWhenReady);
+    addInteractableActionBinding(
+        interactable.name,
+        std::move(worldFlagsSet),
+        std::move(requiredWorldFlags),
+        std::move(worldFlagsSetWhenReady));
+}
+
+bool PrototypeScene::applyAuthoredInteractionBinding(std::string_view name, const std::string& source)
+{
+    bool changed = false;
+    for (const InteractableActionBinding& binding : m_interactableActionBindings) {
+        if (binding.name != name) {
+            continue;
+        }
+
+        for (WorldFlag flag : binding.worldFlagsSet) {
+            changed |= m_worldState.setFlag(flag, true, source);
+        }
+        if (hasRequiredWorldFlags(binding)) {
+            for (WorldFlag flag : binding.worldFlagsSetWhenReady) {
+                changed |= m_worldState.setFlag(flag, true, source);
+            }
+        }
+    }
+    return changed;
+}
+
+bool PrototypeScene::hasRequiredWorldFlags(const InteractableActionBinding& binding) const
+{
+    for (WorldFlag flag : binding.requiredWorldFlags) {
+        if (!m_worldState.isFlagSet(flag)) {
+            return false;
+        }
+    }
+    return true;
 }
 
 void PrototypeScene::configureJobFromDefinition(const SceneDefinition& sceneDefinition)

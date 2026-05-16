@@ -35,6 +35,7 @@ struct WorldEvent {
 };
 
 std::string_view WorldFlagName(WorldFlag flag);
+bool TryWorldFlagFromName(std::string_view name, WorldFlag& flag);
 
 class WorldState {
 public:
