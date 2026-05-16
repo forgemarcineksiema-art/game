@@ -2,6 +2,66 @@
 
 Last updated: 2026-05-16
 
+## v0.79 Playtest Proxy Readability Pass (2026-05-16)
+
+Selected milestone:
+
+- Make the most visible playtest proxies read less like raw debug blocks in the default Ferry Office frame.
+
+Candidate visual pass triage:
+
+- Playtest Proxy Readability Pass: visible impact = high because the player is centered and the service-yard vehicle area is visible in the default frame; risk = medium because vehicle-linked mesh offsets need presentation code support; validation/capture path = build, scene tools, GDI/DX11 visual smoke, `scripts\verify.ps1`.
+- Small original mesh replacement: visible impact = medium; risk = medium because it adds asset-generation scope and may not improve the default frame.
+- Bounded haze/fog treatment: visible impact = high; risk = higher because it touches renderer behavior and text/capture readability.
+
+Why selected:
+
+- After v0.78, the Ferry Office sign and background read better, but the centered player proxy still lacked arms and the service-yard vehicle area still looked like generic debug equipment. This pass improves the main third-person proxy and adds compact service-vehicle bay/vehicle cues without new assets, collision, or gameplay scope.
+
+Implementation notes:
+
+- Added simple arm boxes to the existing player presentation proxy.
+- Preserved authored offsets for mesh instances linked to the service-yard vehicle so visual-only vehicle details can move with the vehicle instead of snapping to its center.
+- Added compact visual-only service-vehicle details: a side stripe, roof beacon, wheel blocks, a painted bay stripe, and two wheel stops.
+- Adjusted the unoccupied service vehicle body/cabin palette so the cabin can use its authored darker color instead of being auto-derived from the body.
+
+Files changed:
+
+- `src\game\SandboxLayer.cpp`
+- `src\game\ScenePresentation.cpp`
+- `data\scenes\ferry_office.scene.json`
+- `docs\STATUS.md`
+- `docs\ROADMAP.md`
+
+Focused validation:
+
+- `scripts\build.ps1`: passed.
+- `python tools\validate_scene.py`: passed.
+- `python tools\validate_assets.py`: passed.
+- `python tools\scale_audit.py`: passed.
+- `python tools\capture_visual_smoke.py --renderer gdi`: passed; GDI colors=75/lumaRange=221.
+- `scripts\verify.ps1`: passed; doctor completed with known plain-PATH tool warnings, configure/build succeeded, default CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke completed.
+- `python tools\capture_visual_smoke.py`: passed; GDI colors=75/lumaRange=221, DX11 colors=41/lumaRange=221 with WARP fallback in this environment.
+- `python tools\mesh_report.py`: passed; 12 mesh assets, 66 mesh instances, 12 referenced model files.
+- `python tools\scene_report.py`: passed; 24 scene materials, 30 visual placeholders, 66 mesh instances, 16 interactables, 16 route markers, and 15 objective markers.
+- `python tools\playthrough_qa.py`: passed; phase=complete, events=20, vehicleRuntime=deterministic, framesToCheckpoint=139.
+- `git diff --check`: passed with only expected CRLF normalization warnings for touched files.
+
+Automated evidence generated:
+
+- `build\captures\v0.31-gdi-capture.bmp`
+- `build\captures\v0.31-dx11-capture.bmp`
+- `build\captures\capture_visual_smoke_report.json`
+- `build\playthroughs\ferry-office-service-call-report.json`
+
+Remaining visual weakness:
+
+- The player and service vehicle are still made from primitive placeholder volumes. The next stronger step is likely a tiny original character/vehicle proxy mesh or a renderer-aware atmospheric pass, not more small box details.
+
+Commit/push:
+
+- Included in the `v0.79 playtest proxy readability pass` commit/push step.
+
 ## v0.78 Ferry Office Sign Detail Pass (2026-05-16)
 
 Selected milestone:
@@ -54,7 +114,7 @@ Remaining visual weakness:
 
 Commit/push:
 
-- Ready to commit and push as `v0.78 ferry office sign detail pass`.
+- Committed and pushed as `d34101b` (`v0.78 ferry office sign detail pass`).
 
 ## v0.77 Ferry Office Distant Shoreline Pass (2026-05-16)
 

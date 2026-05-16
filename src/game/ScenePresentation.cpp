@@ -111,10 +111,10 @@ engine::Color DynamicSceneColor(std::string_view key, engine::Color authoredBase
             : engine::Color {0.68f, 0.54f, 0.20f, 1.0f};
     }
     if (key == "service-vehicle-cabin-placeholder") {
-        const engine::Color body = state.vehicleOccupied
-            ? engine::Color {0.18f, 0.58f, 0.95f, 1.0f}
-            : engine::Color {0.62f, 0.66f, 0.48f, 1.0f};
-        return ScaleColor(body, 0.78f);
+        if (state.vehicleOccupied) {
+            return ScaleColor({0.18f, 0.58f, 0.95f, 1.0f}, 0.78f);
+        }
+        return authoredBaseColor;
     }
     return authoredBaseColor;
 }

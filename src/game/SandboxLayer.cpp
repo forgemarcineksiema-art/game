@@ -98,6 +98,17 @@ bool NameContains(const StaticCollider& collider, const char* token)
     return collider.name.find(token) != std::string::npos;
 }
 
+engine::Vec3 RotateYawOffset(engine::Vec3 offset, float yawRadians)
+{
+    const float c = std::cos(yawRadians);
+    const float s = std::sin(yawRadians);
+    return {
+        offset.x * c + offset.z * s,
+        offset.y,
+        offset.z * c - offset.x * s,
+    };
+}
+
 engine::Color ColliderSolidColor(const StaticCollider& collider, bool routeOpened)
 {
     if (collider.name == FerryOffice::Names::ServiceGateCollider) {
@@ -917,6 +928,12 @@ void SandboxLayer::drawPlayerPresentation(engine::IRenderer& renderer)
     renderer.drawDebugSolidBox(player.position + engine::Vec3 {0.0f, 0.92f, 0.0f},
         {0.23f, 0.36f, 0.17f},
         {0.08f, 0.16f, 0.18f, 1.0f});
+    renderer.drawDebugSolidBox(player.position + engine::Vec3 {-0.33f, 0.94f, 0.0f},
+        {0.06f, 0.28f, 0.07f},
+        {0.06f, 0.12f, 0.13f, 1.0f});
+    renderer.drawDebugSolidBox(player.position + engine::Vec3 {0.33f, 0.94f, 0.0f},
+        {0.06f, 0.28f, 0.07f},
+        {0.06f, 0.12f, 0.13f, 1.0f});
     renderer.drawDebugSolidBox(player.position + engine::Vec3 {0.0f, 1.34f, 0.0f},
         {0.28f, 0.09f, 0.18f},
         {0.07f, 0.14f, 0.16f, 1.0f});
@@ -1159,9 +1176,15 @@ void SandboxLayer::drawStaticMeshDebug(engine::IRenderer& renderer)
         engine::Vec3 position = authored.position;
         float yawRadians = authored.yawRadians;
         if (authored.linkedColliderId == "service-yard-vehicle") {
-            position.x = m_vehicle.state().position.x;
-            position.z = m_vehicle.state().position.z;
-            yawRadians = m_vehicle.state().yawRadians;
+            const SceneVehicleDefinition* vehicleDefinition = !m_sceneDefinition.vehicles.empty()
+                ? &m_sceneDefinition.vehicles.front()
+                : nullptr;
+            const engine::Vec3 authoredVehiclePosition = vehicleDefinition ? vehicleDefinition->spawnPosition : ServiceYardVehicleSpawnPosition;
+            const float authoredVehicleYaw = vehicleDefinition ? vehicleDefinition->spawnYawRadians : ServiceYardVehicleSpawnYawRadians;
+            const float yawDelta = m_vehicle.state().yawRadians - authoredVehicleYaw;
+            const engine::Vec3 authoredOffset = authored.position - authoredVehiclePosition;
+            position = m_vehicle.state().position + RotateYawOffset(authoredOffset, yawDelta);
+            yawRadians = m_vehicle.state().yawRadians + (authored.yawRadians - authoredVehicleYaw);
         }
         instance.position = position;
         instance.yawRadians = yawRadians;

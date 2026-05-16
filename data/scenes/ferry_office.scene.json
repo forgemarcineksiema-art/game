@@ -139,12 +139,12 @@
     {
       "key": "service-vehicle-placeholder",
       "response": "painted",
-      "baseColor": [0.62, 0.66, 0.48, 1.0]
+      "baseColor": [0.66, 0.58, 0.30, 1.0]
     },
     {
       "key": "service-vehicle-cabin-placeholder",
       "response": "painted",
-      "baseColor": [0.48, 0.51, 0.37, 1.0]
+      "baseColor": [0.20, 0.28, 0.27, 1.0]
     }
   ],
   "colliders": [
@@ -787,6 +787,33 @@
       "notes": "v0.27 Blender-authored service-yard cable reel cue; visual only, no collision or new job beat."
     },
     {
+      "id": "mesh-service-yard-vehicle-bay-near-stripe",
+      "assetId": "unit-box-mesh",
+      "position": [6.2, 0.035, -1.02],
+      "yawDegrees": 0.0,
+      "scale": [2.25, 0.05, 0.08],
+      "colorKey": "dock-muted-sign-yellow",
+      "notes": "v0.79 visual-only painted bay stripe that makes the service vehicle parking space read from the default camera."
+    },
+    {
+      "id": "mesh-service-yard-vehicle-bay-front-stop",
+      "assetId": "unit-box-mesh",
+      "position": [6.95, 0.11, -1.18],
+      "yawDegrees": 0.0,
+      "scale": [0.52, 0.16, 0.18],
+      "colorKey": "weathered-yard-rail",
+      "notes": "v0.79 low wheel-stop cue for the service vehicle bay; visual only, no collision."
+    },
+    {
+      "id": "mesh-service-yard-vehicle-bay-rear-stop",
+      "assetId": "unit-box-mesh",
+      "position": [5.45, 0.11, -1.18],
+      "yawDegrees": 0.0,
+      "scale": [0.52, 0.16, 0.18],
+      "colorKey": "weathered-yard-rail",
+      "notes": "v0.79 paired low wheel-stop cue for service vehicle bay readability; visual only."
+    },
+    {
       "id": "mesh-service-yard-vehicle-body",
       "assetId": "unit-box-mesh",
       "position": [6.2, 0.42, -2.2],
@@ -803,6 +830,66 @@
       "scale": [0.84, 0.40, 0.92],
       "colorKey": "service-vehicle-cabin-placeholder",
       "linkedColliderId": "service-yard-vehicle"
+    },
+    {
+      "id": "mesh-service-yard-vehicle-visible-side-stripe",
+      "assetId": "unit-box-mesh",
+      "position": [6.17, 0.62, -1.48],
+      "yawDegrees": 88.0,
+      "scale": [0.10, 0.10, 0.82],
+      "colorKey": "dock-muted-sign-yellow",
+      "linkedColliderId": "service-yard-vehicle",
+      "notes": "v0.79 visual-only service-vehicle side stripe on the camera-facing side; improves first-frame vehicle identity without changing collision."
+    },
+    {
+      "id": "mesh-service-yard-vehicle-roof-beacon",
+      "assetId": "unit-box-mesh",
+      "position": [6.20, 1.16, -2.20],
+      "yawDegrees": 88.0,
+      "scale": [0.30, 0.12, 0.30],
+      "colorKey": "warning-service-orange",
+      "linkedColliderId": "service-yard-vehicle",
+      "notes": "v0.79 visual-only roof beacon so the service vehicle reads as practical yard equipment in the first frame."
+    },
+    {
+      "id": "mesh-service-yard-vehicle-front-left-wheel",
+      "assetId": "unit-box-mesh",
+      "position": [6.80, 0.25, -1.42],
+      "yawDegrees": 88.0,
+      "scale": [0.26, 0.32, 0.32],
+      "colorKey": "dark-service-asphalt",
+      "linkedColliderId": "service-yard-vehicle",
+      "notes": "v0.79 visual-only wheel block for readable service-vehicle scale; no physics or collision behavior."
+    },
+    {
+      "id": "mesh-service-yard-vehicle-rear-left-wheel",
+      "assetId": "unit-box-mesh",
+      "position": [5.54, 0.25, -1.47],
+      "yawDegrees": 88.0,
+      "scale": [0.26, 0.32, 0.32],
+      "colorKey": "dark-service-asphalt",
+      "linkedColliderId": "service-yard-vehicle",
+      "notes": "v0.79 visual-only wheel block on the camera-facing side of the service vehicle."
+    },
+    {
+      "id": "mesh-service-yard-vehicle-front-right-wheel",
+      "assetId": "unit-box-mesh",
+      "position": [6.82, 0.25, -2.98],
+      "yawDegrees": 88.0,
+      "scale": [0.26, 0.32, 0.32],
+      "colorKey": "dark-service-asphalt",
+      "linkedColliderId": "service-yard-vehicle",
+      "notes": "v0.79 far-side visual-only service-vehicle wheel block; keeps the proxy coherent from other angles."
+    },
+    {
+      "id": "mesh-service-yard-vehicle-rear-right-wheel",
+      "assetId": "unit-box-mesh",
+      "position": [5.56, 0.25, -3.02],
+      "yawDegrees": 88.0,
+      "scale": [0.26, 0.32, 0.32],
+      "colorKey": "dark-service-asphalt",
+      "linkedColliderId": "service-yard-vehicle",
+      "notes": "v0.79 paired far-side visual-only wheel block; presentation only."
     },
     {
       "id": "mesh-service-road-sign",
