@@ -498,6 +498,25 @@ void TestVehicleRuntimeArgumentsDefaultToDeterministicFallback()
         "The deterministic fallback should keep the simple backend as the neutral default value.");
 }
 
+void TestVehicleRuntimeArgumentsAcceptPreferred()
+{
+    const char* argv[] = {"EngineApp", "--vehicle-runtime", "preferred"};
+    const auto result = engine::ParseArguments(3, argv);
+
+    Expect(result.errors.empty(),
+        "TestVehicleRuntimeArgumentsAcceptPreferred",
+        "The preferred live vehicle runtime argument should parse cleanly.");
+    Expect(result.config.vehicleRuntimeAdapterEnabled == engine::physics::IsJoltPhysicsAvailable(),
+        "TestVehicleRuntimeArgumentsAcceptPreferred",
+        "Preferred runtime should enable the live adapter only when the Jolt backend is available.");
+    const engine::physics::PhysicsBackend expectedBackend = engine::physics::IsJoltPhysicsAvailable()
+        ? engine::physics::PhysicsBackend::Jolt
+        : engine::physics::PhysicsBackend::Simple;
+    Expect(result.config.vehicleRuntimeBackend == expectedBackend,
+        "TestVehicleRuntimeArgumentsAcceptPreferred",
+        "Preferred runtime should choose Jolt in opt-in builds and deterministic fallback otherwise.");
+}
+
 void TestVehicleRuntimeArgumentsAcceptJoltOptIn()
 {
     const char* argv[] = {"EngineApp", "--vehicle-runtime", "jolt"};
@@ -4916,6 +4935,7 @@ int main()
     TestQaPhysicsParityArgumentsAcceptVehicleFeasibilityScenario();
     TestQaPhysicsParityArgumentsAcceptVehicleRuntimeComparisonScenario();
     TestVehicleRuntimeArgumentsDefaultToDeterministicFallback();
+    TestVehicleRuntimeArgumentsAcceptPreferred();
     TestVehicleRuntimeArgumentsAcceptJoltOptIn();
     TestVehicleRuntimeArgumentsRejectUnknownRuntime();
     TestHelpTextMentionsQaPhysicsParityFlags();

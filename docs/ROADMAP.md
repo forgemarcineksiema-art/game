@@ -754,6 +754,15 @@ Status: implemented and validated. Jolt CTest passes 15/15, physics parity/conta
 
 Status: implemented and validated. Scene data now has 23 authored scene materials and 29 visual placeholders; the storm pump cue shifts from warning orange to active blue, and the ticket cue shifts from pending amber to closed green.
 
+## v0.70 - Preferred Jolt Live Runtime Trial
+
+- Add `--vehicle-runtime preferred` as a controlled live-runtime selection.
+- Make `scripts/play.ps1` default to `-VehicleRuntime preferred`.
+- Resolve preferred to Jolt only in Jolt-enabled executables; dependency-free builds and direct app/QA defaults remain deterministic.
+- Preserve deterministic as an explicit runtime and fallback path.
+
+Status: implemented and validated. `--vehicle-runtime preferred` resolves to deterministic in the dependency-free executable and to `jolt-live` in the Jolt-enabled executable; `scripts/play.ps1` now requests preferred by default while direct app and QA defaults remain deterministic.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.69, the next useful future milestone should harden the opt-in Jolt live runtime toward a controlled default-promotion trial.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.70, the next useful future milestone should use preferred-runtime evidence to decide whether Jolt needs one more live-control hardening pass or whether playable content should grow around the now-preferred vehicle path.

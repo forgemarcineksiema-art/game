@@ -5,8 +5,8 @@ param(
     [string]$Renderer = "gdi",
     [ValidateSet("playtest", "debug", "minimal")]
     [string]$UiMode = "playtest",
-    [ValidateSet("deterministic", "jolt")]
-    [string]$VehicleRuntime = "deterministic",
+    [ValidateSet("deterministic", "preferred", "jolt")]
+    [string]$VehicleRuntime = "preferred",
     [switch]$DebugUi,
     [switch]$MinimalUi,
     [switch]$Dx11,

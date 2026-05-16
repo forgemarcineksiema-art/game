@@ -56,6 +56,7 @@ class RunScriptTests(unittest.TestCase):
         self.assertIn("--renderer gdi", result.stdout)
         self.assertIn("--ui-mode playtest", result.stdout)
         self.assertIn("--scene data\\scenes\\ferry_office.scene.json", result.stdout)
+        self.assertIn("--vehicle-runtime preferred", result.stdout)
 
     def test_play_script_short_options_override_defaults(self) -> None:
         result = run_play_script("-DryRun", "-Dx11", "-DebugUi", "-Frames", "42", "-FreeCursor")

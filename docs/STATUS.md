@@ -2,6 +2,98 @@
 
 Last updated: 2026-05-16
 
+## v0.70 Preferred Jolt Live Runtime Trial (2026-05-16)
+
+Selected milestone:
+
+- Add a controlled `preferred` vehicle-runtime mode and make `scripts\play.ps1` use it by default.
+
+Candidate milestone triage:
+
+- Preferred Jolt live runtime trial: impact = turns the accumulated Jolt evidence into a normal play-wrapper path when the Jolt executable is used; risk = medium, bounded by preserving direct app/QA deterministic defaults and fallback behavior; validation path = default/Jolt C++ tests, run-script tests, Jolt playthrough/runtime QA, `scripts\verify.ps1`.
+- Full default Jolt migration: impact = higher, risk = higher because QA defaults and direct executable behavior would change at once.
+- Another authored content beat: impact = player-facing, risk = low/medium, but v0.68 and v0.69 already point at the vehicle-runtime decision as the clearest technical lever.
+
+Why selected:
+
+- Jolt now has feasibility, route, controls, live-loop, camera-aware obstacle, collision-backed obstacle, and current-scene validation evidence. The smallest responsible promotion is not replacing every vehicle path; it is making the normal play wrapper choose the preferred runtime while dependency-free builds still resolve to deterministic fallback.
+
+Implementation notes:
+
+- Added `--vehicle-runtime preferred`.
+- `preferred` resolves to Jolt only when the executable was built with the Jolt backend available; otherwise it resolves to deterministic/simple fallback.
+- Changed `scripts\play.ps1` default `-VehicleRuntime` from `deterministic` to `preferred`.
+- Kept direct `EngineApp` and QA tool defaults deterministic unless a runtime is explicitly requested.
+- Added C++ config coverage and PowerShell run-wrapper coverage for the new mode.
+
+Files changed:
+
+- `src\engine\core\Config.cpp`
+- `scripts\play.ps1`
+- `tests\EngineCoreTests.cpp`
+- `tests\test_run_scripts.py`
+- `docs\STATUS.md`
+- `docs\ROADMAP.md`
+- `docs\TECH_DEBT.md`
+- `docs\PHYSICS_DECISION.md`
+- `docs\CONTEXT_MAP.md`
+- `docs\MANUAL_TEST_CHECKLIST.md`
+
+Focused validation:
+
+- `python tests\test_run_scripts.py`: passed, 8 tests.
+- `cmake --build --preset windows-vs2022-debug --target EngineApp EngineCoreTests`: passed.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `scripts\play.ps1 -DryRun -DebugUi`: passed and printed `--vehicle-runtime preferred`.
+- `build\windows-vs2022-debug\Debug\EngineApp.exe --smoke-test --vehicle-runtime preferred --frames 3 --debug-ui`: passed and reported `vehicleRuntime=deterministic`.
+- `build\windows-vs2022-debug\Debug\EngineApp.exe --smoke-test --vehicle-runtime jolt --frames 3 --debug-ui`: passed with the expected unavailable-backend warning and reported `vehicleRuntime=adapter-unavailable`.
+- `cmake --build --preset windows-vs2022-debug-jolt --target EngineApp EngineCoreTests`: passed.
+- `build\windows-vs2022-debug-jolt\Debug\EngineCoreTests.exe`: passed.
+- `build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --smoke-test --vehicle-runtime preferred --frames 3 --debug-ui`: passed and reported `vehicleRuntime=jolt-live`.
+- `scripts\play.ps1 -DryRun -ExecutablePath build\windows-vs2022-debug-jolt\Debug\EngineApp.exe -DebugUi`: passed and printed `--vehicle-runtime preferred`.
+- `python tools\playthrough_qa.py --exe build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --vehicle-runtime jolt --report-json build\playthroughs\ferry-office-service-call-jolt-report.json`: passed; phase `complete`, 19 events, vehicleRuntime `jolt`, 212 frames to checkpoint.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 15/15 tests.
+- `python tools\vehicle_runtime_qa.py`: passed; backend `jolt`, samples=5, controlChecks=4, routeChecks=2, obstacleChecks=2, maxPositionDelta=1.49, recommendation=`promote`.
+- `python tools\vehicle_physics_qa.py`: passed; backend `jolt`, samples=5, recommendation=`promote`.
+- `python tools\physics_parity_qa.py`: passed; backend `jolt`, floor=4, raycast=4, overlap=4.
+- `python tools\character_contact_qa.py`: passed; backend `jolt`, probes=7.
+- `python tools\playthrough_qa.py`: passed; phase `complete`, 19 events, vehicleRuntime `deterministic`, 139 frames to checkpoint.
+
+Automated evidence generated:
+
+- `build\playthroughs\ferry-office-service-call-report.json`
+- `build\playthroughs\ferry-office-service-call-jolt-report.json`
+- `build\physics\ferry-office-vehicle-runtime-comparison-report.json`
+- `build\physics\ferry-office-vehicle-feasibility-report.json`
+- `build\physics\ferry-office-collision-parity-report.json`
+- `build\physics\ferry-office-character-contact-report.json`
+
+Decision note:
+
+- Decision made: promote Jolt into the preferred play-wrapper runtime when available, but preserve deterministic direct-app and QA defaults.
+- Alternatives considered: keep `scripts\play.ps1` deterministic forever, or flip all runtime defaults to Jolt in Jolt-enabled builds.
+- Evidence used: v0.68 Jolt CTest/physics/vehicle QA stack, v0.65 collision-backed obstacle replay, v0.49 Jolt first-job playthrough, and v0.69 current-scene validation.
+- Why this helps Tidebreak: normal local play can now exercise the stronger vehicle candidate without making default dependency-free validation or QA wrappers brittle.
+- Revisit when: preferred Jolt play shows player-facing control/camera/exit regressions, or when road-edge/live-collision work is ready for a broader default migration.
+
+Remaining limitations:
+
+- This is a controlled live-runtime trial, not broad gameplay collision migration, road-edge collision, damage, traffic, or final vehicle tuning.
+- Direct executable and QA defaults remain deterministic unless `--vehicle-runtime preferred` or `--vehicle-runtime jolt` is requested.
+
+Final validation:
+
+- `scripts\verify.ps1`: passed; doctor, configure, build, default CTest 11/11, scene validation, asset validation, mesh report, and null-renderer smoke all completed successfully.
+- `git diff --check`: passed with only expected CRLF normalization warnings.
+
+Commit/push:
+
+- Pending.
+
+Next direction:
+
+- Use the preferred-runtime play wrapper path as the next live evidence source, then choose either a small Jolt live-control/road-edge hardening pass or a player-facing content beat that assumes the preferred vehicle path remains available.
+
 ## v0.69 Storm Pump State Cues (2026-05-16)
 
 Selected milestone:

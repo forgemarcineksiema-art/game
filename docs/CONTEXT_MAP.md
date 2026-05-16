@@ -20,7 +20,7 @@ Recent history forms a clear arc:
 - v0.32: deterministic Ferry Office playthrough QA.
 - v0.33: Jolt static scene-query parity QA.
 - v0.34: Jolt character/contact probe QA.
-- v0.45-v0.69: Jolt vehicle runtime controls, service-run route proxy, route-pace tuning, deterministic service-vehicle runtime playthrough QA, opt-in Jolt first-job live-loop QA, the Dock Road Relay follow-up beat, relay/log/clearance endpoint consequences, compact playtest follow-up text, camera-aware obstacle-proxy vehicle steering evidence, a clearance-tag visual cue, a tiny original clearance-tag mesh prop, Jolt obstacle-progress tuning, a compact Harbor Parts return micro-slice, a follow-up next-step readability line, scene-authored action bindings for simple/gated flag beats, a Ferry Office Work Board signoff endpoint, a Ferry Office handoff note endpoint, collision-backed obstacle replay telemetry in vehicle runtime QA, a dynamic handoff-filed visual state cue, a storm pump job seed, a provisional Jolt vehicle-runtime direction decision, and visible storm pump/ticket state cues.
+- v0.45-v0.70: Jolt vehicle runtime controls, service-run route proxy, route-pace tuning, deterministic service-vehicle runtime playthrough QA, opt-in Jolt first-job live-loop QA, the Dock Road Relay follow-up beat, relay/log/clearance endpoint consequences, compact playtest follow-up text, camera-aware obstacle-proxy vehicle steering evidence, a clearance-tag visual cue, a tiny original clearance-tag mesh prop, Jolt obstacle-progress tuning, a compact Harbor Parts return micro-slice, a follow-up next-step readability line, scene-authored action bindings for simple/gated flag beats, a Ferry Office Work Board signoff endpoint, a Ferry Office handoff note endpoint, collision-backed obstacle replay telemetry in vehicle runtime QA, a dynamic handoff-filed visual state cue, a storm pump job seed, a provisional Jolt vehicle-runtime direction decision, visible storm pump/ticket state cues, and a preferred play-wrapper runtime trial for Jolt-enabled executables.
 
 ## Architecture Map
 
@@ -367,9 +367,9 @@ Validation:
 
 ## Recommendation
 
-Best next move: harden the opt-in Jolt live runtime toward a controlled default-promotion trial.
+Best next move: validate the preferred Jolt live runtime trial and then use that evidence to choose the next player-facing vehicle/content step.
 
-Reason: v0.35 proved Jolt vehicle feasibility, v0.36 proved a frame-stepped runtime adapter comparison, v0.37 exposed that adapter through `--vehicle-runtime jolt`, v0.45 hardened tap/brake/reverse/coast checks, v0.46 added automated service-run route checks, v0.47 tuned Jolt route pace under a 240-frame budget, v0.48 proved the deterministic first-job vehicle beat can enter, drive, checkpoint, exit, and confirm through runtime controller behavior, v0.49 proved the same beat through the opt-in Jolt path, v0.59 closes the camera-aware obstacle proxy progress gap, v0.65 adds collision-backed obstacle replay evidence, and v0.68 makes Jolt the preferred vehicle-runtime candidate for the next hardening/default-promotion milestone. Deterministic remains default until that milestone proves live play risk is acceptable.
+Reason: v0.35 proved Jolt vehicle feasibility, v0.36 proved a frame-stepped runtime adapter comparison, v0.37 exposed that adapter through `--vehicle-runtime jolt`, v0.45 hardened tap/brake/reverse/coast checks, v0.46 added automated service-run route checks, v0.47 tuned Jolt route pace under a 240-frame budget, v0.48 proved the deterministic first-job vehicle beat can enter, drive, checkpoint, exit, and confirm through runtime controller behavior, v0.49 proved the same beat through the opt-in Jolt path, v0.59 closes the camera-aware obstacle proxy progress gap, v0.65 adds collision-backed obstacle replay evidence, v0.68 makes Jolt the preferred vehicle-runtime candidate, and v0.70 starts a controlled play-wrapper trial. Direct app and QA defaults remain deterministic, but `scripts/play.ps1` now requests `preferred`, which resolves to Jolt when the selected executable supports it.
 
 Second-best: improve input-scripted runtime QA if the next authored beat would depend on behavior that `tools/playthrough_qa.py` still bypasses.
 
@@ -396,7 +396,7 @@ The first service job now has runtime enter, drive, checkpoint, exit, and confir
 
 Scope:
 - Either add a collision-backed obstacle route for Jolt/default-promotion evidence, or add one compact authored content beat that uses scene action bindings and extends playthrough QA.
-- Keep deterministic vehicle gameplay as the default.
+- Keep deterministic vehicle gameplay as the dependency-free direct-app and QA default/fallback.
 - Record whether Jolt should remain opt-in, get another tuning pass, or be considered for broader steering/obstacle testing; if adding content, extend playthrough QA to cover the new beat.
 
 Non-goals:

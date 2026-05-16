@@ -8,7 +8,7 @@ Choose Jolt Physics as Tidebreak's default production physics candidate unless a
 
 Keep PhysX as the backup candidate. Do not choose Bullet for the main engine path unless a future, narrow test gives a strong reason.
 
-This decision does not mean every current gameplay collision path should be rewritten immediately. v0.9.2 adds a vendor-safe `src/engine/physics` boundary and an opt-in Jolt backend spike. v0.33 adds a QA-only Ferry Office static-collision parity bridge, v0.34 adds a player-proxy contact probe, and v0.35 adds a wheeled vehicle feasibility probe. Existing Ferry Office gameplay still uses the tested prototype paths until a later goal migrates one behavior at a time. v0.49 adds opt-in Jolt runtime enter-drive-exit-confirm playthrough evidence for the first service job, and v0.68 promotes Jolt from exploratory option to preferred vehicle-runtime candidate for the next hardening/default-promotion milestone. Deterministic vehicle gameplay remains the default until that deliberate promotion work is complete.
+This decision does not mean every current gameplay collision path should be rewritten immediately. v0.9.2 adds a vendor-safe `src/engine/physics` boundary and an opt-in Jolt backend spike. v0.33 adds a QA-only Ferry Office static-collision parity bridge, v0.34 adds a player-proxy contact probe, and v0.35 adds a wheeled vehicle feasibility probe. Existing Ferry Office gameplay still uses the tested prototype paths until a later goal migrates one behavior at a time. v0.49 adds opt-in Jolt runtime enter-drive-exit-confirm playthrough evidence for the first service job, v0.68 promotes Jolt from exploratory option to preferred vehicle-runtime candidate, and v0.70 begins a controlled preferred-runtime trial through the play wrapper. Direct app and QA defaults remain deterministic unless a runtime is explicitly requested.
 
 ## Why Decide Now
 
@@ -220,16 +220,18 @@ Validated so far:
 
 Important limits:
 
-- This is still a QA/runtime comparison switch and opt-in live path, not a normal play-mode replacement.
-- The deterministic `VehicleController` remains the live gameplay fallback.
-- The Jolt runtime adapter is proven against compact controls checks, a straight service-run route proxy, the same first-job enter-drive-exit-confirm playthrough loop as the deterministic controller, a camera-aware obstacle proxy, and a QA-only collision-backed obstacle replay. The provisional direction is to use Jolt as the preferred candidate for the next live hardening/default-promotion milestone, while keeping deterministic as the default until that milestone validates player-facing controls, camera behavior, exit safety, road-edge behavior, and no vendor leakage.
+- This is still a vehicle-runtime trial, not broad gameplay collision migration.
+- The deterministic `VehicleController` remains the dependency-free direct-app default, QA default, and fallback.
+- The Jolt runtime adapter is proven against compact controls checks, a straight service-run route proxy, the same first-job enter-drive-exit-confirm playthrough loop as the deterministic controller, a camera-aware obstacle proxy, and a QA-only collision-backed obstacle replay. v0.70 uses that evidence to make `scripts\play.ps1` request `preferred`, which resolves to Jolt only when the executable supports it.
 
 ## v0.37 Live Opt-in Vehicle Runtime Switch Result
 
 Added:
 
 - `--vehicle-runtime jolt`, an explicit live playtest switch for the service-yard vehicle runtime.
+- `--vehicle-runtime preferred`, which selects Jolt when the running executable has the backend available and otherwise resolves to deterministic fallback.
 - `scripts\play.ps1 -VehicleRuntime jolt`, a wrapper shortcut for manual opt-in runs when pointed at the Jolt-enabled executable.
+- `scripts\play.ps1` now defaults to `-VehicleRuntime preferred`, so the default dependency-free executable remains deterministic while a Jolt-enabled executable enters the Jolt live path without a second flag.
 - `SandboxLayer` live adapter plumbing that keeps deterministic vehicle gameplay as the default and falls back honestly when the selected runtime backend is unavailable.
 - Debug text now reports `vehicleRuntime=deterministic`, `vehicleRuntime=<backend>-live`, or an unavailable/init-failed state.
 
@@ -237,14 +239,15 @@ Validated so far:
 
 - Default dependency-free builds keep `vehicleRuntime=deterministic` unless the explicit switch is requested.
 - A default executable accepts `--vehicle-runtime jolt` but reports the selected backend unavailable and keeps deterministic fallback behavior.
+- A default executable accepts `--vehicle-runtime preferred` and resolves it to deterministic fallback without an unavailable-backend warning.
 - The opt-in `windows-vs2022-debug-jolt` executable initializes the switched path and reports `vehicleRuntime=jolt-live` in debug text.
 - `rg -n "Jolt|JPH::|<Jolt/|JPH/" src\game` returns no matches; Jolt types remain private to engine-owned physics code.
 
 Important limits:
 
-- This is a manual playtest switch, not default vehicle promotion.
+- This is a preferred play-wrapper runtime trial, not full default vehicle promotion.
 - The switched vehicle uses the v0.36 runtime adapter state for live driving, but player collision, traversal, service-gate behavior, dynamic objects, traffic, damage, audio, and production vehicle tuning remain unchanged.
-- The next decision should come from collision replay evidence for deterministic versus `jolt-live`, with human playtest as useful follow-up rather than the only gate.
+- The next decision should come from preferred-runtime live evidence plus collision/route replay evidence, with human playtest as useful follow-up rather than the only gate.
 
 Important implementation choices:
 
@@ -272,4 +275,4 @@ v0.10 used the physics foundation without promoting full Jolt vehicle constraint
 - Tests scan `src/game` to prevent accidental `Jolt` / `JPH::*` vendor references.
 - The opt-in `windows-vs2022-debug-jolt` preset remains the proof that the Jolt backend still configures, builds, and tests through the engine API.
 
-Next recommendation: keep deterministic vehicle gameplay as the default until a deliberate promotion milestone weighs the accumulated Jolt evidence. The v0.65 Jolt path validates enter, drive, checkpoint, exit, service-run confirmation, camera-aware obstacle progress, controls checks, and collision-backed obstacle replay telemetry, but it still has not become broad live vehicle collision, road-edge collision, damage, traffic, or full production vehicle feel.
+Next recommendation: use the preferred-runtime trial to gather live evidence before broader migration. The v0.65/v0.68 Jolt path validates enter, drive, checkpoint, exit, service-run confirmation, camera-aware obstacle progress, controls checks, and collision-backed obstacle replay telemetry, but it still has not become broad live vehicle collision, road-edge collision, damage, traffic, or full production vehicle feel.
