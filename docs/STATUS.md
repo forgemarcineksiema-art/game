@@ -2,6 +2,54 @@
 
 Last updated: 2026-05-16
 
+## v0.86 Player Proxy Silhouette Pass (2026-05-16)
+
+What looked weak:
+
+- After v0.85, the central player proxy was the most obvious first-frame blockout element. The old presentation used stacked rectangular boxes for torso and shoulders, which made the character read as a debug column in front of the newly improved Ferry Office gate.
+
+What changed:
+
+- Replaced the rectangular torso/shoulder block stack with a small code-owned tapered raincoat mesh submitted through the existing flat-triangle debug renderer path.
+- Retuned the boot, sleeve, collar, and head proportions slightly so the silhouette reads as a compact third-person stand-in rather than a column.
+- Preserved player collision, movement, camera, interaction focus, traversal, prompts, scene data, assets, and service-call behavior.
+
+Files changed:
+
+- `src\game\SandboxLayer.cpp`
+- `docs\MESH_RENDERING.md`
+- `docs\ROADMAP.md`
+- `docs\STATUS.md`
+
+Validation:
+
+- `cmake --build --preset windows-vs2022-debug --target EngineApp EngineCoreTests`: passed.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `python tools\validate_scene.py`: passed.
+- `python tools\validate_assets.py`: passed; 17 model files.
+- `python tools\capture_visual_smoke.py`: passed; GDI colors=79/lumaRange=221, DX11 colors=51/lumaRange=221 with WARP fallback in this environment.
+- `python tools\playthrough_qa.py`: passed; deterministic service-call playthrough completed 20 events.
+- `scripts\verify.ps1`: passed; doctor completed with known plain-PATH tool warnings, configure/build succeeded, default CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke completed.
+- `python tools\mesh_report.py`: passed; 17 mesh assets, 68 mesh instances, 17 referenced model files.
+- `python tools\scene_report.py`: passed; 24 scene materials, 30 visual placeholders, 17 mesh assets, 68 mesh instances, 16 interactables, 16 route markers, and 15 objective markers.
+- `python tools\scale_audit.py`: passed.
+- `git diff --check`: passed with only expected CRLF normalization warnings for touched files.
+
+Automated evidence generated:
+
+- `build\captures\v0.31-gdi-capture.bmp`
+- `build\captures\v0.31-dx11-capture.bmp`
+- `build\captures\capture_visual_smoke_report.json`
+- `build\playthroughs\ferry-office-service-call-report.json`
+
+Remaining visual weakness:
+
+- The player now reads better, so the next strongest target is the Ferry Office facade material hierarchy: the facade panel, sign board, and entry posts still rely on broad unit-box shapes around the improved gate/canopy.
+
+Commit/push:
+
+- Included in the `v0.86 player proxy silhouette pass` commit/push step.
+
 ## v0.85 Ferry Office Service Gate Mesh Pass (2026-05-16)
 
 What looked weak:

@@ -884,6 +884,14 @@ Status: implemented and validated. The service-yard vehicle now uses a tapered c
 
 Status: implemented and validated. The Ferry Office front now uses a single inset-panel service-gate mesh instead of a stack of gate unit boxes; `scripts/verify.ps1`, scene/asset/mesh/scale checks, and GDI/DX11 visual smoke pass.
 
+## v0.86 - Player Proxy Silhouette Pass
+
+- Replace the old block torso/shoulder player presentation with a small tapered runtime raincoat mesh.
+- Preserve player collision, movement, camera, interactions, traversal, prompts, and service-call behavior.
+- Keep this in the existing flat-triangle debug renderer path, not a character asset, animation, or gameplay system.
+
+Status: implemented and validated. The first-frame player proxy now has a clearer tapered body silhouette instead of a rectangular torso stack; `scripts/verify.ps1`, playthrough QA, scene/asset/mesh/scale checks, and GDI/DX11 visual smoke pass.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.85, the next useful future milestone should either improve the central player proxy silhouette, strengthen facade material hierarchy, replace another high-visibility repeated unit-box cue with a purposeful original mesh, or use preferred-runtime evidence to harden Jolt road-edge/live-control behavior.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.86, the next useful future milestone should either strengthen Ferry Office facade material hierarchy, replace another high-visibility repeated unit-box cue with a purposeful original mesh, improve dock foreground/approach cohesion without micro-trim noise, or use preferred-runtime evidence to harden Jolt road-edge/live-control behavior.

@@ -261,6 +261,36 @@ void DrawMeshInstance(
     DrawSceneShadedTriangleList(renderer, triangles, material);
 }
 
+const engine::StaticMeshAsset& PlayerRaincoatMesh()
+{
+    static const engine::StaticMeshAsset mesh = [] {
+        engine::StaticMeshAsset asset;
+        asset.id = "runtime-player-raincoat-proxy";
+        asset.sourcePath = "runtime/generated/player-raincoat-proxy";
+        asset.vertices = {
+            {{-0.28f, 0.54f, -0.18f}},
+            {{0.28f, 0.54f, -0.18f}},
+            {{0.28f, 0.54f, 0.18f}},
+            {{-0.28f, 0.54f, 0.18f}},
+            {{-0.19f, 1.28f, -0.14f}},
+            {{0.19f, 1.28f, -0.14f}},
+            {{0.19f, 1.28f, 0.14f}},
+            {{-0.19f, 1.28f, 0.14f}},
+        };
+        asset.indices = {
+            0, 1, 2, 0, 2, 3,
+            4, 7, 6, 4, 6, 5,
+            0, 4, 5, 0, 5, 1,
+            1, 5, 6, 1, 6, 2,
+            2, 6, 7, 2, 7, 3,
+            3, 7, 4, 3, 4, 0,
+        };
+        asset.bounds = engine::ComputeBounds(asset.vertices);
+        return asset;
+    }();
+    return mesh;
+}
+
 } // namespace
 
 SandboxLayer::SandboxLayer(
@@ -919,26 +949,35 @@ void SandboxLayer::drawSceneVisualPlaceholders(engine::IRenderer& renderer)
 void SandboxLayer::drawPlayerPresentation(engine::IRenderer& renderer)
 {
     const PlayerState& player = m_player.state();
+    const engine::Color bootColor {0.05f, 0.10f, 0.11f, 1.0f};
+    const engine::Color sleeveColor {0.05f, 0.12f, 0.13f, 1.0f};
     renderer.drawDebugSolidBox(player.position + engine::Vec3 {-0.10f, 0.38f, 0.0f},
         {0.07f, 0.34f, 0.08f},
-        {0.06f, 0.12f, 0.13f, 1.0f});
+        bootColor);
     renderer.drawDebugSolidBox(player.position + engine::Vec3 {0.10f, 0.38f, 0.0f},
         {0.07f, 0.34f, 0.08f},
-        {0.06f, 0.12f, 0.13f, 1.0f});
-    renderer.drawDebugSolidBox(player.position + engine::Vec3 {0.0f, 0.92f, 0.0f},
-        {0.23f, 0.36f, 0.17f},
-        {0.08f, 0.16f, 0.18f, 1.0f});
+        bootColor);
+    engine::StaticMeshInstance raincoat;
+    raincoat.assetId = "runtime-player-raincoat-proxy";
+    raincoat.position = player.position;
+    raincoat.yawRadians = player.facingYawRadians;
+    SceneMaterial raincoatMaterial;
+    raincoatMaterial.baseColor = {0.06f, 0.17f, 0.19f, 1.0f};
+    raincoatMaterial.ambientShade = 0.66f;
+    raincoatMaterial.directionalShade = 0.30f;
+    raincoatMaterial.topShade = 0.12f;
+    DrawMeshInstance(renderer, PlayerRaincoatMesh(), raincoat, raincoatMaterial);
     renderer.drawDebugSolidBox(player.position + engine::Vec3 {-0.33f, 0.94f, 0.0f},
-        {0.06f, 0.28f, 0.07f},
-        {0.06f, 0.12f, 0.13f, 1.0f});
+        {0.055f, 0.25f, 0.065f},
+        sleeveColor);
     renderer.drawDebugSolidBox(player.position + engine::Vec3 {0.33f, 0.94f, 0.0f},
-        {0.06f, 0.28f, 0.07f},
-        {0.06f, 0.12f, 0.13f, 1.0f});
-    renderer.drawDebugSolidBox(player.position + engine::Vec3 {0.0f, 1.34f, 0.0f},
-        {0.28f, 0.09f, 0.18f},
-        {0.07f, 0.14f, 0.16f, 1.0f});
+        {0.055f, 0.25f, 0.065f},
+        sleeveColor);
+    renderer.drawDebugSolidBox(player.position + engine::Vec3 {0.0f, 1.32f, -0.01f},
+        {0.18f, 0.08f, 0.14f},
+        {0.07f, 0.15f, 0.17f, 1.0f});
     renderer.drawDebugSolidBox(player.position + engine::Vec3 {0.0f, 1.52f, 0.0f},
-        {0.16f, 0.16f, 0.16f},
+        {0.15f, 0.15f, 0.14f},
         {0.38f, 0.30f, 0.22f, 1.0f});
 }
 
