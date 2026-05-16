@@ -20,7 +20,7 @@ Recent history forms a clear arc:
 - v0.32: deterministic Ferry Office playthrough QA.
 - v0.33: Jolt static scene-query parity QA.
 - v0.34: Jolt character/contact probe QA.
-- v0.45-v0.47: Jolt vehicle runtime controls, service-run route proxy, and route-pace tuning.
+- v0.45-v0.48: Jolt vehicle runtime controls, service-run route proxy, route-pace tuning, and deterministic service-vehicle runtime playthrough QA.
 
 ## Architecture Map
 
@@ -139,7 +139,7 @@ Recent history forms a clear arc:
 - UI mode/presentation text behavior.
 - player movement, camera, world collision, raycast.
 - interactions, traversal, world state, Ferry Office scene loop.
-- playthrough QA, physics parity QA, character contact QA report writing.
+- playthrough QA, runtime service-vehicle playthrough QA, physics parity QA, character contact QA report writing.
 - source boundary guard for accidental direct Jolt references in `src/game`.
 
 ### Python Tests
@@ -200,7 +200,7 @@ Commands run on 2026-05-16:
 - `python tools/validate_assets.py`: passed.
 - `python tools/scale_audit.py`: passed, no suspicious scale issues.
 - `python tools/mesh_report.py`: passed, 11 referenced model files.
-- `python tools/playthrough_qa.py`: passed; service-call phase `complete`, 10 events.
+- `python tools/playthrough_qa.py`: passed; service-call phase `complete`, 10 events. After v0.48 this report is also expected to include runtime service-vehicle enter, dock-road checkpoint, and exit steps.
 - `python tools/capture_visual_smoke.py`: passed for GDI and DX11 captures; DX11 used WARP in this environment.
 - `python tools/physics_parity_qa.py`: passed with Jolt backend; floor=4, raycast=4, overlap=4.
 - `python tools/character_contact_qa.py`: passed with Jolt backend; probes=7.
@@ -367,13 +367,13 @@ Validation:
 
 ## Recommendation
 
-Best next move: build fuller input-scripted runtime QA for the Ferry Office service vehicle loop.
+Best next move: compare the opt-in Jolt live path through the v0.48 service-vehicle runtime playthrough loop, or start a very small second job beat if content leverage is more important than vehicle promotion.
 
-Reason: v0.35 proved Jolt vehicle feasibility, v0.36 proved a frame-stepped runtime adapter comparison, v0.37 exposed that adapter through `--vehicle-runtime jolt`, v0.45 hardened tap/brake/reverse/coast checks, v0.46 added automated service-run route checks, and v0.47 tuned Jolt route pace under a 240-frame budget. The straight route proxy now shows deterministic reaches the checkpoint in 139 frames and Jolt reaches it in 213 frames. That is enough for continued opt-in testing, but not enough for default promotion without real update-loop evidence.
+Reason: v0.35 proved Jolt vehicle feasibility, v0.36 proved a frame-stepped runtime adapter comparison, v0.37 exposed that adapter through `--vehicle-runtime jolt`, v0.45 hardened tap/brake/reverse/coast checks, v0.46 added automated service-run route checks, v0.47 tuned Jolt route pace under a 240-frame budget, and v0.48 proved the deterministic first-job vehicle beat can enter, drive, checkpoint, exit, and confirm through runtime controller behavior. That is enough for continued opt-in testing and small content growth, but not enough for default Jolt promotion until the same loop runs against the switched path.
 
-Second-best: a narrow presentation/readability pass only if the runtime replay exposes objective, prompt, or camera ambiguity.
+Second-best: a narrow objective/readability pass only if the runtime replay or Job #2 exposes prompt, route, or camera ambiguity.
 
-Do not start Job #2, map expansion, renderer polish, or more authored props while the first service vehicle path still lacks input-scripted live-loop confidence.
+Do not start broad map expansion, renderer polish, or more authored props while the first service vehicle path still lacks opt-in Jolt live-loop comparison evidence.
 
 Ready next-goal prompt:
 
@@ -389,20 +389,19 @@ Repository rules:
 - Commit and push only if validation passes and there are no unrelated user changes.
 
 Goal:
-Build input-scripted runtime QA for the Ferry Office service vehicle loop.
+Compare opt-in Jolt through the service-vehicle runtime playthrough loop, or add one small scene-authored Job #2 beat if the first-job evidence is enough for content progress.
 
 Why now:
-The Jolt vehicle path now has feasibility, runtime-comparison, live opt-in switch, controls, and service-run route completion evidence. After v0.47 it reaches the checkpoint in 213 frames under the 240-frame budget, but the project still lacks automated evidence for the real enter, drive, exit, and confirm loop.
+The deterministic first service job now has runtime enter, drive, checkpoint, exit, and confirm evidence. Jolt still has controls and route-proxy evidence but not the same live-loop proof, while content can now grow from a better-covered first job.
 
 Scope:
-- Add or extend a scripted runtime QA path that drives the actual update loop far enough to enter the service vehicle, reach the service-run checkpoint, exit safely, and confirm the job beat.
-- Compare deterministic default behavior and opt-in Jolt where practical, using the existing routeChecks as supporting evidence.
+- Either extend the runtime QA path to run the opt-in Jolt vehicle switch through enter-drive-checkpoint-exit-confirm behavior, or add a single compact authored follow-up job with visible world-state change.
 - Keep deterministic vehicle gameplay as the default.
-- Record whether Jolt should remain opt-in, get another tuning pass, or be considered for broader live-loop testing.
+- Record whether Jolt should remain opt-in, get another tuning pass, or be considered for broader live-loop testing; if adding content, extend playthrough QA to cover the new beat.
 
 Non-goals:
-- No new job content.
-- No traffic, NPCs, damage, garage, economy, save/load, or Job #2.
+- No broad new job arc if the chosen milestone is Jolt live-loop comparison.
+- No traffic, NPCs, damage, garage, economy, save/load, or multi-job framework.
 - No default vehicle replacement unless automated route/control/live-loop evidence clearly supports it and validation remains clean.
 - No extra deterministic vehicle polish unless it blocks a fair comparison.
 - No Jolt vendor types leaking into game-facing APIs.

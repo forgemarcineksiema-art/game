@@ -34,6 +34,11 @@ class PlaythroughQaTests(unittest.TestCase):
                         "schema": "v0.32-ferry-office-playthrough-qa",
                         "scenario": "ferry-office-service-call",
                         "passed": True,
+                        "steps": [
+                            {"name": "serviceVehicleRuntime", "passed": True},
+                            {"name": "dockRoadRuntimeCheckpoint", "passed": True},
+                            {"name": "serviceVehicleRuntimeExit", "passed": True},
+                        ],
                         "final": {
                             "phase": "complete",
                             "flags": {
@@ -88,6 +93,44 @@ class PlaythroughQaTests(unittest.TestCase):
             )
 
             with self.assertRaisesRegex(ValueError, "ferryOfficeJobComplete"):
+                playthrough_qa.load_and_validate_report(report_path)
+
+    def test_validate_report_rejects_missing_runtime_vehicle_steps(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            report_path = pathlib.Path(temp_dir) / "report.json"
+            report_path.write_text(
+                json.dumps(
+                    {
+                        "schema": "v0.32-ferry-office-playthrough-qa",
+                        "scenario": "ferry-office-service-call",
+                        "passed": True,
+                        "steps": [
+                            {"name": "collectManifest", "passed": True},
+                            {"name": "serviceRoute", "passed": True},
+                            {"name": "maintenancePower", "passed": True},
+                            {"name": "openServiceGate", "passed": True},
+                        ],
+                        "final": {
+                            "phase": "complete",
+                            "flags": {
+                                "manifestCollected": True,
+                                "serviceRouteUsed": True,
+                                "maintenanceBoxInspected": True,
+                                "powerRestored": True,
+                                "routeOpened": True,
+                                "serviceVehicleUsed": True,
+                                "dockRoadReached": True,
+                                "serviceRunConfirmed": True,
+                                "ferryOfficeJobComplete": True,
+                            },
+                        },
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(ValueError, "runtime vehicle"):
                 playthrough_qa.load_and_validate_report(report_path)
 
 

@@ -3369,6 +3369,23 @@ void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
     Expect(result.steps.size() >= 7,
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should report each major authored phase.");
+    const auto hasStep = [&result](std::string_view name) {
+        for (const FerryOfficePlaythroughQaStep& step : result.steps) {
+            if (step.name == name) {
+                return true;
+            }
+        }
+        return false;
+    };
+    Expect(hasStep("serviceVehicleRuntime"),
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "QA playthrough should enter the service vehicle through runtime input.");
+    Expect(hasStep("dockRoadRuntimeCheckpoint"),
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "QA playthrough should drive the service vehicle to the dock-road checkpoint.");
+    Expect(hasStep("serviceVehicleRuntimeExit"),
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "QA playthrough should exit the service vehicle through runtime input.");
     Expect(std::filesystem::exists(reportPath),
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should write a report artifact.");

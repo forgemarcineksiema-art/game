@@ -8,7 +8,7 @@ Choose Jolt Physics as Tidebreak's default production physics candidate unless a
 
 Keep PhysX as the backup candidate. Do not choose Bullet for the main engine path unless a future, narrow test gives a strong reason.
 
-This decision does not mean every current gameplay collision path should be rewritten immediately. v0.9.2 adds a vendor-safe `src/engine/physics` boundary and an opt-in Jolt backend spike. v0.33 adds a QA-only Ferry Office static-collision parity bridge, v0.34 adds a player-proxy contact probe, and v0.35 adds a wheeled vehicle feasibility probe. Existing Ferry Office gameplay still uses the tested prototype paths until a later goal migrates one behavior at a time.
+This decision does not mean every current gameplay collision path should be rewritten immediately. v0.9.2 adds a vendor-safe `src/engine/physics` boundary and an opt-in Jolt backend spike. v0.33 adds a QA-only Ferry Office static-collision parity bridge, v0.34 adds a player-proxy contact probe, and v0.35 adds a wheeled vehicle feasibility probe. Existing Ferry Office gameplay still uses the tested prototype paths until a later goal migrates one behavior at a time. v0.48 adds deterministic runtime enter-drive-exit-confirm playthrough evidence for the first service job, but not Jolt default promotion.
 
 ## Why Decide Now
 
@@ -211,13 +211,14 @@ Validated so far:
 - v0.45 added controls checks for tap/coast, brake, reverse, and reverse coast-down.
 - v0.46 added service-run route checks: deterministic reached the authored checkpoint in 139 frames and untuned Jolt reached it in 301 frames, both in bounds.
 - v0.47 tuned the opt-in Jolt route pace and tightened the route-check budget: deterministic still reaches the authored checkpoint in 139 frames and Jolt now reaches it in 213 frames under a 240-frame route budget.
+- v0.48 added deterministic first-job runtime playthrough evidence: the QA path enters the authored service vehicle through runtime input, reaches the dock-road checkpoint in 139 frames, exits at a clear position, and confirms the service run.
 - `rg -n "Jolt|JPH::|<Jolt/|JPH/" src\game` returns no matches; Jolt types remain private to engine-owned physics code.
 
 Important limits:
 
 - This is still a QA/runtime comparison switch, not a normal play-mode replacement.
 - The deterministic `VehicleController` remains the live gameplay fallback.
-- The Jolt runtime adapter is proven against compact controls checks and a straight service-run route proxy. It still needs fuller live-loop replay evidence before it becomes the default vehicle path.
+- The Jolt runtime adapter is proven against compact controls checks and a straight service-run route proxy. It still needs the same enter-drive-exit-confirm live-loop replay evidence that v0.48 now covers for the deterministic controller before it becomes the default vehicle path.
 
 ## v0.37 Live Opt-in Vehicle Runtime Switch Result
 
@@ -267,4 +268,4 @@ v0.10 used the physics foundation without promoting full Jolt vehicle constraint
 - Tests scan `src/game` to prevent accidental `Jolt` / `JPH::*` vendor references.
 - The opt-in `windows-vs2022-debug-jolt` preset remains the proof that the Jolt backend still configures, builds, and tests through the engine API.
 
-Next recommendation: keep deterministic vehicle gameplay as the default and run a fuller input-scripted live-loop replay milestone. The v0.47 route proxy proves Jolt can reach the service-run checkpoint within the 240-frame budget, but default promotion remains premature until enter, drive, exit, and service-run confirmation are validated through the real update loop.
+Next recommendation: keep deterministic vehicle gameplay as the default and run an opt-in Jolt live-loop comparison milestone. The v0.47 route proxy proves Jolt can reach the service-run checkpoint within the 240-frame budget, and v0.48 proves the deterministic first-job runtime vehicle loop, but default Jolt promotion remains premature until the switched path validates enter, drive, exit, and service-run confirmation through comparable evidence.

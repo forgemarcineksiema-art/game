@@ -25,6 +25,11 @@ REQUIRED_FLAGS = [
     "serviceRunConfirmed",
     "ferryOfficeJobComplete",
 ]
+REQUIRED_RUNTIME_STEPS = [
+    "serviceVehicleRuntime",
+    "dockRoadRuntimeCheckpoint",
+    "serviceVehicleRuntimeExit",
+]
 
 
 def default_exe_path() -> pathlib.Path:
@@ -59,6 +64,12 @@ def load_and_validate_report(report_path: pathlib.Path) -> dict[str, Any]:
 
     if final.get("phase") != "complete":
         raise ValueError(f"Playthrough final phase was not complete: {final.get('phase')}")
+
+    steps = report.get("steps", [])
+    step_names = {step.get("name") for step in steps if isinstance(step, dict)}
+    for step_name in REQUIRED_RUNTIME_STEPS:
+        if step_name not in step_names:
+            raise ValueError(f"Playthrough report is missing required runtime vehicle step: {step_name}")
 
     return report
 

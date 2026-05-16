@@ -6,6 +6,7 @@
 #include "game/PlayerController.h"
 #include "game/PrototypeScene.h"
 #include "game/SceneLoader.h"
+#include "game/VehicleController.h"
 #include "game/TraversalSystem.h"
 
 #include <array>
@@ -19,6 +20,10 @@
 namespace {
 
 constexpr std::string_view ScenarioName = "ferry-office-service-call";
+constexpr std::string_view ServiceVehicleId = "service-yard-vehicle";
+constexpr int RuntimeRouteBudgetFrames = 240;
+constexpr float RuntimeRouteThrottle = 0.72f;
+constexpr float RuntimeFixedStepSeconds = 1.0f / 60.0f;
 
 constexpr std::array RequiredFlags = {
     WorldFlag::ManifestCollected,
@@ -121,6 +126,56 @@ bool AllFlagsSet(const WorldState& state, std::initializer_list<WorldFlag> flags
     }
     return true;
 }
+
+VehicleController BuildRuntimeVehicle(const SceneVehicleDefinition& vehicle)
+{
+    VehicleController controller;
+    VehicleControllerSettings settings;
+    settings.enterRadius = vehicle.enterRadius;
+    settings.boundsMinX = vehicle.boundsMin.x;
+    settings.boundsMinZ = vehicle.boundsMin.y;
+    settings.boundsMaxX = vehicle.boundsMax.x;
+    settings.boundsMaxZ = vehicle.boundsMax.y;
+    controller.setSettings(settings);
+    controller.setPosition(vehicle.spawnPosition);
+    controller.setYawRadians(vehicle.spawnYawRadians);
+    return controller;
+}
+
+bool IsRuntimeExitPositionClear(const PrototypeScene& scene, const PlayerController& player, const VehicleController& vehicle)
+{
+    const engine::Vec3 exitPosition = vehicle.exitPosition();
+    const VehicleControllerSettings& settings = vehicle.settings();
+    if (exitPosition.x < settings.boundsMinX || exitPosition.x > settings.boundsMaxX
+        || exitPosition.z < settings.boundsMinZ || exitPosition.z > settings.boundsMaxZ) {
+        return false;
+    }
+
+    for (const StaticCollider& collider : scene.world().colliders()) {
+        if (!collider.blocksPlayer) {
+            continue;
+        }
+        if (scene.world().playerOverlapsCollider(
+                exitPosition,
+                player.settings().radius,
+                player.settings().height,
+                collider)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+struct RuntimeVehicleLoopResult {
+    bool vehicleEntered = false;
+    bool checkpointReached = false;
+    bool exitClear = false;
+    bool vehicleExited = false;
+    bool hitBounds = false;
+    int framesToCheckpoint = -1;
+    engine::Vec3 finalVehiclePosition;
+};
 
 void AddStep(FerryOfficePlaythroughQaResult& result, PrototypeScene& scene, FerryOfficePlaythroughQaStep step)
 {
@@ -269,21 +324,81 @@ FerryOfficePlaythroughQaResult RunFerryOfficeServiceCallPlaythroughQa(
     actionOk = TriggerInteraction(scene, FerryOffice::Names::WallButton, message);
     RecordActionStep(result, scene, "openServiceGate", {WorldFlag::RouteOpened}, actionOk, message);
 
-    actionOk = scene.recordServiceVehicleUsed();
+    const SceneVehicleDefinition* serviceVehicle = FindSceneVehicleById(loadedScene.scene, std::string(ServiceVehicleId));
+    RuntimeVehicleLoopResult runtimeVehicle;
+    PlayerController runtimePlayer;
+    runtimePlayer.setWorld(&scene.world());
+    VehicleController runtimeVehicleController;
+    if (serviceVehicle) {
+        runtimeVehicleController = BuildRuntimeVehicle(*serviceVehicle);
+        runtimeVehicle.finalVehiclePosition = runtimeVehicleController.state().position;
+
+        const engine::Vec3 entryPosition = runtimeVehicleController.state().position - runtimeVehicleController.forward();
+        const engine::Vec3 entryFacing = engine::Normalize(runtimeVehicleController.state().position - entryPosition);
+        runtimeVehicleController.beginFrame();
+        runtimeVehicleController.updateFocus(entryPosition, entryFacing);
+        engine::InputState enterInput;
+        enterInput.interactPressed = true;
+        runtimeVehicle.vehicleEntered = runtimeVehicleController.tryEnter(enterInput);
+        if (runtimeVehicle.vehicleEntered) {
+            scene.recordServiceVehicleUsed();
+        }
+    }
+
+    actionOk = serviceVehicle != nullptr && runtimeVehicle.vehicleEntered;
     RecordActionStep(result,
         scene,
-        "serviceVehicle",
+        "serviceVehicleRuntime",
         {WorldFlag::ServiceVehicleUsed},
         actionOk,
-        actionOk ? "Service vehicle use recorded." : "Service vehicle use was not recorded.");
+        actionOk ? "Runtime input entered the service vehicle." : "Runtime input did not enter the service vehicle.");
 
-    actionOk = scene.updateJobVehicleCheckpoint(scene.job().config().vehicleCheckpointPosition, true);
+    if (serviceVehicle && runtimeVehicle.vehicleEntered) {
+        for (int frame = 0; frame < RuntimeRouteBudgetFrames; ++frame) {
+            runtimeVehicleController.beginFrame();
+            engine::InputState driveInput;
+            driveInput.moveForward = RuntimeRouteThrottle;
+            runtimeVehicleController.updateDriving(RuntimeFixedStepSeconds, driveInput);
+            runtimeVehicle.hitBounds = runtimeVehicle.hitBounds || runtimeVehicleController.state().hitBoundsThisFrame;
+            runtimeVehicle.finalVehiclePosition = runtimeVehicleController.state().position;
+            if (scene.updateJobVehicleCheckpoint(
+                    runtimeVehicleController.state().position,
+                    runtimeVehicleController.state().occupied)) {
+                runtimeVehicle.checkpointReached = true;
+                runtimeVehicle.framesToCheckpoint = frame + 1;
+                break;
+            }
+        }
+    }
+
+    actionOk = serviceVehicle != nullptr && runtimeVehicle.checkpointReached && !runtimeVehicle.hitBounds;
     RecordActionStep(result,
         scene,
-        "dockRoadCheckpoint",
+        "dockRoadRuntimeCheckpoint",
         {WorldFlag::DockRoadReached},
         actionOk,
-        actionOk ? "Dock-road checkpoint reached." : "Dock-road checkpoint was not recorded.");
+        actionOk
+            ? "Runtime vehicle reached the dock-road checkpoint in " + std::to_string(runtimeVehicle.framesToCheckpoint) + " frames."
+            : "Runtime vehicle did not reach the dock-road checkpoint cleanly.");
+
+    if (serviceVehicle && runtimeVehicle.vehicleEntered) {
+        runtimeVehicleController.beginFrame();
+        runtimeVehicle.exitClear = IsRuntimeExitPositionClear(scene, runtimePlayer, runtimeVehicleController);
+        engine::InputState exitInput;
+        exitInput.interactPressed = true;
+        runtimeVehicle.vehicleExited = runtimeVehicleController.tryExit(exitInput, runtimeVehicle.exitClear);
+        if (runtimeVehicle.vehicleExited) {
+            runtimePlayer.setPosition(runtimeVehicleController.exitPosition());
+        }
+    }
+
+    actionOk = serviceVehicle != nullptr && runtimeVehicle.exitClear && runtimeVehicle.vehicleExited;
+    RecordActionStep(result,
+        scene,
+        "serviceVehicleRuntimeExit",
+        {},
+        actionOk,
+        actionOk ? "Runtime input exited the service vehicle at a clear position." : "Runtime vehicle exit was blocked or did not trigger.");
 
     actionOk = TriggerInteraction(scene, FerryOffice::Names::ServiceRunMarker, message);
     RecordActionStep(result,

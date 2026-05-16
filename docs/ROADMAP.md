@@ -557,6 +557,17 @@ Status: implemented as an automated proxy for the deferred manual deterministic-
 
 Status: implemented as an opt-in Jolt vehicle runtime tuning pass. Deterministic still reaches the checkpoint in 139 frames; Jolt now reaches it in 213 frames under the 240-frame automated budget, keeps all controls checks green, stays in bounds, and remains behind the explicit Jolt runtime path.
 
+## v0.48 - Input-Scripted Service Vehicle Runtime Playthrough QA
+
+- Strengthen the Ferry Office Service Call playthrough QA so the vehicle beat uses runtime input-style behavior instead of direct world-state shortcuts.
+- Enter the scene-authored service vehicle through `VehicleController` focus/interaction.
+- Drive the authored service vehicle to the dock-road checkpoint under the 240-frame route budget.
+- Exit the vehicle through runtime input after a clear-exit overlap check, then confirm the service run.
+- Require the Python playthrough wrapper and C++ report test to reject reports that skip the runtime vehicle steps.
+- Preserve deterministic default gameplay and keep Jolt behind the explicit opt-in runtime path.
+
+Status: implemented as a stronger first-job behavioral QA pass. The default playthrough report now records `serviceVehicleRuntime`, `dockRoadRuntimeCheckpoint`, and `serviceVehicleRuntimeExit`; the service vehicle reaches the dock-road checkpoint in 139 frames and the job completes with 10 world events.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. The next vehicle decision should build a fuller input-scripted live-loop replay for the Ferry Office service job, especially enter-drive-checkpoint-exit-confirm behavior with deterministic and opt-in Jolt paths. Keep deterministic default until the Jolt path proves live-loop readability beyond the straight route proxy. Avoid Job #2 until the first job is automatically validated through the real update loop, not only scene/job helpers.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. The next vehicle decision should compare the opt-in Jolt live path through the same enter-drive-checkpoint-exit-confirm loop that v0.48 now covers for the deterministic controller. If the next milestone prioritizes playable content instead, Job #2 is now less risky than before, but keep it small and backed by playthrough QA.

@@ -190,6 +190,71 @@ Next direction:
 
 - Build input-scripted runtime QA for the Ferry Office service vehicle loop, using the straight route proxy as supporting evidence rather than the only vehicle proof.
 
+## v0.48 Input-Scripted Runtime QA for Ferry Office Service Vehicle Loop (2026-05-16)
+
+Selected milestone:
+
+- Strengthen the Ferry Office Service Call playthrough QA so the vehicle part uses runtime enter, drive, checkpoint, exit, and confirm behavior instead of direct state shortcuts.
+
+Why selected:
+
+- v0.47 removed the opt-in Jolt route-pace blocker, but the first service job still needed better live-loop evidence before default vehicle promotion or Job #2 content.
+- This was the highest-leverage next move because it proves more of the actual driver/fixer loop while preserving the validated deterministic default.
+
+Definition of Done:
+
+- Playthrough QA enters the scene-authored service vehicle through `VehicleController` runtime input.
+- The scripted runtime vehicle drive reaches the authored dock-road checkpoint within the existing 240-frame route budget without bounds hits.
+- Playthrough QA exits the vehicle through runtime input at a clear exit position, then confirms the service run.
+- Python and C++ tests reject stale reports that skip the runtime vehicle steps.
+- Default validation and opt-in Jolt validation remain green.
+- Docs record the new evidence and remaining limitation.
+
+Implementation notes:
+
+- Replaced direct `recordServiceVehicleUsed()` and direct checkpoint state updates in `FerryOfficePlaythroughQa.cpp` with a small runtime vehicle loop using the scene-authored `service-yard-vehicle`.
+- The QA path now records `serviceVehicleRuntime`, `dockRoadRuntimeCheckpoint`, and `serviceVehicleRuntimeExit` steps.
+- The runtime loop uses a fixed 60 Hz step, 0.72 forward input, and the 240-frame route budget; the passing default report reaches the checkpoint in 139 frames.
+- Exit clearance uses the same player proxy overlap shape against current scene colliders before calling `tryExit`.
+- `tools\playthrough_qa.py` now rejects reports missing the required runtime vehicle steps.
+- `tests\EngineCoreTests.cpp` now asserts the runtime step names in the generated C++ report.
+
+Commands and results:
+
+- `python tests\test_playthrough_qa.py`: failed as expected before implementation because reports without runtime vehicle steps were still accepted.
+- `python tools\playthrough_qa.py`: failed as expected after tightening the Python wrapper but before the C++ report changed; missing `serviceVehicleRuntime`.
+- Parallel same-preset command attempt `cmake --build --preset windows-vs2022-debug --target EngineApp` while another default build target was running: failed with an MSBuild `.tlog` file-lock error. This was a command scheduling mistake, not a source failure.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: passed.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `cmake --build --preset windows-vs2022-debug --target EngineApp`: passed after sequential rebuild.
+- `python tests\test_playthrough_qa.py`: passed, 4 tests.
+- `python tools\playthrough_qa.py`: passed; phase=`complete`, events=10, runtime vehicle checkpoint reached in 139 frames.
+- `scripts\verify.ps1`: passed; doctor passed, default configure/build passed, default CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke loaded the Ferry Office scene.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed; Jolt opt-in CTest passed 15/15.
+- `python tools\physics_parity_qa.py`: passed; backend=`jolt`, floor=4, raycast=4, overlap=4.
+- `python tools\character_contact_qa.py`: passed; backend=`jolt`, probes=7.
+- `python tools\vehicle_physics_qa.py`: passed; backend=`jolt`, samples=5, recommendation=`promote`.
+- `python tools\vehicle_runtime_qa.py`: passed; backend=`jolt`, samples=5, controlChecks=4, routeChecks=2, maxPositionDelta=1.75, recommendation=`promote`.
+- `rg -n "Jolt|JPH::|<Jolt/|JPH/" src\game`: returned no matches; no Jolt/vendor type leakage into game code.
+- `git diff --check`: passed with expected CRLF normalization warnings only.
+
+Provisional decision:
+
+- Keep deterministic vehicle gameplay as the default.
+- Treat the first Ferry Office job as better-covered for content growth because its service vehicle beat now has runtime enter, drive, checkpoint, exit, and confirm evidence.
+- Keep Jolt opt-in for now; its controls and route QA remain green, but this milestone did not yet run the same live-loop playthrough through the Jolt-backed vehicle path.
+
+Remaining limitations:
+
+- The playthrough QA still drives a compact scripted vehicle line, not full keyboard/mouse navigation, camera comfort, obstacle avoidance, or human feel.
+- The runtime playthrough currently uses the deterministic `VehicleController`; a future vehicle milestone should compare deterministic and opt-in Jolt through the same enter-drive-exit-confirm loop before default promotion.
+
+Next direction:
+
+- Either extend this runtime playthrough harness to compare the opt-in Jolt live path directly, or use the stronger first-job evidence to begin a small Job #2 content beat if the worktree remains green.
+
 ## Changes Made for v0.1
 
 - Added CMake project files: `CMakeLists.txt`, `CMakePresets.json`.
