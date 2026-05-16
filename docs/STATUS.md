@@ -5507,3 +5507,104 @@ Validation:
 - python tools\vehicle_physics_qa.py
 - python tools\vehicle_runtime_qa.py
 ```
+
+## v0.37 Live Opt-in Jolt Vehicle Playtest Switch (2026-05-16)
+
+Goal attempted:
+
+- Expose the v0.36 Jolt vehicle runtime adapter through a live opt-in playtest switch while keeping deterministic vehicle gameplay as the default fallback.
+- Keep vendor-specific physics types private to `src\engine\physics`.
+- Surface enough debug text to prove which live vehicle runtime is active.
+- Add automated coverage for parsing, default fallback, wrapper forwarding, unavailable-backend fallback, and opt-in Jolt selection.
+
+Goal tool note:
+
+- Attempted to create a fresh Codex goal for this v0.37 work, but the local goal tool refused a second goal in the same thread even though the previous goal was already complete. Work continued under this explicit v0.37 target and this status entry records the scope and validation evidence.
+
+TDD notes:
+
+- Added failing C++ tests first for `AppConfig::vehicleRuntimeAdapterEnabled`, `AppConfig::vehicleRuntimeBackend`, `--vehicle-runtime jolt`, unknown runtime rejection, help text, and the `SandboxLayer` opt-in debug marker. `cmake --build --preset windows-vs2022-debug --target EngineCoreTests` failed as expected before implementation because the config fields and constructor did not exist.
+- Added failing PowerShell wrapper tests first for `scripts\play.ps1 -VehicleRuntime jolt`. `python tests\test_run_scripts.py` failed as expected before implementation because the wrapper did not forward `--vehicle-runtime jolt`.
+
+Implementation notes:
+
+- Added `--vehicle-runtime <deterministic|jolt>` parsing in `src\engine\core\Config.*`.
+- Extended `SandboxLayer` with a vendor-free live vehicle runtime adapter path. It creates an `engine::physics::IVehicleRuntimeAdapter` only when explicitly requested; otherwise normal deterministic `VehicleController` driving remains the default.
+- Added `VehicleController::applyRuntimeState(...)` so the live adapter can update the existing vehicle presentation, camera target, job checkpoint, and exit logic without exposing physics vendor types to game code.
+- Added debug telemetry `vehicleRuntime=deterministic`, `vehicleRuntime=<backend>-live`, or an unavailable/init-failed state.
+- Added `scripts\play.ps1 -VehicleRuntime jolt`, while preserving passthrough `-Args @('--vehicle-runtime', ...)` override behavior.
+- Updated `docs\RUNBOOK.md`, `docs\MANUAL_TEST_CHECKLIST.md`, `docs\PHYSICS_DECISION.md`, `docs\ROADMAP.md`, `docs\TECH_DEBT.md`, and `docs\CONTEXT_MAP.md`.
+
+Focused results so far:
+
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: passed after implementation.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `python tests\test_run_scripts.py`: passed, 8 tests.
+- `cmake --build --preset windows-vs2022-debug --target EngineApp`: passed.
+- `build\windows-vs2022-debug\Debug\EngineApp.exe --smoke-test --vehicle-runtime jolt --frames 3`: passed; default build reported selected live runtime backend unavailable and used deterministic fallback.
+- `cmake --build --preset windows-vs2022-debug-jolt --target EngineApp`: passed.
+- `build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --smoke-test --vehicle-runtime jolt --frames 3 --debug-ui`: passed and reported `vehicleRuntime=jolt-live`.
+- `rg -n "Jolt|JPH::|<Jolt/|JPH/" src\game`: returned no matches.
+
+Final validation:
+
+- `scripts\verify.ps1`: passed; default CTest passed 11/11 including `RunScriptTests` and `VehicleRuntimeQaTests`, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke loaded the Ferry Office scene and all 8 static mesh assets.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 15/15 including `FerryOfficeVehicleRuntimeQaSmoke`.
+- `python tools\physics_parity_qa.py`: passed; backend `jolt`, floor=4, raycast=4, overlap=4.
+- `python tools\character_contact_qa.py`: passed; backend `jolt`, probes=7.
+- `python tools\vehicle_physics_qa.py`: passed; backend `jolt`, samples=5, recommendation=`promote`.
+- `python tools\vehicle_runtime_qa.py`: passed; backend `jolt`, samples=5, maxPositionDelta=2.54, recommendation=`promote`.
+- `scripts\play.ps1 -DryRun -VehicleRuntime jolt -ExecutablePath build\windows-vs2022-debug-jolt\Debug\EngineApp.exe -DebugUi`: passed and printed a command containing `--vehicle-runtime jolt`.
+- `build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --smoke-test --vehicle-runtime jolt --frames 3 --debug-ui`: passed and reported `vehicleRuntime=jolt-live`.
+- `build\windows-vs2022-debug\Debug\EngineApp.exe --smoke-test --vehicle-runtime jolt --frames 3`: passed and reported the selected live runtime backend unavailable, preserving deterministic fallback behavior.
+- `git diff --check`: passed with only expected CRLF normalization warnings.
+
+Remaining limitations:
+
+- This is a manual playtest switch, not default promotion.
+- The switched vehicle path still needs a human deterministic-vs-Jolt-live drive comparison before it should replace default gameplay.
+- Player collision, traversal, service-gate behavior, traffic, damage, audio, and production tuning remain unchanged.
+
+Next-goal prompt:
+
+```text
+Create a Codex goal for Tidebreak.
+
+Repository rules:
+- Follow AGENTS.md and docs/AI_WORKFLOW.md.
+- Use docs/CONTEXT_MAP.md for orientation.
+- Update docs/STATUS.md.
+- Run scripts/verify.ps1 before claiming success.
+- Commit and push only if validation passes and there are no unrelated user changes.
+
+Goal:
+Run and document a bounded deterministic-vs-Jolt-live vehicle playtest comparison for the Ferry Office service vehicle.
+
+Why now:
+The Jolt vehicle path now has feasibility, runtime-comparison, and live opt-in switch evidence. The next useful decision is whether it actually feels viable by hand compared with the deterministic fallback.
+
+Scope:
+- Run baseline deterministic play with scripts/play.ps1 -DebugUi.
+- Run opt-in Jolt live play with scripts/play.ps1 -VehicleRuntime jolt -ExecutablePath build\windows-vs2022-debug-jolt\Debug\EngineApp.exe -DebugUi.
+- Compare enter/exit, low-speed control, throttle/brake/reverse, steering, camera target behavior, route completion, and debug telemetry.
+- Record concrete promote/defer/tune evidence in docs/STATUS.md.
+- Keep automated QA fresh before and after the comparison.
+
+Non-goals:
+- No Job #2.
+- No traffic, NPCs, damage, garage, economy, save/load, mission scripting, or broad map expansion.
+- No default replacement unless the comparison clearly supports it and validation remains clean.
+- No vendor type leakage into src/game.
+- No renderer polish, asset pass, or new authored props.
+
+Validation:
+- scripts/verify.ps1
+- cmake --preset windows-vs2022-debug-jolt
+- cmake --build --preset windows-vs2022-debug-jolt
+- ctest --preset windows-vs2022-debug-jolt --output-on-failure
+- python tools\physics_parity_qa.py
+- python tools\character_contact_qa.py
+- python tools\vehicle_physics_qa.py
+- python tools\vehicle_runtime_qa.py
+```

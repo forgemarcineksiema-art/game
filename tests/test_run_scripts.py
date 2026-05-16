@@ -91,6 +91,12 @@ class RunScriptTests(unittest.TestCase):
         self.assertIn("--renderer dx11", result.stdout)
         self.assertIn("--capture-dir build\\captures", result.stdout)
 
+    def test_play_script_vehicle_runtime_option_is_forwarded(self) -> None:
+        result = run_play_script("-DryRun", "-VehicleRuntime", "jolt")
+
+        self.assertEqual(0, result.returncode, result.stdout)
+        self.assertIn("--vehicle-runtime jolt", result.stdout)
+
     def test_play_script_passthrough_args_replace_default_renderer_and_ui(self) -> None:
         result = run_play_script_command(
             f"& '{PLAY_SCRIPT}' -DryRun -Args @('--renderer', 'null', '--ui-mode', 'minimal', '--frames', '3')"
@@ -102,6 +108,15 @@ class RunScriptTests(unittest.TestCase):
         self.assertIn("--renderer null", result.stdout)
         self.assertIn("--ui-mode minimal", result.stdout)
         self.assertIn("--frames 3", result.stdout)
+
+    def test_play_script_passthrough_vehicle_runtime_replaces_default(self) -> None:
+        result = run_play_script_command(
+            f"& '{PLAY_SCRIPT}' -DryRun -VehicleRuntime jolt -Args @('--vehicle-runtime', 'deterministic')"
+        )
+
+        self.assertEqual(0, result.returncode, result.stdout)
+        self.assertEqual(1, result.stdout.count("--vehicle-runtime"))
+        self.assertIn("--vehicle-runtime deterministic", result.stdout)
 
     def test_play_script_missing_executable_explains_build_step(self) -> None:
         result = run_play_script(

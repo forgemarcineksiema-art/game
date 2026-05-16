@@ -1,5 +1,6 @@
 #pragma once
 
+#include "engine/physics/PhysicsWorld.h"
 #include "engine/renderer/RendererTypes.h"
 
 #include <filesystem>
@@ -35,6 +36,8 @@ struct AppConfig {
     std::filesystem::path qaPlaythroughReportPath;
     std::string qaPhysicsParity;
     std::filesystem::path qaPhysicsReportPath;
+    bool vehicleRuntimeAdapterEnabled = false;
+    physics::PhysicsBackend vehicleRuntimeBackend = physics::PhysicsBackend::Simple;
     Color clearColor = {0.08f, 0.11f, 0.16f, 1.0f};
 
     bool captureRequested() const;

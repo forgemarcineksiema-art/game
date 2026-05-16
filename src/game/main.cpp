@@ -92,5 +92,10 @@ int main(int argc, const char* const* argv)
     }
 
     engine::Application app;
-    return app.run(parseResult.config, std::make_unique<SandboxLayer>(parseResult.config.scenePath, parseResult.config.uiMode));
+    return app.run(parseResult.config,
+        std::make_unique<SandboxLayer>(
+            parseResult.config.scenePath,
+            parseResult.config.uiMode,
+            parseResult.config.vehicleRuntimeBackend,
+            parseResult.config.vehicleRuntimeAdapterEnabled));
 }

@@ -56,6 +56,21 @@ bool ParseUiMode(std::string_view text, UiMode& value)
     return false;
 }
 
+bool ParseVehicleRuntime(std::string_view text, bool& adapterEnabled, physics::PhysicsBackend& backend)
+{
+    if (text == "deterministic") {
+        adapterEnabled = false;
+        backend = physics::PhysicsBackend::Simple;
+        return true;
+    }
+    if (text == "jolt") {
+        adapterEnabled = true;
+        backend = physics::PhysicsBackend::Jolt;
+        return true;
+    }
+    return false;
+}
+
 } // namespace
 
 std::string_view UiModeName(UiMode mode)
@@ -171,6 +186,13 @@ ConfigParseResult ParseArguments(int argc, const char* const* argv)
             continue;
         }
 
+        if (ReadValue(argc, argv, index, argument, "--vehicle-runtime", value)) {
+            if (!ParseVehicleRuntime(value, result.config.vehicleRuntimeAdapterEnabled, result.config.vehicleRuntimeBackend)) {
+                result.errors.push_back("--vehicle-runtime must be one of: deterministic, jolt.");
+            }
+            continue;
+        }
+
         if (ReadValue(argc, argv, index, argument, "--assets", value)) {
             result.config.assetRoot = value;
             continue;
@@ -268,6 +290,7 @@ std::string BuildHelpText()
         << "  --ui-mode <mode>      Select playtest, debug, or minimal overlay text (default: playtest).\n"
         << "  --playtest-ui         Alias for --ui-mode playtest.\n"
         << "  --debug-ui            Alias for --ui-mode debug.\n"
+        << "  --vehicle-runtime <mode> Select deterministic or jolt live vehicle driving (default: deterministic).\n"
         << "  --renderer <backend>  Select auto, null, gdi, or dx11.\n"
         << "  --width <pixels>      Window width for windowed runs.\n"
         << "  --height <pixels>     Window height for windowed runs.\n"

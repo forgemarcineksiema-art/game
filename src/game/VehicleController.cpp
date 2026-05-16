@@ -24,6 +24,26 @@ void VehicleController::setOccupiedForTesting(bool occupied)
     m_state.occupied = occupied;
 }
 
+void VehicleController::applyRuntimeState(
+    engine::Vec3 position,
+    float yawRadians,
+    float speed,
+    float throttle,
+    float brake,
+    float steer,
+    bool hitBounds)
+{
+    m_state.position = position;
+    m_state.position.y = 0.0f;
+    m_state.yawRadians = yawRadians;
+    m_state.speed = speed;
+    m_state.throttle = throttle;
+    m_state.brake = brake;
+    m_state.steer = steer;
+    m_state.hitBoundsThisFrame = m_state.hitBoundsThisFrame || hitBounds;
+    m_state.velocity = forward() * m_state.speed;
+}
+
 void VehicleController::beginFrame()
 {
     m_state.enteredThisFrame = false;

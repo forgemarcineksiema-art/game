@@ -5,6 +5,8 @@ param(
     [string]$Renderer = "gdi",
     [ValidateSet("playtest", "debug", "minimal")]
     [string]$UiMode = "playtest",
+    [ValidateSet("deterministic", "jolt")]
+    [string]$VehicleRuntime = "deterministic",
     [switch]$DebugUi,
     [switch]$MinimalUi,
     [switch]$Dx11,
@@ -94,6 +96,11 @@ if (!(Test-OptionPresent $AppArgs @("--ui-mode", "--playtest-ui", "--debug-ui"))
 if (!(Test-OptionPresent $AppArgs @("--scene"))) {
     $LaunchArgs.Add("--scene")
     $LaunchArgs.Add($Scene)
+}
+
+if ($VehicleRuntime -ne "deterministic" -and !(Test-OptionPresent $AppArgs @("--vehicle-runtime"))) {
+    $LaunchArgs.Add("--vehicle-runtime")
+    $LaunchArgs.Add($VehicleRuntime)
 }
 
 if ($Frames -gt 0 -and !(Test-OptionPresent $AppArgs @("--frames"))) {

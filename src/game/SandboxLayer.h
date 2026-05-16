@@ -2,6 +2,7 @@
 
 #include "engine/application/Application.h"
 #include "engine/assets/StaticMesh.h"
+#include "engine/physics/VehicleRuntime.h"
 #include "engine/physics/PhysicsWorld.h"
 #include "game/PlayerController.h"
 #include "game/PrototypeScene.h"
@@ -19,7 +20,9 @@ class SandboxLayer final : public engine::IGameLayer {
 public:
     explicit SandboxLayer(
         std::filesystem::path scenePath = "data/scenes/ferry_office.scene.json",
-        engine::UiMode uiMode = engine::UiMode::Debug);
+        engine::UiMode uiMode = engine::UiMode::Debug,
+        engine::physics::PhysicsBackend vehicleRuntimeBackend = engine::physics::PhysicsBackend::Simple,
+        bool vehicleRuntimeAdapterEnabled = false);
 
     void onAttach() override;
     void onUpdate(double deltaSeconds, const engine::InputState& input) override;
@@ -43,6 +46,8 @@ private:
     void loadSceneDefinition();
     void configureRuntimeFromScene();
     void setupVehiclePhysicsWorld();
+    void setupVehicleRuntimeAdapter();
+    void updateVehicleDriving(float deltaSeconds, const engine::InputState& input);
     bool isVehicleExitPositionClear(engine::Vec3 position) const;
     void applyCameraSettingsForMode(bool vehicleMode);
     void loadStaticMeshAssets();
@@ -65,16 +70,20 @@ private:
     ThirdPersonCameraSettings m_onFootCameraSettings;
     ThirdPersonCameraSettings m_vehicleCameraSettings;
     std::unique_ptr<engine::physics::IPhysicsWorld> m_vehiclePhysicsWorld;
+    std::unique_ptr<engine::physics::IVehicleRuntimeAdapter> m_vehicleRuntimeAdapter;
     std::string m_debugText;
     std::string m_lastInteractionText = "none";
     std::string m_lastWorldEventText = "none";
     std::string m_lastVehicleText = "none";
     std::string m_vehiclePhysicsBackendText = "none";
+    std::string m_vehicleRuntimeText = "deterministic";
     bool m_interactPressedThisFrame = false;
     bool m_traversalPressedThisFrame = false;
     bool m_worldStateChangedThisFrame = false;
     bool m_cameraInVehicleMode = false;
     bool m_sceneDefinitionLoaded = false;
+    bool m_vehicleRuntimeAdapterEnabled = false;
+    engine::physics::PhysicsBackend m_vehicleRuntimeBackend = engine::physics::PhysicsBackend::Simple;
     engine::UiMode m_uiMode = engine::UiMode::Debug;
     engine::UiMode m_nonDebugUiMode = engine::UiMode::Playtest;
     unsigned long long m_frameIndex = 0;

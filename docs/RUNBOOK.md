@@ -71,6 +71,7 @@ scripts/play.ps1 -DebugUi
 scripts/play.ps1 -MinimalUi
 scripts/play.ps1 -Dx11 -Frames 360
 scripts/play.ps1 -FreeCursor
+scripts/play.ps1 -VehicleRuntime jolt -ExecutablePath build\windows-vs2022-debug-jolt\Debug\EngineApp.exe
 scripts/play.ps1 -Frames 6 -CaptureFrame build\captures\v0.31-gdi.bmp
 scripts/play.ps1 -Dx11 -Frames 6 -CaptureFrame build\captures\v0.31-dx11.bmp
 scripts/play.ps1 -Args @("--frames", "360")
@@ -112,6 +113,16 @@ Vehicle spike controls:
 - In vehicle, `A/D`: steer.
 - In vehicle, `E`: exit when the side exit marker is clear.
 - On-foot controls resume after exit.
+
+Live vehicle runtime switch:
+
+```powershell
+cmake --preset windows-vs2022-debug-jolt
+cmake --build --preset windows-vs2022-debug-jolt
+scripts/play.ps1 -VehicleRuntime jolt -ExecutablePath build\windows-vs2022-debug-jolt\Debug\EngineApp.exe -DebugUi
+```
+
+`--vehicle-runtime jolt` is an explicit manual-playtest switch. The default remains deterministic. In debug text, check `vehicleRuntime=jolt-live` before judging the switched path. If the normal dependency-free executable is launched with the Jolt runtime flag, it should report the selected runtime backend as unavailable and keep the deterministic fallback rather than pretending the opt-in backend ran.
 
 First driver/fixer job loop:
 

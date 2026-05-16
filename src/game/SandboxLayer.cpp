@@ -311,10 +311,16 @@ void DrawMeshInstance(engine::IRenderer& renderer, const engine::StaticMeshAsset
 
 } // namespace
 
-SandboxLayer::SandboxLayer(std::filesystem::path scenePath, engine::UiMode uiMode)
+SandboxLayer::SandboxLayer(
+    std::filesystem::path scenePath,
+    engine::UiMode uiMode,
+    engine::physics::PhysicsBackend vehicleRuntimeBackend,
+    bool vehicleRuntimeAdapterEnabled)
     : m_scenePath(std::move(scenePath))
     , m_uiMode(uiMode)
     , m_nonDebugUiMode(uiMode == engine::UiMode::Debug ? engine::UiMode::Playtest : uiMode)
+    , m_vehicleRuntimeAdapterEnabled(vehicleRuntimeAdapterEnabled)
+    , m_vehicleRuntimeBackend(vehicleRuntimeBackend)
 {
 }
 
@@ -331,6 +337,7 @@ void SandboxLayer::onAttach()
     m_vehicleCameraSettings.smoothing = 9.0f;
     m_vehicleCameraSettings.targetYawFollowStrength = 3.5f;
     setupVehiclePhysicsWorld();
+    setupVehicleRuntimeAdapter();
     loadStaticMeshAssets();
     updateDebugText();
 }
@@ -412,7 +419,7 @@ void SandboxLayer::onUpdate(double deltaSeconds, const engine::InputState& input
     if (m_vehicle.state().occupied) {
         m_scene.traversal().updateFocus({999.0f, 0.0f, 999.0f}, {0.0f, 0.0f, 1.0f});
         m_scene.interactions().updateFocus({999.0f, 0.0f, 999.0f}, {0.0f, 0.0f, 1.0f});
-        m_vehicle.updateDriving(dt, input);
+        updateVehicleDriving(dt, input);
     } else {
         const engine::Vec3 traversalFacing = engine::ForwardFromYaw(m_player.state().facingYawRadians);
         m_scene.traversal().updateFocus(m_player.state().position, traversalFacing);
@@ -436,7 +443,7 @@ void SandboxLayer::onUpdate(double deltaSeconds, const engine::InputState& input
             m_lastVehicleText = "Entered service yard vehicle.";
             engine::Logger::info("Vehicle: " + m_lastVehicleText);
             recordWorldStateChange(m_scene.recordServiceVehicleUsed());
-            m_vehicle.updateDriving(dt, input);
+            updateVehicleDriving(dt, input);
         } else {
             const InteractionResult interaction = m_scene.interactions().interact(input);
             if (interaction.triggered) {
@@ -529,6 +536,10 @@ void SandboxLayer::onRender(engine::IRenderer& renderer)
 
 void SandboxLayer::onDetach()
 {
+    if (m_vehicleRuntimeAdapter) {
+        m_vehicleRuntimeAdapter->shutdown();
+        m_vehicleRuntimeAdapter.reset();
+    }
     if (m_vehiclePhysicsWorld) {
         m_vehiclePhysicsWorld->shutdown();
         m_vehiclePhysicsWorld.reset();
@@ -666,7 +677,8 @@ std::string SandboxLayer::buildFullDebugText() const
            << "roadSegment=dock-road "
            << "roadBounds=(" << vehicleSettings.boundsMinX << "," << vehicleSettings.boundsMinZ << ")-("
            << vehicleSettings.boundsMaxX << "," << vehicleSettings.boundsMaxZ << ") "
-           << "physics=" << m_vehiclePhysicsBackendText << "\n"
+           << "physics=" << m_vehiclePhysicsBackendText << " "
+           << "vehicleRuntime=" << m_vehicleRuntimeText << "\n"
            << "interactPressed=" << (m_interactPressedThisFrame ? "yes" : "no") << " "
            << "worldChanged=" << (m_worldStateChangedThisFrame ? "yes" : "no") << " "
            << "traversal=" << (player.traversalMode == PlayerTraversalMode::Traversing ? "active" : "normal") << " "
@@ -1174,6 +1186,79 @@ void SandboxLayer::recordWorldStateChange(bool changed)
     m_worldStateChangedThisFrame = true;
     m_lastWorldEventText = m_scene.worldState().lastEventText();
     engine::Logger::info("World event: " + m_lastWorldEventText);
+}
+
+void SandboxLayer::setupVehicleRuntimeAdapter()
+{
+    m_vehicleRuntimeText = "deterministic";
+    m_vehicleRuntimeAdapter.reset();
+    if (!m_vehicleRuntimeAdapterEnabled) {
+        return;
+    }
+
+    m_vehicleRuntimeAdapter = engine::physics::CreateVehicleRuntimeAdapter(m_vehicleRuntimeBackend);
+    if (!m_vehicleRuntimeAdapter) {
+        m_vehicleRuntimeText = "adapter-unavailable";
+        engine::Logger::warning("Selected live vehicle runtime backend is unavailable; using deterministic vehicle fallback.");
+        return;
+    }
+
+    const VehicleState& vehicle = m_vehicle.state();
+    const VehicleControllerSettings& settings = m_vehicle.settings();
+    engine::physics::VehicleRuntimeConfig config;
+    config.vehicleId = "service-yard-vehicle";
+    config.spawnPosition = vehicle.position;
+    config.spawnYawRadians = vehicle.yawRadians;
+    config.halfExtents = m_vehicleProxyHalfExtents;
+    config.boundsMin = {settings.boundsMinX, settings.boundsMinZ};
+    config.boundsMax = {settings.boundsMaxX, settings.boundsMaxZ};
+
+    if (!m_vehicleRuntimeAdapter->initialize(config)) {
+        std::string error = std::string(m_vehicleRuntimeAdapter->error());
+        if (error.empty()) {
+            error = "unknown initialization failure";
+        }
+        m_vehicleRuntimeText = std::string(m_vehicleRuntimeAdapter->backendName()) + "-init-failed";
+        m_vehicleRuntimeAdapter.reset();
+        engine::Logger::warning("Live vehicle runtime adapter failed to initialize; using deterministic vehicle fallback. " + error);
+        return;
+    }
+
+    m_vehicleRuntimeText = std::string(m_vehicleRuntimeAdapter->backendName()) + "-live";
+    engine::Logger::info("Live vehicle runtime adapter enabled: " + m_vehicleRuntimeText);
+}
+
+void SandboxLayer::updateVehicleDriving(float deltaSeconds, const engine::InputState& input)
+{
+    if (!m_vehicleRuntimeAdapter) {
+        m_vehicle.updateDriving(deltaSeconds, input);
+        return;
+    }
+
+    const float driveInput = engine::Clamp(input.moveForward, -1.0f, 1.0f);
+    engine::physics::VehicleRuntimeInput runtimeInput;
+    runtimeInput.steer = engine::Clamp(input.moveRight, -1.0f, 1.0f);
+    if (driveInput < 0.0f && m_vehicle.state().speed > 0.05f) {
+        runtimeInput.brake = -driveInput;
+    } else {
+        runtimeInput.throttle = driveInput;
+    }
+
+    if (!m_vehicleRuntimeAdapter->step(runtimeInput, deltaSeconds)) {
+        m_lastVehicleText = "Live vehicle runtime step failed; deterministic fallback remains available next run.";
+        engine::Logger::warning("Vehicle: " + m_lastVehicleText + " " + std::string(m_vehicleRuntimeAdapter->error()));
+        return;
+    }
+
+    const engine::physics::VehicleRuntimeState runtimeState = m_vehicleRuntimeAdapter->state();
+    m_vehicle.applyRuntimeState(
+        runtimeState.position,
+        runtimeState.yawRadians,
+        runtimeState.speed,
+        runtimeInput.throttle,
+        runtimeInput.brake,
+        runtimeInput.steer,
+        runtimeState.outOfBounds);
 }
 
 void SandboxLayer::setupVehiclePhysicsWorld()

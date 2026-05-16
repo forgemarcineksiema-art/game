@@ -54,6 +54,14 @@ public:
     void setPosition(engine::Vec3 position);
     void setYawRadians(float yawRadians);
     void setOccupiedForTesting(bool occupied);
+    void applyRuntimeState(
+        engine::Vec3 position,
+        float yawRadians,
+        float speed,
+        float throttle,
+        float brake,
+        float steer,
+        bool hitBounds);
 
     void beginFrame();
     VehicleFocus updateFocus(engine::Vec3 playerPosition, engine::Vec3 playerFacing);

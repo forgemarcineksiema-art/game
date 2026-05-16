@@ -466,6 +466,48 @@ void TestQaPhysicsParityArgumentsAcceptVehicleRuntimeComparisonScenario()
         "Config should preserve the requested vehicle runtime comparison scenario.");
 }
 
+void TestVehicleRuntimeArgumentsDefaultToDeterministicFallback()
+{
+    const char* argv[] = {"EngineApp"};
+    const auto result = engine::ParseArguments(1, argv);
+
+    Expect(result.errors.empty(),
+        "TestVehicleRuntimeArgumentsDefaultToDeterministicFallback",
+        "Default arguments should parse cleanly.");
+    Expect(!result.config.vehicleRuntimeAdapterEnabled,
+        "TestVehicleRuntimeArgumentsDefaultToDeterministicFallback",
+        "Live vehicle runtime adapters should be off by default.");
+    Expect(result.config.vehicleRuntimeBackend == engine::physics::PhysicsBackend::Simple,
+        "TestVehicleRuntimeArgumentsDefaultToDeterministicFallback",
+        "The deterministic fallback should keep the simple backend as the neutral default value.");
+}
+
+void TestVehicleRuntimeArgumentsAcceptJoltOptIn()
+{
+    const char* argv[] = {"EngineApp", "--vehicle-runtime", "jolt"};
+    const auto result = engine::ParseArguments(3, argv);
+
+    Expect(result.errors.empty(),
+        "TestVehicleRuntimeArgumentsAcceptJoltOptIn",
+        "The opt-in live vehicle runtime argument should parse cleanly.");
+    Expect(result.config.vehicleRuntimeAdapterEnabled,
+        "TestVehicleRuntimeArgumentsAcceptJoltOptIn",
+        "Selecting the opt-in runtime should enable live vehicle adapter driving.");
+    Expect(result.config.vehicleRuntimeBackend == engine::physics::PhysicsBackend::Jolt,
+        "TestVehicleRuntimeArgumentsAcceptJoltOptIn",
+        "The opt-in runtime should select the Jolt physics backend.");
+}
+
+void TestVehicleRuntimeArgumentsRejectUnknownRuntime()
+{
+    const char* argv[] = {"EngineApp", "--vehicle-runtime", "arcade"};
+    const auto result = engine::ParseArguments(3, argv);
+
+    Expect(!result.errors.empty(),
+        "TestVehicleRuntimeArgumentsRejectUnknownRuntime",
+        "Unknown live vehicle runtime backends should be rejected.");
+}
+
 void TestHelpTextMentionsQaPhysicsParityFlags()
 {
     const std::string help = engine::BuildHelpText();
@@ -476,6 +518,15 @@ void TestHelpTextMentionsQaPhysicsParityFlags()
     Expect(help.find("--qa-physics-report") != std::string::npos,
         "TestHelpTextMentionsQaPhysicsParityFlags",
         "Help text should document the QA physics parity report flag.");
+}
+
+void TestHelpTextMentionsVehicleRuntimeFlag()
+{
+    const std::string help = engine::BuildHelpText();
+
+    Expect(help.find("--vehicle-runtime") != std::string::npos,
+        "TestHelpTextMentionsVehicleRuntimeFlag",
+        "Help text should document the live vehicle runtime opt-in flag.");
 }
 
 void TestCursorCaptureArguments()
@@ -1748,6 +1799,23 @@ void TestSandboxLayerVehicleDebugTextIncludesRoadTestTelemetry()
     Expect(debug.find("exitClear=") != std::string::npos,
         "TestSandboxLayerVehicleDebugTextIncludesRoadTestTelemetry",
         "Sandbox debug text should expose whether the vehicle side exit marker is currently safe.");
+}
+
+void TestSandboxLayerDebugTextMarksLiveVehicleRuntimeAdapterWhenOptedIn()
+{
+    SandboxLayer layer(
+        DefaultScenePathForTests(),
+        engine::UiMode::Debug,
+        engine::physics::PhysicsBackend::Simple,
+        true);
+    layer.onAttach();
+
+    const std::string debug = layer.debugText();
+    layer.onDetach();
+
+    Expect(debug.find("vehicleRuntime=simple-live") != std::string::npos,
+        "TestSandboxLayerDebugTextMarksLiveVehicleRuntimeAdapterWhenOptedIn",
+        "Sandbox debug text should expose when the live adapter vehicle path is active.");
 }
 
 void TestSandboxLayerDebugTextIncludesDockRoadTelemetry()
@@ -3741,7 +3809,11 @@ int main()
     TestQaPhysicsParityArgumentsAcceptCharacterContactScenario();
     TestQaPhysicsParityArgumentsAcceptVehicleFeasibilityScenario();
     TestQaPhysicsParityArgumentsAcceptVehicleRuntimeComparisonScenario();
+    TestVehicleRuntimeArgumentsDefaultToDeterministicFallback();
+    TestVehicleRuntimeArgumentsAcceptJoltOptIn();
+    TestVehicleRuntimeArgumentsRejectUnknownRuntime();
     TestHelpTextMentionsQaPhysicsParityFlags();
+    TestHelpTextMentionsVehicleRuntimeFlag();
     TestCursorCaptureArguments();
     TestUiModeArguments();
     TestInputStateTracksDebugOverlayToggleEdge();
@@ -3786,6 +3858,7 @@ int main()
     TestVehicleExitPositionUsesSideAndBackOffsets();
     TestVehicleReverseSteeringIsPredictable();
     TestSandboxLayerVehicleDebugTextIncludesRoadTestTelemetry();
+    TestSandboxLayerDebugTextMarksLiveVehicleRuntimeAdapterWhenOptedIn();
     TestSandboxLayerDebugTextIncludesDockRoadTelemetry();
     TestSandboxLayerDrawsEveryLoadedSceneMeshInstance();
     TestSandboxLayerPlaytestTextPrioritizesObjectiveAndPrompt();

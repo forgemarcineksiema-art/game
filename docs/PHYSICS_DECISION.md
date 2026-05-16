@@ -216,6 +216,28 @@ Important limits:
 - The deterministic `VehicleController` remains the live gameplay fallback.
 - The Jolt runtime adapter is proven only against the compact scripted Ferry Office service-yard comparison. It still needs a live switch/human-feel pass before it becomes the default vehicle path.
 
+## v0.37 Live Opt-in Vehicle Runtime Switch Result
+
+Added:
+
+- `--vehicle-runtime jolt`, an explicit live playtest switch for the service-yard vehicle runtime.
+- `scripts\play.ps1 -VehicleRuntime jolt`, a wrapper shortcut for manual opt-in runs when pointed at the Jolt-enabled executable.
+- `SandboxLayer` live adapter plumbing that keeps deterministic vehicle gameplay as the default and falls back honestly when the selected runtime backend is unavailable.
+- Debug text now reports `vehicleRuntime=deterministic`, `vehicleRuntime=<backend>-live`, or an unavailable/init-failed state.
+
+Validated so far:
+
+- Default dependency-free builds keep `vehicleRuntime=deterministic` unless the explicit switch is requested.
+- A default executable accepts `--vehicle-runtime jolt` but reports the selected backend unavailable and keeps deterministic fallback behavior.
+- The opt-in `windows-vs2022-debug-jolt` executable initializes the switched path and reports `vehicleRuntime=jolt-live` in debug text.
+- `rg -n "Jolt|JPH::|<Jolt/|JPH/" src\game` returns no matches; Jolt types remain private to engine-owned physics code.
+
+Important limits:
+
+- This is a manual playtest switch, not default vehicle promotion.
+- The switched vehicle uses the v0.36 runtime adapter state for live driving, but player collision, traversal, service-gate behavior, dynamic objects, traffic, damage, audio, and production vehicle tuning remain unchanged.
+- The next decision should come from comparing a bounded human drive on deterministic versus `jolt-live`, backed by the existing automated vehicle runtime QA.
+
 Important implementation choices:
 
 - Jolt is opt-in for now. `scripts/verify.ps1` keeps using the default dependency-free preset.
@@ -242,4 +264,4 @@ v0.10 used the physics foundation without promoting full Jolt vehicle constraint
 - Tests scan `src/game` to prevent accidental `Jolt` / `JPH::*` vendor references.
 - The opt-in `windows-vs2022-debug-jolt` preset remains the proof that the Jolt backend still configures, builds, and tests through the engine API.
 
-Next recommendation: use the v0.36 comparison report to add a live, opt-in Jolt vehicle switch for manual playtest only. Keep deterministic vehicle gameplay as the default until the switched path passes automated runtime QA plus human driving confidence.
+Next recommendation: run a bounded human comparison between default deterministic driving and the `--vehicle-runtime jolt` opt-in path. Keep deterministic vehicle gameplay as the default unless the switched path is clearly more trustworthy by hand and still passes the automated runtime QA.

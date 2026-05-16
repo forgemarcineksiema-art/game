@@ -361,13 +361,13 @@ Validation:
 
 ## Recommendation
 
-Best next move: Jolt Vehicle Feasibility / Promotion Spike.
+Best next move: bounded human comparison of deterministic driving versus the live opt-in Jolt vehicle runtime switch.
 
-Reason: it directly answers the current leadership question: stop endlessly improving a deterministic placeholder vehicle path and gather evidence for whether the service vehicle should move toward Jolt now. This is a bounded target-system goal, not a promise to replace all live vehicle gameplay in one pass.
+Reason: v0.35 proved Jolt vehicle feasibility, v0.36 proved a frame-stepped runtime adapter comparison, and v0.37 exposes that adapter through `--vehicle-runtime jolt` without changing the default. The missing evidence is now hand-play confidence, not another QA-only probe or more deterministic placeholder tuning.
 
-Second-best: Live Player Collision Migration Probe, if player/world collision is the more urgent production risk than vehicle physics in the current session.
+Second-best: one narrow switched-path tuning/fix pass, but only after the manual comparison records concrete Jolt-live problems.
 
-Input-scripted runtime QA remains useful, but it is not the default next move if the user is explicitly asking to push past old prototype constraints.
+Do not start Job #2, map expansion, renderer polish, or more authored props while the first service vehicle path is still waiting for this comparison.
 
 Ready next-goal prompt:
 
@@ -383,23 +383,23 @@ Repository rules:
 - Commit and push only if validation passes and there are no unrelated user changes.
 
 Goal:
-Build an opt-in Jolt vehicle feasibility spike for the Ferry Office service vehicle.
+Run and document a bounded deterministic-vs-Jolt-live vehicle playtest comparison for the Ferry Office service vehicle.
 
 Why now:
-The deterministic service-yard vehicle has been useful, but more prototype tuning will not answer whether Tidebreak should promote vehicle work toward Jolt. The repo already has an opt-in Jolt backend and Ferry Office physics QA, so the next useful goal is a bounded vehicle feasibility report that compares a Jolt-backed probe against the current service-vehicle baseline and recommends promote, defer, or replace.
+The Jolt vehicle path now has feasibility, runtime-comparison, and live opt-in switch evidence. The next useful decision is whether the switched path is actually playable by hand compared with the deterministic fallback.
 
 Scope:
-- Add a QA-only, opt-in Jolt vehicle probe behind engine-owned physics APIs or Jolt-private implementation files.
-- Use the current Ferry Office service vehicle and dock-road scale as the comparison baseline.
-- Run a scripted throttle/brake/steer scenario and report stability, speed, steering response, stopping behavior, and final transform/error metrics.
-- Write a JSON report and Python wrapper similar to existing physics QA tools.
-- Add focused default-build tests for CLI/report/unavailable-backend behavior and opt-in Jolt validation for the real probe.
+- Run baseline deterministic play with `scripts/play.ps1 -DebugUi`.
+- Run opt-in Jolt live play with `scripts/play.ps1 -VehicleRuntime jolt -ExecutablePath build\windows-vs2022-debug-jolt\Debug\EngineApp.exe -DebugUi`.
+- Compare enter/exit, low-speed control, throttle/brake/reverse, steering, camera target behavior, route completion, and debug telemetry.
+- Record concrete promote/defer/tune evidence in `docs/STATUS.md`.
+- Keep automated QA fresh before and after the manual comparison.
 
 Non-goals:
 - No new job content.
 - No traffic, NPCs, damage, garage, economy, save/load, or Job #2.
-- No live gameplay vehicle replacement until the feasibility report says it is worth promoting.
-- No extra deterministic vehicle polish unless needed as a baseline metric.
+- No default vehicle replacement unless the comparison clearly supports it and validation remains clean.
+- No extra deterministic vehicle polish unless it blocks a fair comparison.
 - No Jolt vendor types leaking into game-facing APIs.
 
 Files/docs to read first:
@@ -409,14 +409,15 @@ Files/docs to read first:
 - docs/VERTICAL_SLICE.md
 - docs/TECH_DEBT.md
 - docs/PHYSICS_DECISION.md
-- src/engine/physics/PhysicsWorld.*
-- src/engine/physics/JoltPhysicsWorld.cpp
+- docs/ROADMAP.md
+- src/engine/physics/VehicleRuntime.*
+- src/engine/physics/JoltVehicleRuntime.cpp
 - src/game/VehicleController.*
 - src/game/SandboxLayer.*
-- src/game/FerryOfficePhysicsParity.*
-- src/game/FerryOfficeCharacterContactQa.*
 - tools/physics_parity_qa.py
 - tools/character_contact_qa.py
+- tools/vehicle_physics_qa.py
+- tools/vehicle_runtime_qa.py
 - tests/EngineCoreTests.cpp
 
 Validation:
@@ -426,9 +427,9 @@ Validation:
 - ctest --preset windows-vs2022-debug-jolt --output-on-failure
 - python tools/physics_parity_qa.py
 - python tools/character_contact_qa.py
-- python tools/<new-vehicle-qa>.py
+- python tools/vehicle_physics_qa.py
+- python tools/vehicle_runtime_qa.py
 
 Use subagents:
-- Worker: inspect the smallest engine-owned Jolt vehicle probe that can answer feasibility without replacing live gameplay.
-- Reviewer: check for scope creep, Jolt vendor leakage into game code, missing default-build fallback behavior, and whether the report really supports a promote/defer/replace decision.
+- Reviewer: check the manual comparison notes for scope creep, premature default-promotion, and missing validation evidence.
 ```

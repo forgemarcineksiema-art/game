@@ -66,6 +66,9 @@ cmake --build --preset windows-vs2022-debug-jolt
 ctest --preset windows-vs2022-debug-jolt --output-on-failure
 python tools\physics_parity_qa.py
 python tools\character_contact_qa.py
+python tools\vehicle_physics_qa.py
+python tools\vehicle_runtime_qa.py
+scripts/play.ps1 -VehicleRuntime jolt -ExecutablePath build\windows-vs2022-debug-jolt\Debug\EngineApp.exe -DebugUi
 ```
 
 Optional scene authoring checks:
@@ -133,6 +136,10 @@ python tools/mesh_report.py
 - [ ] Jolt tests pass through the engine-owned `IPhysicsWorld` API.
 - [ ] `python tools\physics_parity_qa.py` passes with a Jolt-enabled build and writes `build\physics\ferry-office-collision-parity-report.json`.
 - [ ] `python tools\character_contact_qa.py` passes with a Jolt-enabled build and writes `build\physics\ferry-office-character-contact-report.json`.
+- [ ] `python tools\vehicle_physics_qa.py` passes with a Jolt-enabled build and writes `build\physics\ferry-office-vehicle-feasibility-report.json`.
+- [ ] `python tools\vehicle_runtime_qa.py` passes with a Jolt-enabled build and writes `build\physics\ferry-office-vehicle-runtime-comparison-report.json`.
+- [ ] `scripts/play.ps1 -VehicleRuntime jolt -ExecutablePath build\windows-vs2022-debug-jolt\Debug\EngineApp.exe -DebugUi` launches an opt-in manual playtest path and debug text shows `vehicleRuntime=jolt-live`.
+- [ ] Normal `scripts/play.ps1 -DebugUi` still shows `vehicleRuntime=deterministic`.
 - [ ] `src/game` has no direct `JPH::*` or Jolt header usage.
 - [ ] Ferry Office player/camera/collision behavior still feels unchanged after physics foundation work.
 
@@ -192,6 +199,7 @@ python tools/mesh_report.py
 - [ ] Pressing `E` exits only when the side exit marker is clear.
 - [ ] After exit, on-foot movement, camera, traversal, and Ferry Office interactions still work.
 - [ ] Debug text reports vehicle occupancy, speed, throttle/brake/steer, camera mode, and physics backend status.
+- [ ] Debug text reports the active live vehicle runtime as deterministic by default or `jolt-live` only in the explicit opt-in Jolt run.
 - [ ] Playtest text while driving reports speed, checkpoint status, and whether the exit marker is clear or blocked.
 - [ ] The vehicle does not steal `E` from the Ferry Manifest, Maintenance Box, Wall Button, Ferry Office Notice, or Exit Summary Marker when those are focused.
 
