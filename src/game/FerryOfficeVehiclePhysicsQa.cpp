@@ -37,6 +37,9 @@ constexpr float ObstacleRequiredLateralOffset = 0.05f;
 constexpr float ObstacleRequiredXProgress = 4.5f;
 constexpr engine::Vec3 ObstacleCollisionHalfExtents {0.30f, 0.45f, 0.12f};
 constexpr engine::Vec3 ObstacleCollisionProbeHalfExtents {0.18f, 0.35f, 0.12f};
+constexpr float RoadEdgeRuntimeObstacleCenterY = 0.58f;
+constexpr float RoadEdgeRuntimeObstacleMinHalfY = 0.72f;
+constexpr float RoadEdgeRuntimeObstacleMinHalfZ = 0.38f;
 constexpr std::array<std::string_view, 2> RoadEdgeProbeIds {
     "dock-road-south-rail",
     "dock-road-north-curb",
@@ -157,6 +160,38 @@ nlohmann::json RoadEdgeCheckJson(const FerryOfficeVehicleRuntimeComparisonResult
         {"minCollisionClearance", check.minCollisionClearance},
         {"maxCameraYawDeltaDegrees", check.maxCameraYawDeltaDegrees},
         {"finalCameraYawDegrees", engine::Degrees(check.finalCameraYawRadians)},
+        {"authoredEdgeIds", check.authoredEdgeIds},
+        {"finalPosition", Vec3Json(check.finalPosition)},
+        {"finalYawDegrees", engine::Degrees(check.finalYawRadians)},
+        {"hitBounds", check.hitBounds},
+        {"message", check.message},
+    };
+}
+
+nlohmann::json BroadRouteCheckJson(const FerryOfficeVehicleRuntimeComparisonResult::BroadRouteCheck& check)
+{
+    return {
+        {"backend", check.backendName},
+        {"passed", check.passed},
+        {"collisionResponseBacked", check.collisionResponseBacked},
+        {"turnCompleted", check.turnCompleted},
+        {"reverseCompleted", check.reverseCompleted},
+        {"readabilityStable", check.readabilityStable},
+        {"blockedByAuthoredEdge", check.blockedByAuthoredEdge},
+        {"unconstrainedWouldCrossEdge", check.unconstrainedWouldCrossEdge},
+        {"edgeContactFrames", check.edgeContactFrames},
+        {"edgeContactAfterReverseFrames", check.edgeContactAfterReverseFrames},
+        {"frameCount", check.frameCount},
+        {"maxYawChangeDegrees", check.maxYawChangeDegrees},
+        {"reverseDistance", check.reverseDistance},
+        {"maxCameraYawDeltaDegrees", check.maxCameraYawDeltaDegrees},
+        {"maxEdgePenetration", check.maxEdgePenetration},
+        {"edgeLimitZ", check.edgeLimitZ},
+        {"unconstrainedPeakZ", check.unconstrainedPeakZ},
+        {"unconstrainedMinZ", check.unconstrainedMinZ},
+        {"constrainedPeakZ", check.constrainedPeakZ},
+        {"constrainedMinZ", check.constrainedMinZ},
+        {"blockedEdgeId", check.blockedEdgeId},
         {"authoredEdgeIds", check.authoredEdgeIds},
         {"finalPosition", Vec3Json(check.finalPosition)},
         {"finalYawDegrees", engine::Degrees(check.finalYawRadians)},
@@ -610,6 +645,21 @@ std::vector<std::string> RoadEdgeIds(const std::vector<RoadEdgeProbe>& probes)
     return ids;
 }
 
+std::vector<engine::physics::VehicleRuntimeStaticObstacle> RoadEdgeObstaclesFromProbes(
+    const std::vector<RoadEdgeProbe>& probes)
+{
+    std::vector<engine::physics::VehicleRuntimeStaticObstacle> obstacles;
+    for (const RoadEdgeProbe& probe : probes) {
+        engine::Vec3 center = probe.center;
+        engine::Vec3 halfExtents = probe.halfExtents;
+        center.y = RoadEdgeRuntimeObstacleCenterY;
+        halfExtents.y = std::max(halfExtents.y, RoadEdgeRuntimeObstacleMinHalfY);
+        halfExtents.z = std::max(halfExtents.z, RoadEdgeRuntimeObstacleMinHalfZ);
+        obstacles.push_back({probe.id, center, halfExtents});
+    }
+    return obstacles;
+}
+
 std::unique_ptr<engine::physics::IPhysicsWorld> BuildRoadEdgePhysicsWorld(
     engine::physics::PhysicsBackend backend,
     const std::vector<RoadEdgeProbe>& probes)
@@ -920,6 +970,202 @@ FerryOfficeVehicleRuntimeComparisonResult::RoadEdgeCheck RunAdapterRoadEdgeCheck
     check.message = check.passed
         ? "Runtime adapter service-run route stayed clear of authored dock-road edge probes."
         : "Runtime adapter service-run route did not cleanly clear authored dock-road edge probes.";
+    return check;
+}
+
+engine::physics::VehicleRuntimeInput BroadRouteInputForFrame(int frame)
+{
+    if (frame < 90) {
+        return {0.72f, 0.0f, 0.0f};
+    }
+    if (frame < 118) {
+        return {-0.55f, 0.0f, 0.0f};
+    }
+    if (frame < 285) {
+        return {0.66f, -0.62f, 0.0f};
+    }
+    return {0.28f, -0.24f, 0.0f};
+}
+
+struct RoadEdgeCorridor {
+    float southLimitZ = -2.63f;
+    float northLimitZ = -1.70f;
+    std::string southEdgeId = "dock-road-south-rail";
+    std::string northEdgeId = "dock-road-north-curb";
+};
+
+RoadEdgeCorridor RoadEdgeCorridorFromProbes(const std::vector<RoadEdgeProbe>& probes, engine::Vec3 vehicleHalfExtents)
+{
+    RoadEdgeCorridor corridor;
+    for (const RoadEdgeProbe& probe : probes) {
+        if (probe.id == corridor.southEdgeId) {
+            corridor.southLimitZ =
+                probe.center.z + std::max(probe.halfExtents.z, RoadEdgeRuntimeObstacleMinHalfZ) + vehicleHalfExtents.z;
+        } else if (probe.id == corridor.northEdgeId) {
+            corridor.northLimitZ =
+                probe.center.z - std::max(probe.halfExtents.z, RoadEdgeRuntimeObstacleMinHalfZ) - vehicleHalfExtents.z;
+        }
+    }
+    return corridor;
+}
+
+struct BroadRouteTelemetry {
+    std::string backendName = "unavailable";
+    bool initialized = false;
+    bool stable = true;
+    bool hitBounds = false;
+    int frameCount = 0;
+    int edgeContactFrames = 0;
+    int edgeContactAfterReverseFrames = 0;
+    float maxYawChangeDegrees = 0.0f;
+    float reverseDistance = 0.0f;
+    float maxCameraYawDeltaDegrees = 0.0f;
+    float maxEdgePenetration = 0.0f;
+    float peakZ = -std::numeric_limits<float>::max();
+    float minZ = std::numeric_limits<float>::max();
+    engine::Vec3 finalPosition;
+    float finalYawRadians = 0.0f;
+};
+
+BroadRouteTelemetry RunBroadRouteTelemetry(
+    engine::physics::PhysicsBackend backend,
+    engine::physics::VehicleRuntimeConfig config,
+    bool useAuthoredEdgeCollision,
+    const RoadEdgeCorridor& corridor)
+{
+    if (!useAuthoredEdgeCollision) {
+        config.staticObstacles.clear();
+    }
+
+    BroadRouteTelemetry telemetry;
+    telemetry.finalPosition = config.spawnPosition;
+    telemetry.finalYawRadians = config.spawnYawRadians;
+    std::unique_ptr<engine::physics::IVehicleRuntimeAdapter> adapter =
+        engine::physics::CreateVehicleRuntimeAdapter(backend);
+    if (!adapter || !adapter->initialize(config)) {
+        return telemetry;
+    }
+
+    telemetry.initialized = true;
+    telemetry.backendName = backend == engine::physics::PhysicsBackend::Simple
+        ? "deterministic"
+        : std::string(adapter->backendName());
+    ThirdPersonCamera camera = BuildObstacleCamera(config.spawnYawRadians);
+    engine::Vec3 reverseStart = config.spawnPosition;
+    bool reverseStarted = false;
+
+    constexpr int BroadRouteMaxFrames = 270;
+    for (int frame = 0; frame < BroadRouteMaxFrames; ++frame) {
+        const engine::physics::VehicleRuntimeInput input = BroadRouteInputForFrame(frame);
+        telemetry.stable = telemetry.stable && adapter->step(input, config.fixedStepSeconds);
+        const engine::physics::VehicleRuntimeState state = adapter->state();
+        telemetry.frameCount = frame + 1;
+        telemetry.finalPosition = state.position;
+        telemetry.finalYawRadians = state.yawRadians;
+        telemetry.hitBounds = telemetry.hitBounds || state.outOfBounds;
+        telemetry.peakZ = std::max(telemetry.peakZ, state.position.z);
+        telemetry.minZ = std::min(telemetry.minZ, state.position.z);
+        telemetry.maxYawChangeDegrees =
+            std::max(telemetry.maxYawChangeDegrees, AbsYawDeltaDegrees(config.spawnYawRadians, state.yawRadians));
+        telemetry.maxEdgePenetration = std::max(telemetry.maxEdgePenetration, state.position.z - corridor.northLimitZ);
+        telemetry.maxEdgePenetration = std::max(telemetry.maxEdgePenetration, corridor.southLimitZ - state.position.z);
+        const bool nearAuthoredEdge =
+            state.position.z >= corridor.northLimitZ - 0.10f || state.position.z <= corridor.southLimitZ + 0.10f;
+        if (nearAuthoredEdge) {
+            telemetry.edgeContactFrames += 1;
+            if (frame >= 118) {
+                telemetry.edgeContactAfterReverseFrames += 1;
+            }
+        }
+        if (frame == 90) {
+            reverseStart = state.position;
+            reverseStarted = true;
+        }
+        if (reverseStarted && frame >= 90 && frame < 118) {
+            telemetry.reverseDistance = std::max(telemetry.reverseDistance, HorizontalDistance(reverseStart, state.position));
+        }
+
+        CameraTarget target;
+        target.position = state.position + engine::ForwardFromYaw(state.yawRadians) * 0.85f;
+        target.yawRadians = state.yawRadians;
+        engine::InputState cameraInput;
+        camera.update(config.fixedStepSeconds, cameraInput, target);
+        telemetry.maxCameraYawDeltaDegrees =
+            std::max(telemetry.maxCameraYawDeltaDegrees, AbsYawDeltaDegrees(state.yawRadians, camera.state().yawRadians));
+
+        if (!telemetry.stable || state.wheelContactCount == 0 || state.outOfBounds) {
+            break;
+        }
+    }
+
+    adapter->shutdown();
+    return telemetry;
+}
+
+FerryOfficeVehicleRuntimeComparisonResult::BroadRouteCheck RunBroadRouteCheck(
+    const SceneDefinition& scene,
+    engine::physics::VehicleRuntimeConfig config,
+    engine::physics::PhysicsBackend backend)
+{
+    FerryOfficeVehicleRuntimeComparisonResult::BroadRouteCheck check;
+    const std::vector<RoadEdgeProbe> probes = RoadEdgeProbesFromScene(scene);
+    check.authoredEdgeIds = RoadEdgeIds(probes);
+    config.staticObstacles = RoadEdgeObstaclesFromProbes(probes);
+    const RoadEdgeCorridor corridor = RoadEdgeCorridorFromProbes(probes, config.halfExtents);
+
+    const BroadRouteTelemetry unconstrained =
+        RunBroadRouteTelemetry(backend, config, false, corridor);
+    const BroadRouteTelemetry constrained =
+        RunBroadRouteTelemetry(backend, config, true, corridor);
+
+    check.backendName = constrained.backendName;
+    check.collisionResponseBacked = constrained.initialized && !config.staticObstacles.empty();
+    check.unconstrainedPeakZ = unconstrained.peakZ;
+    check.unconstrainedMinZ = unconstrained.minZ;
+    check.constrainedPeakZ = constrained.peakZ;
+    check.constrainedMinZ = constrained.minZ;
+    const bool unconstrainedWouldCrossNorth = unconstrained.initialized && unconstrained.peakZ > corridor.northLimitZ + 0.25f;
+    const bool unconstrainedWouldCrossSouth = unconstrained.initialized && unconstrained.minZ < corridor.southLimitZ - 0.25f;
+    const bool constrainedBlockedNorth =
+        unconstrainedWouldCrossNorth && constrained.peakZ <= corridor.northLimitZ + 0.18f;
+    const bool constrainedBlockedSouth =
+        unconstrainedWouldCrossSouth && constrained.minZ >= corridor.southLimitZ - 0.18f;
+    if (unconstrainedWouldCrossNorth && constrainedBlockedNorth) {
+        check.blockedEdgeId = corridor.northEdgeId;
+        check.edgeLimitZ = corridor.northLimitZ;
+    } else if (unconstrainedWouldCrossSouth && constrainedBlockedSouth) {
+        check.blockedEdgeId = corridor.southEdgeId;
+        check.edgeLimitZ = corridor.southLimitZ;
+    } else {
+        check.edgeLimitZ = unconstrainedWouldCrossSouth ? corridor.southLimitZ : corridor.northLimitZ;
+    }
+    check.unconstrainedWouldCrossEdge = unconstrainedWouldCrossNorth || unconstrainedWouldCrossSouth;
+    check.blockedByAuthoredEdge = !check.blockedEdgeId.empty() && constrained.edgeContactAfterReverseFrames > 0;
+    check.turnCompleted = constrained.maxYawChangeDegrees >= 12.0f;
+    check.reverseCompleted = constrained.reverseDistance >= 0.25f;
+    check.readabilityStable = constrained.maxCameraYawDeltaDegrees <= 28.0f;
+    check.edgeContactFrames = constrained.edgeContactFrames;
+    check.edgeContactAfterReverseFrames = constrained.edgeContactAfterReverseFrames;
+    check.frameCount = constrained.frameCount;
+    check.maxYawChangeDegrees = constrained.maxYawChangeDegrees;
+    check.reverseDistance = constrained.reverseDistance;
+    check.maxCameraYawDeltaDegrees = constrained.maxCameraYawDeltaDegrees;
+    check.maxEdgePenetration = std::max(0.0f, constrained.maxEdgePenetration);
+    check.finalPosition = constrained.finalPosition;
+    check.finalYawRadians = constrained.finalYawRadians;
+    check.hitBounds = constrained.hitBounds;
+    check.passed = check.collisionResponseBacked
+        && constrained.stable
+        && !check.hitBounds
+        && check.blockedByAuthoredEdge
+        && check.edgeContactAfterReverseFrames > 0
+        && check.turnCompleted
+        && check.reverseCompleted
+        && check.readabilityStable
+        && check.authoredEdgeIds.size() == RoadEdgeProbeIds.size();
+    check.message = check.passed
+        ? "Runtime broad route turned, reversed, and was blocked by authored road-edge collision."
+        : "Runtime broad route did not prove authored road-edge collision response with turn/reverse readability.";
     return check;
 }
 
@@ -1485,6 +1731,10 @@ bool WriteReport(const FerryOfficeVehicleRuntimeComparisonResult& result)
     for (const FerryOfficeVehicleRuntimeComparisonResult::RoadEdgeCheck& check : result.roadEdgeChecks) {
         roadEdgeChecks.push_back(RoadEdgeCheckJson(check));
     }
+    nlohmann::json broadRouteChecks = nlohmann::json::array();
+    for (const FerryOfficeVehicleRuntimeComparisonResult::BroadRouteCheck& check : result.broadRouteChecks) {
+        broadRouteChecks.push_back(BroadRouteCheckJson(check));
+    }
 
     const nlohmann::json report = {
         {"schema", "v0.36-ferry-office-vehicle-runtime-comparison"},
@@ -1507,6 +1757,7 @@ bool WriteReport(const FerryOfficeVehicleRuntimeComparisonResult& result)
         {"drivingFeelChecks", drivingFeelChecks},
         {"routePaceProbes", routePaceProbes},
         {"roadEdgeChecks", roadEdgeChecks},
+        {"broadRouteChecks", broadRouteChecks},
         {"comparison", {
             {"maxPositionDelta", result.maxPositionDelta},
             {"maxYawDeltaDegrees", result.maxYawDeltaDegrees},
@@ -1695,6 +1946,8 @@ FerryOfficeVehicleRuntimeComparisonResult RunFerryOfficeVehicleRuntimeComparison
     result.routePaceProbes = RunAdapterRoutePaceProbes(config, backend, checkpointPosition, checkpointRadius);
     result.roadEdgeChecks.push_back(RunDeterministicRoadEdgeCheck(loadedScene.scene, *vehicle, checkpointPosition, checkpointRadius));
     result.roadEdgeChecks.push_back(RunAdapterRoadEdgeCheck(loadedScene.scene, config, backend, checkpointPosition, checkpointRadius));
+    result.broadRouteChecks.push_back(RunBroadRouteCheck(loadedScene.scene, config, engine::physics::PhysicsBackend::Simple));
+    result.broadRouteChecks.push_back(RunBroadRouteCheck(loadedScene.scene, config, backend));
 
     const bool closeEnough = result.maxPositionDelta <= RuntimePositionDeltaLimit
         && result.maxYawDeltaDegrees <= RuntimeYawDeltaLimitDegrees
@@ -1723,6 +1976,10 @@ FerryOfficeVehicleRuntimeComparisonResult RunFerryOfficeVehicleRuntimeComparison
         && std::all_of(result.roadEdgeChecks.begin(), result.roadEdgeChecks.end(), [](const auto& check) {
                return check.passed;
            });
+    const bool broadRouteStable = result.broadRouteChecks.size() == 2
+        && std::all_of(result.broadRouteChecks.begin(), result.broadRouteChecks.end(), [](const auto& check) {
+               return check.passed;
+           });
     float obstacleProgressDelta = 0.0f;
     if (result.obstacleChecks.size() == 2) {
         obstacleProgressDelta =
@@ -1737,12 +1994,13 @@ FerryOfficeVehicleRuntimeComparisonResult RunFerryOfficeVehicleRuntimeComparison
         && drivingFeelStable
         && routePaceStable
         && roadEdgeStable
+        && broadRouteStable
         && !result.deterministicSamples.empty();
     const bool obstacleProgressAligned = obstacleProgressDelta <= 4.0f;
     result.recommendation = result.passed && obstacleProgressAligned ? "promote" : "defer";
     if (result.passed && obstacleProgressAligned) {
         result.recommendationReason =
-            "The selected vehicle runtime adapter stayed stable, close enough to compare, passed compact control checks, reached the authored service-run checkpoint, cleared the overlap-backed obstacle replay with aligned progress, and stayed clear of authored dock-road edge probes.";
+            "The selected vehicle runtime adapter stayed stable, close enough to compare, passed compact control checks, reached the authored service-run checkpoint, cleared the overlap-backed obstacle replay with aligned progress, stayed clear of authored dock-road edge probes, and completed a broader turn/reverse route blocked by authored road-edge collision.";
     } else if (result.passed) {
         result.recommendationReason =
             "The selected vehicle runtime adapter stayed stable and camera-readable, but obstacle-proxy progress still diverges enough to keep it opt-in.";

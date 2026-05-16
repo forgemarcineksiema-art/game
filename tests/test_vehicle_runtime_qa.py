@@ -127,6 +127,65 @@ ROAD_EDGE_CHECKS = [
     },
 ]
 
+BROAD_ROUTE_CHECKS = [
+    {
+        "backend": "deterministic",
+        "passed": True,
+        "collisionResponseBacked": True,
+        "turnCompleted": True,
+        "reverseCompleted": True,
+        "readabilityStable": True,
+        "blockedByAuthoredEdge": True,
+        "unconstrainedWouldCrossEdge": True,
+        "edgeContactFrames": 8,
+        "edgeContactAfterReverseFrames": 4,
+        "frameCount": 240,
+        "maxYawChangeDegrees": 31.0,
+        "reverseDistance": 0.72,
+        "maxCameraYawDeltaDegrees": 13.0,
+        "maxEdgePenetration": 0.0,
+        "edgeLimitZ": -0.78,
+        "unconstrainedPeakZ": -0.30,
+        "unconstrainedMinZ": -2.20,
+        "constrainedPeakZ": -0.80,
+        "constrainedMinZ": -2.20,
+        "blockedEdgeId": "dock-road-north-curb",
+        "authoredEdgeIds": ["dock-road-south-rail", "dock-road-north-curb"],
+        "finalPosition": [14.8, 0.0, -1.2],
+        "finalYawDegrees": 57.0,
+        "hitBounds": False,
+        "message": "Deterministic broad route turned, reversed, and was blocked by authored road-edge collision.",
+    },
+    {
+        "backend": "jolt",
+        "passed": True,
+        "collisionResponseBacked": True,
+        "turnCompleted": True,
+        "reverseCompleted": True,
+        "readabilityStable": True,
+        "blockedByAuthoredEdge": True,
+        "unconstrainedWouldCrossEdge": True,
+        "edgeContactFrames": 5,
+        "edgeContactAfterReverseFrames": 3,
+        "frameCount": 260,
+        "maxYawChangeDegrees": 26.0,
+        "reverseDistance": 0.58,
+        "maxCameraYawDeltaDegrees": 14.0,
+        "maxEdgePenetration": 0.0,
+        "edgeLimitZ": -2.63,
+        "unconstrainedPeakZ": -2.10,
+        "unconstrainedMinZ": -3.05,
+        "constrainedPeakZ": -2.14,
+        "constrainedMinZ": -2.64,
+        "blockedEdgeId": "dock-road-south-rail",
+        "authoredEdgeIds": ["dock-road-south-rail", "dock-road-north-curb"],
+        "finalPosition": [14.7, 1.1, -1.3],
+        "finalYawDegrees": 62.0,
+        "hitBounds": False,
+        "message": "Jolt broad route turned, reversed, and was blocked by authored road-edge collision.",
+    },
+]
+
 
 class VehicleRuntimeQaTests(unittest.TestCase):
     def test_report_validation_accepts_passing_runtime_comparison_report(self) -> None:
@@ -214,6 +273,7 @@ class VehicleRuntimeQaTests(unittest.TestCase):
                         "drivingFeelChecks": DRIVING_FEEL_CHECKS,
                         "routePaceProbes": ROUTE_PACE_PROBES,
                         "roadEdgeChecks": ROAD_EDGE_CHECKS,
+                        "broadRouteChecks": BROAD_ROUTE_CHECKS,
                         "comparison": {
                             "maxPositionDelta": 0.45,
                             "maxYawDeltaDegrees": 8.0,
@@ -233,6 +293,7 @@ class VehicleRuntimeQaTests(unittest.TestCase):
         self.assertEqual(len(report["drivingFeelChecks"]), 12)
         self.assertEqual(len(report["routePaceProbes"]), 3)
         self.assertEqual(len(report["roadEdgeChecks"]), 2)
+        self.assertEqual(len(report["broadRouteChecks"]), 2)
 
     def test_report_validation_rejects_large_runtime_delta(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -665,6 +726,66 @@ class VehicleRuntimeQaTests(unittest.TestCase):
             )
 
             with self.assertRaisesRegex(ValueError, "road-edge"):
+                vehicle_runtime_qa.load_and_validate_report(report_path)
+
+    def test_report_validation_rejects_missing_broad_route_checks(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            report_path = pathlib.Path(temp) / "vehicle-runtime-comparison.json"
+            samples = [{"name": "accelerate", "passed": True, "wheelContactCount": 4, "outOfBounds": False}]
+            report_path.write_text(
+                json.dumps(
+                    {
+                        "schema": vehicle_runtime_qa.SCHEMA,
+                        "scenario": vehicle_runtime_qa.SCENARIO,
+                        "passed": True,
+                        "vehicle": {"id": "service-yard-vehicle"},
+                        "deterministic": {"backend": "deterministic", "samples": samples},
+                        "adapter": {"backend": "jolt", "samples": samples},
+                        "routeChecks": [
+                            {
+                                "backend": "deterministic",
+                                "passed": True,
+                                "checkpointReached": True,
+                                "framesToCheckpoint": 139,
+                                "minDistanceToCheckpoint": 1.7,
+                                "finalPosition": [17.6, 0.0, -1.8],
+                                "finalYawDegrees": 88.0,
+                                "hitBounds": False,
+                            },
+                            {
+                                "backend": "jolt",
+                                "passed": True,
+                                "checkpointReached": True,
+                                "framesToCheckpoint": 169,
+                                "minDistanceToCheckpoint": 1.8,
+                                "finalPosition": [17.6, 1.1, -1.8],
+                                "finalYawDegrees": 88.0,
+                                "hitBounds": False,
+                            },
+                        ],
+                        "obstacleChecks": OBSTACLE_CHECKS,
+                        "controlChecks": [
+                            {"name": "tapThrottleCoast", "passed": True, "frameIndex": 91, "speed": 0.08, "distance": 0.4},
+                            {"name": "brakeStopsForwardMotion", "passed": True, "frameIndex": 75, "speed": 0.02, "distance": 0.0},
+                            {"name": "reverseMovesBackward", "passed": True, "frameIndex": 135, "speed": -0.45, "distance": 0.6},
+                            {"name": "reverseCoastSettles", "passed": True, "frameIndex": 225, "speed": -0.05, "distance": 0.4},
+                        ],
+                        "drivingFeelChecks": DRIVING_FEEL_CHECKS,
+                        "routePaceProbes": ROUTE_PACE_PROBES,
+                        "roadEdgeChecks": ROAD_EDGE_CHECKS,
+                        "comparison": {
+                            "maxPositionDelta": 2.95,
+                            "maxYawDeltaDegrees": 25.0,
+                            "maxSpeedDelta": 2.8,
+                            "recommendation": "promote",
+                        },
+                        "error": "",
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(ValueError, "broad-route"):
                 vehicle_runtime_qa.load_and_validate_report(report_path)
 
     def test_report_validation_rejects_obstacle_checks_missing_camera_telemetry(self) -> None:

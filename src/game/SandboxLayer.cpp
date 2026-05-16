@@ -20,6 +20,9 @@ namespace {
 
 const engine::Vec3 ServiceYardVehicleSpawnPosition {6.2f, 0.0f, -2.2f};
 const float ServiceYardVehicleSpawnYawRadians = engine::Radians(88.0f);
+constexpr float VehicleRuntimeRoadEdgeObstacleCenterY = 0.58f;
+constexpr float VehicleRuntimeRoadEdgeObstacleMinHalfY = 0.72f;
+constexpr float VehicleRuntimeRoadEdgeObstacleMinHalfZ = 0.38f;
 const float ServiceYardBoundsMinX = 3.35f;
 const float ServiceYardBoundsMaxX = 19.45f;
 const float ServiceYardBoundsMinZ = -5.05f;
@@ -91,6 +94,24 @@ std::filesystem::path ResolveProjectPath(const std::filesystem::path& path)
 #endif
 
     return path;
+}
+
+std::vector<engine::physics::VehicleRuntimeStaticObstacle> BuildAuthoredRoadEdgeRuntimeObstacles(
+    const SceneDefinition& scene)
+{
+    std::vector<engine::physics::VehicleRuntimeStaticObstacle> obstacles;
+    for (const SceneVisualPlaceholderDefinition& placeholder : scene.visualPlaceholders) {
+        if (placeholder.id != "dock-road-south-rail" && placeholder.id != "dock-road-north-curb") {
+            continue;
+        }
+        engine::Vec3 center = placeholder.center;
+        engine::Vec3 halfExtents = placeholder.halfExtents;
+        center.y = VehicleRuntimeRoadEdgeObstacleCenterY;
+        halfExtents.y = std::max(halfExtents.y, VehicleRuntimeRoadEdgeObstacleMinHalfY);
+        halfExtents.z = std::max(halfExtents.z, VehicleRuntimeRoadEdgeObstacleMinHalfZ);
+        obstacles.push_back({placeholder.id, center, halfExtents});
+    }
+    return obstacles;
 }
 
 bool NameContains(const StaticCollider& collider, const char* token)
@@ -1346,6 +1367,9 @@ void SandboxLayer::setupVehicleRuntimeAdapter()
     config.halfExtents = m_vehicleProxyHalfExtents;
     config.boundsMin = {settings.boundsMinX, settings.boundsMinZ};
     config.boundsMax = {settings.boundsMaxX, settings.boundsMaxZ};
+    if (m_sceneDefinitionLoaded) {
+        config.staticObstacles = BuildAuthoredRoadEdgeRuntimeObstacles(m_sceneDefinition);
+    }
 
     if (!m_vehicleRuntimeAdapter->initialize(config)) {
         std::string error = std::string(m_vehicleRuntimeAdapter->error());

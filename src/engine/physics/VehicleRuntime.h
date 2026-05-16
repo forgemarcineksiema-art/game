@@ -6,8 +6,15 @@
 #include <memory>
 #include <string>
 #include <string_view>
+#include <vector>
 
 namespace engine::physics {
+
+struct VehicleRuntimeStaticObstacle {
+    std::string name;
+    Vec3 center;
+    Vec3 halfExtents;
+};
 
 struct VehicleRuntimeConfig {
     std::string vehicleId;
@@ -17,6 +24,7 @@ struct VehicleRuntimeConfig {
     Vec2 boundsMin;
     Vec2 boundsMax;
     float fixedStepSeconds = 1.0f / 60.0f;
+    std::vector<VehicleRuntimeStaticObstacle> staticObstacles;
 };
 
 struct VehicleRuntimeInput {

@@ -623,3 +623,13 @@ Reason: The v0.99 audit found a real evidence gap: Jolt had strong opt-in vehicl
 Dependency impact: no new dependency was added. Jolt remains behind the existing opt-in `windows-vs2022-debug-jolt` preset and `src\engine\physics` boundary. `scripts\verify_jolt.ps1` is an explicit development gate, not part of normal dependency-free `scripts\verify.ps1`.
 
 Limit: the road-edge evidence is clearance/overlap probing against authored edge volumes mirrored into QA, not full live vehicle collision response against every scene collider or a reason to promote Jolt as the default runtime.
+
+## Post-v0.99 Authored Road-Edge Runtime Collision Proxies
+
+Decision: Derive opt-in vehicle runtime static obstacles from the authored Ferry Office `dock-road-south-rail` and `dock-road-north-curb` scene IDs, and inflate those low visual rail/curb placeholders into conservative vehicle collision proxies for the runtime adapter path.
+
+Reason: The first broad-route Jolt collision proof exposed a real issue: the visual road-edge placeholders were too low and thin to reliably stop the Jolt vehicle body, so a route could contact the authored edge but still penetrate through it. Using the same authored IDs preserves scene ownership while making the runtime collision volume honest enough for vehicle evidence. The report now proves straight, reverse, turn, camera readability, unconstrained edge crossing, and constrained collision response with `blockedEdgeId`.
+
+Dependency impact: no new dependency was added. Jolt stays behind the existing opt-in preset and engine-owned `src\engine\physics` boundary. The simple fallback adapter also supports the same static obstacle config so tests can compare deterministic and Jolt behavior.
+
+Limit: this is not mesh collision import, a final road model, a full scene-collider migration, dynamic object collision, traffic/damage proof, or Jolt default promotion.

@@ -243,6 +243,83 @@ def _require_road_edge_checks(report: dict[str, Any]) -> list[dict[str, Any]]:
     return checks
 
 
+def _require_broad_route_checks(report: dict[str, Any]) -> list[dict[str, Any]]:
+    checks = report.get("broadRouteChecks")
+    if not isinstance(checks, list) or len(checks) < 2:
+        raise ValueError("Vehicle runtime report is missing broad-route collision-response checks.")
+
+    backends = set()
+    for check in checks:
+        if not isinstance(check, dict):
+            raise ValueError(f"Vehicle runtime broad-route check is invalid: {check}")
+        backends.add(str(check.get("backend", "")))
+        for key in (
+            "passed",
+            "collisionResponseBacked",
+            "turnCompleted",
+            "reverseCompleted",
+            "readabilityStable",
+            "blockedByAuthoredEdge",
+            "unconstrainedWouldCrossEdge",
+        ):
+            if check.get(key) is not True:
+                raise ValueError(f"Vehicle runtime broad-route check failed {key}: {check}")
+        for key in (
+            "edgeContactFrames",
+            "edgeContactAfterReverseFrames",
+            "frameCount",
+            "maxYawChangeDegrees",
+            "reverseDistance",
+            "maxCameraYawDeltaDegrees",
+            "maxEdgePenetration",
+            "edgeLimitZ",
+            "unconstrainedPeakZ",
+            "unconstrainedMinZ",
+            "constrainedPeakZ",
+            "constrainedMinZ",
+            "blockedEdgeId",
+            "finalPosition",
+            "finalYawDegrees",
+        ):
+            if key not in check:
+                raise ValueError(f"Vehicle runtime broad-route check is missing telemetry: {check}")
+        authored_edge_ids = check.get("authoredEdgeIds")
+        if not isinstance(authored_edge_ids, list) or len(authored_edge_ids) < 2:
+            raise ValueError(f"Vehicle runtime broad-route check is missing authored edge ids: {check}")
+        if int(check.get("edgeContactFrames", 0)) <= 0:
+            raise ValueError(f"Vehicle runtime broad-route check never contacted an authored edge: {check}")
+        if int(check.get("edgeContactAfterReverseFrames", 0)) <= 0:
+            raise ValueError(f"Vehicle runtime broad-route check did not contact an authored edge after reverse: {check}")
+        blocked_edge_id = str(check.get("blockedEdgeId", ""))
+        if blocked_edge_id not in authored_edge_ids:
+            raise ValueError(f"Vehicle runtime broad-route check did not identify a blocked authored edge: {check}")
+        if float(check.get("maxYawChangeDegrees", 0.0)) < 12.0:
+            raise ValueError(f"Vehicle runtime broad-route check did not turn enough: {check}")
+        if float(check.get("reverseDistance", 0.0)) < 0.25:
+            raise ValueError(f"Vehicle runtime broad-route check did not reverse enough: {check}")
+        if float(check.get("maxCameraYawDeltaDegrees", 999.0)) > 28.0:
+            raise ValueError(f"Vehicle runtime broad-route camera readability exceeded threshold: {check}")
+        if float(check.get("maxEdgePenetration", 999.0)) > 0.25:
+            raise ValueError(f"Vehicle runtime broad-route penetrated too far through an authored edge: {check}")
+        edge_limit_z = float(check.get("edgeLimitZ", 0.0))
+        if blocked_edge_id == "dock-road-north-curb":
+            if float(check.get("unconstrainedPeakZ", -999.0)) <= edge_limit_z + 0.25:
+                raise ValueError(f"Vehicle runtime broad-route unconstrained run did not pressure the north edge: {check}")
+            if float(check.get("constrainedPeakZ", 999.0)) > edge_limit_z + 0.25:
+                raise ValueError(f"Vehicle runtime broad-route constrained run crossed the north edge: {check}")
+        elif blocked_edge_id == "dock-road-south-rail":
+            if float(check.get("unconstrainedMinZ", 999.0)) >= edge_limit_z - 0.25:
+                raise ValueError(f"Vehicle runtime broad-route unconstrained run did not pressure the south edge: {check}")
+            if float(check.get("constrainedMinZ", -999.0)) < edge_limit_z - 0.25:
+                raise ValueError(f"Vehicle runtime broad-route constrained run crossed the south edge: {check}")
+        if check.get("hitBounds") is True:
+            raise ValueError(f"Vehicle runtime broad-route check hit vehicle bounds: {check}")
+
+    if "deterministic" not in backends or "jolt" not in backends:
+        raise ValueError(f"Vehicle runtime broad-route checks must include deterministic and jolt backends: {sorted(backends)}")
+    return checks
+
+
 def load_and_validate_report(report_path: pathlib.Path) -> dict[str, Any]:
     if not report_path.exists():
         raise FileNotFoundError(f"Vehicle runtime comparison report was not created: {report_path}")
@@ -283,6 +360,7 @@ def load_and_validate_report(report_path: pathlib.Path) -> dict[str, Any]:
     if comparison.get("recommendation") not in {"promote", "defer"}:
         raise ValueError(f"Vehicle runtime report has invalid recommendation: {comparison.get('recommendation')}")
     _require_road_edge_checks(report)
+    _require_broad_route_checks(report)
     return report
 
 
@@ -327,6 +405,7 @@ def run_vehicle_runtime(exe: pathlib.Path, scene: pathlib.Path, report_path: pat
         f"drivingFeelChecks={len(report['drivingFeelChecks'])}, "
         f"routePaceProbes={len(report['routePaceProbes'])}, "
         f"roadEdgeChecks={len(report['roadEdgeChecks'])}, "
+        f"broadRouteChecks={len(report['broadRouteChecks'])}, "
         f"maxPositionDelta={comparison['maxPositionDelta']:.2f}, "
         f"recommendation={comparison['recommendation']}, "
         f"report={report_path}"

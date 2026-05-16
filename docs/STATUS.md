@@ -2,6 +2,55 @@
 
 Last updated: 2026-05-17
 
+## Actual Authored Road-Edge Collision Response Gate (2026-05-17)
+
+Goal:
+
+- Replace the previous straight-checkpoint-style Jolt evidence with a broader Ferry Office vehicle runtime gate that proves actual authored road-edge collision response after a straight segment, reverse segment, turn, and camera readability check.
+
+Scope:
+
+- Added runtime static-obstacle support to `VehicleRuntimeConfig` for vehicle-road-edge collision proxies.
+- Added Jolt static obstacle creation/destruction inside the opt-in vehicle runtime adapter.
+- Added deterministic fallback obstacle response so the same QA can compare deterministic and Jolt behavior.
+- Wired live opt-in vehicle runtime setup to derive road-edge obstacles from the authored Ferry Office `dock-road-south-rail` and `dock-road-north-curb` scene IDs.
+- Extended `tools\vehicle_runtime_qa.py` and C++ QA output with `broadRouteChecks`, including `blockedEdgeId`, `edgeContactAfterReverseFrames`, turn/reverse/camera metrics, constrained/unconstrained edge pressure, and failure reasons.
+- Did not add new mission content, map area, renderer work, or Jolt default promotion.
+
+TDD / debugging evidence:
+
+- RED: `python tests\test_vehicle_runtime_qa.py` rejected reports missing the new `broadRouteChecks`.
+- RED: `cmake --build --preset windows-vs2022-debug --target EngineCoreTests` failed while tests referenced missing static obstacle and broad-route result fields.
+- RED during tuning: Jolt first failed because the route hit edge before reverse; then failed because the thin visual rail allowed over 1m penetration. Root cause was that authored visual road-edge boxes were too low/thin to be reliable vehicle collision volumes.
+- GREEN: `python tests\test_vehicle_runtime_qa.py` passed, 13 tests.
+- GREEN: `build\windows-vs2022-debug-jolt\Debug\EngineCoreTests.exe` passed after route/collision proxy correction.
+
+Validation commands:
+
+- `scripts\build.ps1`: passed.
+- `scripts\verify.ps1`: passed; 11/11 default CTest passed, scene/assets/mesh validation passed, null smoke passed.
+- `python tools\validate_scene.py`: passed.
+- `python tools\scale_audit.py`: passed; no suspicious scale issues.
+- `python tools\mesh_report.py`: passed; 20 mesh assets, 66 mesh instances, 20 model files.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed; 16/16 tests.
+- `python tools\playthrough_qa.py --exe build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --vehicle-runtime jolt --report-json build\playthrough\ferry-office-jolt-playthrough-report.json`: passed; 21 events, `vehicleRuntime=jolt`, checkpoint in 169 frames.
+- `python tools\vehicle_runtime_qa.py --exe build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --report-json build\physics\ferry-office-vehicle-runtime-road-edge-response-report.json`: passed; backend `jolt`, broadRouteChecks=2, maxPositionDelta=1.08, recommendation=`promote`.
+- `scripts\verify_jolt.ps1`: passed; configured/built Jolt preset, ran 16/16 Jolt CTest, explicit Jolt playthrough QA, and vehicle runtime QA.
+
+Confirmed evidence:
+
+- CONFIRMED: deterministic broad route is blocked by authored `dock-road-north-curb` after reverse, with `edgeContactAfterReverseFrames=152`, `reverseDistance=0.366m`, `maxYawChangeDegrees=60.42`, and `maxCameraYawDeltaDegrees=5.31`.
+- CONFIRMED: Jolt broad route is blocked by authored `dock-road-south-rail` after reverse, with `edgeContactAfterReverseFrames=32`, `reverseDistance=1.356m`, `maxYawChangeDegrees=43.51`, `maxCameraYawDeltaDegrees=17.92`, and `maxEdgePenetration=0.030m`.
+- CONFIRMED: the Jolt unconstrained run would leave the authored road corridor (`unconstrainedMinZ=-4.313`), while the constrained run is stopped at the runtime edge proxy (`edgeLimitZ=-2.35`, `constrainedMinZ=-2.380`).
+
+Important limits:
+
+- CONFIRMED: this is actual runtime collision response against static vehicle obstacles derived from authored Ferry Office edge IDs, not another straight checkpoint clearance proof.
+- CONFIRMED: the collision proxy is intentionally inflated from the visual rail/curb placeholders so the vehicle body has a reliable runtime contact volume; it is not a full mesh-collision import or final road model.
+- UNVERIFIED: this still does not prove broad manual driving, all scene colliders, dynamic obstacles, traffic, damage, slopes, road splines, camera collision, or default Jolt promotion.
+
 ## Post-v0.99 Jolt Live Evidence Gate (2026-05-17)
 
 Goal:

@@ -4683,6 +4683,46 @@ void TestVehicleRuntimeAdapterSimpleStepsFrameByFrame()
         "Simple runtime adapter should stay inside authored service-yard bounds for this probe.");
 }
 
+void TestSimpleVehicleRuntimeAdapterRespondsToStaticRoadEdgeCollision()
+{
+    engine::physics::VehicleRuntimeConfig config;
+    config.vehicleId = "service-yard-vehicle";
+    config.spawnPosition = {0.0f, 0.0f, 0.0f};
+    config.spawnYawRadians = engine::Radians(90.0f);
+    config.halfExtents = {0.58f, 0.53f, 0.92f};
+    config.boundsMin = {-3.0f, -3.0f};
+    config.boundsMax = {8.0f, 3.0f};
+    config.staticObstacles.push_back({"authored-road-edge", {2.6f, 0.53f, 0.0f}, {0.18f, 0.53f, 2.0f}});
+
+    std::unique_ptr<engine::physics::IVehicleRuntimeAdapter> adapter =
+        engine::physics::CreateVehicleRuntimeAdapter(engine::physics::PhysicsBackend::Simple);
+
+    Expect(adapter != nullptr,
+        "TestSimpleVehicleRuntimeAdapterRespondsToStaticRoadEdgeCollision",
+        "Simple vehicle runtime adapter should always be available.");
+    if (!adapter) {
+        return;
+    }
+
+    Expect(adapter->initialize(config),
+        "TestSimpleVehicleRuntimeAdapterRespondsToStaticRoadEdgeCollision",
+        "Simple vehicle runtime adapter should initialize with authored static obstacles.");
+
+    for (int frame = 0; frame < 120; ++frame) {
+        adapter->step({1.0f, 0.0f, 0.0f}, config.fixedStepSeconds);
+    }
+    const engine::physics::VehicleRuntimeState state = adapter->state();
+    adapter->shutdown();
+
+    const float maxCenterXBeforeEdge = 2.6f - 0.18f - config.halfExtents.x;
+    Expect(state.position.x <= maxCenterXBeforeEdge + 0.05f,
+        "TestSimpleVehicleRuntimeAdapterRespondsToStaticRoadEdgeCollision",
+        "Authored static road-edge obstacle should block the simple runtime vehicle instead of allowing it through.");
+    Expect(std::abs(state.speed) < 0.25f,
+        "TestSimpleVehicleRuntimeAdapterRespondsToStaticRoadEdgeCollision",
+        "Collision response should damp vehicle speed after contacting an authored road edge.");
+}
+
 void TestJoltVehicleRuntimeTapThrottleDoesNotCoastForever()
 {
     if (!engine::physics::IsJoltPhysicsAvailable()) {
@@ -4897,6 +4937,23 @@ void TestFerryOfficeVehicleRuntimeComparisonQaWritesReport()
             "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
             "Road-edge checks should name authored edge ids and expose positive clearance.");
     }
+    Expect(result.broadRouteChecks.size() == 2,
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Runtime comparison QA should include deterministic and adapter broad-route collision-response checks.");
+    for (const auto& check : result.broadRouteChecks) {
+        Expect(check.passed && check.collisionResponseBacked && check.blockedByAuthoredEdge,
+            "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+            check.message);
+        Expect(check.turnCompleted && check.reverseCompleted && check.readabilityStable,
+            "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+            "Broad-route check should cover a turn, reverse recovery, and camera readability.");
+        Expect(check.unconstrainedWouldCrossEdge && check.authoredEdgeIds.size() >= 2,
+            "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+            "Broad-route check should prove the same script would cross authored road edge without collision response.");
+        Expect(check.edgeContactAfterReverseFrames > 0 && !check.blockedEdgeId.empty(),
+            "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+            "Broad-route check should identify the authored edge contacted after the reverse/readability segment.");
+    }
     Expect(result.maxPositionDelta <= 0.75f,
         "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
         "Simple runtime adapter should stay close to the deterministic fallback path.");
@@ -4965,6 +5022,18 @@ void TestFerryOfficeVehicleRuntimeComparisonQaWritesReport()
             && report["roadEdgeChecks"][0].contains("maxCameraYawDeltaDegrees"),
         "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
         "Road-edge checks should include authored ids, collision clearance, and camera telemetry.");
+    Expect(report["broadRouteChecks"].size() == 2,
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Runtime comparison report should expose broader live-like route checks.");
+    Expect(report["broadRouteChecks"][0].contains("collisionResponseBacked")
+            && report["broadRouteChecks"][0].contains("blockedByAuthoredEdge")
+            && report["broadRouteChecks"][0].contains("unconstrainedWouldCrossEdge")
+            && report["broadRouteChecks"][0].contains("edgeContactAfterReverseFrames")
+            && report["broadRouteChecks"][0].contains("blockedEdgeId")
+            && report["broadRouteChecks"][0].contains("reverseDistance")
+            && report["broadRouteChecks"][0].contains("maxCameraYawDeltaDegrees"),
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Broad-route checks should include collision response, turn/reverse, and camera readability telemetry.");
 
     std::filesystem::remove(reportPath);
 }
@@ -5448,6 +5517,7 @@ int main()
     TestFerryOfficeVehiclePhysicsQaWritesFeasibilityReport();
     TestFerryOfficeVehiclePhysicsQaHandlesUnavailableBackendExplicitly();
     TestVehicleRuntimeAdapterSimpleStepsFrameByFrame();
+    TestSimpleVehicleRuntimeAdapterRespondsToStaticRoadEdgeCollision();
     TestJoltVehicleRuntimeTapThrottleDoesNotCoastForever();
     TestJoltVehicleRuntimeReportsReverseAsNegativeSpeed();
     TestJoltVehicleRuntimeReachesServiceCheckpointWithinRouteBudget();

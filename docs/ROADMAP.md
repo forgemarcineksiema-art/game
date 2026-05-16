@@ -1013,10 +1013,19 @@ Status: implemented and validated. Jolt now reaches the service-run checkpoint i
 
 Status: implemented and validated. Jolt CTest now passes 16/16 including `FerryOfficeJoltPlaythroughQaSmoke`, and the show-only CTest metadata confirms `--vehicle-runtime jolt`. Explicit Jolt playthrough QA completes the 21-event service-call chain with checkpoint in 169 frames. Vehicle runtime QA reports 2 road-edge checks for `dock-road-south-rail` and `dock-road-north-curb`; deterministic and Jolt both keep zero edge overlap frames with about 0.10m minimum clearance. This is authored-edge clearance evidence, not broad vehicle collision-response migration.
 
+## Post-v0.99 - Authored Road-Edge Collision Response Gate
+
+- Add vehicle runtime static obstacles derived from authored Ferry Office road-edge IDs.
+- Prove a broader live-like route that includes straight driving, reverse, a turn, camera readability, and authored road-edge collision response.
+- Compare deterministic and Jolt behavior without adding new content or promoting Jolt as default.
+- Report which authored edge blocks the route and whether the unconstrained run would cross the road corridor.
+
+Status: implemented and validated. `scripts\verify.ps1` passes, Jolt CTest passes 16/16, `scripts\verify_jolt.ps1` passes, and explicit `tools\vehicle_runtime_qa.py` passes with `broadRouteChecks=2`. Deterministic is blocked by `dock-road-north-curb` after reverse; Jolt is blocked by `dock-road-south-rail` after reverse with `maxEdgePenetration=0.030m`, `reverseDistance=1.356m`, and `maxCameraYawDeltaDegrees=17.92`. This proves a short authored-edge collision-response gate, not a complete road/camera/manual-driving system.
+
 ## Recommended Next Goal
 
 Read `docs\GAMEPLAY_REVIEW.md` before choosing the next milestone. Use `python tools\capture_visual_smoke.py`, `python tools\capture_visual_smoke.py --scenario relay-to-service-log --report-json build\captures\capture_visual_smoke_midchain_report.json`, `python tools\capture_visual_smoke.py --scenario low-dock-drain-access --report-json build\captures\capture_visual_smoke_low_dock_report.json`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play.
 
-After the post-v0.99 evidence gate, the next vehicle milestone should stop proving the same straight service-run again and should target the remaining real gap: actual authored road-edge collision response plus a broader live controls/camera route with at least one turn/reverse/readability case. Keep deterministic as comparison baseline and fallback, and do not promote Jolt as the default until that broader evidence exists.
+After the authored road-edge collision-response gate, the next vehicle milestone should stop proving the same Ferry Office edge/checkpoint loop. The next useful vehicle evidence is a longer authored driving route with multiple turns, a deliberate camera reset/readability case, and preferably one manual-play or input-recorded pass. Keep deterministic as comparison baseline and fallback, and do not promote Jolt as the direct-app default until that broader evidence exists.
 
 If the new Low Dock Drain access consequence exposes route/objective readability issues during capture review, choose a bounded readability pass instead, but do not add another administrative endpoint by default.

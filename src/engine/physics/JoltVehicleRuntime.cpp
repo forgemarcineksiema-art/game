@@ -21,6 +21,7 @@
 #include <cmath>
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace engine::physics {
 namespace {
@@ -238,6 +239,27 @@ public:
             bodyInterface.AddBody(m_floorId, JPH::EActivation::DontActivate);
         }
 
+        for (const VehicleRuntimeStaticObstacle& obstacle : config.staticObstacles) {
+            JPH::BoxShapeSettings obstacleShape(ToJoltVec3(obstacle.halfExtents));
+            obstacleShape.SetEmbedded();
+            JPH::BodyCreationSettings obstacleSettings(
+                obstacleShape.Create().Get(),
+                ToJoltRVec3(obstacle.center),
+                JPH::Quat::sIdentity(),
+                JPH::EMotionType::Static,
+                Layers::NonMoving);
+            obstacleSettings.mFriction = 0.95f;
+            JPH::Body* obstacleBody = bodyInterface.CreateBody(obstacleSettings);
+            if (obstacleBody == nullptr) {
+                m_error = "Failed to create Jolt vehicle runtime static obstacle.";
+                shutdown();
+                return false;
+            }
+            const JPH::BodyID obstacleId = obstacleBody->GetID();
+            m_staticObstacleIds.push_back(obstacleId);
+            bodyInterface.AddBody(obstacleId, JPH::EActivation::DontActivate);
+        }
+
         JPH::BoxShapeSettings bodyBox(ToJoltVec3(config.halfExtents));
         bodyBox.SetEmbedded();
         JPH::OffsetCenterOfMassShapeSettings bodyShape(
@@ -341,6 +363,13 @@ public:
                 bodyInterface.DestroyBody(m_floorId);
                 m_floorId = {};
             }
+            for (JPH::BodyID obstacleId : m_staticObstacleIds) {
+                if (!obstacleId.IsInvalid()) {
+                    bodyInterface.RemoveBody(obstacleId);
+                    bodyInterface.DestroyBody(obstacleId);
+                }
+            }
+            m_staticObstacleIds.clear();
         }
 
         m_physicsSystem.reset();
@@ -470,6 +499,7 @@ private:
     ObjectLayerPairFilter m_objectLayerPairFilter;
     JPH::BodyID m_floorId;
     JPH::BodyID m_bodyId;
+    std::vector<JPH::BodyID> m_staticObstacleIds;
     JPH::Ref<JPH::VehicleConstraint> m_constraint;
     JPH::WheeledVehicleController* m_controller = nullptr;
 };
