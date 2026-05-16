@@ -20,7 +20,7 @@ Recent history forms a clear arc:
 - v0.32: deterministic Ferry Office playthrough QA.
 - v0.33: Jolt static scene-query parity QA.
 - v0.34: Jolt character/contact probe QA.
-- v0.45-v0.65: Jolt vehicle runtime controls, service-run route proxy, route-pace tuning, deterministic service-vehicle runtime playthrough QA, opt-in Jolt first-job live-loop QA, the Dock Road Relay follow-up beat, relay/log/clearance endpoint consequences, compact playtest follow-up text, camera-aware obstacle-proxy vehicle steering evidence, a clearance-tag visual cue, a tiny original clearance-tag mesh prop, Jolt obstacle-progress tuning, a compact Harbor Parts return micro-slice, a follow-up next-step readability line, scene-authored action bindings for simple/gated flag beats, a Ferry Office Work Board signoff endpoint, a Ferry Office handoff note endpoint, and collision-backed obstacle replay telemetry in vehicle runtime QA.
+- v0.45-v0.66: Jolt vehicle runtime controls, service-run route proxy, route-pace tuning, deterministic service-vehicle runtime playthrough QA, opt-in Jolt first-job live-loop QA, the Dock Road Relay follow-up beat, relay/log/clearance endpoint consequences, compact playtest follow-up text, camera-aware obstacle-proxy vehicle steering evidence, a clearance-tag visual cue, a tiny original clearance-tag mesh prop, Jolt obstacle-progress tuning, a compact Harbor Parts return micro-slice, a follow-up next-step readability line, scene-authored action bindings for simple/gated flag beats, a Ferry Office Work Board signoff endpoint, a Ferry Office handoff note endpoint, collision-backed obstacle replay telemetry in vehicle runtime QA, and a dynamic handoff-filed visual state cue.
 
 ## Architecture Map
 
@@ -85,7 +85,7 @@ Recent history forms a clear arc:
 
 `data/scenes/ferry_office.scene.json`
 
-- Current source of truth for Ferry Office layout and presentation intent: player start, scene materials, colliders, visual placeholders, mesh assets/instances, interactables, traversal, vehicle, route markers, objective markers.
+- Current source of truth for Ferry Office layout and presentation intent: player start, scene materials, colliders, visual placeholders, mesh assets/instances, interactables, traversal, vehicle, route markers, objective markers. After v0.66 it includes 21 scene materials and 27 visual placeholders, including the handoff-filed status cue.
 
 `src/game/PrototypeWorld.*`
 
@@ -201,7 +201,7 @@ Commands run on 2026-05-16:
 - `python tools/scale_audit.py`: passed, no suspicious scale issues.
 - `python tools/mesh_report.py`: passed, 12 referenced model files.
 - `python tools/playthrough_qa.py`: passed; service-call phase `complete`, 17 events. After v0.64 this report is also expected to include vehicle runtime evidence, runtime service-vehicle enter, dock-road checkpoint, exit steps, the Dock Road Relay reset step, the relay service log sign-off, the dock-road clear-tag consequence, Harbor Parts pickup, Harbor Parts delivery, Ferry Office Work Board signoff, and Ferry Office handoff filing.
-- `python tools/capture_visual_smoke.py`: passed for GDI and DX11 captures; DX11 used WARP in this environment. After v0.55, playtest presentation also includes a compact `Follow-up: relay=... | log=... | road=...` line once endpoint follow-up state is relevant; after v0.58 the clearance-tag endpoint also has a tiny dynamic mesh prop; after v0.60 the initial playtest prompt still focuses `Collect Ferry Manifest` despite the new office shelf delivery interaction; after v0.61 the follow-up state also gets a compact `Next:` line, and after v0.63 that line points delivered Harbor Parts to the Ferry Office Work Board before completion.
+- `python tools/capture_visual_smoke.py`: passed for GDI and DX11 captures; DX11 used WARP in this environment. After v0.55, playtest presentation also includes a compact `Follow-up: relay=... | log=... | road=...` line once endpoint follow-up state is relevant; after v0.58 the clearance-tag endpoint also has a tiny dynamic mesh prop; after v0.60 the initial playtest prompt still focuses `Collect Ferry Manifest` despite the new office shelf delivery interaction; after v0.61 the follow-up state also gets a compact `Next:` line; after v0.63 that line points delivered Harbor Parts to the Ferry Office Work Board before completion; after v0.66 the handoff endpoint also has an amber-to-green dynamic visual state cue.
 - `python tools/physics_parity_qa.py`: passed with Jolt backend; floor=4, raycast=4, overlap=4.
 - `python tools/character_contact_qa.py`: passed with Jolt backend; probes=7.
 
@@ -367,13 +367,13 @@ Validation:
 
 ## Recommendation
 
-Best next move: build a collision-backed obstacle route if vehicle promotion is the priority; otherwise add another compact authored beat now that simple scene action bindings exist.
+Best next move: seed a compact Job #2 if playable content is the priority; otherwise make a provisional Jolt vehicle-runtime direction decision from the accumulated route/control/playthrough/obstacle evidence.
 
-Reason: v0.35 proved Jolt vehicle feasibility, v0.36 proved a frame-stepped runtime adapter comparison, v0.37 exposed that adapter through `--vehicle-runtime jolt`, v0.45 hardened tap/brake/reverse/coast checks, v0.46 added automated service-run route checks, v0.47 tuned Jolt route pace under a 240-frame budget, v0.48 proved the deterministic first-job vehicle beat can enter, drive, checkpoint, exit, and confirm through runtime controller behavior, v0.49 proved the same beat through the opt-in Jolt path, and v0.59 closes the camera-aware obstacle proxy progress gap. That is enough for stronger opt-in testing and small content growth, but not enough for default Jolt promotion until collision-backed obstacle replay evidence exists.
+Reason: v0.35 proved Jolt vehicle feasibility, v0.36 proved a frame-stepped runtime adapter comparison, v0.37 exposed that adapter through `--vehicle-runtime jolt`, v0.45 hardened tap/brake/reverse/coast checks, v0.46 added automated service-run route checks, v0.47 tuned Jolt route pace under a 240-frame budget, v0.48 proved the deterministic first-job vehicle beat can enter, drive, checkpoint, exit, and confirm through runtime controller behavior, v0.49 proved the same beat through the opt-in Jolt path, v0.59 closes the camera-aware obstacle proxy progress gap, and v0.65 adds collision-backed obstacle replay evidence. Meanwhile v0.64-v0.66 made the first office follow-up chain longer and more visible, so the content path is ready for a small second job if validation remains bounded.
 
 Second-best: improve input-scripted runtime QA if the next authored beat would depend on behavior that `tools/playthrough_qa.py` still bypasses.
 
-Do not start broad map expansion, renderer polish, or more authored props while the first service vehicle path still lacks narrower steering/obstacle evidence for any default vehicle-runtime promotion.
+Do not start broad map expansion, renderer polish, or a big asset pass. Prefer one compact playable job/content step, or a bounded Jolt direction decision, while keeping validation fast.
 
 Ready next-goal prompt:
 

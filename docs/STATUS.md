@@ -2,6 +2,88 @@
 
 Last updated: 2026-05-16
 
+## v0.66 Ferry Office Handoff State Cue (2026-05-16)
+
+Selected milestone:
+
+- Add a visible authored state cue for the Ferry Office Handoff Note beat.
+
+Candidate milestone triage:
+
+- Handoff-state scene cue: impact = makes the new office endpoint visibly remembered in the world; risk = low, follows existing dynamic scene-color pattern; validation path = scene/tool tests, playthrough QA, visual smoke, `scripts\verify.ps1`.
+- Jolt promotion decision note: impact = moves vehicle runtime strategy forward; risk = medium because it is decision-heavy after a validation milestone; validation path = existing vehicle QA plus docs.
+- Job #2 seed: impact = high playable content; risk = higher while the current final office beat still has no visual consequence; validation path = new playthrough route and scene tests.
+
+Why selected:
+
+- The previous v0.64 content beat worked mechanically but the world still looked the same after filing the handoff note. A small dynamic cue is the best next player-facing improvement after the v0.65 vehicle QA milestone because it makes remembered local state easier to read without adding a new system.
+
+Implementation notes:
+
+- Added `ferry-office-handoff-state` as an authored scene material and known scene color key.
+- Added `ferry-office-handoff-status-light` beside the handoff note in `data\scenes\ferry_office.scene.json`.
+- Extended `ScenePresentationState` with `ferryOfficeHandoffFiled` and wired `SandboxLayer` placeholder/mesh tint state from `WorldFlag::FerryOfficeHandoffFiled`.
+- Added a dynamic palette shift from pending amber to filed green for the handoff state cue.
+- Updated scene count tests and dynamic palette tests for the new material and visual placeholder.
+
+Files changed:
+
+- `data\scenes\ferry_office.scene.json`
+- `src\game\ScenePresentation.h`
+- `src\game\ScenePresentation.cpp`
+- `src\game\SandboxLayer.cpp`
+- `tools\scene_data.py`
+- `tests\EngineCoreTests.cpp`
+- `tests\test_scene_tools.py`
+- `docs\STATUS.md`
+- `docs\ROADMAP.md`
+- `docs\CONTEXT_MAP.md`
+
+Focused validation:
+
+- `python tools\validate_scene.py`: passed.
+- `python tests\test_scene_tools.py`: passed, 44 tests.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: passed.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `python tools\playthrough_qa.py`: passed; phase `complete`, 17 events, deterministic runtime, 139 frames to checkpoint.
+- `python tools\scene_report.py`: passed; now reports 21 scene materials and 27 visual placeholders.
+- `python tools\capture_visual_smoke.py`: passed; GDI colors=65/lumaRange=221, DX11 colors=44/lumaRange=221 with WARP fallback in this environment.
+- `python tools\scale_audit.py`: passed.
+- `python tools\mesh_report.py`: passed.
+- `python tools\validate_assets.py`: passed.
+
+Automated evidence generated:
+
+- `build\playthroughs\ferry-office-service-call-report.json`
+- `build\captures\capture_visual_smoke_report.json`
+
+Decision note:
+
+- Decision made: keep the handoff consequence as a compact scene-authored status light for now, not a new mesh asset or UI panel.
+- Alternatives considered: leave the handoff as text-only, add a bespoke prop mesh, or start Job #2 immediately.
+- Evidence used: existing relay/clearance dynamic color pattern, green scene/tool tests, green deterministic playthrough QA, and green visual smoke.
+- Why this helps Tidebreak: the Ferry Office now communicates a remembered local state change in the authored place, making the endpoint less invisible while keeping the content pipeline simple.
+- Revisit when: the office endpoint gets a proper authored prop/notice-board mesh pass or Job #2 needs stronger handoff readability.
+
+Remaining limitations:
+
+- The cue is still a simple placeholder box, not a bespoke note-board asset.
+- Visual smoke proves nonblank renderer output and color diversity, not exact player camera composition of the handoff cue.
+- Human playtest can still judge whether the small cue is obvious enough, but it is no longer a blocker for autonomous progress.
+
+Final validation:
+
+- `scripts\verify.ps1`: passed; doctor/configure/build succeeded, default CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke passed.
+- `git diff --check`: passed with only expected CRLF normalization warnings.
+
+Commit/push:
+
+- Pending at status edit time.
+
+Next direction:
+
+- After validation and push, choose between a small Job #2 seed now that the first office loop has visible endpoint state, or a bounded Jolt vehicle-runtime decision/hardening pass if vehicle promotion evidence is the highest leverage.
+
 ## v0.65 Collision-backed Vehicle Obstacle Replay (2026-05-16)
 
 Selected milestone:

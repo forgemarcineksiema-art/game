@@ -90,6 +90,11 @@ engine::Color DynamicSceneColor(std::string_view key, engine::Color authoredBase
             ? engine::Color {0.16f, 0.72f, 0.82f, 1.0f}
             : engine::Color {0.44f, 0.50f, 0.48f, 1.0f};
     }
+    if (key == "ferry-office-handoff-state") {
+        return state.ferryOfficeHandoffFiled
+            ? engine::Color {0.24f, 0.78f, 0.46f, 1.0f}
+            : engine::Color {0.76f, 0.62f, 0.22f, 1.0f};
+    }
     if (key == "service-vehicle-cabin-placeholder") {
         const engine::Color body = state.vehicleOccupied
             ? engine::Color {0.18f, 0.58f, 0.95f, 1.0f}
@@ -122,6 +127,7 @@ bool IsKnownSceneColorKey(std::string_view key)
         || key == "mossy-service-crate"
         || key == "dock-muted-sign-yellow"
         || key == "ferry-route-sign-blue"
+        || key == "ferry-office-handoff-state"
         || key == "salt-white-road-post"
         || key == "warning-service-orange"
         || key == "service-gate-state"
@@ -203,6 +209,11 @@ SceneMaterial SceneMaterialForKey(std::string_view key, ScenePresentationState s
         return PaintedMaterial(state.dockRoadClearanceTagged
             ? engine::Color {0.16f, 0.72f, 0.82f, 1.0f}
             : engine::Color {0.44f, 0.50f, 0.48f, 1.0f});
+    }
+    if (key == "ferry-office-handoff-state") {
+        return PaintedMaterial(state.ferryOfficeHandoffFiled
+            ? engine::Color {0.24f, 0.78f, 0.46f, 1.0f}
+            : engine::Color {0.76f, 0.62f, 0.22f, 1.0f});
     }
 
     return DefaultMaterial({0.35f, 0.42f, 0.40f, 1.0f});

@@ -13,6 +13,7 @@ struct ScenePresentationState {
     bool vehicleOccupied = false;
     bool dockRoadRelayReset = false;
     bool dockRoadClearanceTagged = false;
+    bool ferryOfficeHandoffFiled = false;
 };
 
 struct SceneMaterial {

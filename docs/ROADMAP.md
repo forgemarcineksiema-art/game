@@ -721,6 +721,14 @@ Status: implemented and validated. Scene data now has 13 interactables, 13 route
 
 Status: implemented and validated. The generated Jolt runtime comparison report now records collision-backed obstacle clearance for deterministic and Jolt replays, both with `obstacleOverlapFrames=0`; `tools\vehicle_runtime_qa.py` reports backend `jolt`, `maxPositionDelta=1.49`, and recommendation `promote` for continued opt-in evidence.
 
+## v0.66 - Ferry Office Handoff State Cue
+
+- Add a compact authored visual state cue for the Ferry Office Handoff Note endpoint.
+- Drive the cue from `ferryOfficeHandoffFiled` through the existing scene presentation dynamic palette path.
+- Keep it as a placeholder-level readability pass, not a bespoke asset or broader UI/job framework.
+
+Status: implemented and validated. Scene data now has 21 authored scene materials and 27 visual placeholders; the handoff cue shifts from pending amber to filed green through `ScenePresentationState`, while scene validation, playthrough QA, visual smoke, and the main verify gate cover the change.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.65, the next useful future milestone can make a provisional Jolt vehicle-runtime direction decision from the accumulated route/control/playthrough/obstacle evidence, or add one live opt-in hardening pass if a default-promotion decision still needs stronger evidence.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.66, the next useful future milestone can either seed a compact Job #2 now that the first office loop has visible endpoint state, or make a provisional Jolt vehicle-runtime direction decision from the accumulated route/control/playthrough/obstacle evidence.

@@ -1138,10 +1138,10 @@ void TestSceneLoaderLoadsDefaultFerryOfficeScene()
     Expect(result.scene.colliders.size() == 9,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored static colliders.");
-    Expect(result.scene.visualPlaceholders.size() == 26,
+    Expect(result.scene.visualPlaceholders.size() == 27,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored visual placeholders.");
-    Expect(result.scene.sceneMaterials.size() == 20,
+    Expect(result.scene.sceneMaterials.size() == 21,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored presentation materials for every current scene color key.");
     Expect(result.scene.meshInstances.size() >= 15,
@@ -2139,6 +2139,8 @@ void TestScenePresentationDynamicPaletteStatesRemainDistinct()
     relayResetState.dockRoadRelayReset = true;
     ScenePresentationState clearanceTaggedState;
     clearanceTaggedState.dockRoadClearanceTagged = true;
+    ScenePresentationState handoffFiledState;
+    handoffFiledState.ferryOfficeHandoffFiled = true;
 
     const engine::Color closedGate = SceneColorForKey("service-gate-state", {});
     const engine::Color openGate = SceneColorForKey("service-gate-state", openGateState);
@@ -2150,6 +2152,8 @@ void TestScenePresentationDynamicPaletteStatesRemainDistinct()
     const engine::Color relayReset = SceneColorForKey("dock-road-relay-state", relayResetState);
     const engine::Color clearanceWaiting = SceneColorForKey("dock-road-clearance-state", {});
     const engine::Color clearanceTagged = SceneColorForKey("dock-road-clearance-state", clearanceTaggedState);
+    const engine::Color handoffPending = SceneColorForKey("ferry-office-handoff-state", {});
+    const engine::Color handoffFiled = SceneColorForKey("ferry-office-handoff-state", handoffFiledState);
 
     Expect(!ColorNear(closedGate, openGate),
         "TestScenePresentationDynamicPaletteStatesRemainDistinct",
@@ -2166,6 +2170,9 @@ void TestScenePresentationDynamicPaletteStatesRemainDistinct()
     Expect(clearanceTagged.g > clearanceWaiting.g && clearanceTagged.b > clearanceWaiting.b,
         "TestScenePresentationDynamicPaletteStatesRemainDistinct",
         "Dock Road clearance tag palette should shift from inactive metal toward clear cyan after tagging.");
+    Expect(handoffFiled.g > handoffPending.g && handoffFiled.r < handoffPending.r,
+        "TestScenePresentationDynamicPaletteStatesRemainDistinct",
+        "Ferry Office handoff palette should shift from pending amber toward filed green after filing.");
 }
 
 void TestScenePresentationMaterialPresetsStayBoundedForAuthoredKeys()

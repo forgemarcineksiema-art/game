@@ -112,6 +112,11 @@
       "baseColor": [0.44, 0.50, 0.48, 1.0]
     },
     {
+      "key": "ferry-office-handoff-state",
+      "response": "painted",
+      "baseColor": [0.76, 0.62, 0.22, 1.0]
+    },
+    {
       "key": "service-gate-state",
       "response": "painted",
       "baseColor": [0.42, 0.12, 0.08, 1.0]
@@ -376,6 +381,13 @@
       "center": [17.10, 0.78, 0.08],
       "halfExtents": [0.14, 0.09, 0.14],
       "colorKey": "dock-road-clearance-state"
+    },
+    {
+      "id": "ferry-office-handoff-status-light",
+      "role": "handoff-status-light",
+      "center": [-2.35, 0.92, 3.36],
+      "halfExtents": [0.18, 0.08, 0.05],
+      "colorKey": "ferry-office-handoff-state"
     }
   ],
   "meshAssets": [

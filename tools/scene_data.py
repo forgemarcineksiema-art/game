@@ -36,6 +36,7 @@ KNOWN_COLOR_KEYS = {
     "dock-road-clearance-state",
     "dock-road-relay-state",
     "dock-weathered-wood",
+    "ferry-office-handoff-state",
     "ferry-route-sign-blue",
     "misty-island-ground",
     "mossy-service-crate",
