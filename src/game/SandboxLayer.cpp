@@ -872,7 +872,7 @@ void SandboxLayer::drawSceneVisualPlaceholders(engine::IRenderer& renderer)
     const bool fullDebug = m_uiMode == engine::UiMode::Debug;
 
     for (const SceneVisualPlaceholderDefinition& placeholder : m_sceneDefinition.visualPlaceholders) {
-        const SceneMaterial material = SceneMaterialForKey(placeholder.colorKey, presentationState);
+        const SceneMaterial material = SceneMaterialForKey(placeholder.colorKey, m_sceneDefinition.sceneMaterials, presentationState);
         DrawSceneShadedBox(renderer, placeholder.center, placeholder.halfExtents, material);
 
         if (fullDebug
@@ -1120,7 +1120,7 @@ void SandboxLayer::drawStaticMeshDebug(engine::IRenderer& renderer)
         instance.assetId = authored.assetId;
         instance.position = authored.position;
         instance.scale = authored.scale;
-        const SceneMaterial material = SceneMaterialForKey(authored.colorKey, presentationState);
+        const SceneMaterial material = SceneMaterialForKey(authored.colorKey, m_sceneDefinition.sceneMaterials, presentationState);
         instance.tint = material.baseColor;
         instance.yawRadians = authored.yawRadians;
 

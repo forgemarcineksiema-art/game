@@ -10,6 +10,11 @@ engine::Color ScaleColor(engine::Color color, float scale)
     return {color.r * scale, color.g * scale, color.b * scale, color.a};
 }
 
+engine::Color ToRendererColor(SceneColorDefinition color)
+{
+    return {color.r, color.g, color.b, color.a};
+}
+
 SceneMaterial DefaultMaterial(engine::Color color)
 {
     SceneMaterial material;
@@ -51,6 +56,37 @@ SceneMaterial PaintedMaterial(engine::Color color)
     material.minShade = 0.48f;
     material.maxShade = 1.12f;
     return material;
+}
+
+SceneMaterial MaterialForResponse(std::string_view response, engine::Color color)
+{
+    if (response == "wet") {
+        return WetMaterial(color);
+    }
+    if (response == "painted") {
+        return PaintedMaterial(color);
+    }
+    return MatteMaterial(color);
+}
+
+engine::Color DynamicSceneColor(std::string_view key, engine::Color authoredBaseColor, ScenePresentationState state)
+{
+    if (key == "oxidized-service-green" && state.powerRestored) {
+        return {0.18f, 0.74f, 0.62f, 1.0f};
+    }
+    if (key == "service-gate-state" && state.routeOpened) {
+        return {0.12f, 0.36f, 0.20f, 1.0f};
+    }
+    if (key == "service-vehicle-placeholder" && state.vehicleOccupied) {
+        return {0.18f, 0.58f, 0.95f, 1.0f};
+    }
+    if (key == "service-vehicle-cabin-placeholder") {
+        const engine::Color body = state.vehicleOccupied
+            ? engine::Color {0.18f, 0.58f, 0.95f, 1.0f}
+            : engine::Color {0.62f, 0.66f, 0.48f, 1.0f};
+        return ScaleColor(body, 0.78f);
+    }
+    return authoredBaseColor;
 }
 
 void DrawShadedTriangle(engine::IRenderer& renderer, engine::Vec3 a, engine::Vec3 b, engine::Vec3 c, SceneMaterial material)
@@ -144,6 +180,16 @@ SceneMaterial SceneMaterialForKey(std::string_view key, ScenePresentationState s
     }
 
     return DefaultMaterial({0.35f, 0.42f, 0.40f, 1.0f});
+}
+
+SceneMaterial SceneMaterialForKey(std::string_view key, std::span<const SceneMaterialDefinition> authoredMaterials, ScenePresentationState state)
+{
+    for (const SceneMaterialDefinition& authored : authoredMaterials) {
+        if (authored.key == key) {
+            return MaterialForResponse(authored.response, DynamicSceneColor(key, ToRendererColor(authored.baseColor), state));
+        }
+    }
+    return SceneMaterialForKey(key, state);
 }
 
 engine::Color SceneColorForKey(std::string_view key, ScenePresentationState state)

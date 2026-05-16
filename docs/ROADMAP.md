@@ -488,6 +488,17 @@ Status: implemented as a code-ownership step after v0.38. `SandboxLayer` now ask
 
 Status: implemented as the first material-language step inside `ScenePresentation`. The current scene still renders through flat debug triangles, but the submitted colors now carry surface-specific overcast response terms instead of using one universal shade formula.
 
+## v0.41 - Scene-Authored Material Presets
+
+- Add `sceneMaterials` to the Ferry Office scene data.
+- Load material presets through `SceneLoader` without exposing renderer types in `SceneDefinition`.
+- Validate that every used `colorKey` has a matching material preset and that responses/colors stay bounded.
+- Route `SandboxLayer` through the authored material presets while preserving dynamic state colors and fallback palette behavior.
+- Preserve renderer interfaces, asset formats, gameplay, collision, GDI/DX11 capture validation, and debug overlay behavior.
+- Avoid textures, UVs, normal maps, shader files, PBR, production material resources, new model files, gameplay changes, or map expansion.
+
+Status: implemented as a data-ownership step after v0.40. The current presentation still uses flat shaded triangles, but surface intent now lives in the authored scene file as wet/matte/painted presets instead of being only hardcoded in C++.
+
 ## Recommended Next Goal
 
 Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. The next vehicle decision should be a short human comparison pass between normal deterministic driving and `--vehicle-runtime jolt`, then either defer Jolt vehicle promotion with concrete feel issues or promote one narrow follow-up to improve the switched path. Avoid Job #2 until the first job is automatically validated, comfortable by hand, and no longer blocked by core movement/vehicle confidence.

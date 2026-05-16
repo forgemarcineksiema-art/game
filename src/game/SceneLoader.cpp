@@ -116,6 +116,21 @@ engine::Vec3 ReadVec3Value(const json& value, std::string_view path)
     return {value[0].get<float>(), value[1].get<float>(), value[2].get<float>()};
 }
 
+SceneColorDefinition ReadColorValue(const json& value, std::string_view path)
+{
+    if (!value.is_array() || (value.size() != 3 && value.size() != 4)) {
+        throw std::runtime_error(std::string(path) + " must be a numeric [r, g, b] or [r, g, b, a] array.");
+    }
+    for (std::size_t index = 0; index < value.size(); ++index) {
+        if (!value[index].is_number()) {
+            throw std::runtime_error(std::string(path) + " must contain numeric color components.");
+        }
+    }
+
+    const float alpha = value.size() == 4 ? value[3].get<float>() : 1.0f;
+    return {value[0].get<float>(), value[1].get<float>(), value[2].get<float>(), alpha};
+}
+
 engine::Vec3 ReadVec3(const json& object, std::string_view key, std::string_view path)
 {
     return ReadVec3Value(Required(object, key, path), std::string(path) + "." + std::string(key));
@@ -153,6 +168,16 @@ SceneColliderDefinition ParseCollider(const json& value, std::size_t index)
     collider.stateFlag = ReadOptionalString(value, "stateFlag", path);
     collider.blocksWhenFlagFalse = ReadOptionalBool(value, "blocksWhenFlagFalse", false, path);
     return collider;
+}
+
+SceneMaterialDefinition ParseSceneMaterial(const json& value, std::size_t index)
+{
+    const std::string path = "sceneMaterials[" + std::to_string(index) + "]";
+    SceneMaterialDefinition material;
+    material.key = ReadString(value, "key", path);
+    material.response = ReadString(value, "response", path);
+    material.baseColor = ReadColorValue(Required(value, "baseColor", path), path + ".baseColor");
+    return material;
 }
 
 SceneVisualPlaceholderDefinition ParseVisualPlaceholder(const json& value, std::size_t index)
@@ -308,6 +333,7 @@ SceneDefinition ParseScene(const json& root)
     scene.playerStart.yawRadians = engine::Radians(ReadOptionalFloat(playerStart, "yawDegrees", 0.0f, "scene.playerStart"));
 
     ReadArray(root, "colliders", scene.colliders, ParseCollider);
+    ReadArray(root, "sceneMaterials", scene.sceneMaterials, ParseSceneMaterial);
     ReadArray(root, "visualPlaceholders", scene.visualPlaceholders, ParseVisualPlaceholder);
     ReadArray(root, "meshAssets", scene.meshAssets, ParseMeshAsset);
     ReadArray(root, "meshInstances", scene.meshInstances, ParseMeshInstance);

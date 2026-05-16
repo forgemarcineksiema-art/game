@@ -1098,6 +1098,9 @@ void TestSceneLoaderLoadsDefaultFerryOfficeScene()
     Expect(result.scene.visualPlaceholders.size() == 24,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored visual placeholders.");
+    Expect(result.scene.sceneMaterials.size() == 17,
+        "TestSceneLoaderLoadsDefaultFerryOfficeScene",
+        "Loaded scene should expose authored presentation materials for every current scene color key.");
     Expect(result.scene.meshInstances.size() >= 15,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored mesh instances, including the v0.18 prop style kit.");
@@ -1865,6 +1868,37 @@ void TestScenePresentationKnowsEveryAuthoredSceneColorKey()
     }
 }
 
+void TestScenePresentationHasMaterialForEveryAuthoredSceneColorKey()
+{
+    const SceneLoadResult loadedScene = LoadSceneDefinition(DefaultScenePathForTests());
+    Expect(loadedScene.ok(),
+        "TestScenePresentationHasMaterialForEveryAuthoredSceneColorKey",
+        "Default scene should load before checking material coverage.");
+    if (!loadedScene.ok()) {
+        return;
+    }
+
+    auto hasMaterial = [&loadedScene](std::string_view key) {
+        for (const SceneMaterialDefinition& material : loadedScene.scene.sceneMaterials) {
+            if (material.key == key) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    for (const SceneVisualPlaceholderDefinition& placeholder : loadedScene.scene.visualPlaceholders) {
+        Expect(hasMaterial(placeholder.colorKey),
+            "TestScenePresentationHasMaterialForEveryAuthoredSceneColorKey",
+            "Every visual placeholder color key should have an authored scene material preset.");
+    }
+    for (const SceneMeshInstanceDefinition& instance : loadedScene.scene.meshInstances) {
+        Expect(hasMaterial(instance.colorKey),
+            "TestScenePresentationHasMaterialForEveryAuthoredSceneColorKey",
+            "Every mesh instance color key should have an authored scene material preset.");
+    }
+}
+
 void TestScenePresentationDynamicPaletteStatesRemainDistinct()
 {
     ScenePresentationState openGateState;
@@ -1918,6 +1952,23 @@ void TestScenePresentationMaterialPresetsStayBoundedForAuthoredKeys()
     for (const SceneMeshInstanceDefinition& instance : loadedScene.scene.meshInstances) {
         expectBoundedMaterial(instance.colorKey);
     }
+}
+
+void TestScenePresentationUsesAuthoredSceneMaterialDefaults()
+{
+    const std::vector<SceneMaterialDefinition> authoredMaterials {
+        {"dock-weathered-wood", "wet", {0.90f, 0.20f, 0.10f, 1.0f}},
+    };
+
+    const SceneMaterial authored = SceneMaterialForKey("dock-weathered-wood", authoredMaterials);
+    const SceneMaterial fallback = SceneMaterialForKey("dock-weathered-wood");
+
+    Expect(ColorNear(authored.baseColor, {0.90f, 0.20f, 0.10f, 1.0f}),
+        "TestScenePresentationUsesAuthoredSceneMaterialDefaults",
+        "Authored scene material base colors should override the built-in fallback palette.");
+    Expect(authored.maxShade > fallback.maxShade,
+        "TestScenePresentationUsesAuthoredSceneMaterialDefaults",
+        "Authored scene material response should override the built-in fallback response.");
 }
 
 void TestScenePresentationMaterialPresetsVarySurfaceResponse()
@@ -4114,8 +4165,10 @@ int main()
     TestSandboxLayerDebugTextMarksLiveVehicleRuntimeAdapterWhenOptedIn();
     TestSandboxLayerDebugTextIncludesDockRoadTelemetry();
     TestScenePresentationKnowsEveryAuthoredSceneColorKey();
+    TestScenePresentationHasMaterialForEveryAuthoredSceneColorKey();
     TestScenePresentationDynamicPaletteStatesRemainDistinct();
     TestScenePresentationMaterialPresetsStayBoundedForAuthoredKeys();
+    TestScenePresentationUsesAuthoredSceneMaterialDefaults();
     TestScenePresentationMaterialPresetsVarySurfaceResponse();
     TestScenePresentationOvercastShadingAddsVolumeCue();
     TestScenePresentationShadedBoxSubmitsTwelveFaces();

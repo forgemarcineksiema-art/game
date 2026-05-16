@@ -2,6 +2,7 @@
 
 #include "engine/math/Math.h"
 #include "engine/renderer/Renderer.h"
+#include "game/SceneDefinition.h"
 
 #include <span>
 #include <string_view>
@@ -24,6 +25,7 @@ struct SceneMaterial {
 
 bool IsKnownSceneColorKey(std::string_view key);
 SceneMaterial SceneMaterialForKey(std::string_view key, ScenePresentationState state = {});
+SceneMaterial SceneMaterialForKey(std::string_view key, std::span<const SceneMaterialDefinition> authoredMaterials, ScenePresentationState state = {});
 engine::Color SceneColorForKey(std::string_view key, ScenePresentationState state = {});
 engine::Color SceneShadedColor(engine::Color color, engine::Vec3 a, engine::Vec3 b, engine::Vec3 c);
 engine::Color SceneShadedColor(SceneMaterial material, engine::Vec3 a, engine::Vec3 b, engine::Vec3 c);

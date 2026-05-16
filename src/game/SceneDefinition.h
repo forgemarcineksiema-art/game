@@ -30,6 +30,19 @@ struct SceneVisualPlaceholderDefinition {
     std::string colorKey;
 };
 
+struct SceneColorDefinition {
+    float r = 0.0f;
+    float g = 0.0f;
+    float b = 0.0f;
+    float a = 1.0f;
+};
+
+struct SceneMaterialDefinition {
+    std::string key;
+    std::string response;
+    SceneColorDefinition baseColor;
+};
+
 struct SceneMeshAssetDefinition {
     std::string id;
     std::filesystem::path path;
@@ -107,6 +120,7 @@ struct SceneDefinition {
     std::string linearUnits;
     float floorHeight = 0.0f;
     ScenePlayerStartDefinition playerStart;
+    std::vector<SceneMaterialDefinition> sceneMaterials;
     std::vector<SceneColliderDefinition> colliders;
     std::vector<SceneVisualPlaceholderDefinition> visualPlaceholders;
     std::vector<SceneMeshAssetDefinition> meshAssets;

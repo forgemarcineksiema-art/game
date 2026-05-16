@@ -40,6 +40,7 @@ def main() -> int:
     print(f"floor: {summary.floor_height:.2f}")
     print()
     print("counts:")
+    print(f"  sceneMaterials: {summary.material_count}")
     print(f"  colliders: {summary.collider_count}")
     print(f"  visualPlaceholders: {summary.visual_count}")
     print(f"  meshAssets: {summary.mesh_asset_count}")

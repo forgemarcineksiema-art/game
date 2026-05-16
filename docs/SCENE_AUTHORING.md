@@ -121,6 +121,20 @@ Required fields:
 
 Do not treat these as final meshes. They are authoring markers and visual composition placeholders.
 
+## Scene Materials
+
+Use `sceneMaterials` to define the current presentation meaning for every `colorKey` used by visual placeholders and mesh instances.
+
+Required fields:
+
+- `key`,
+- `response`,
+- `baseColor`.
+
+Allowed `response` values are `wet`, `matte`, and `painted`. `baseColor` uses normalized `[r, g, b, a]` values in `0..1`.
+
+This is not a renderer material system yet. It is authored scene data that feeds `ScenePresentation` so flat placeholder geometry can still carry surface intent such as wet dock road, matte concrete, or painted service signage. `tools\validate_scene.py` fails when a used `colorKey` has no matching `sceneMaterials` preset.
+
 ## Mesh Assets And Instances
 
 Use `meshAssets` for source files and legal/provenance metadata.

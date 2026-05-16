@@ -39,9 +39,9 @@ These values are practical prototype references, not final art dimensions.
 - Keep ids stable once referenced by tools, docs, tests, or world-state mappings.
 - Do not reuse ids across colliders, visual placeholders, interactables, traversal affordances, vehicles, routes, or objective markers.
 
-## Placeholder Colors
+## Placeholder Materials
 
-Scene data uses `colorKey` strings, not final material assets. Current intent:
+Scene data uses `colorKey` strings plus `sceneMaterials` presets, not final renderer material assets. Current intent:
 
 - `dock-weathered-wood`: damp dock boards and pier surfaces.
 - `office-muted-concrete`: worn public-service building surfaces.
@@ -53,7 +53,7 @@ Scene data uses `colorKey` strings, not final material assets. Current intent:
 - `salt-white-road-post`: pale road-edge posts against the dark dock road.
 - `warning-service-orange`: low service barriers and practical caution cues.
 
-Future renderer work can map these keys to material presets. Do not turn color keys into a material system in v0.11.
+`sceneMaterials` maps each used key to a normalized base color and a tiny response family: `wet`, `matte`, or `painted`. Future renderer work can promote these presets into richer material assets, but the current path is still flat placeholder geometry with presentation shading only.
 
 ## Blender Direction
 

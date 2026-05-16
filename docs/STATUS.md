@@ -5581,6 +5581,45 @@ Remaining limitations:
 - There are still no texture maps, UVs, normal input in the renderer, shader material files, PBR terms, authored lights, terrain, or production mesh resources.
 - The next visual slice should either add a data-authored material preset table or use this preset model while replacing another high-value placeholder cluster with better geometry.
 
+## v0.41 Scene-Authored Material Presets (2026-05-16)
+
+Goal attempted:
+
+- Move the tiny wet/matte/painted material preset language from hardcoded C++ defaults into authored Ferry Office scene data.
+- Keep `SceneDefinition` free of renderer-owned `engine::Color` types.
+- Validate that every used `colorKey` has an authored material preset.
+- Preserve current gameplay, renderer interfaces, asset formats, and the dynamic state colors for route-open, power-restored, and vehicle-occupied states.
+
+Implementation notes:
+
+- Added `SceneColorDefinition` and `SceneMaterialDefinition` to `src\game\SceneDefinition.h`.
+- Added `sceneMaterials` parsing in `src\game\SceneLoader.cpp`.
+- Added 17 `sceneMaterials` entries to `data\scenes\ferry_office.scene.json`.
+- `ScenePresentation` now accepts the loaded material list and falls back to the built-in palette if a scene omits it.
+- `SandboxLayer` passes `m_sceneDefinition.sceneMaterials` when drawing visual placeholders and mesh instances.
+- `tools\scene_data.py` validates material keys, base colors, response values, duplicate material keys, and used color-key coverage.
+- `tools\scene_report.py` reports `sceneMaterials` count.
+- Updated `docs\DECISIONS.md`, `docs\ROADMAP.md`, `docs\MESH_RENDERING.md`, `docs\CONTEXT_MAP.md`, `docs\SCENE_AUTHORING.md`, and `docs\ASSET_GUIDE.md`.
+
+Focused test coverage:
+
+- `TestSceneLoaderLoadsDefaultFerryOfficeScene` now checks 17 loaded scene materials.
+- `TestScenePresentationHasMaterialForEveryAuthoredSceneColorKey` checks C++ scene material coverage for visual placeholders and mesh instances.
+- `TestScenePresentationUsesAuthoredSceneMaterialDefaults` proves authored material defaults override the built-in fallback palette/response.
+- `tests\test_scene_tools.py` checks scene material coverage, missing material errors, invalid response errors, and scene summary material count.
+
+Validation:
+
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests; build\windows-vs2022-debug\Debug\EngineCoreTests.exe; python tests\test_scene_tools.py; python tools\scene_report.py`: passed; scene report shows `sceneMaterials: 17` and validation 0 errors / 0 warnings.
+- `cmake --build --preset windows-vs2022-debug --target EngineApp; python tools\capture_visual_smoke.py; python tools\playthrough_qa.py`: passed; GDI and DX11 captures were nonblank, DX11 still used WARP fallback, playthrough phase=`complete`, events=10.
+- `scripts\verify.ps1`: passed; doctor completed with known PATH warnings, configure/build succeeded, CTest passed 11/11, scene validation passed, asset validation passed, mesh report found 8 model files and 37 mesh instances, and null smoke loaded the Ferry Office scene.
+
+Remaining limitations:
+
+- This is still presentation material data, not renderer-owned materials.
+- There are still no texture maps, UVs, normal maps, shader material files, authored lights, PBR terms, terrain, or production mesh resources.
+- The next visual slice can now either tune scene-authored material values from capture evidence or replace another high-value debug placeholder cluster with stronger authored geometry.
+
 ## v0.38 Clean Playtest Presentation / Overcast Scene Shading (2026-05-16)
 
 Goal:

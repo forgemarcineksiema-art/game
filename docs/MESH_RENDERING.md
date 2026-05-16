@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-16
 
-v0.12 adds the first narrow static mesh path. v0.19 stabilizes the surrounding asset workflow, v0.20 proves the Blender gap plus a small fallback prop workflow, v0.20.1 proves one real headless Blender export, v0.27 adds a tiny painter-depth presentation spike plus one more Blender prop, v0.39 moves scene palette/shading rules into a game-layer presentation boundary, and v0.40 gives scene color keys tiny material-like shading presets. This remains a render spike and authoring bridge, not a full asset pipeline.
+v0.12 adds the first narrow static mesh path. v0.19 stabilizes the surrounding asset workflow, v0.20 proves the Blender gap plus a small fallback prop workflow, v0.20.1 proves one real headless Blender export, v0.27 adds a tiny painter-depth presentation spike plus one more Blender prop, v0.39 moves scene palette/shading rules into a game-layer presentation boundary, v0.40 gives scene color keys tiny material-like shading presets, and v0.41 authors those presets in scene data. This remains a render spike and authoring bridge, not a full asset pipeline.
 
 ## What Exists
 
@@ -15,7 +15,7 @@ v0.12 adds the first narrow static mesh path. v0.19 stabilizes the surrounding a
   - `BuildFlatTriangleList`.
 - `IRenderer::drawDebugFlatTriangles` submits immediate flat-colored triangle lists.
 - DX11 now renders debug solid boxes and flat mesh triangles through a real world-to-clip matrix path with a depth buffer. Lines, wire boxes, grid/axes, and debug text still use the existing debug projection / overlay path.
-- `src/game/ScenePresentation.*` owns current scene color-key mapping, tiny material-like presets, and fixed overcast face shading before scene boxes and static mesh triangles are submitted. It derives shading from triangle normals and existing color keys; it is presentation shading only, not a renderer lighting/material system.
+- `src/game/ScenePresentation.*` consumes `sceneMaterials` from the loaded scene, applies dynamic palette state, and owns fixed overcast face shading before scene boxes and static mesh triangles are submitted. It derives shading from triangle normals and authored color keys; it is presentation shading only, not a renderer lighting/material system.
 - GDI renders projected triangle polygons as a fallback.
 - Null renderer accepts the call and counts it for smoke/test visibility.
 - `assets/models/unit_box.gltf` is a tiny original project-owned placeholder mesh.
@@ -67,9 +67,10 @@ data/scenes/ferry_office.scene.json
 Use:
 
 - `meshAssets` for source files, license/provenance, and authored bounds.
+- `sceneMaterials` for color-key base colors and wet/matte/painted response families.
 - `meshInstances` for position, yaw, scale, tint/color key, and optional links back to placeholders/colliders.
 
-v0.15 loads these mesh asset and mesh instance records through the runtime scene loader. v0.18 loads every referenced scene mesh asset by id, not just `unit-box-mesh`. `SandboxLayer::drawStaticMeshDebug` still applies moving vehicle body/cabin placement, but `ScenePresentation` now owns color-key, material-preset, and dynamic palette choices such as service-gate, maintenance-power, and vehicle-occupied colors. The authored mesh instance list comes from `data/scenes/ferry_office.scene.json`.
+v0.15 loads these mesh asset and mesh instance records through the runtime scene loader. v0.18 loads every referenced scene mesh asset by id, not just `unit-box-mesh`. v0.41 loads `sceneMaterials` through the same scene source of truth. `SandboxLayer::drawStaticMeshDebug` still applies moving vehicle body/cabin placement, but `ScenePresentation` now owns color-key, material-preset, and dynamic palette choices such as service-gate, maintenance-power, and vehicle-occupied colors. The authored mesh instance list comes from `data/scenes/ferry_office.scene.json`.
 
 ## Renderer Notes
 

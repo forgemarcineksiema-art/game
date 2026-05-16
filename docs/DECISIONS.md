@@ -581,3 +581,11 @@ Decision: Let each scene color key resolve to a small `SceneMaterial` preset wit
 Reason: The v0.39 boundary should immediately start carrying useful presentation meaning, not just move old code around. Wet asphalt, damp concrete, painted service props, and matte wood/concrete should not all react to the overcast shading pass in the same way. This creates a tiny material-language stepping stone without adding textures, normals, shader files, PBR, asset-format changes, or renderer-owned material resources.
 
 Dependency impact: no new dependency, asset file, asset format, renderer feature, shader pipeline, or texture path was added.
+
+## v0.41 Scene-Authored Material Presets
+
+Decision: Add `sceneMaterials` to `data/scenes/ferry_office.scene.json`, load them through `SceneLoader`, validate coverage in `tools\scene_data.py`, and have `SandboxLayer` pass the authored material list into `ScenePresentation`.
+
+Reason: Material intent should become authored scene data before it becomes a renderer system. Keeping base color and wet/matte/painted response families in JSON lets future scene work adjust surface language without editing C++, while preserving the current runtime fallback palette and dynamic state colors for the service gate, maintenance power, and occupied vehicle.
+
+Dependency impact: no new dependency, asset file, asset format, renderer feature, shader pipeline, or texture path was added.

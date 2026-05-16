@@ -64,6 +64,7 @@ class SceneSummary:
     scene_id: str
     name: str
     floor_height: float
+    material_count: int
     collider_count: int
     visual_count: int
     mesh_asset_count: int
@@ -113,6 +114,7 @@ def build_summary(scene: dict[str, Any]) -> SceneSummary:
         scene_id=str(scene.get("id", "")),
         name=str(scene.get("name", "")),
         floor_height=float(scene.get("floorHeight", 0.0)),
+        material_count=len(_as_list(scene.get("sceneMaterials"))),
         collider_count=len(_as_list(scene.get("colliders"))),
         visual_count=len(_as_list(scene.get("visualPlaceholders"))),
         mesh_asset_count=len(_as_list(scene.get("meshAssets"))),
@@ -146,6 +148,23 @@ def validate_scene(scene: dict[str, Any]) -> ValidationResult:
     seen: dict[str, str] = {}
     _record_id(scene.get("id"), "scene.id", seen, result)
     _record_id(player_start.get("id"), "playerStart.id", seen, result)
+    material_keys: set[str] = set()
+    used_color_keys: set[str] = set()
+
+    for material in _as_list(scene.get("sceneMaterials")):
+        item = _as_dict(material)
+        label = f"sceneMaterial {item.get('key', '<missing-key>')}"
+        key = item.get("key")
+        _require_string(item, "key", label, result)
+        _require_string(item, "response", label, result)
+        if isinstance(key, str) and key:
+            if key in material_keys:
+                result.errors.append(f"Duplicate sceneMaterial key '{key}'.")
+            material_keys.add(key)
+            _validate_color_key(key, label, result)
+        if item.get("response") not in {"wet", "matte", "painted"}:
+            result.errors.append(f"{label}.response must be one of wet, matte, or painted.")
+        _validate_color(item.get("baseColor"), f"{label}.baseColor", result)
 
     for collider in _as_list(scene.get("colliders")):
         item = _as_dict(collider)
@@ -166,6 +185,8 @@ def validate_scene(scene: dict[str, Any]) -> ValidationResult:
         _validate_positive_vec3(item.get("halfExtents"), f"{label}.halfExtents", result)
         _require_string(item, "colorKey", label, result)
         _validate_color_key(item.get("colorKey"), label, result)
+        if isinstance(item.get("colorKey"), str):
+            used_color_keys.add(item["colorKey"])
 
     for interactable in _as_list(scene.get("interactables")):
         item = _as_dict(interactable)
@@ -254,6 +275,8 @@ def validate_scene(scene: dict[str, Any]) -> ValidationResult:
         _validate_positive_scale(item.get("scale"), f"{label}.scale", result)
         if "colorKey" in item:
             _validate_color_key(item.get("colorKey"), label, result)
+            if isinstance(item.get("colorKey"), str):
+                used_color_keys.add(item["colorKey"])
         for reference_key in ["replacesVisualPlaceholderId", "linkedColliderId"]:
             reference = item.get(reference_key)
             if reference is not None and (not isinstance(reference, str) or reference not in known_ids):
@@ -267,6 +290,10 @@ def validate_scene(scene: dict[str, Any]) -> ValidationResult:
                 )
             else:
                 replacement_links[replacement] = str(item.get("id", label))
+
+    for key in sorted(used_color_keys):
+        if key not in material_keys:
+            result.errors.append(f"Scene colorKey '{key}' is used but has no sceneMaterials preset.")
 
     ids = set(seen)
     for route in _as_list(scene.get("routeMarkers")):
@@ -458,6 +485,15 @@ def _validate_vec3(value: Any, label: str, result: ValidationResult) -> None:
         result.errors.append(f"{label} must be a numeric [x, y, z] vector.")
 
 
+def _validate_color(value: Any, label: str, result: ValidationResult) -> None:
+    color = _color_or_none(value)
+    if color is None:
+        result.errors.append(f"{label} must be a numeric [r, g, b] or [r, g, b, a] color.")
+        return
+    if any(component < 0.0 or component > 1.0 for component in color):
+        result.errors.append(f"{label} components must stay within 0..1.")
+
+
 def _validate_positive_vec3(value: Any, label: str, result: ValidationResult) -> None:
     vector = _vec3_or_none(value)
     if vector is None:
@@ -537,6 +573,17 @@ def _vec2_or_none(value: Any) -> tuple[float, float] | None:
     if any(component is None for component in numbers):
         return None
     return (numbers[0], numbers[1])  # type: ignore[return-value]
+
+
+def _color_or_none(value: Any) -> tuple[float, float, float, float] | None:
+    if not isinstance(value, list) or len(value) not in (3, 4):
+        return None
+    numbers = [_number_or_none(component) for component in value]
+    if any(component is None for component in numbers):
+        return None
+    if len(numbers) == 3:
+        numbers.append(1.0)
+    return (numbers[0], numbers[1], numbers[2], numbers[3])  # type: ignore[return-value]
 
 
 def _scale3_or_none(value: Any) -> tuple[float, float, float] | None:
