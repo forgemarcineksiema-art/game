@@ -167,6 +167,14 @@ Avoid the "green test treadmill":
 
 For Tidebreak specifically, check `docs/GAMEPLAY_REVIEW.md` before selecting a content, presentation, route, movement, camera, or vehicle goal.
 
+Vehicle methodology after v0.96:
+
+- Treat Jolt as the preferred production vehicle-runtime candidate when choosing vehicle-feel or physics-runtime work.
+- Keep deterministic as the dependency-free baseline, regression control, and fallback.
+- Do not choose a deterministic-only driving-feel milestone when the decision is really about production direction.
+- Require comparable Jolt/runtime-adapter evidence for route completion, steering response, brake stop distance, reverse motion, route deviation, bounds hits, and camera target stability before promoting or tuning vehicle runtime behavior.
+- If human road feel would be ideal, create a scripted driving-feel report first and make a provisional decision from that evidence.
+
 ## 4. Inspect Before Editing
 
 Use fast searches:

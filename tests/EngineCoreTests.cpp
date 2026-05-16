@@ -4858,6 +4858,21 @@ void TestFerryOfficeVehicleRuntimeComparisonQaWritesReport()
             "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
             "Runtime comparison obstacle checks should include camera-follow yaw stability telemetry.");
     }
+    Expect(result.drivingFeelChecks.size() >= 12,
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Runtime comparison QA should include deterministic and adapter driving-feel checks for route, controls, steering, and camera.");
+    bool foundDeterministicFeel = false;
+    bool foundAdapterFeel = false;
+    for (const auto& check : result.drivingFeelChecks) {
+        foundDeterministicFeel = foundDeterministicFeel || check.backendName == "deterministic";
+        foundAdapterFeel = foundAdapterFeel || check.backendName == "simple";
+        Expect(check.passed,
+            "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+            check.message);
+    }
+    Expect(foundDeterministicFeel && foundAdapterFeel,
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Driving-feel checks should cover the deterministic baseline and selected runtime adapter.");
     Expect(result.maxPositionDelta <= 0.75f,
         "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
         "Simple runtime adapter should stay close to the deterministic fallback path.");
@@ -4899,6 +4914,15 @@ void TestFerryOfficeVehicleRuntimeComparisonQaWritesReport()
             && report["obstacleChecks"][0].contains("finalCameraYawDegrees"),
         "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
         "Runtime comparison report should expose camera-aware obstacle telemetry.");
+    Expect(report["drivingFeelChecks"].size() >= 12,
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Runtime comparison report should expose deterministic and adapter driving-feel telemetry.");
+    Expect(report["drivingFeelChecks"][0].contains("backend")
+            && report["drivingFeelChecks"][0].contains("value")
+            && report["drivingFeelChecks"][0].contains("minValue")
+            && report["drivingFeelChecks"][0].contains("maxValue"),
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Runtime comparison driving-feel checks should include backend and threshold telemetry.");
 
     std::filesystem::remove(reportPath);
 }

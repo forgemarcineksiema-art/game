@@ -53,6 +53,28 @@ OBSTACLE_CHECKS = [
     },
 ]
 
+DRIVING_FEEL_CHECKS = [
+    {
+        "backend": backend,
+        "name": name,
+        "passed": True,
+        "value": value,
+        "minValue": min_value,
+        "maxValue": max_value,
+        "units": units,
+        "message": f"{backend} {name} passed.",
+    }
+    for backend in ("deterministic", "jolt")
+    for name, value, min_value, max_value, units in (
+        ("routeFramesToCheckpoint", 139.0 if backend == "deterministic" else 212.0, 1.0, 240.0, "frames"),
+        ("routeMaxLateralDeviation", 0.08, 0.0, 0.85, "meters"),
+        ("brakeStopDistance", 2.1, 0.0, 4.5, "meters"),
+        ("reverseDistance", 1.2, 0.35, 6.0, "meters"),
+        ("steeringYawResponse", 24.0, 4.0, 95.0, "degrees"),
+        ("cameraYawLag", 18.0, 0.0, 65.0, "degrees"),
+    )
+]
+
 
 class VehicleRuntimeQaTests(unittest.TestCase):
     def test_report_validation_accepts_passing_runtime_comparison_report(self) -> None:
@@ -137,6 +159,7 @@ class VehicleRuntimeQaTests(unittest.TestCase):
                                 "message": "Reverse coast settled.",
                             },
                         ],
+                        "drivingFeelChecks": DRIVING_FEEL_CHECKS,
                         "comparison": {
                             "maxPositionDelta": 0.45,
                             "maxYawDeltaDegrees": 8.0,
@@ -153,6 +176,7 @@ class VehicleRuntimeQaTests(unittest.TestCase):
 
         self.assertEqual(report["adapter"]["backend"], "jolt")
         self.assertEqual(report["comparison"]["recommendation"], "promote")
+        self.assertEqual(len(report["drivingFeelChecks"]), 12)
 
     def test_report_validation_rejects_large_runtime_delta(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -195,6 +219,7 @@ class VehicleRuntimeQaTests(unittest.TestCase):
                             {"name": "reverseMovesBackward", "passed": True, "frameIndex": 135, "speed": -0.45, "distance": 0.6},
                             {"name": "reverseCoastSettles", "passed": True, "frameIndex": 225, "speed": -0.05, "distance": 0.4},
                         ],
+                        "drivingFeelChecks": DRIVING_FEEL_CHECKS,
                         "comparison": {
                             "maxPositionDelta": 9.0,
                             "maxYawDeltaDegrees": 8.0,
@@ -407,6 +432,65 @@ class VehicleRuntimeQaTests(unittest.TestCase):
             )
 
             with self.assertRaisesRegex(ValueError, "obstacle-proxy"):
+                vehicle_runtime_qa.load_and_validate_report(report_path)
+
+    def test_report_validation_rejects_missing_driving_feel_checks(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            report_path = pathlib.Path(temp) / "vehicle-runtime-comparison.json"
+            samples = [{"name": "accelerate", "passed": True, "wheelContactCount": 4, "outOfBounds": False}]
+            control_checks = [
+                {"name": "tapThrottleCoast", "passed": True, "frameIndex": 91, "speed": 0.08, "distance": 0.4},
+                {"name": "brakeStopsForwardMotion", "passed": True, "frameIndex": 75, "speed": 0.02, "distance": 0.0},
+                {"name": "reverseMovesBackward", "passed": True, "frameIndex": 135, "speed": -0.45, "distance": 0.6},
+                {"name": "reverseCoastSettles", "passed": True, "frameIndex": 225, "speed": -0.05, "distance": 0.4},
+            ]
+            route_checks = [
+                {
+                    "backend": "deterministic",
+                    "passed": True,
+                    "checkpointReached": True,
+                    "framesToCheckpoint": 139,
+                    "minDistanceToCheckpoint": 1.7,
+                    "finalPosition": [17.6, 0.0, -1.8],
+                    "finalYawDegrees": 88.0,
+                    "hitBounds": False,
+                },
+                {
+                    "backend": "jolt",
+                    "passed": True,
+                    "checkpointReached": True,
+                    "framesToCheckpoint": 213,
+                    "minDistanceToCheckpoint": 1.8,
+                    "finalPosition": [17.6, 1.1, -1.8],
+                    "finalYawDegrees": 88.0,
+                    "hitBounds": False,
+                },
+            ]
+            report_path.write_text(
+                json.dumps(
+                    {
+                        "schema": vehicle_runtime_qa.SCHEMA,
+                        "scenario": vehicle_runtime_qa.SCENARIO,
+                        "passed": True,
+                        "vehicle": {"id": "service-yard-vehicle"},
+                        "deterministic": {"backend": "deterministic", "samples": samples},
+                        "adapter": {"backend": "jolt", "samples": samples},
+                        "routeChecks": route_checks,
+                        "obstacleChecks": OBSTACLE_CHECKS,
+                        "controlChecks": control_checks,
+                        "comparison": {
+                            "maxPositionDelta": 2.95,
+                            "maxYawDeltaDegrees": 25.0,
+                            "maxSpeedDelta": 2.8,
+                            "recommendation": "promote",
+                        },
+                        "error": "",
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(ValueError, "driving-feel"):
                 vehicle_runtime_qa.load_and_validate_report(report_path)
 
     def test_report_validation_rejects_obstacle_checks_missing_camera_telemetry(self) -> None:

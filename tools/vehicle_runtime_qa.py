@@ -25,6 +25,14 @@ REQUIRED_CONTROL_CHECKS = {
     "reverseMovesBackward",
     "reverseCoastSettles",
 }
+REQUIRED_DRIVING_FEEL_CHECKS = {
+    "routeFramesToCheckpoint",
+    "routeMaxLateralDeviation",
+    "brakeStopDistance",
+    "reverseDistance",
+    "steeringYawResponse",
+    "cameraYawLag",
+}
 
 
 def default_exe_path() -> pathlib.Path:
@@ -148,6 +156,31 @@ def _require_obstacle_checks(report: dict[str, Any]) -> list[dict[str, Any]]:
     return checks
 
 
+def _require_driving_feel_checks(report: dict[str, Any]) -> list[dict[str, Any]]:
+    checks = report.get("drivingFeelChecks")
+    if not isinstance(checks, list) or not checks:
+        raise ValueError("Vehicle runtime report is missing driving-feel checks.")
+
+    by_backend: dict[str, set[str]] = {}
+    for check in checks:
+        if not isinstance(check, dict):
+            raise ValueError(f"Vehicle runtime driving-feel check is invalid: {check}")
+        backend = str(check.get("backend", ""))
+        name = str(check.get("name", ""))
+        by_backend.setdefault(backend, set()).add(name)
+        if check.get("passed") is not True:
+            raise ValueError(f"Vehicle runtime driving-feel check failed: {check}")
+        for key in ("value", "minValue", "maxValue", "units"):
+            if key not in check:
+                raise ValueError(f"Vehicle runtime driving-feel check is missing telemetry: {check}")
+
+    for backend in ("deterministic", "jolt"):
+        missing = REQUIRED_DRIVING_FEEL_CHECKS - by_backend.get(backend, set())
+        if missing:
+            raise ValueError(f"Vehicle runtime report is missing {backend} driving-feel checks: {sorted(missing)}")
+    return checks
+
+
 def load_and_validate_report(report_path: pathlib.Path) -> dict[str, Any]:
     if not report_path.exists():
         raise FileNotFoundError(f"Vehicle runtime comparison report was not created: {report_path}")
@@ -173,6 +206,7 @@ def load_and_validate_report(report_path: pathlib.Path) -> dict[str, Any]:
     _require_control_checks(report)
     _require_route_checks(report)
     _require_obstacle_checks(report)
+    _require_driving_feel_checks(report)
 
     comparison = report.get("comparison")
     if not isinstance(comparison, dict):
@@ -226,6 +260,7 @@ def run_vehicle_runtime(exe: pathlib.Path, scene: pathlib.Path, report_path: pat
         f"controlChecks={len(report['controlChecks'])}, "
         f"routeChecks={len(report['routeChecks'])}, "
         f"obstacleChecks={len(report['obstacleChecks'])}, "
+        f"drivingFeelChecks={len(report['drivingFeelChecks'])}, "
         f"maxPositionDelta={comparison['maxPositionDelta']:.2f}, "
         f"recommendation={comparison['recommendation']}, "
         f"report={report_path}"

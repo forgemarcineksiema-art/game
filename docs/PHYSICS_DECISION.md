@@ -8,7 +8,7 @@ Choose Jolt Physics as Tidebreak's default production physics candidate unless a
 
 Keep PhysX as the backup candidate. Do not choose Bullet for the main engine path unless a future, narrow test gives a strong reason.
 
-This decision does not mean every current gameplay collision path should be rewritten immediately. v0.9.2 adds a vendor-safe `src/engine/physics` boundary and an opt-in Jolt backend spike. v0.33 adds a QA-only Ferry Office static-collision parity bridge, v0.34 adds a player-proxy contact probe, and v0.35 adds a wheeled vehicle feasibility probe. Existing Ferry Office gameplay still uses the tested prototype paths until a later goal migrates one behavior at a time. v0.49 adds opt-in Jolt runtime enter-drive-exit-confirm playthrough evidence for the first service job, v0.68 promotes Jolt from exploratory option to preferred vehicle-runtime candidate, and v0.70 begins a controlled preferred-runtime trial through the play wrapper. Direct app and QA defaults remain deterministic unless a runtime is explicitly requested.
+This decision does not mean every current gameplay collision path should be rewritten immediately. v0.9.2 adds a vendor-safe `src/engine/physics` boundary and an opt-in Jolt backend spike. v0.33 adds a QA-only Ferry Office static-collision parity bridge, v0.34 adds a player-proxy contact probe, and v0.35 adds a wheeled vehicle feasibility probe. Existing Ferry Office gameplay still uses the tested prototype paths until a later goal migrates one behavior at a time. v0.49 adds opt-in Jolt runtime enter-drive-exit-confirm playthrough evidence for the first service job, v0.68 promotes Jolt from exploratory option to preferred vehicle-runtime candidate, v0.70 begins a controlled preferred-runtime trial through the play wrapper, and v0.96 makes vehicle-feel decisions Jolt-first with deterministic kept as baseline/fallback. Direct app and QA defaults remain deterministic unless a runtime is explicitly requested.
 
 ## Why Decide Now
 
@@ -140,7 +140,7 @@ Validated:
 - Default dependency-free build still passes and still reports the opt-in backend unavailable when physics parity is requested without the Jolt preset.
 - Opt-in `windows-vs2022-debug-jolt` configure/build passes.
 - Opt-in CTest now includes `FerryOfficeJoltPhysicsParitySmoke` and passes.
-- The Ferry Office parity report validates 9 authored static colliders, 4 floor probes, 4 raycast probes, and 4 player-overlap-style probes against the current `PrototypeWorld` behavior.
+- The Ferry Office parity report validates the current authored static colliders, 4 floor probes, 4 raycast probes, and 4 player-overlap-style probes against the current `PrototypeWorld` behavior. After the v0.95 Low Dock Drain access barrier, the current Ferry Office scene has 10 static colliders.
 
 Important limits:
 
@@ -216,6 +216,7 @@ Validated so far:
 - v0.59 tightens obstacle-proxy validation and tunes the opt-in Jolt adapter: Jolt now reaches the checkpoint in 212 frames, keeps the obstacle final-X progress gap to about 2.91 units, and `tools\vehicle_runtime_qa.py` reports recommendation `promote` for continued opt-in comparison evidence.
 - v0.65 adds collision-backed obstacle replay telemetry to the runtime comparison: deterministic and Jolt obstacle replays both clear a QA-only overlap probe with zero overlap frames, while preserving the existing controls, route, camera, and progress checks.
 - v0.68 refreshes the Jolt preset after the storm pump scene-content expansion and reruns the evidence stack: Jolt CTest passes 15/15; `tools\physics_parity_qa.py`, `tools\character_contact_qa.py`, `tools\vehicle_physics_qa.py`, and `tools\vehicle_runtime_qa.py` all pass; runtime comparison still reports `maxPositionDelta=1.49`, route completion in 212 frames for Jolt versus 139 for deterministic, zero obstacle overlap frames, and recommendation `promote`.
+- v0.96 adds explicit driving-feel checks to the runtime comparison. The report now requires deterministic and Jolt results for route time, route lateral deviation, brake stop distance, reverse distance, steering yaw response, and camera yaw lag before the wrapper accepts a Jolt promote recommendation.
 - `rg -n "Jolt|JPH::|<Jolt/|JPH/" src\game` returns no matches; Jolt types remain private to engine-owned physics code.
 
 Important limits:
@@ -272,6 +273,33 @@ Decision:
 Revisit when:
 
 - Jolt road-edge collision, dynamic object contact, player collision migration, damage/traffic, or a broader authored driving route is added.
+
+## v0.96 Jolt-First Driving Feel Evidence
+
+v0.96 turns the vehicle-feel question into a Jolt-first comparison instead of a deterministic-only road test.
+
+Validated:
+
+- Default `EngineCoreTests.exe` passed.
+- Jolt preset configured and built.
+- Jolt CTest passed 15/15 after syncing parity/contact wrappers with the current 10-collider Ferry Office scene.
+- `tools\vehicle_runtime_qa.py` passed with backend `jolt`: samples=5, controlChecks=4, routeChecks=2, obstacleChecks=2, drivingFeelChecks=12, `maxPositionDelta=1.49`, recommendation=`promote`.
+- Deterministic playthrough QA completed the 21-event service-call chain with `framesToCheckpoint=139`.
+- Jolt playthrough QA completed the same 21-event chain with `framesToCheckpoint=212`, no fallback, and no bounds hit.
+- `rg -n "Jolt|jolt|JPH" src\game\FerryOfficeVehiclePhysicsQa.cpp src\game\FerryOfficeVehiclePhysicsQa.h` returned no matches.
+
+Driving-feel evidence:
+
+- Deterministic baseline: route=139 frames, lateral deviation=0.399m, brake stop=1.056m, reverse=2.795m, steering yaw response=21.73 degrees, camera yaw lag=6.13 degrees.
+- Jolt runtime adapter: route=212 frames, lateral deviation=0.399m, brake stop=0.233m, reverse=2.552m, steering yaw response=41.22 degrees, camera yaw lag=16.00 degrees.
+
+Decision:
+
+- Keep Jolt as the preferred production vehicle-runtime candidate. Future vehicle-feel work should tune or promote Jolt first, with deterministic retained as the dependency-free baseline and fallback.
+
+Revisit when:
+
+- Jolt route pace, camera follow, road-edge collision, dynamic object contact, player collision migration, damage/traffic, or a broader authored driving route is added.
 
 Important implementation choices:
 

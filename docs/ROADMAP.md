@@ -968,10 +968,19 @@ Status: implemented and validated. `tools\capture_visual_smoke.py --scenario rel
 
 Status: implemented and validated. Closing the Storm Pump Ticket now opens the scene-authored Low Dock Drain access barrier via `stormPumpTicketClosed`; C++ tests, scene tools, playthrough QA, `low-dock-drain-access` visual smoke, and `scripts\verify.ps1` pass.
 
+## v0.96 - Jolt-First Driving Feel Evidence
+
+- Compare deterministic baseline and Jolt runtime-adapter vehicle feel on the authored Ferry Office service route.
+- Require measurable route, steering, braking, reverse, route-deviation, bounds, obstacle, and camera-follow evidence.
+- Keep deterministic as baseline/fallback while using Jolt as the preferred production vehicle-runtime candidate.
+- Preserve the vendor boundary: Jolt stays behind engine-owned physics/runtime APIs.
+
+Status: implemented and validated. `vehicle_runtime_qa.py` now requires 12 driving-feel checks across deterministic and Jolt; Jolt reaches the checkpoint in 212 frames versus 139 deterministic, passes steering/brake/reverse/camera checks, keeps obstacle overlap frames at zero, keeps recommendation `promote`, and `scripts\verify.ps1` passes.
+
 ## Recommended Next Goal
 
 Read `docs\GAMEPLAY_REVIEW.md` before choosing the next milestone. Use `python tools\capture_visual_smoke.py`, `python tools\capture_visual_smoke.py --scenario relay-to-service-log --report-json build\captures\capture_visual_smoke_midchain_report.json`, `python tools\capture_visual_smoke.py --scenario low-dock-drain-access --report-json build\captures\capture_visual_smoke_low_dock_report.json`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play.
 
-After v0.95, the preferred next goal is `v0.96 Driving Feel Road-Test Pass`: build measurable steering, braking, reverse, route-deviation, bounds-hit, and camera-target evidence before tuning or promoting the vehicle runtime further.
+After v0.96, the preferred next vehicle goal is a bounded `Jolt Live-Driving Promotion/Tuning Pass`: use the Jolt-first report as evidence, tune or promote Jolt where it still lags deterministic route pace/camera feel, and keep deterministic as the fallback/control rather than the main polish target.
 
 If the new Low Dock Drain access consequence exposes route/objective readability issues during capture review, choose a bounded readability pass instead, but do not add another administrative endpoint by default.

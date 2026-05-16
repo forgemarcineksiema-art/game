@@ -25,7 +25,7 @@ The weakest current identity is also clear: too many recent beats are administra
 - The world-state ledger is useful and validated.
 - Active playtest route guidance makes the long chain less dependent on F1/debug mode.
 - Visual smoke and playthrough QA give enough automated evidence to make provisional game decisions without waiting for manual review.
-- Jolt vehicle evidence is strong enough to treat Jolt as a serious production candidate, while deterministic remains the safe direct-app and QA default.
+- Jolt vehicle evidence is strong enough to treat Jolt as the preferred production vehicle-runtime candidate, while deterministic remains the safe direct-app and QA baseline/fallback.
 
 ## Main Gameplay Problems
 
@@ -108,7 +108,7 @@ Validation:
 
 ### 2. Driving Feel Road-Test
 
-Best if the next question is vehicle quality. Build an automated road-test report before tuning.
+Best if the next question is vehicle quality. Build an automated road-test report before tuning. For vehicle runtime decisions, make this Jolt-first: deterministic is the control/fallback, not the only feel target.
 
 Metrics:
 
@@ -123,8 +123,8 @@ Metrics:
 
 Validation:
 
-- deterministic road-test report,
-- optional Jolt comparison,
+- deterministic baseline report,
+- required Jolt/runtime-adapter comparison when the question is production vehicle direction,
 - playthrough QA,
 - focused C++ tests,
 - `scripts\verify.ps1`.
@@ -162,13 +162,13 @@ Improve:
 
 Do not treat another Relay Service Log prop as the default next move. It is defensible only if a capture shows that specific destination is unreadable.
 
-After v0.95, the better next goal is probably:
+After v0.96, the better vehicle direction is:
 
 ```text
-v0.96 Driving Feel Road-Test Pass
+Jolt Live-Driving Promotion/Tuning Pass
 ```
 
-Build automated steering/braking/reverse/route-deviation/bounds/camera evidence before tuning or promoting vehicle runtime. This advances the most kinetic player verb instead of making the follow-up checklist longer.
+Use the v0.96 driving-feel evidence as the baseline: Jolt passed route, reverse, brake, steering, camera, obstacle, and playthrough checks, but remains slower than deterministic on the authored checkpoint route. Tune or promote Jolt deliberately; do not spend the next vehicle pass polishing deterministic in isolation unless the fallback itself regresses.
 
 If capture evidence shows the new Low Dock Drain access consequence is hard to read, the strongest alternate is:
 

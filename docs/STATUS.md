@@ -2,6 +2,90 @@
 
 Last updated: 2026-05-16
 
+## v0.96 Jolt-First Driving Feel Evidence (2026-05-16)
+
+Selected milestone:
+
+- Turn the next vehicle-feel step into a Jolt-first deterministic-vs-runtime-adapter report with required steering, braking, reverse, route-deviation, bounds, and camera-follow evidence.
+
+Candidate milestone triage:
+
+- Jolt-first driving feel comparison: impact high because Jolt is the intended production physics/runtime candidate and driving is Tidebreak's strongest kinetic verb; risk medium because it touches QA reports, Jolt preset validation, and vehicle metrics; validation path = focused C++/Python tests, Jolt CTest, vehicle runtime QA, deterministic and Jolt playthrough QA, `scripts\verify.ps1`.
+- Low Dock Access readability pass: impact medium because v0.95 added a new spatial consequence; risk low/medium; validation path = named visual smoke and scene tools. Deferred because v0.95 capture evidence already proved the opened-access state is reachable and visible enough to keep moving.
+- Content-boundary cleanup for follow-up chains: impact medium for future authoring, but less player-facing right now; validation path = route/objective tests and playthrough QA. Deferred because vehicle/Jolt direction was the sharper product and technical question.
+
+Why selected:
+
+- Deterministic-only driving polish would tune the fallback instead of the target physics path. The right evidence shape is Jolt first, with deterministic retained as the dependency-free baseline/control and fallback.
+
+What changed:
+
+- Extended the Ferry Office vehicle runtime comparison report with `drivingFeelChecks` for deterministic and selected runtime-adapter backends.
+- Added required checks for route time, route lateral deviation, brake stop distance, reverse distance, steering yaw response, and camera yaw lag.
+- Updated `tools\vehicle_runtime_qa.py` so the Jolt wrapper rejects reports missing passed driving-feel checks for both deterministic and Jolt.
+- Updated C++ and Python tests around the vehicle runtime report schema and validation.
+- Synchronized `tools\physics_parity_qa.py`, `tools\character_contact_qa.py`, and their tests with the current Ferry Office 10-collider scene after v0.95.
+- Preserved the vendor boundary: game code still has no direct `Jolt` / `JPH` references.
+
+Files changed:
+
+- `src\game\FerryOfficeVehiclePhysicsQa.h`
+- `src\game\FerryOfficeVehiclePhysicsQa.cpp`
+- `tools\vehicle_runtime_qa.py`
+- `tools\physics_parity_qa.py`
+- `tools\character_contact_qa.py`
+- `tests\EngineCoreTests.cpp`
+- `tests\test_vehicle_runtime_qa.py`
+- `tests\test_physics_parity_tool.py`
+- `tests\test_character_contact_qa.py`
+- `docs\STATUS.md`
+- `docs\ROADMAP.md`
+- `docs\PHYSICS_DECISION.md`
+- `docs\TECH_DEBT.md`
+- `docs\CONTEXT_MAP.md`
+- `docs\GAMEPLAY_REVIEW.md`
+- `docs\AI_WORKFLOW.md`
+
+Validation so far:
+
+- `python tests\test_vehicle_runtime_qa.py`: passed, 10 tests.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests EngineApp`: passed.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `python tests\test_physics_parity_tool.py`: passed, 2 tests.
+- `python tests\test_character_contact_qa.py`: passed, 2 tests.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: failed once because parity/contact Python wrappers still expected 9 static colliders; after updating wrappers and tests to the v0.95 10-collider scene, passed 15/15.
+- `python tools\vehicle_runtime_qa.py --exe build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --report-json build\physics\v096-vehicle-runtime-driving-feel-report.json`: passed; backend=jolt, samples=5, controlChecks=4, routeChecks=2, obstacleChecks=2, drivingFeelChecks=12, maxPositionDelta=1.49, recommendation=promote.
+- `python tools\playthrough_qa.py --report-json build\playthroughs\ferry-office-service-call-v096-deterministic-report.json`: passed; phase=complete, events=21, vehicleRuntime=deterministic, framesToCheckpoint=139.
+- `python tools\playthrough_qa.py --exe build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --vehicle-runtime jolt --report-json build\playthroughs\ferry-office-service-call-v096-jolt-report.json`: passed; phase=complete, events=21, vehicleRuntime=jolt, framesToCheckpoint=212.
+
+Automated evidence generated:
+
+- `build\physics\v096-vehicle-runtime-driving-feel-report.json` records 12 passed driving-feel checks.
+- Deterministic baseline: checkpoint in 139 frames, lateral deviation 0.399m, brake stop 1.056m, reverse distance 2.795m, steering yaw response 21.73 degrees, camera yaw lag 6.13 degrees.
+- Jolt runtime adapter: checkpoint in 212 frames, lateral deviation 0.399m, brake stop 0.233m, reverse distance 2.552m, steering yaw response 41.22 degrees, camera yaw lag 16.00 degrees.
+- Both deterministic and Jolt obstacle replays still report zero obstacle overlap frames and no bounds hit.
+- `rg -n "Jolt|jolt|JPH" src\game\FerryOfficeVehiclePhysicsQa.cpp src\game\FerryOfficeVehiclePhysicsQa.h` returned no matches.
+
+Provisional decision:
+
+- Keep Jolt as the preferred production vehicle-runtime candidate and develop future vehicle feel against Jolt first. Deterministic remains the dependency-free direct-app/QA baseline and fallback, not the direction to polish in isolation.
+
+Remaining limitations:
+
+- Jolt still reaches the authored checkpoint slower than deterministic, so the next vehicle milestone should tune or promote Jolt deliberately rather than quietly inheriting deterministic feel.
+- The report measures compact scripted proxies for feel, not a human road test, full road-edge collision, traffic, damage, audio, cargo, or production suspension tuning.
+
+Final validation:
+
+- `scripts\verify.ps1`: passed; doctor/configure/build succeeded, 11/11 default CTest tests passed, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke completed.
+- `git diff --check`: passed with expected CRLF normalization warnings only.
+
+Next direction:
+
+- If final validation stays green, prefer a bounded Jolt live-driving promotion/tuning milestone: keep `preferred` honest, improve Jolt route pace/camera feel where evidence says it lags, and avoid deterministic-only tuning unless it protects the fallback.
+
 ## v0.95 Low Dock Access Consequence (2026-05-16)
 
 Selected milestone:

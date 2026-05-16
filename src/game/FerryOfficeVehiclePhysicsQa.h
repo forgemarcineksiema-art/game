@@ -75,9 +75,20 @@ struct FerryOfficeVehicleRuntimeComparisonResult {
         bool hitBounds = false;
         std::string message;
     };
+    struct DrivingFeelCheck {
+        std::string backendName;
+        std::string name;
+        bool passed = false;
+        float value = 0.0f;
+        float minValue = 0.0f;
+        float maxValue = 0.0f;
+        std::string units;
+        std::string message;
+    };
     std::vector<ControlCheck> controlChecks;
     std::vector<RouteCheck> routeChecks;
     std::vector<ObstacleCheck> obstacleChecks;
+    std::vector<DrivingFeelCheck> drivingFeelChecks;
     float maxPositionDelta = 0.0f;
     float maxYawDeltaDegrees = 0.0f;
     float maxSpeedDelta = 0.0f;

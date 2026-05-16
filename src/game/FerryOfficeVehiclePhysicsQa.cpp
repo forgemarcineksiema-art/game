@@ -107,6 +107,20 @@ nlohmann::json ObstacleCheckJson(const FerryOfficeVehicleRuntimeComparisonResult
     };
 }
 
+nlohmann::json DrivingFeelCheckJson(const FerryOfficeVehicleRuntimeComparisonResult::DrivingFeelCheck& check)
+{
+    return {
+        {"backend", check.backendName},
+        {"name", check.name},
+        {"passed", check.passed},
+        {"value", check.value},
+        {"minValue", check.minValue},
+        {"maxValue", check.maxValue},
+        {"units", check.units},
+        {"message", check.message},
+    };
+}
+
 float HorizontalDistance(engine::Vec3 lhs, engine::Vec3 rhs)
 {
     return engine::Length(engine::Vec2 {lhs.x - rhs.x, lhs.z - rhs.z});
@@ -617,6 +631,347 @@ FerryOfficeVehicleRuntimeComparisonResult::ObstacleCheck RunAdapterObstacleCheck
     return check;
 }
 
+FerryOfficeVehicleRuntimeComparisonResult::DrivingFeelCheck MakeDrivingFeelCheck(
+    std::string backendName,
+    std::string name,
+    bool passed,
+    float value,
+    float minValue,
+    float maxValue,
+    std::string units,
+    std::string message)
+{
+    FerryOfficeVehicleRuntimeComparisonResult::DrivingFeelCheck check;
+    check.backendName = std::move(backendName);
+    check.name = std::move(name);
+    check.passed = passed;
+    check.value = value;
+    check.minValue = minValue;
+    check.maxValue = maxValue;
+    check.units = std::move(units);
+    check.message = std::move(message);
+    return check;
+}
+
+std::vector<FerryOfficeVehicleRuntimeComparisonResult::DrivingFeelCheck> RunDeterministicDrivingFeelChecks(
+    const SceneVehicleDefinition& vehicle,
+    engine::Vec3 checkpointPosition,
+    float checkpointRadius)
+{
+    std::vector<FerryOfficeVehicleRuntimeComparisonResult::DrivingFeelCheck> checks;
+
+    {
+        VehicleController controller = BuildDeterministicVehicle(vehicle);
+        engine::InputState input;
+        input.moveForward = RouteCheckThrottle;
+        int framesToCheckpoint = -1;
+        bool hitBounds = false;
+        float maxRouteDeviation = 0.0f;
+        for (int frame = 0; frame < RouteCheckMaxFrames; ++frame) {
+            controller.beginFrame();
+            controller.updateDriving(1.0f / 60.0f, input);
+            const VehicleState& state = controller.state();
+            hitBounds = hitBounds || state.hitBoundsThisFrame;
+            maxRouteDeviation = std::max(maxRouteDeviation, std::abs(state.position.z - vehicle.spawnPosition.z));
+            if (HorizontalDistance(state.position, checkpointPosition) <= checkpointRadius) {
+                framesToCheckpoint = frame + 1;
+                break;
+            }
+        }
+
+        checks.push_back(MakeDrivingFeelCheck(
+            "deterministic",
+            "routeFramesToCheckpoint",
+            framesToCheckpoint > 0 && framesToCheckpoint <= 170 && !hitBounds,
+            static_cast<float>(framesToCheckpoint),
+            1.0f,
+            170.0f,
+            "frames",
+            "Deterministic vehicle should reach the service-run checkpoint without feeling sluggish."));
+        checks.push_back(MakeDrivingFeelCheck(
+            "deterministic",
+            "routeMaxLateralDeviation",
+            maxRouteDeviation <= 0.75f && !hitBounds,
+            maxRouteDeviation,
+            0.0f,
+            0.75f,
+            "meters",
+            "Straight service-road throttle should stay visually centered in the authored lane."));
+    }
+
+    {
+        VehicleController controller = BuildDeterministicVehicle(vehicle);
+        engine::InputState throttle;
+        throttle.moveForward = 0.72f;
+        for (int frame = 0; frame < 60; ++frame) {
+            controller.beginFrame();
+            controller.updateDriving(1.0f / 60.0f, throttle);
+        }
+        const engine::Vec3 brakeStart = controller.state().position;
+        engine::InputState brake;
+        brake.moveForward = -1.0f;
+        bool hitBounds = false;
+        for (int frame = 0; frame < 90; ++frame) {
+            controller.beginFrame();
+            controller.updateDriving(1.0f / 60.0f, brake);
+            hitBounds = hitBounds || controller.state().hitBoundsThisFrame;
+            if (std::abs(controller.state().speed) <= 0.05f) {
+                break;
+            }
+        }
+        const float stopDistance = HorizontalDistance(brakeStart, controller.state().position);
+        checks.push_back(MakeDrivingFeelCheck(
+            "deterministic",
+            "brakeStopDistance",
+            stopDistance <= 2.65f && std::abs(controller.state().speed) <= 0.10f && !hitBounds,
+            stopDistance,
+            0.0f,
+            2.65f,
+            "meters",
+            "Brake input should stop the cart within the compact service-yard road budget."));
+    }
+
+    {
+        VehicleController controller = BuildDeterministicVehicle(vehicle);
+        engine::InputState reverse;
+        reverse.moveForward = -1.0f;
+        bool hitBounds = false;
+        for (int frame = 0; frame < 80; ++frame) {
+            controller.beginFrame();
+            controller.updateDriving(1.0f / 60.0f, reverse);
+            hitBounds = hitBounds || controller.state().hitBoundsThisFrame;
+        }
+        const float signedDistance =
+            engine::Dot(controller.state().position - vehicle.spawnPosition, engine::ForwardFromYaw(vehicle.spawnYawRadians));
+        checks.push_back(MakeDrivingFeelCheck(
+            "deterministic",
+            "reverseDistance",
+            signedDistance <= -0.75f && controller.state().speed < -0.10f && !hitBounds,
+            -signedDistance,
+            0.75f,
+            5.0f,
+            "meters",
+            "Reverse should produce clear backward motion without a manual-feel dead zone."));
+    }
+
+    {
+        VehicleController controller = BuildDeterministicVehicle(vehicle);
+        ThirdPersonCamera camera = BuildObstacleCamera(vehicle.spawnYawRadians);
+        bool hitBounds = false;
+        float maxCameraYawDelta = 0.0f;
+        engine::InputState input;
+        input.moveForward = 0.65f;
+        input.moveRight = 0.36f;
+        for (int frame = 0; frame < 70; ++frame) {
+            controller.beginFrame();
+            controller.updateDriving(1.0f / 60.0f, input);
+            const VehicleState& state = controller.state();
+            hitBounds = hitBounds || state.hitBoundsThisFrame;
+            CameraTarget target = controller.cameraTarget();
+            engine::InputState cameraInput;
+            camera.update(1.0f / 60.0f, cameraInput, target);
+            maxCameraYawDelta =
+                std::max(maxCameraYawDelta, AbsYawDeltaDegrees(state.yawRadians, camera.state().yawRadians));
+        }
+        const float yawDelta = AbsYawDeltaDegrees(vehicle.spawnYawRadians, controller.state().yawRadians);
+        checks.push_back(MakeDrivingFeelCheck(
+            "deterministic",
+            "steeringYawResponse",
+            yawDelta >= 12.0f && yawDelta <= 70.0f && !hitBounds,
+            yawDelta,
+            12.0f,
+            70.0f,
+            "degrees",
+            "A moderate steering hold should visibly turn the vehicle without spinning it around."));
+        checks.push_back(MakeDrivingFeelCheck(
+            "deterministic",
+            "cameraYawLag",
+            maxCameraYawDelta <= 55.0f && !hitBounds,
+            maxCameraYawDelta,
+            0.0f,
+            55.0f,
+            "degrees",
+            "Vehicle camera target should stay close enough to the turning vehicle for readable control."));
+    }
+
+    return checks;
+}
+
+std::vector<FerryOfficeVehicleRuntimeComparisonResult::DrivingFeelCheck> RunAdapterDrivingFeelChecks(
+    const engine::physics::VehicleRuntimeConfig& config,
+    engine::physics::PhysicsBackend backend,
+    engine::Vec3 checkpointPosition,
+    float checkpointRadius)
+{
+    std::vector<FerryOfficeVehicleRuntimeComparisonResult::DrivingFeelCheck> checks;
+    std::unique_ptr<engine::physics::IVehicleRuntimeAdapter> adapter =
+        engine::physics::CreateVehicleRuntimeAdapter(backend);
+    if (!adapter || !adapter->initialize(config)) {
+        checks.push_back(MakeDrivingFeelCheck(
+            "unavailable",
+            "adapterAvailable",
+            false,
+            0.0f,
+            1.0f,
+            1.0f,
+            "bool",
+            "Requested vehicle runtime adapter was unavailable for driving-feel QA."));
+        return checks;
+    }
+    const std::string backendName(adapter->backendName());
+    adapter->shutdown();
+
+    {
+        adapter = engine::physics::CreateVehicleRuntimeAdapter(backend);
+        if (!adapter || !adapter->initialize(config)) {
+            checks.push_back(MakeDrivingFeelCheck(backendName, "routeFramesToCheckpoint", false, -1.0f, 1.0f, 240.0f, "frames", "Adapter route check could not initialize."));
+            return checks;
+        }
+        int framesToCheckpoint = -1;
+        bool stable = true;
+        bool hitBounds = false;
+        float maxRouteDeviation = 0.0f;
+        for (int frame = 0; frame < RouteCheckMaxFrames; ++frame) {
+            stable = stable && adapter->step({RouteCheckThrottle, 0.0f, 0.0f}, config.fixedStepSeconds);
+            const engine::physics::VehicleRuntimeState state = adapter->state();
+            hitBounds = hitBounds || state.outOfBounds;
+            maxRouteDeviation = std::max(maxRouteDeviation, std::abs(state.position.z - config.spawnPosition.z));
+            if (HorizontalDistance(state.position, checkpointPosition) <= checkpointRadius) {
+                framesToCheckpoint = frame + 1;
+                break;
+            }
+            if (!stable || state.wheelContactCount < 2) {
+                break;
+            }
+        }
+        adapter->shutdown();
+        checks.push_back(MakeDrivingFeelCheck(
+            backendName,
+            "routeFramesToCheckpoint",
+            framesToCheckpoint > 0 && framesToCheckpoint <= RouteCheckMaxFrames && stable && !hitBounds,
+            static_cast<float>(framesToCheckpoint),
+            1.0f,
+            static_cast<float>(RouteCheckMaxFrames),
+            "frames",
+            "Runtime adapter candidate should reach the service-run checkpoint inside the authored route budget."));
+        checks.push_back(MakeDrivingFeelCheck(
+            backendName,
+            "routeMaxLateralDeviation",
+            maxRouteDeviation <= 0.85f && stable && !hitBounds,
+            maxRouteDeviation,
+            0.0f,
+            0.85f,
+            "meters",
+            "Runtime adapter candidate should hold the straight dock-road lane without drifting into bounds."));
+    }
+
+    {
+        adapter = engine::physics::CreateVehicleRuntimeAdapter(backend);
+        if (!adapter || !adapter->initialize(config)) {
+            checks.push_back(MakeDrivingFeelCheck(backendName, "brakeStopDistance", false, 999.0f, 0.0f, 4.5f, "meters", "Adapter braking check could not initialize."));
+            return checks;
+        }
+        bool stable = StepRuntimeAdapter(*adapter, {0.72f, 0.0f, 0.0f}, 60, config.fixedStepSeconds);
+        const engine::Vec3 brakeStart = adapter->state().position;
+        int stopFrame = -1;
+        for (int frame = 0; frame < 90; ++frame) {
+            stable = stable && adapter->step({0.0f, 0.0f, 1.0f}, config.fixedStepSeconds);
+            const engine::physics::VehicleRuntimeState state = adapter->state();
+            if (std::abs(state.speed) <= 0.10f) {
+                stopFrame = frame + 1;
+                break;
+            }
+            if (!stable || state.outOfBounds || state.wheelContactCount < 2) {
+                break;
+            }
+        }
+        const engine::physics::VehicleRuntimeState stopped = adapter->state();
+        adapter->shutdown();
+        const float stopDistance = HorizontalDistance(brakeStart, stopped.position);
+        checks.push_back(MakeDrivingFeelCheck(
+            backendName,
+            "brakeStopDistance",
+            stopFrame > 0 && stopDistance <= 4.5f && !stopped.outOfBounds && stable,
+            stopDistance,
+            0.0f,
+            4.5f,
+            "meters",
+            "Runtime adapter candidate should brake within the compact service-yard road budget."));
+    }
+
+    {
+        adapter = engine::physics::CreateVehicleRuntimeAdapter(backend);
+        if (!adapter || !adapter->initialize(config)) {
+            checks.push_back(MakeDrivingFeelCheck(backendName, "reverseDistance", false, 0.0f, 0.35f, 6.0f, "meters", "Adapter reverse check could not initialize."));
+            return checks;
+        }
+        bool stable = StepRuntimeAdapter(*adapter, {-1.0f, 0.0f, 0.0f}, 80, config.fixedStepSeconds);
+        const engine::physics::VehicleRuntimeState reverse = adapter->state();
+        adapter->shutdown();
+        const float signedDistance =
+            engine::Dot(reverse.position - config.spawnPosition, engine::ForwardFromYaw(config.spawnYawRadians));
+        checks.push_back(MakeDrivingFeelCheck(
+            backendName,
+            "reverseDistance",
+            signedDistance <= -0.35f && reverse.speed < -0.05f && !reverse.outOfBounds && stable,
+            -signedDistance,
+            0.35f,
+            6.0f,
+            "meters",
+            "Runtime adapter candidate should produce clear backward motion from reverse input."));
+    }
+
+    {
+        adapter = engine::physics::CreateVehicleRuntimeAdapter(backend);
+        if (!adapter || !adapter->initialize(config)) {
+            checks.push_back(MakeDrivingFeelCheck(backendName, "steeringYawResponse", false, 0.0f, 4.0f, 95.0f, "degrees", "Adapter steering check could not initialize."));
+            return checks;
+        }
+        ThirdPersonCamera camera = BuildObstacleCamera(config.spawnYawRadians);
+        bool stable = true;
+        bool hitBounds = false;
+        float maxCameraYawDelta = 0.0f;
+        for (int frame = 0; frame < 70; ++frame) {
+            stable = stable && adapter->step({0.65f, 0.36f, 0.0f}, config.fixedStepSeconds);
+            const engine::physics::VehicleRuntimeState state = adapter->state();
+            hitBounds = hitBounds || state.outOfBounds;
+            CameraTarget target;
+            target.position = state.position + engine::ForwardFromYaw(state.yawRadians) * 0.85f;
+            target.yawRadians = state.yawRadians;
+            engine::InputState cameraInput;
+            camera.update(config.fixedStepSeconds, cameraInput, target);
+            maxCameraYawDelta =
+                std::max(maxCameraYawDelta, AbsYawDeltaDegrees(state.yawRadians, camera.state().yawRadians));
+            if (!stable || state.wheelContactCount < 2) {
+                break;
+            }
+        }
+        const engine::physics::VehicleRuntimeState turned = adapter->state();
+        adapter->shutdown();
+        const float yawDelta = AbsYawDeltaDegrees(config.spawnYawRadians, turned.yawRadians);
+        checks.push_back(MakeDrivingFeelCheck(
+            backendName,
+            "steeringYawResponse",
+            yawDelta >= 4.0f && yawDelta <= 95.0f && stable && !hitBounds,
+            yawDelta,
+            4.0f,
+            95.0f,
+            "degrees",
+            "Runtime adapter candidate should respond visibly to steering without over-rotating."));
+        checks.push_back(MakeDrivingFeelCheck(
+            backendName,
+            "cameraYawLag",
+            maxCameraYawDelta <= 65.0f && stable && !hitBounds,
+            maxCameraYawDelta,
+            0.0f,
+            65.0f,
+            "degrees",
+            "Camera target should stay readable while following the runtime adapter vehicle candidate."));
+    }
+
+    return checks;
+}
+
 VehicleController BuildDeterministicVehicle(const SceneVehicleDefinition& vehicle)
 {
     VehicleController controller;
@@ -760,6 +1115,11 @@ bool WriteReport(const FerryOfficeVehicleRuntimeComparisonResult& result)
         obstacleChecks.push_back(ObstacleCheckJson(check));
     }
 
+    nlohmann::json drivingFeelChecks = nlohmann::json::array();
+    for (const FerryOfficeVehicleRuntimeComparisonResult::DrivingFeelCheck& check : result.drivingFeelChecks) {
+        drivingFeelChecks.push_back(DrivingFeelCheckJson(check));
+    }
+
     const nlohmann::json report = {
         {"schema", "v0.36-ferry-office-vehicle-runtime-comparison"},
         {"scenario", result.scenario},
@@ -778,6 +1138,7 @@ bool WriteReport(const FerryOfficeVehicleRuntimeComparisonResult& result)
         {"routeChecks", routeChecks},
         {"obstacleChecks", obstacleChecks},
         {"controlChecks", controlChecks},
+        {"drivingFeelChecks", drivingFeelChecks},
         {"comparison", {
             {"maxPositionDelta", result.maxPositionDelta},
             {"maxYawDeltaDegrees", result.maxYawDeltaDegrees},
@@ -956,6 +1317,13 @@ FerryOfficeVehicleRuntimeComparisonResult RunFerryOfficeVehicleRuntimeComparison
     result.routeChecks.push_back(RunAdapterRouteCheck(config, backend, checkpointPosition, checkpointRadius));
     result.obstacleChecks.push_back(RunDeterministicObstacleCheck(*vehicle));
     result.obstacleChecks.push_back(RunAdapterObstacleCheck(config, backend));
+    result.drivingFeelChecks = RunDeterministicDrivingFeelChecks(*vehicle, checkpointPosition, checkpointRadius);
+    std::vector<FerryOfficeVehicleRuntimeComparisonResult::DrivingFeelCheck> adapterDrivingFeelChecks =
+        RunAdapterDrivingFeelChecks(config, backend, checkpointPosition, checkpointRadius);
+    result.drivingFeelChecks.insert(
+        result.drivingFeelChecks.end(),
+        adapterDrivingFeelChecks.begin(),
+        adapterDrivingFeelChecks.end());
 
     const bool closeEnough = result.maxPositionDelta <= RuntimePositionDeltaLimit
         && result.maxYawDeltaDegrees <= RuntimeYawDeltaLimitDegrees
@@ -972,12 +1340,23 @@ FerryOfficeVehicleRuntimeComparisonResult RunFerryOfficeVehicleRuntimeComparison
         && std::all_of(result.obstacleChecks.begin(), result.obstacleChecks.end(), [](const auto& check) {
                return check.passed;
            });
+    const bool drivingFeelStable = !result.drivingFeelChecks.empty()
+        && std::all_of(result.drivingFeelChecks.begin(), result.drivingFeelChecks.end(), [](const auto& check) {
+               return check.passed;
+           });
     float obstacleProgressDelta = 0.0f;
     if (result.obstacleChecks.size() == 2) {
         obstacleProgressDelta =
             std::abs(result.obstacleChecks[0].finalPosition.x - result.obstacleChecks[1].finalPosition.x);
     }
-    result.passed = deterministicStable && adapterStable && closeEnough && controlsStable && routeStable && obstacleStable && !result.deterministicSamples.empty();
+    result.passed = deterministicStable
+        && adapterStable
+        && closeEnough
+        && controlsStable
+        && routeStable
+        && obstacleStable
+        && drivingFeelStable
+        && !result.deterministicSamples.empty();
     const bool obstacleProgressAligned = obstacleProgressDelta <= 4.0f;
     result.recommendation = result.passed && obstacleProgressAligned ? "promote" : "defer";
     if (result.passed && obstacleProgressAligned) {
@@ -987,7 +1366,10 @@ FerryOfficeVehicleRuntimeComparisonResult RunFerryOfficeVehicleRuntimeComparison
         result.recommendationReason =
             "The selected vehicle runtime adapter stayed stable and camera-readable, but obstacle-proxy progress still diverges enough to keep it opt-in.";
     } else {
-        result.recommendationReason = "The selected vehicle runtime adapter needs more work before live switch promotion.";
+        result.recommendationReason =
+            drivingFeelStable
+            ? "The selected vehicle runtime adapter needs more work before live switch promotion."
+            : "The selected vehicle runtime candidate needs a focused steering, braking, reverse, route, or camera-feel tuning pass before broader promotion.";
     }
     if (!result.passed) {
         result.error = "Vehicle runtime comparison did not meet stability or comparison thresholds.";

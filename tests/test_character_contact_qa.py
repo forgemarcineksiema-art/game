@@ -27,7 +27,7 @@ class CharacterContactQaTests(unittest.TestCase):
                         "scenario": character_contact_qa.SCENARIO,
                         "passed": True,
                         "backend": "jolt",
-                        "staticColliderCount": 9,
+                        "staticColliderCount": 10,
                         "probes": [
                             {"name": "dock-floor-grounding", "passed": True},
                             {"name": "office-back-wall-blocked", "passed": True},
@@ -57,7 +57,7 @@ class CharacterContactQaTests(unittest.TestCase):
                         "scenario": character_contact_qa.SCENARIO,
                         "passed": True,
                         "backend": "jolt",
-                        "staticColliderCount": 9,
+                        "staticColliderCount": 10,
                         "probes": [
                             {"name": "dock-floor-grounding", "passed": True},
                             {"name": "office-back-wall-blocked", "passed": True},

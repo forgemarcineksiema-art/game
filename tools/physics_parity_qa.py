@@ -48,7 +48,7 @@ def load_and_validate_report(report_path: pathlib.Path) -> dict[str, Any]:
         raise ValueError(f"Unexpected physics parity scenario: {report.get('scenario')}")
     if report.get("passed") is not True:
         raise ValueError(f"Physics parity report did not pass: {report.get('error', '')}")
-    if report.get("staticColliderCount") != 9:
+    if report.get("staticColliderCount") != 10:
         raise ValueError(f"Unexpected Ferry Office static collider count: {report.get('staticColliderCount')}")
 
     _require_passed_probes(report, "floorProbes")
