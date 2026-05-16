@@ -1114,7 +1114,7 @@ void TestSceneLoaderLoadsDefaultFerryOfficeScene()
     Expect(result.scene.meshInstances.size() >= 15,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored mesh instances, including the v0.18 prop style kit.");
-    Expect(result.scene.interactables.size() == 11,
+    Expect(result.scene.interactables.size() == 12,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored interactables.");
     Expect(result.scene.traversalAffordances.size() == 1,
@@ -1250,6 +1250,9 @@ void TestSceneLoaderLoadsHarborPartsJobBeat()
     const SceneRouteMarkerDefinition* shelfRoute = FindRouteMarker(result.scene, "route-harbor-parts-to-office-shelf");
     const SceneObjectiveMarkerDefinition* crateMarker = FindObjectiveMarker(result.scene, "harbor-parts-marker");
     const SceneObjectiveMarkerDefinition* shelfMarker = FindObjectiveMarker(result.scene, "ferry-office-parts-shelf-marker");
+    const SceneInteractableDefinition* workBoard = FindSceneInteractable(result.scene, "ferry-office-work-board");
+    const SceneRouteMarkerDefinition* workBoardRoute = FindRouteMarker(result.scene, "route-parts-shelf-to-work-board");
+    const SceneObjectiveMarkerDefinition* workBoardMarker = FindObjectiveMarker(result.scene, "ferry-office-work-board-marker");
 
     Expect(result.ok(),
         "TestSceneLoaderLoadsHarborPartsJobBeat",
@@ -1269,6 +1272,15 @@ void TestSceneLoaderLoadsHarborPartsJobBeat()
     Expect(crateMarker != nullptr && shelfMarker != nullptr,
         "TestSceneLoaderLoadsHarborPartsJobBeat",
         "Scene data should expose objective markers for the second job beat.");
+    Expect(workBoard != nullptr && workBoard->name == FerryOffice::Names::FerryOfficeWorkBoard,
+        "TestSceneLoaderLoadsHarborPartsJobBeat",
+        "Scene data should include the Ferry Office work-board signoff after parts delivery.");
+    Expect(workBoardRoute != nullptr && workBoardRoute->points.size() >= 2,
+        "TestSceneLoaderLoadsHarborPartsJobBeat",
+        "Scene data should route from the parts shelf to the work board.");
+    Expect(workBoardMarker != nullptr,
+        "TestSceneLoaderLoadsHarborPartsJobBeat",
+        "Scene data should expose an objective marker for the work-board signoff.");
 }
 
 void TestSceneLoaderLoadsInteractableActionPrerequisites()
@@ -1294,6 +1306,10 @@ void TestSceneLoaderLoadsInteractableActionPrerequisites()
     Expect(partsShelf != nullptr && ContainsString(partsShelf->requiredWorldFlags, "harborPartsPickedUp"),
         "TestSceneLoaderLoadsInteractableActionPrerequisites",
         "Ferry Office Parts Shelf should declare the parts pickup prerequisite.");
+    const SceneInteractableDefinition* workBoard = FindSceneInteractable(result.scene, "ferry-office-work-board");
+    Expect(workBoard != nullptr && ContainsString(workBoard->requiredWorldFlags, "harborPartsDelivered"),
+        "TestSceneLoaderLoadsInteractableActionPrerequisites",
+        "Ferry Office Work Board should declare the parts delivery prerequisite.");
 }
 
 void TestSceneLoaderReportsMissingSceneFile()
@@ -3317,9 +3333,15 @@ void TestFerryOfficeFollowupStatusSummarizesEndpointChain()
         "Follow-up status should show when the Harbor Parts crate is being carried.");
 
     state.setFlag(WorldFlag::HarborPartsDelivered, true, "Ferry Office Parts Shelf");
-    Expect(FerryOfficeFollowupStatusText(state).find("parts=delivered") != std::string::npos,
+    Expect(FerryOfficeFollowupStatusText(state).find("parts=delivered") != std::string::npos
+            && FerryOfficeFollowupStatusText(state).find("board=later") != std::string::npos,
         "TestFerryOfficeFollowupStatusSummarizesEndpointChain",
-        "Follow-up status should show when the Harbor Parts crate has been delivered.");
+        "Follow-up status should show when the Harbor Parts crate has been delivered before board signoff.");
+
+    state.setFlag(WorldFlag::FerryOfficeBoardUpdated, true, "Ferry Office Work Board");
+    Expect(FerryOfficeFollowupStatusText(state).find("board=updated") != std::string::npos,
+        "TestFerryOfficeFollowupStatusSummarizesEndpointChain",
+        "Follow-up status should show when the Ferry Office work board has been updated.");
 }
 
 void TestFerryOfficeFollowupNextStepGuidesLongChain()
@@ -3356,9 +3378,14 @@ void TestFerryOfficeFollowupNextStepGuidesLongChain()
         "After pickup, the next step should point back to the Ferry Office shelf.");
 
     state.setFlag(WorldFlag::HarborPartsDelivered, true, "Ferry Office Parts Shelf");
+    Expect(FerryOfficeFollowupNextStepText(state).find("Work Board") != std::string::npos,
+        "TestFerryOfficeFollowupNextStepGuidesLongChain",
+        "After delivery, the next step should point to the Ferry Office Work Board.");
+
+    state.setFlag(WorldFlag::FerryOfficeBoardUpdated, true, "Ferry Office Work Board");
     Expect(FerryOfficeFollowupNextStepText(state).find("complete") != std::string::npos,
         "TestFerryOfficeFollowupNextStepGuidesLongChain",
-        "After delivery, the next step should acknowledge follow-up completion.");
+        "After work-board signoff, the next step should acknowledge follow-up completion.");
 }
 
 void TestFerryOfficeObjectiveTextGuidesRouteSteps()
@@ -3619,6 +3646,12 @@ void TestHarborPartsJobRequiresClearedDockRoad()
     Expect(delivered && scene.worldState().isFlagSet(WorldFlag::HarborPartsDelivered),
         "TestHarborPartsJobRequiresClearedDockRoad",
         "The Ferry Office parts shelf should remember the delivered crate.");
+
+    const bool signedOff = scene.applyInteractionResult(
+        MakeSceneInteraction(std::string(FerryOffice::Names::FerryOfficeWorkBoard), InteractableType::Info));
+    Expect(signedOff && scene.worldState().isFlagSet(WorldFlag::FerryOfficeBoardUpdated),
+        "TestHarborPartsJobRequiresClearedDockRoad",
+        "The Ferry Office work board should remember the final parts return signoff.");
 }
 
 void TestPrototypeSceneAppliesAuthoredInteractableFlagBindings()
@@ -3721,6 +3754,9 @@ void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
     Expect(state.isFlagSet(WorldFlag::HarborPartsDelivered),
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should deliver the harbor parts to the Ferry Office shelf.");
+    Expect(state.isFlagSet(WorldFlag::FerryOfficeBoardUpdated),
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "QA playthrough should update the Ferry Office work board after delivery.");
     Expect(result.steps.size() >= 9,
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should report each major authored phase.");
@@ -3756,6 +3792,9 @@ void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
     Expect(hasStep("harborPartsDelivered"),
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should record the Harbor Parts delivery beat.");
+    Expect(hasStep("ferryOfficeBoardUpdated"),
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "QA playthrough should record the work-board signoff beat.");
     Expect(std::filesystem::exists(reportPath),
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should write a report artifact.");
@@ -3787,6 +3826,9 @@ void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
         Expect(report["final"]["flags"]["harborPartsDelivered"] == true,
             "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
             "QA playthrough report should expose the Harbor Parts delivery.");
+        Expect(report["final"]["flags"]["ferryOfficeBoardUpdated"] == true,
+            "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+            "QA playthrough report should expose the work-board signoff.");
         Expect(report["vehicleRuntime"]["backend"] == "deterministic",
             "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
             "QA playthrough report should expose the vehicle runtime backend.");

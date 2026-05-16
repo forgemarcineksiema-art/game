@@ -23,6 +23,7 @@ enum class WorldFlag {
     DockRoadClearanceTagged,
     HarborPartsPickedUp,
     HarborPartsDelivered,
+    FerryOfficeBoardUpdated,
     Count,
 };
 

@@ -43,6 +43,7 @@ class PlaythroughQaTests(unittest.TestCase):
                             {"name": "dockRoadClearanceTagged", "passed": True},
                             {"name": "harborPartsPickedUp", "passed": True},
                             {"name": "harborPartsDelivered", "passed": True},
+                            {"name": "ferryOfficeBoardUpdated", "passed": True},
                         ],
                         "vehicleRuntime": {
                             "requested": "deterministic",
@@ -68,6 +69,7 @@ class PlaythroughQaTests(unittest.TestCase):
                                 "dockRoadClearanceTagged": True,
                                 "harborPartsPickedUp": True,
                                 "harborPartsDelivered": True,
+                                "ferryOfficeBoardUpdated": True,
                             },
                         },
                     }
@@ -107,6 +109,7 @@ class PlaythroughQaTests(unittest.TestCase):
                                 "dockRoadClearanceTagged": False,
                                 "harborPartsPickedUp": False,
                                 "harborPartsDelivered": False,
+                                "ferryOfficeBoardUpdated": False,
                             },
                         },
                     }
@@ -150,6 +153,7 @@ class PlaythroughQaTests(unittest.TestCase):
                                 "dockRoadClearanceTagged": True,
                                 "harborPartsPickedUp": True,
                                 "harborPartsDelivered": True,
+                                "ferryOfficeBoardUpdated": True,
                             },
                         },
                     }
@@ -179,6 +183,7 @@ class PlaythroughQaTests(unittest.TestCase):
                             {"name": "dockRoadClearanceTagged", "passed": True},
                             {"name": "harborPartsPickedUp", "passed": True},
                             {"name": "harborPartsDelivered", "passed": True},
+                            {"name": "ferryOfficeBoardUpdated", "passed": True},
                         ],
                         "final": {
                             "phase": "complete",
@@ -197,6 +202,7 @@ class PlaythroughQaTests(unittest.TestCase):
                                 "dockRoadClearanceTagged": True,
                                 "harborPartsPickedUp": True,
                                 "harborPartsDelivered": True,
+                                "ferryOfficeBoardUpdated": True,
                             },
                         },
                     }

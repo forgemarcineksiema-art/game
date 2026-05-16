@@ -112,6 +112,15 @@ void PrototypeScene::buildFromFerryOfficeData()
     ferryOfficePartsShelf.message = FerryOffice::Messages::FerryOfficePartsShelf;
     m_interactions.addInteractable(ferryOfficePartsShelf);
 
+    Interactable ferryOfficeWorkBoard;
+    ferryOfficeWorkBoard.name = FerryOffice::Names::FerryOfficeWorkBoard;
+    ferryOfficeWorkBoard.prompt = FerryOffice::Prompts::FerryOfficeWorkBoard;
+    ferryOfficeWorkBoard.position = FerryOffice::Positions::FerryOfficeWorkBoard;
+    ferryOfficeWorkBoard.radius = FerryOffice::Radii::FerryOfficeWorkBoard;
+    ferryOfficeWorkBoard.type = InteractableType::Info;
+    ferryOfficeWorkBoard.message = FerryOffice::Messages::FerryOfficeWorkBoard;
+    m_interactions.addInteractable(ferryOfficeWorkBoard);
+
     addInteractableActionBinding(std::string(FerryOffice::Names::FerryManifest),
         {WorldFlag::ManifestCollected},
         {},
@@ -163,6 +172,10 @@ void PrototypeScene::buildFromFerryOfficeData()
         {},
         {WorldFlag::HarborPartsPickedUp},
         {WorldFlag::HarborPartsDelivered});
+    addInteractableActionBinding(std::string(FerryOffice::Names::FerryOfficeWorkBoard),
+        {},
+        {WorldFlag::HarborPartsDelivered},
+        {WorldFlag::FerryOfficeBoardUpdated});
 
     TraversalAffordance serviceVault;
     serviceVault.name = FerryOffice::Names::ServiceVault;
@@ -411,8 +424,12 @@ std::string PrototypeScene::currentJobObjectiveText() const
         && !m_worldState.isFlagSet(WorldFlag::HarborPartsDelivered)) {
         return "Deliver the harbor parts to the Ferry Office parts shelf.";
     }
-    if (m_worldState.isFlagSet(WorldFlag::HarborPartsDelivered)) {
-        return "Harbor parts delivered. Ferry Office follow-up complete.";
+    if (m_worldState.isFlagSet(WorldFlag::HarborPartsDelivered)
+        && !m_worldState.isFlagSet(WorldFlag::FerryOfficeBoardUpdated)) {
+        return "Update the Ferry Office Work Board with the parts return.";
+    }
+    if (m_worldState.isFlagSet(WorldFlag::FerryOfficeBoardUpdated)) {
+        return "Work board updated. Ferry Office follow-up complete.";
     }
     return m_job.currentObjectiveText(m_worldState);
 }

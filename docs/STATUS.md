@@ -33,6 +33,71 @@ Last updated: 2026-05-16
 6. Add PowerShell/Python workbench commands for doctor, configure/build, verify, and status reporting.
 7. Run the available validation commands, record exact results here, and keep any compiler/graphics blockers honest.
 
+## v0.63 Ferry Office Work Board Signoff (2026-05-16)
+
+Selected milestone:
+
+- Add a final compact Ferry Office Work Board signoff after Harbor Parts delivery.
+
+Candidate triage:
+
+- Work-board signoff: high player-facing clarity, low risk, validates through scene/action-binding tests, playthrough QA, scene tools, visual smoke, and `scripts\verify.ps1`.
+- Collision-backed Jolt obstacle route: high vehicle-promotion impact, medium risk, better as the next vehicle milestone after this compact content close.
+- Larger new job: higher content impact, higher scope risk, better after the current service-yard chain has a clean authored ending.
+
+Why selected:
+
+- v0.62 made simple gated interactions scene-authored. The strongest bounded use of that work was a final authored signoff that gives the Harbor Parts return a visible remembered endpoint without adding a broad job framework.
+
+Definition of Done:
+
+- The Ferry Office Work Board is authored in scene data with `harborPartsDelivered` as its prerequisite and `ferryOfficeBoardUpdated` as its ready flag.
+- Runtime fallback data, objective text, follow-up text, and debug/world-state summaries understand the new endpoint.
+- C++ and Python playthrough QA require the 16-event chain through work-board signoff.
+- Scene validation, asset validation, visual smoke, `scripts\verify.ps1`, and `git diff --check` pass.
+
+Implementation notes:
+
+- Added `WorldFlag::FerryOfficeBoardUpdated` and world-state string conversion for `ferryOfficeBoardUpdated`.
+- Added Ferry Office Work Board constants and a fallback `PrototypeScene` interactable/action binding.
+- Added `ferry-office-work-board`, route `route-parts-shelf-to-work-board`, and a work-board objective marker to `data/scenes/ferry_office.scene.json`.
+- Updated Ferry Office objective text, compact follow-up status, and next-step text so Harbor Parts delivery now points to the work board before final completion.
+- Extended C++ playthrough QA, Python playthrough validation, and scene/tool tests to require the work-board signoff.
+
+Commands and results:
+
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: failed as expected before implementation because `FerryOfficeWorkBoard` and `FerryOfficeBoardUpdated` did not exist.
+- `python tests\test_scene_tools.py`: passed, 42 tests.
+- `python tests\test_playthrough_qa.py`: passed, 5 tests.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests EngineApp`: passed.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: initially failed with two stale expectations, then passed after test expectations were updated for the 12th interactable and work-board completion step.
+- `python tools\validate_scene.py`: passed.
+- `python tools\scene_report.py`: passed; scene now has 12 interactables, 12 route markers, and 11 objective markers.
+- `python tools\playthrough_qa.py`: passed; phase=`complete`, events=16, vehicleRuntime=`deterministic`, framesToCheckpoint=139.
+- `python tools\scale_audit.py`: passed; no suspicious scale issues.
+- `python tools\validate_assets.py`: passed; 12 model files.
+- `python tools\capture_visual_smoke.py`: passed for GDI and DX11 captures; DX11 used WARP in this environment.
+- `scripts\verify.ps1`: passed; doctor, configure, build, CTest 11/11, scene validation, asset validation, mesh report, and smoke run completed.
+- `git diff --check`: passed; Git only reported expected CRLF normalization warnings for touched text files.
+
+Automated evidence generated:
+
+- C++ tests prove the authored work board exists, requires `harborPartsDelivered`, and sets `ferryOfficeBoardUpdated`.
+- The deterministic playthrough QA now completes a 16-event service-call, Dock Road, Harbor Parts, and work-board chain.
+- Scene tooling verifies the new route and objective marker counts.
+
+Provisional decision:
+
+- Treat work-board signoff as the final compact v0.63 content beat for this autonomous goal. Do not add inventory, save/load, job-board UI, or a generic mission framework yet.
+
+Remaining limitations:
+
+- The work board is still a text/flag/route-marker endpoint. It is not a bespoke prop mesh, diegetic board UI, carried-object simulation, inventory system, or saved world-state feature.
+
+Next direction:
+
+- Per the user request, stop this autonomous goal at v0.63 after validation, commit, and push. A future goal can choose either collision-backed Jolt obstacle replay or another compact authored content beat.
+
 ## v0.62 Scene Action Bindings (2026-05-16)
 
 Selected milestone:

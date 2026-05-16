@@ -19,7 +19,7 @@ This file lists known foundation issues during the current playable-build phase.
 
 ### Acceptable For Now
 
-1. No broad job framework yet. v0.62 adds scene action bindings for simple/gated world-flag beats, but richer job behavior still belongs in explicit C++ until a second independent job proves a stable generic shape. New content should stay compact and extend playthrough QA.
+1. No broad job framework yet. v0.62 adds scene action bindings for simple/gated world-flag beats, and v0.63 uses them for the Ferry Office Work Board signoff, but richer job behavior still belongs in explicit C++ until a second independent job proves a stable generic shape. New content should stay compact and extend playthrough QA.
 2. Deterministic vehicle movement remains the default live fallback after v0.59. Jolt VehicleConstraint now has feasibility, runtime-comparison, opt-in live-switch, controls-focused runtime QA, 240-frame service-run route evidence, the same first-job enter-drive-exit-confirm playthrough evidence, camera-aware obstacle-proxy steering evidence, and tuned obstacle proxy progress, but it still should not replace default gameplay until collision-backed obstacle replay proves the switched path in a less synthetic route.
 3. `WorldState` and `FerryOfficeJob` remain explicit in-memory prototype systems, not a save/load, inventory, economy, or mission framework.
 4. The tiny custom `.gltf` subset remains acceptable while assets are simple embedded-buffer static props.

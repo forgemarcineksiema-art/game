@@ -692,6 +692,16 @@ Status: implemented and validated. Playtest text now pairs the compact `Follow-u
 
 Status: implemented and validated. Ferry Office scene data now declares prerequisites for exit, service confirmation, relay, log, clear tag, Harbor Parts pickup, and Harbor Parts delivery; custom binding tests prove non-hardcoded immediate and gated interactables work; the 15-event playthrough remains green.
 
+## v0.63 - Ferry Office Work Board Signoff
+
+- Add a final compact Ferry Office Work Board signoff after Harbor Parts delivery.
+- Record `ferryOfficeBoardUpdated` as remembered local state.
+- Use scene-authored prerequisites/action bindings for the work-board interaction.
+- Extend scene routes/objective markers and scripted playthrough QA to cover the 16-event chain.
+- Keep this as compact authored content, not a job-board UI, inventory system, save/load feature, or generic mission framework.
+
+Status: implemented and validated. Scene data now has 12 interactables, 12 route markers, and 11 objective markers; deterministic playthrough QA completes the 16-event chain through Harbor Parts delivery and Ferry Office Work Board signoff.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. With v0.62 reducing simple interaction hardcoding, the next useful content milestone can be another compact authored beat covered by playthrough QA. For vehicle promotion, the next useful milestone remains a collision-backed obstacle route before default Jolt promotion.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.63, this autonomous goal intentionally stops per user instruction. The next useful future milestone can either add collision-backed Jolt obstacle replay before default promotion, or add another compact authored content beat covered by playthrough QA.

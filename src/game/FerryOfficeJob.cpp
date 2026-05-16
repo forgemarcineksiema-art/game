@@ -59,7 +59,9 @@ std::string FerryOfficeFollowupStatusText(const WorldState& state)
            << " | parts="
            << (state.isFlagSet(WorldFlag::HarborPartsDelivered)
                    ? "delivered"
-                   : (state.isFlagSet(WorldFlag::HarborPartsPickedUp) ? "picked" : "later"));
+                   : (state.isFlagSet(WorldFlag::HarborPartsPickedUp) ? "picked" : "later"))
+           << " | board="
+           << (state.isFlagSet(WorldFlag::FerryOfficeBoardUpdated) ? "updated" : "later");
     return output.str();
 }
 
@@ -83,7 +85,10 @@ std::string FerryOfficeFollowupNextStepText(const WorldState& state)
     if (!state.isFlagSet(WorldFlag::HarborPartsDelivered)) {
         return "Deliver Harbor Parts to the Ferry Office shelf.";
     }
-    return "Harbor Parts returned. Ferry Office follow-up complete.";
+    if (!state.isFlagSet(WorldFlag::FerryOfficeBoardUpdated)) {
+        return "Update the Ferry Office Work Board.";
+    }
+    return "Work board updated. Ferry Office follow-up complete.";
 }
 
 void FerryOfficeJob::configure(FerryOfficeJobConfig config)

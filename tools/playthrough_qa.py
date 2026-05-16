@@ -29,6 +29,7 @@ REQUIRED_FLAGS = [
     "dockRoadClearanceTagged",
     "harborPartsPickedUp",
     "harborPartsDelivered",
+    "ferryOfficeBoardUpdated",
 ]
 REQUIRED_RUNTIME_STEPS = [
     "serviceVehicleRuntime",
@@ -39,6 +40,7 @@ REQUIRED_RUNTIME_STEPS = [
     "dockRoadClearanceTagged",
     "harborPartsPickedUp",
     "harborPartsDelivered",
+    "ferryOfficeBoardUpdated",
 ]
 
 

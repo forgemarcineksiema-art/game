@@ -1083,6 +1083,18 @@
       "message": "Harbor parts delivered to the Ferry Office shelf.",
       "requiredWorldFlags": ["harborPartsPickedUp"],
       "worldFlagsSetWhenReady": ["harborPartsDelivered"]
+    },
+    {
+      "id": "ferry-office-work-board",
+      "name": "Ferry Office Work Board",
+      "prompt": "Update Work Board",
+      "type": "info",
+      "position": [-2.08, 0.68, 2.82],
+      "radius": 1.4,
+      "oneShot": false,
+      "message": "Ferry Office work board updated with the Harbor Parts return.",
+      "requiredWorldFlags": ["harborPartsDelivered"],
+      "worldFlagsSetWhenReady": ["ferryOfficeBoardUpdated"]
     }
   ],
   "traversalAffordances": [
@@ -1188,6 +1200,12 @@
       "from": "harbor-parts-crate",
       "to": "ferry-office-parts-shelf",
       "points": [[16.7, 0.08, -0.62], [10.0, 0.08, -2.2], [3.0, 0.08, -0.35], [-1.72, 0.08, 3.24]]
+    },
+    {
+      "id": "route-parts-shelf-to-work-board",
+      "from": "ferry-office-parts-shelf",
+      "to": "ferry-office-work-board",
+      "points": [[-1.72, 0.08, 3.24], [-2.08, 0.08, 2.82]]
     }
   ],
   "objectiveMarkers": [
@@ -1240,6 +1258,11 @@
       "id": "ferry-office-parts-shelf-marker",
       "label": "Ferry Office parts shelf",
       "position": [-1.72, 0.08, 3.24]
+    },
+    {
+      "id": "ferry-office-work-board-marker",
+      "label": "Ferry Office work board signoff",
+      "position": [-2.08, 0.08, 2.82]
     }
   ],
   "authoringNotes": [

@@ -100,6 +100,8 @@ The first compact second-job style beat is `Harbor Parts Return`.
 
 After the Dock Road relay has been reset, logged, and tagged clear, the player can collect a Harbor Parts Crate by the dock-road maintenance cabinet, recording `harborPartsPickedUp=true`. The player can then return to the Ferry Office and deliver it to the parts shelf, recording `harborPartsDelivered=true`. This makes the service-yard and office form a small return loop with visible remembered state while still avoiding a generic mission framework, inventory, save/load, NPC dispatcher, economy, or carried-object simulation.
 
+v0.63 adds a final Ferry Office Work Board signoff after the parts shelf delivery. Updating the board records `ferryOfficeBoardUpdated=true`, gives the return loop a small authored endpoint, and keeps the whole chain covered by deterministic playthrough QA rather than broadening into a job-board UI or inventory system.
+
 ## Systems Explicitly Deferred
 
 - Additional vehicles beyond the one v0.16 service-yard vehicle beat.
