@@ -571,6 +571,33 @@
       "replacesVisualPlaceholderId": "ferry-office-roof-cap"
     },
     {
+      "id": "mesh-ferry-office-front-roof-fascia",
+      "assetId": "unit-box-mesh",
+      "position": [0.0, 1.68, 2.02],
+      "yawDegrees": 0.0,
+      "scale": [5.35, 0.14, 0.12],
+      "colorKey": "rusted-roof-trim",
+      "notes": "v0.80 visual-only front fascia that ties the Ferry Office roofline to the facade in the default frame."
+    },
+    {
+      "id": "mesh-ferry-office-left-roof-downpost",
+      "assetId": "unit-box-mesh",
+      "position": [-2.42, 1.25, 2.03],
+      "yawDegrees": 0.0,
+      "scale": [0.12, 0.74, 0.10],
+      "colorKey": "weathered-yard-rail",
+      "notes": "v0.80 slim visual-only roof support/downpost; strengthens building silhouette without changing collision."
+    },
+    {
+      "id": "mesh-ferry-office-right-roof-downpost",
+      "assetId": "unit-box-mesh",
+      "position": [2.42, 1.25, 2.03],
+      "yawDegrees": 0.0,
+      "scale": [0.12, 0.74, 0.10],
+      "colorKey": "weathered-yard-rail",
+      "notes": "v0.80 paired visual-only roof support/downpost for Ferry Office facade cohesion."
+    },
+    {
       "id": "mesh-ferry-office-distant-shoreline",
       "assetId": "blender-harbor-backdrop-mesh",
       "position": [0.0, 1.82, 6.35],

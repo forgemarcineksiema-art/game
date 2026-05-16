@@ -2,6 +2,60 @@
 
 Last updated: 2026-05-16
 
+## v0.80 Ferry Office Roofline Grounding Pass (2026-05-16)
+
+Selected milestone:
+
+- Make the Ferry Office roofline feel attached to the building instead of reading as a floating block above the facade.
+
+Candidate visual pass triage:
+
+- Ferry Office Roofline Grounding Pass: visible impact = high because the roofline is a dominant first-frame silhouette; risk = low because it adds visual-only fascia/support meshes; validation/capture path = scene tools, GDI/DX11 visual smoke, `scripts\verify.ps1`.
+- Small original mesh replacement: visible impact = medium; risk = medium because it adds asset-generation scope.
+- Renderer haze/fog treatment: visible impact = high; risk = higher because it changes rendering behavior and text/capture readability.
+
+Why selected:
+
+- After v0.79, the player proxy and service-yard cues improved, but the office roof still read as a large detached slab. A front fascia and two slim downposts make the Ferry Office facade feel more constructed without adding route clutter or gameplay behavior.
+
+Implementation notes:
+
+- Added visual-only front roof fascia and paired downposts using existing `unit-box-mesh`.
+- Reused existing `rusted-roof-trim` and `weathered-yard-rail` material keys.
+- Preserved all collision, route flow, camera behavior, prompts, and interaction behavior.
+
+Files changed:
+
+- `data\scenes\ferry_office.scene.json`
+- `docs\STATUS.md`
+- `docs\ROADMAP.md`
+
+Focused validation:
+
+- `python tools\validate_scene.py`: passed.
+- `python tools\validate_assets.py`: passed.
+- `python tools\scale_audit.py`: passed.
+- `python tools\capture_visual_smoke.py --renderer gdi`: passed; GDI colors=75/lumaRange=221.
+- `scripts\verify.ps1`: passed; doctor completed with known plain-PATH tool warnings, configure/build succeeded, default CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke completed.
+- `python tools\capture_visual_smoke.py`: passed; GDI colors=75/lumaRange=221, DX11 colors=44/lumaRange=221 with WARP fallback in this environment.
+- `python tools\mesh_report.py`: passed; 12 mesh assets, 69 mesh instances, 12 referenced model files.
+- `python tools\scene_report.py`: passed; 24 scene materials, 30 visual placeholders, 69 mesh instances, 16 interactables, 16 route markers, and 15 objective markers.
+- `git diff --check`: passed with only expected CRLF normalization warnings for touched files.
+
+Automated evidence generated:
+
+- `build\captures\v0.31-gdi-capture.bmp`
+- `build\captures\v0.31-dx11-capture.bmp`
+- `build\captures\capture_visual_smoke_report.json`
+
+Remaining visual weakness:
+
+- The office is still built from primitive placeholder geometry. A later original mesh or texture/material pass would be stronger than more micro-box trim.
+
+Commit/push:
+
+- Included in the `v0.80 ferry office roofline grounding pass` commit/push step.
+
 ## v0.79 Playtest Proxy Readability Pass (2026-05-16)
 
 Selected milestone:
@@ -60,7 +114,7 @@ Remaining visual weakness:
 
 Commit/push:
 
-- Included in the `v0.79 playtest proxy readability pass` commit/push step.
+- Committed and pushed as `6c9ccb3` (`v0.79 playtest proxy readability pass`).
 
 ## v0.78 Ferry Office Sign Detail Pass (2026-05-16)
 
