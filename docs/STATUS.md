@@ -5508,6 +5508,57 @@ Validation:
 - python tools\vehicle_runtime_qa.py
 ```
 
+## v0.37.1 Jolt-live Vehicle Control Triage (2026-05-16)
+
+User playtest feedback:
+
+- `jolt-live` felt bad by hand: a very light `W` tap could leave the vehicle continuing to move or slide, reverse felt broken, and the control path needed real improvement rather than more QA-only evidence.
+
+Goal:
+
+- Fix the live opt-in Jolt vehicle manual driving feel reported by the user.
+- Reduce unwanted throttle/coast creep after light `W` input.
+- Make braking and reverse controllable.
+- Keep deterministic default gameplay unchanged.
+- Add focused regression coverage before changing production code.
+
+Root cause:
+
+- The Jolt runtime adapter reported `VehicleRuntimeState::speed` as an unsigned velocity length. The live input mapper used speed sign to decide whether `S` means brake or reverse, so the Jolt path could keep treating reverse intent as braking.
+- Neutral input sent no meaningful engine-brake/coast damping into the Jolt runtime, so a tiny throttle impulse could coast too long for the compact service yard.
+
+TDD notes:
+
+- Added `TestJoltVehicleRuntimeTapThrottleDoesNotCoastForever` and `TestJoltVehicleRuntimeReportsReverseAsNegativeSpeed` before implementation.
+- `cmake --build --preset windows-vs2022-debug-jolt --target EngineCoreTests; build\windows-vs2022-debug-jolt\Debug\EngineCoreTests.exe` failed as expected with those two tests before the fix.
+
+Implementation notes:
+
+- `src\engine\physics\JoltVehicleRuntime.cpp` now reports signed longitudinal speed from velocity dotted against the vehicle forward axis.
+- The Jolt live adapter now applies conservative body damping and light neutral brake input when the driver releases throttle, with stronger damping on brake input.
+- The deterministic `VehicleController` default path was not retuned.
+
+Focused TDD results:
+
+- `cmake --build --preset windows-vs2022-debug-jolt --target EngineCoreTests; build\windows-vs2022-debug-jolt\Debug\EngineCoreTests.exe`: passed after the fix.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests; build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --smoke-test --vehicle-runtime jolt --frames 3 --debug-ui`: passed and reported `vehicleRuntime=jolt-live`.
+
+Final validation:
+
+- `scripts\verify.ps1`: passed; default CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke passed.
+- `cmake --build --preset windows-vs2022-debug-jolt; ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed; Jolt opt-in CTest passed 15/15.
+- `python tools\physics_parity_qa.py`: passed; backend `jolt`, floor=4, raycast=4, overlap=4.
+- `python tools\character_contact_qa.py`: passed; backend `jolt`, probes=7.
+- `python tools\vehicle_physics_qa.py`: passed; backend `jolt`, samples=5, recommendation=`promote`.
+- `python tools\vehicle_runtime_qa.py`: passed; backend `jolt`, samples=5, maxPositionDelta=2.95, recommendation=`promote`.
+- `rg -n "Jolt|JPH::|<Jolt/|JPH/" src\game`: returned no matches.
+
+Remaining limitations:
+
+- This improves the obvious tap/coast/reverse bug, but it is still not a full vehicle-feel pass.
+- The next hand playtest should specifically check short `W` taps, stop distance, `S` brake-to-reverse transition, reverse steering readability, and whether damping now feels too heavy.
+
 ## v0.37 Live Opt-in Jolt Vehicle Playtest Switch (2026-05-16)
 
 Goal attempted:

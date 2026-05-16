@@ -101,7 +101,7 @@ This file lists known foundation issues during the current playable-build phase.
 - Vehicle camera uses the existing third-person camera with alternate settings. v0.13 retunes distance/height/smoothing for the small yard, but there is no camera collision, chase-camera lag tuning, or reset-behind-vehicle command.
 - The service-yard and v0.14 dock road segment are debug geometry only, not final art or a real road/terrain system.
 - The v0.14 road extends vehicle bounds for a compact out-and-back route, but vehicle collision is still a finite bounds clamp rather than road-edge collision against all debug rails/curbs.
-- Full default Jolt vehicle integration remains deferred until a bounded manual comparison proves the switched path is worth promoting. v0.37 proves opt-in live selection for the authored service vehicle, not default replacement, full gameplay collision, tuning, or a complete road model.
+- Full default Jolt vehicle integration remains deferred until a bounded manual comparison proves the switched path is worth promoting. v0.37 proves opt-in live selection for the authored service vehicle, and v0.37.1 fixes the first obvious tap/coast/reverse control bug, but this is still not default replacement, full gameplay collision, complete tuning, or a complete road model.
 
 ## Interaction
 

@@ -3418,6 +3418,83 @@ void TestVehicleRuntimeAdapterSimpleStepsFrameByFrame()
         "Simple runtime adapter should stay inside authored service-yard bounds for this probe.");
 }
 
+void TestJoltVehicleRuntimeTapThrottleDoesNotCoastForever()
+{
+    if (!engine::physics::IsJoltPhysicsAvailable()) {
+        return;
+    }
+
+    engine::physics::VehicleRuntimeConfig config;
+    config.vehicleId = "service-yard-vehicle";
+    config.spawnPosition = {6.2f, 0.0f, -2.2f};
+    config.spawnYawRadians = engine::Radians(88.0f);
+    config.halfExtents = {0.58f, 0.53f, 0.92f};
+    config.boundsMin = {3.35f, -5.05f};
+    config.boundsMax = {19.45f, 0.95f};
+
+    std::unique_ptr<engine::physics::IVehicleRuntimeAdapter> adapter =
+        engine::physics::CreateVehicleRuntimeAdapter(engine::physics::PhysicsBackend::Jolt);
+    Expect(adapter != nullptr,
+        "TestJoltVehicleRuntimeTapThrottleDoesNotCoastForever",
+        "Jolt runtime adapter should exist in the opt-in build.");
+    if (!adapter) {
+        return;
+    }
+
+    Expect(adapter->initialize(config),
+        "TestJoltVehicleRuntimeTapThrottleDoesNotCoastForever",
+        "Jolt runtime adapter should initialize with the authored service vehicle config.");
+
+    adapter->step({1.0f, 0.0f, 0.0f}, config.fixedStepSeconds);
+    for (int frame = 0; frame < 90; ++frame) {
+        adapter->step({}, config.fixedStepSeconds);
+    }
+
+    const engine::physics::VehicleRuntimeState settled = adapter->state();
+    adapter->shutdown();
+    Expect(std::abs(settled.speed) < 0.25f,
+        "TestJoltVehicleRuntimeTapThrottleDoesNotCoastForever",
+        "A tiny throttle tap should settle quickly enough for manual service-yard control.");
+}
+
+void TestJoltVehicleRuntimeReportsReverseAsNegativeSpeed()
+{
+    if (!engine::physics::IsJoltPhysicsAvailable()) {
+        return;
+    }
+
+    engine::physics::VehicleRuntimeConfig config;
+    config.vehicleId = "service-yard-vehicle";
+    config.spawnPosition = {6.2f, 0.0f, -2.2f};
+    config.spawnYawRadians = engine::Radians(88.0f);
+    config.halfExtents = {0.58f, 0.53f, 0.92f};
+    config.boundsMin = {3.35f, -5.05f};
+    config.boundsMax = {19.45f, 0.95f};
+
+    std::unique_ptr<engine::physics::IVehicleRuntimeAdapter> adapter =
+        engine::physics::CreateVehicleRuntimeAdapter(engine::physics::PhysicsBackend::Jolt);
+    Expect(adapter != nullptr,
+        "TestJoltVehicleRuntimeReportsReverseAsNegativeSpeed",
+        "Jolt runtime adapter should exist in the opt-in build.");
+    if (!adapter) {
+        return;
+    }
+
+    Expect(adapter->initialize(config),
+        "TestJoltVehicleRuntimeReportsReverseAsNegativeSpeed",
+        "Jolt runtime adapter should initialize with the authored service vehicle config.");
+
+    for (int frame = 0; frame < 80; ++frame) {
+        adapter->step({-1.0f, 0.0f, 0.0f}, config.fixedStepSeconds);
+    }
+
+    const engine::physics::VehicleRuntimeState reverse = adapter->state();
+    adapter->shutdown();
+    Expect(reverse.speed < -0.10f,
+        "TestJoltVehicleRuntimeReportsReverseAsNegativeSpeed",
+        "Reverse input should report negative longitudinal speed so live controls keep reversing instead of turning S into brake forever.");
+}
+
 void TestFerryOfficeVehicleRuntimeComparisonQaWritesReport()
 {
     const std::filesystem::path reportPath =
@@ -3916,6 +3993,8 @@ int main()
     TestFerryOfficeVehiclePhysicsQaWritesFeasibilityReport();
     TestFerryOfficeVehiclePhysicsQaHandlesUnavailableBackendExplicitly();
     TestVehicleRuntimeAdapterSimpleStepsFrameByFrame();
+    TestJoltVehicleRuntimeTapThrottleDoesNotCoastForever();
+    TestJoltVehicleRuntimeReportsReverseAsNegativeSpeed();
     TestFerryOfficeVehicleRuntimeComparisonQaWritesReport();
     TestFerryOfficeVehicleRuntimeComparisonQaHandlesUnavailableBackendExplicitly();
     TestSandboxDebugTextUsesReadableSections();

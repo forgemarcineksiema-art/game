@@ -172,6 +172,17 @@ int CountWheelContacts(const JPH::VehicleConstraint& constraint)
     return contacts;
 }
 
+float ManualControlDamping(float throttle, float brake)
+{
+    if (brake > 0.001f) {
+        return 8.0f;
+    }
+    if (std::abs(throttle) <= 0.001f) {
+        return 5.5f;
+    }
+    return 0.0f;
+}
+
 class JoltVehicleRuntimeAdapter final : public IVehicleRuntimeAdapter {
 public:
     ~JoltVehicleRuntimeAdapter() override
@@ -236,6 +247,8 @@ public:
             Layers::Moving);
         bodySettings.mOverrideMassProperties = JPH::EOverrideMassProperties::CalculateInertia;
         bodySettings.mMassPropertiesOverride.mMass = 950.0f;
+        bodySettings.mLinearDamping = 0.35f;
+        bodySettings.mAngularDamping = 0.45f;
 
         JPH::Body* body = bodyInterface.CreateBody(bodySettings);
         if (body == nullptr) {
@@ -338,11 +351,13 @@ public:
         const float forward = Clamp(input.throttle, -1.0f, 1.0f);
         const float right = Clamp(input.steer, -1.0f, 1.0f);
         const float brake = Clamp(input.brake, 0.0f, 1.0f);
-        m_controller->SetDriverInput(forward, right, brake, 0.0f);
+        const float effectiveBrake = std::max(brake, std::abs(forward) <= 0.001f ? 0.28f : 0.0f);
+        m_controller->SetDriverInput(forward, right, effectiveBrake, 0.0f);
         if (std::abs(forward) > 0.001f || std::abs(right) > 0.001f || brake > 0.001f) {
             m_physicsSystem->GetBodyInterface().ActivateBody(m_bodyId);
         }
         m_physicsSystem->Update(Clamp(deltaSeconds, 0.0f, 0.1f), 1, m_tempAllocator.get(), m_jobSystem.get());
+        applyManualDamping(forward, brake, Clamp(deltaSeconds, 0.0f, 0.1f));
         readState();
         m_state.frameIndex += 1;
         return true;
@@ -364,14 +379,29 @@ public:
     }
 
 private:
+    void applyManualDamping(float throttle, float brake, float deltaSeconds)
+    {
+        const float damping = ManualControlDamping(throttle, brake);
+        if (damping <= 0.0f) {
+            return;
+        }
+
+        JPH::BodyInterface& bodyInterface = m_physicsSystem->GetBodyInterface();
+        const JPH::Vec3 velocity = bodyInterface.GetLinearVelocity(m_bodyId);
+        const float factor = std::exp(-damping * deltaSeconds);
+        bodyInterface.SetLinearVelocity(m_bodyId, JPH::Vec3(velocity.GetX() * factor, velocity.GetY(), velocity.GetZ() * factor));
+    }
+
     void readState()
     {
         JPH::BodyInterface& bodyInterface = m_physicsSystem->GetBodyInterface();
         const JPH::Vec3 velocity = bodyInterface.GetLinearVelocity(m_bodyId);
-        const JPH::Vec3 euler = bodyInterface.GetRotation(m_bodyId).GetEulerAngles();
+        const JPH::Quat rotation = bodyInterface.GetRotation(m_bodyId);
+        const JPH::Vec3 euler = rotation.GetEulerAngles();
+        const JPH::Vec3 forward = rotation * m_constraint->GetLocalForward();
         m_state.position = FromJoltRVec3(bodyInterface.GetPosition(m_bodyId));
         m_state.yawRadians = euler.GetY();
-        m_state.speed = velocity.Length();
+        m_state.speed = velocity.Dot(forward);
         m_state.wheelContactCount = CountWheelContacts(*m_constraint);
         m_state.maxPitchDegrees = std::abs(Degrees(euler.GetX()));
         m_state.maxRollDegrees = std::abs(Degrees(euler.GetZ()));

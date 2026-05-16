@@ -184,7 +184,9 @@ python tools/mesh_report.py
 - [ ] Pressing `E` enters the vehicle once.
 - [ ] Holding `E` does not rapidly enter/exit on repeated frames.
 - [ ] While driving, `W` accelerates forward.
+- [ ] A short tap of `W` does not leave the vehicle sliding or driving for an excessive distance.
 - [ ] While driving, `S` brakes when moving forward and reverses after stopping.
+- [ ] Holding `S` after the vehicle stops continues into a readable reverse instead of feeling stuck in brake.
 - [ ] Releasing `W/S` lets drag settle the vehicle instead of coasting forever.
 - [ ] `A/D` steer the vehicle and the heading marker turns with it.
 - [ ] At low speed, the vehicle can turn around within the service-yard bounds without feeling twitchy.
