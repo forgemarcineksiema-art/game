@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-16
 
-v0.12 adds the first narrow static mesh path. v0.19 stabilizes the surrounding asset workflow, v0.20 proves the Blender gap plus a small fallback prop workflow, v0.20.1 proves one real headless Blender export, v0.27 adds a tiny painter-depth presentation spike plus one more Blender prop, v0.39 moves scene palette/shading rules into a game-layer presentation boundary, v0.40 gives scene color keys tiny material-like shading presets, and v0.41 authors those presets in scene data. This remains a render spike and authoring bridge, not a full asset pipeline.
+v0.12 adds the first narrow static mesh path. v0.19 stabilizes the surrounding asset workflow, v0.20 proves the Blender gap plus a small fallback prop workflow, v0.20.1 proves one real headless Blender export, v0.27 adds a tiny painter-depth presentation spike plus one more Blender prop, v0.39 moves scene palette/shading rules into a game-layer presentation boundary, v0.40 gives scene color keys tiny material-like shading presets, v0.41 authors those presets in scene data, and v0.42 adds a Blender-authored wet-road surface mesh for the current service-yard and dock-road pads. This remains a render spike and authoring bridge, not a full asset pipeline.
 
 ## What Exists
 
@@ -23,6 +23,7 @@ v0.12 adds the first narrow static mesh path. v0.19 stabilizes the surrounding a
 - v0.20 adds `ferry_notice_board.gltf` through a project fallback generator because Blender is not available in the current environment.
 - v0.20.1 adds `blender_ferry_notice_board.gltf` through a real headless Blender 5.1.1 script.
 - v0.27 adds `blender_cable_reel.gltf` through a second real headless Blender 5.1.1 script.
+- v0.42 adds `blender_wet_road_surface.gltf` through a third real headless Blender 5.1.1 script.
 - `data/scenes/ferry_office.scene.json` now has `meshAssets` and `meshInstances`.
 - v0.12.1 uses that single unit-box asset for a small prop kit: Ferry Office roof/facade/sign, service gate, maintenance box, dock bollards, service-yard crate, and service-yard vehicle body/cabin.
 - v0.18 uses multiple scene-authored mesh asset ids for the first service-road prop style pass. `SandboxLayer` loads the authored mesh assets into a local `assetId -> StaticMeshAsset` map before drawing mesh instances.
@@ -70,7 +71,7 @@ Use:
 - `sceneMaterials` for color-key base colors and wet/matte/painted response families.
 - `meshInstances` for position, yaw, scale, tint/color key, and optional links back to placeholders/colliders.
 
-v0.15 loads these mesh asset and mesh instance records through the runtime scene loader. v0.18 loads every referenced scene mesh asset by id, not just `unit-box-mesh`. v0.41 loads `sceneMaterials` through the same scene source of truth. `SandboxLayer::drawStaticMeshDebug` still applies moving vehicle body/cabin placement, but `ScenePresentation` now owns color-key, material-preset, and dynamic palette choices such as service-gate, maintenance-power, and vehicle-occupied colors. The authored mesh instance list comes from `data/scenes/ferry_office.scene.json`.
+v0.15 loads these mesh asset and mesh instance records through the runtime scene loader. v0.18 loads every referenced scene mesh asset by id, not just `unit-box-mesh`. v0.41 loads `sceneMaterials` through the same scene source of truth. v0.42 uses one authored wet-road surface mesh instance set to replace the largest service-yard/dock-road placeholder slabs visually while leaving collision and vehicle physics unchanged. `SandboxLayer::drawStaticMeshDebug` still applies moving vehicle body/cabin placement, but `ScenePresentation` now owns color-key, material-preset, and dynamic palette choices such as service-gate, maintenance-power, and vehicle-occupied colors. The authored mesh instance list comes from `data/scenes/ferry_office.scene.json`.
 
 ## Renderer Notes
 
@@ -80,7 +81,7 @@ There is still no material system, texture path, lighting, shader file pipeline,
 
 Keep wire/debug markers visible until a later overlay and asset pipeline exist.
 
-The v0.12.1, v0.18, v0.20, v0.20.1, v0.27, and v0.38 mesh instances are still composition placeholders. `ScenePresentation` shades their submitted faces with small wet/matte/painted response presets enough to improve volume readability, but they are not final art, material assets, or collision sources.
+The v0.12.1, v0.18, v0.20, v0.20.1, v0.27, v0.38, and v0.42 mesh instances are still composition placeholders. `ScenePresentation` shades their submitted faces with small wet/matte/painted response presets enough to improve volume readability, but they are not final art, material assets, or collision sources.
 
 ## How To Add A Simple Mesh
 

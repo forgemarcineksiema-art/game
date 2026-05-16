@@ -1,8 +1,8 @@
 # Blender Workflow
 
-Last updated: 2026-05-15
+Last updated: 2026-05-16
 
-This document records the v0.20 and v0.20.1 Blender-to-Tidebreak static prop workflow spikes.
+This document records the controlled Blender-to-Tidebreak static prop and surface workflow spikes.
 
 ## Current Result
 
@@ -38,6 +38,14 @@ blender --background --python tools\blender\create_tidebreak_cable_reel.py
 ```
 
 It creates `assets/models/blender_cable_reel.gltf`, a small project-original procedural service-yard cable reel prop.
+
+v0.42 adds a third controlled Blender script:
+
+```powershell
+blender --background --python tools\blender\create_tidebreak_wet_road_surface.py
+```
+
+It creates `assets/models/blender_wet_road_surface.gltf`, a low project-original procedural wet-road surface used as visual presentation geometry for the service yard, dock road, and turn-around pads. It is not collision, terrain, or road physics.
 
 ## Check Blender
 
@@ -82,6 +90,12 @@ The current second proof prop command is:
 
 ```powershell
 blender --background --python tools\blender\create_tidebreak_cable_reel.py
+```
+
+The current surface-piece command is:
+
+```powershell
+blender --background --python tools\blender\create_tidebreak_wet_road_surface.py
 ```
 
 Blender 5.1.1 does not expose direct `GLTF_EMBEDDED` export in this environment. The script uses `GLTF_SEPARATE`, embeds the generated `.bin` buffer into the `.gltf`, and deletes the temporary `.bin`. Keep that post-export step small and deterministic; move to cgltf/tinygltf if broader Blender output is needed.

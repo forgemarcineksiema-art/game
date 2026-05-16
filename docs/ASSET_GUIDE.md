@@ -1,8 +1,8 @@
 # Asset Guide
 
-Last updated: 2026-05-15
+Last updated: 2026-05-16
 
-This guide defines Tidebreak's early asset and scale conventions. v0.20.1 still does not add a full asset pipeline, but the project now has a tiny static `.gltf` prop path for original placeholder meshes, stronger asset workflow validation, an honest Blender availability check, a fallback prop generator, and one real Blender-exported proof prop.
+This guide defines Tidebreak's early asset and scale conventions. v0.42 still does not add a full asset pipeline, but the project now has a tiny static `.gltf` prop/surface path for original placeholder meshes, stronger asset workflow validation, an honest Blender availability check, a fallback prop generator, and several controlled Blender-exported proof meshes.
 
 ## Units And Axes
 
@@ -75,7 +75,7 @@ v0.12-v0.18 supports a tiny static `.gltf` subset through `src/engine/assets/Sta
 - v0.12.1 deliberately reuses that asset for a small Ferry Office prop kit.
 - v0.18 adds four original prop-kit meshes: `service_road_sign.gltf`, `road_edge_post.gltf`, `service_barrier.gltf`, and `utility_box.gltf`.
 - v0.20 adds `ferry_notice_board.gltf` through `tools/create_simple_prop_gltf.py` because Blender was unavailable during that run. This asset is project-original fallback geometry, not Blender export.
-- v0.20.1 adds `blender_ferry_notice_board.gltf` through `tools/blender/create_tidebreak_notice_board.py`. v0.27 adds `blender_cable_reel.gltf` through `tools/blender/create_tidebreak_cable_reel.py`. These scripts author in Tidebreak coordinates, map to Blender's Z-up space, export with Blender 5.1.1, and post-embed the buffer for the current loader subset.
+- v0.20.1 adds `blender_ferry_notice_board.gltf` through `tools/blender/create_tidebreak_notice_board.py`. v0.27 adds `blender_cable_reel.gltf` through `tools/blender/create_tidebreak_cable_reel.py`. v0.42 adds `blender_wet_road_surface.gltf` through `tools/blender/create_tidebreak_wet_road_surface.py`. These scripts author in Tidebreak coordinates, map to Blender's Z-up space, export with Blender 5.1.1, and post-embed the buffer for the current loader subset.
 - Use meters, Y-up, +Z forward.
 - Keep placeholder meshes small, original, and clearly documented.
 - Add `license` and `provenance` for every scene `meshAssets` entry.

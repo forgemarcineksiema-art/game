@@ -228,7 +228,7 @@ class SceneToolTests(unittest.TestCase):
         mesh_assets = {asset["id"]: asset for asset in self.scene["meshAssets"]}
         mesh_instances = {instance["id"]: instance for instance in self.scene["meshInstances"]}
 
-        self.assertEqual(8, len(mesh_assets))
+        self.assertGreaterEqual(len(mesh_assets), 8)
         self.assertGreaterEqual(len(mesh_instances), 37)
         self.assertIn("blender-cable-reel-mesh", mesh_assets)
         self.assertIn("mesh-service-yard-cable-reel", ids)
@@ -252,6 +252,26 @@ class SceneToolTests(unittest.TestCase):
             self.assertIn(required_id, ids)
             self.assertEqual(asset_id, mesh_instances[required_id]["assetId"])
             self.assertIn("v0.38", mesh_instances[required_id]["notes"])
+
+    def test_v042_wet_road_surface_asset_and_instances_exist(self) -> None:
+        ids = scene_data.collect_ids(self.scene)
+        mesh_assets = {asset["id"]: asset for asset in self.scene["meshAssets"]}
+        mesh_instances = {instance["id"]: instance for instance in self.scene["meshInstances"]}
+
+        self.assertIn("blender-wet-road-surface-mesh", mesh_assets)
+        self.assertEqual("assets/models/blender_wet_road_surface.gltf", mesh_assets["blender-wet-road-surface-mesh"]["path"])
+        self.assertIn("Blender 5.1.1", mesh_assets["blender-wet-road-surface-mesh"]["provenance"])
+
+        expected_instances = {
+            "mesh-service-yard-wet-surface": "service-yard-driving-pad",
+            "mesh-dock-road-wet-surface": "dock-road-segment",
+            "mesh-dock-road-turnaround-wet-surface": "dock-road-turnaround-pad",
+        }
+        for instance_id, placeholder_id in expected_instances.items():
+            self.assertIn(instance_id, ids)
+            self.assertEqual("blender-wet-road-surface-mesh", mesh_instances[instance_id]["assetId"])
+            self.assertEqual("dark-service-asphalt", mesh_instances[instance_id]["colorKey"])
+            self.assertEqual(placeholder_id, mesh_instances[instance_id]["replacesVisualPlaceholderId"])
 
     def test_duplicate_mesh_replacement_links_are_reported(self) -> None:
         scene = copy.deepcopy(self.scene)

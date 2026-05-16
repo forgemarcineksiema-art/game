@@ -194,11 +194,11 @@ Commands run on 2026-05-16:
 
 - `python tools/status_report.py`: ran; reported build outputs present. It also created a transient Python `tools/__pycache__` directory during imports.
 - `scripts/doctor.ps1`: passed; expected plain-PATH warnings for compiler/tool binaries remained.
-- `python tools/scene_report.py`: passed; scene has 9 colliders, 24 visual placeholders, 8 mesh assets, 37 mesh instances, 6 interactables, 1 traversal affordance, 1 vehicle, 6 route markers, and 5 objective markers.
+- `python tools/scene_report.py`: passed; scene has 9 colliders, 24 visual placeholders, 9 mesh assets, 40 mesh instances, 6 interactables, 1 traversal affordance, 1 vehicle, 6 route markers, and 5 objective markers.
 - `python tools/validate_scene.py`: passed.
 - `python tools/validate_assets.py`: passed.
 - `python tools/scale_audit.py`: passed, no suspicious scale issues.
-- `python tools/mesh_report.py`: passed, 8 referenced model files.
+- `python tools/mesh_report.py`: passed, 9 referenced model files.
 - `python tools/playthrough_qa.py`: passed; service-call phase `complete`, 10 events.
 - `python tools/capture_visual_smoke.py`: passed for GDI and DX11 captures; DX11 used WARP in this environment.
 - `python tools/physics_parity_qa.py`: passed with Jolt backend; floor=4, raycast=4, overlap=4.

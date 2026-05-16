@@ -5581,6 +5581,43 @@ Remaining limitations:
 - There are still no texture maps, UVs, normal input in the renderer, shader material files, PBR terms, authored lights, terrain, or production mesh resources.
 - The next visual slice should either add a data-authored material preset table or use this preset model while replacing another high-value placeholder cluster with better geometry.
 
+## v0.42 Wet Road Surface Geometry Pass (2026-05-16)
+
+Goal:
+
+- Replace the biggest flat service-yard/dock-road debug slabs with a small authored surface mesh so the current vehicle route reads more like a wet service road.
+- Keep this strictly visual: no collision rewrite, no vehicle physics change, no terrain, no road spline system, no textures/materials/PBR, no Job #2, and no broad map expansion.
+- Preserve scene-data validation, asset provenance, DX11 visual smoke, playthrough QA, and the normal `scripts\verify.ps1` gate.
+
+Implementation notes:
+
+- Added `tools\blender\create_tidebreak_wet_road_surface.py`, a controlled headless Blender 5.1.1 script that authors Tidebreak-coordinate shallow road surface strips, exports `GLTF_SEPARATE`, post-embeds the buffer, and writes `assets\models\blender_wet_road_surface.gltf`.
+- Added scene mesh asset `blender-wet-road-surface-mesh` with project-original license/provenance and authored bounds.
+- Added three visual-only mesh instances using `dark-service-asphalt`:
+  - `mesh-service-yard-wet-surface`, replacing `service-yard-driving-pad` visually.
+  - `mesh-dock-road-wet-surface`, replacing `dock-road-segment` visually.
+  - `mesh-dock-road-turnaround-wet-surface`, replacing `dock-road-turnaround-pad` visually.
+- Scene now reports 9 mesh assets, 40 mesh instances, and 9 referenced model files.
+- Added Python scene-tool coverage for the v0.42 asset path/provenance and its three replacement links.
+- Updated asset, Blender, mesh rendering, scene authoring, roadmap, decision, context-map, manual-test, and art-direction docs.
+
+Validation:
+
+- `blender --background --python tools\blender\create_tidebreak_wet_road_surface.py`: passed and exported `assets\models\blender_wet_road_surface.gltf`.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests; build\windows-vs2022-debug\Debug\EngineCoreTests.exe; python tests\test_scene_tools.py; python tools\scene_report.py`: passed; scene report shows 9 mesh assets and 40 mesh instances.
+- `python tools\validate_scene.py`: passed.
+- `python tools\validate_assets.py`: passed; modelFiles 9.
+- `python tools\mesh_report.py`: passed; `blender_wet_road_surface.gltf` has 168 vertices, 252 indices, 3 uses, and referenced=yes.
+- `python tools\scale_audit.py`: passed; no suspicious scale issues.
+- `cmake --build --preset windows-vs2022-debug --target EngineApp; python tools\capture_visual_smoke.py; python tools\playthrough_qa.py`: passed; GDI/DX11 captures were nonblank, DX11 still used WARP fallback, playthrough phase=`complete`, events=10.
+- `scripts\verify.ps1`: passed; doctor completed with known PATH warnings, configure/build succeeded, CTest passed 11/11, scene validation passed, asset validation passed, mesh report found 9 model files and 40 mesh instances, and null smoke loaded all 9 static mesh assets.
+- `git diff --check`: passed with expected CRLF normalization warnings only.
+
+Remaining limitations:
+
+- The new road surface is presentation geometry only. It is not terrain, mesh collision, road physics, tire friction, decals, puddles, textures, material resources, or a production road system.
+- The larger visual goal still needs real materials/textures, more authored environment geometry, better road/island composition, lighting/weather, and eventually a stronger renderer path.
+
 ## v0.41 Scene-Authored Material Presets (2026-05-16)
 
 Goal attempted:

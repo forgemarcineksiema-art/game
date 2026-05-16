@@ -148,13 +148,14 @@ python tools/mesh_report.py
 - [ ] `python tools/validate_scene.py` reports `Scene validation passed.`
 - [ ] `python tools/validate_assets.py` reports `Asset validation passed.`
 - [ ] `python tools/scene_report.py` reports scene id `ferry-office`.
-- [ ] Scene report lists 9 colliders, 24 visual placeholders, 8 mesh assets, 37 mesh instances, 6 interactables, 1 traversal affordance, 1 vehicle, 6 route markers, and 5 objective markers.
+- [ ] Scene report lists 9 colliders, 24 visual placeholders, 9 mesh assets, 40 mesh instances, 6 interactables, 1 traversal affordance, 1 vehicle, 6 route markers, and 5 objective markers.
 - [ ] `python tools/scale_audit.py` reports no suspicious scale issues, or any issue is documented.
-- [ ] `python tools/mesh_report.py` reports 8 mesh assets, 37 Ferry Office/service-yard/dock-road mesh instances, and 8 referenced `.gltf` model files.
+- [ ] `python tools/mesh_report.py` reports 9 mesh assets, 40 Ferry Office/service-yard/dock-road mesh instances, and 9 referenced `.gltf` model files.
 - [ ] `data/scenes/ferry_office.scene.json` contains the service gate, manifest, maintenance box, wall button, exit marker, service vault, player start, and service-yard vehicle ids.
 - [ ] `data/scenes/ferry_office.scene.json` contains the v0.25 composition ids: `office-approach-runner`, `office-front-threshold`, `service-yard-entry-lane-cue`, and `mesh-service-run-confirm-sign`.
 - [ ] `data/scenes/ferry_office.scene.json` contains the v0.26 prop/identity ids: `mesh-manifest-counter-shelf`, `mesh-manifest-paper-stack`, `mesh-office-side-service-panel`, `mesh-dock-cleat-left`, `mesh-dock-cleat-right`, `mesh-service-yard-tool-crate`, and `mesh-service-run-review-board`.
 - [ ] `data/scenes/ferry_office.scene.json` contains the v0.27 Blender prop ids: `blender-cable-reel-mesh` and `mesh-service-yard-cable-reel`.
+- [ ] `data/scenes/ferry_office.scene.json` contains the v0.42 wet-road surface ids: `blender-wet-road-surface-mesh`, `mesh-service-yard-wet-surface`, `mesh-dock-road-wet-surface`, and `mesh-dock-road-turnaround-wet-surface`.
 - [ ] `data/scenes/ferry_office.scene.json` contains `service-run-confirm-marker`, `service-run-checkpoint-marker`, and `route-dock-road-to-service-confirm`.
 - [ ] `data/scenes/ferry_office.scene.json` contains `meshAssets` and `meshInstances` for the current static mesh spike.
 - [ ] Runtime debug text reports `scene=ferry-office loaded=yes`.
@@ -169,12 +170,13 @@ python tools/mesh_report.py
 - [ ] GDI run shows the v0.25 composition cues: framed Ferry Office entry posts, approach-side notice board, service-yard threshold posts, far dock-road edge post, and service-run confirm sign.
 - [ ] GDI run shows the v0.26 prop/identity cues: manifest counter and paperwork, office-side service panel, dock cleats, service-yard tool crate, and Service Run review board.
 - [ ] GDI run shows the v0.27 Blender cable reel in the service yard.
+- [ ] GDI run shows shallow wet-road surface geometry across the service-yard pad, dock-road segment, and turn-around pad.
 - [ ] Solid debug boxes and flat mesh triangles read with stable back-to-front painter ordering instead of obvious arbitrary face overlap.
 - [ ] DX11 bounded run exits cleanly with mesh submissions enabled.
 - [ ] DX11 bounded run shows solid debug boxes and flat mesh triangles with real depth ordering, while route/debug lines, wire boxes, and text remain readable.
 - [ ] DX11 renderer-owned BMP capture shows non-blank geometry/depth presentation and a readable renderer-owned bitmap text overlay.
 - [ ] Mesh placeholders do not hide route, interaction, traversal, collision, or vehicle debug markers.
-- [ ] `assets/models/unit_box.gltf`, the v0.18 prop-kit meshes, `assets/models/ferry_notice_board.gltf`, `assets/models/blender_ferry_notice_board.gltf`, and `assets/models/blender_cable_reel.gltf` remain small original placeholder assets with scene-data license/provenance.
+- [ ] `assets/models/unit_box.gltf`, the v0.18 prop-kit meshes, `assets/models/ferry_notice_board.gltf`, `assets/models/blender_ferry_notice_board.gltf`, `assets/models/blender_cable_reel.gltf`, and `assets/models/blender_wet_road_surface.gltf` remain small original placeholder assets with scene-data license/provenance.
 - [ ] No `.glb`, external-buffer `.gltf`, unreferenced `.gltf`, or undocumented mesh asset appears in `assets/models`.
 
 ## Vehicle Spike

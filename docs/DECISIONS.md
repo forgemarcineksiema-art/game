@@ -589,3 +589,11 @@ Decision: Add `sceneMaterials` to `data/scenes/ferry_office.scene.json`, load th
 Reason: Material intent should become authored scene data before it becomes a renderer system. Keeping base color and wet/matte/painted response families in JSON lets future scene work adjust surface language without editing C++, while preserving the current runtime fallback palette and dynamic state colors for the service gate, maintenance power, and occupied vehicle.
 
 Dependency impact: no new dependency, asset file, asset format, renderer feature, shader pipeline, or texture path was added.
+
+## v0.42 Wet Road Surface Mesh Before Road Systems
+
+Decision: Add one Blender-authored shallow wet-road surface mesh and use it as visual presentation geometry for the service-yard driving pad, dock-road segment, and turn-around pad before adding terrain, road splines, road physics, or renderer material resources.
+
+Reason: The largest flat road/service-yard slabs were making the clean playtest view still read as debug plates. A single controlled surface mesh gives those areas scale, seams, and edge lips that catch the existing overcast/material shading while staying inside the current tiny embedded-buffer `.gltf` subset and scene-data validation path.
+
+Dependency impact: no new dependency, asset format, renderer feature, texture path, material system, collision source, or gameplay system was added. Blender remains an optional authoring tool, and the generated `.gltf` is committed as the runtime asset.
