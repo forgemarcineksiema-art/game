@@ -220,10 +220,11 @@ ConfigParseResult ParseArguments(int argc, const char* const* argv)
         if (ReadValue(argc, argv, index, argument, "--qa-physics-parity", value)) {
             if (value == "ferry-office-collision"
                 || value == "ferry-office-character-contact"
-                || value == "ferry-office-vehicle-feasibility") {
+                || value == "ferry-office-vehicle-feasibility"
+                || value == "ferry-office-vehicle-runtime-comparison") {
                 result.config.qaPhysicsParity = value;
             } else {
-                result.errors.push_back("--qa-physics-parity must be one of: ferry-office-collision, ferry-office-character-contact, ferry-office-vehicle-feasibility.");
+                result.errors.push_back("--qa-physics-parity must be one of: ferry-office-collision, ferry-office-character-contact, ferry-office-vehicle-feasibility, ferry-office-vehicle-runtime-comparison.");
             }
             continue;
         }
@@ -276,7 +277,7 @@ std::string BuildHelpText()
         << "  --capture-dir <path>  Write one renderer-owned BMP capture into the directory.\n"
         << "  --qa-playthrough <name> Run a QA-only automated playthrough. Supported: ferry-office-service-call.\n"
         << "  --qa-playthrough-report <path> Write the QA playthrough JSON report.\n"
-        << "  --qa-physics-parity <name> Run QA-only physics parity/contact. Supported: ferry-office-collision, ferry-office-character-contact, ferry-office-vehicle-feasibility.\n"
+        << "  --qa-physics-parity <name> Run QA-only physics parity/contact. Supported: ferry-office-collision, ferry-office-character-contact, ferry-office-vehicle-feasibility, ferry-office-vehicle-runtime-comparison.\n"
         << "  --qa-physics-report <path> Write the QA physics parity JSON report.\n"
         << "  --help                Show this help.\n";
     return output.str();

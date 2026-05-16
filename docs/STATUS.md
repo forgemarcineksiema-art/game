@@ -5405,3 +5405,105 @@ Validation:
 - python tools\vehicle_physics_qa.py
 - a new runtime vehicle adapter QA wrapper/report
 ```
+
+## v0.36 Jolt Vehicle Runtime Adapter Comparison Spike (2026-05-16)
+
+Goal:
+
+- Promote the v0.35 Jolt vehicle feasibility evidence into a narrow runtime adapter spike behind an explicit switch.
+- Keep deterministic vehicle gameplay as fallback.
+- Add a Jolt-backed runtime comparison path without leaking vendor types into `src\game`.
+- Validate default and opt-in Jolt builds, update docs/status, then commit and push if validation passes.
+
+Scope:
+
+- Added a vendor-free, frame-stepped vehicle runtime adapter boundary under `src\engine\physics`.
+- Added a dependency-free simple adapter that mirrors the deterministic fallback enough for default-build comparison tests.
+- Added an opt-in Jolt runtime adapter in `src\engine\physics\JoltVehicleRuntime.cpp`.
+- Added explicit QA switch `--qa-physics-parity ferry-office-vehicle-runtime-comparison`.
+- Added `tools\vehicle_runtime_qa.py` and Python report-validator tests.
+- Kept normal/live gameplay on deterministic `VehicleController`; this is not a default gameplay replacement.
+
+TDD notes:
+
+- `python tests\test_vehicle_runtime_qa.py` failed as expected before implementation because `vehicle_runtime_qa.py` did not exist.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests` failed as expected before implementation because `engine/physics/VehicleRuntime.h` did not exist.
+- After implementation, the default C++ test initially caught two real issues: game-layer error text contained the vendor name and the simple adapter brake/reverse behavior did not match the deterministic fallback closely enough.
+- The first Jolt runtime comparison run failed because runtime yaw telemetry used velocity direction, which made reverse/brake samples look like a false large yaw delta. The runtime adapter now reports yaw from body rotation.
+
+Implementation notes:
+
+- Added `src\engine\physics\VehicleRuntime.h/.cpp`.
+- Added `src\engine\physics\JoltVehicleRuntime.cpp`.
+- Extended `src\game\FerryOfficeVehiclePhysicsQa.h/.cpp` with `RunFerryOfficeVehicleRuntimeComparisonQa`.
+- Extended CLI parsing and `main.cpp` dispatch for `ferry-office-vehicle-runtime-comparison`.
+- Added `tests\test_vehicle_runtime_qa.py`.
+- Added `VehicleRuntimeQaTests` and `FerryOfficeVehicleRuntimeQaSmoke` to CTest.
+- Updated `scripts\doctor.ps1` and `tools\status_report.py` so the new runtime QA wrapper appears in normal orientation checks.
+
+Focused results so far:
+
+- Default `EngineCoreTests.exe`: passed after fixes.
+- `python tests\test_vehicle_runtime_qa.py`: passed, 2 tests.
+- Opt-in `cmake --build --preset windows-vs2022-debug-jolt --target EngineApp`: passed.
+- `python tools\vehicle_runtime_qa.py`: passed; backend `jolt`, samples=5, maxPositionDelta=2.54, recommendation=`promote`.
+- `rg -n "Jolt|JPH::|<Jolt/|JPH/" src\game`: returned no matches.
+
+Final validation:
+
+- `scripts\verify.ps1`: passed; default CTest passed 11/11 including `VehicleRuntimeQaTests`, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke loaded the Ferry Office scene and all 8 static mesh assets.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 15/15 including `FerryOfficeVehicleRuntimeQaSmoke`.
+- `python tools\physics_parity_qa.py`: passed; backend `jolt`, floor=4, raycast=4, overlap=4.
+- `python tools\character_contact_qa.py`: passed; backend `jolt`, probes=7.
+- `python tools\vehicle_physics_qa.py`: passed; backend `jolt`, samples=5, recommendation=`promote`.
+- `python tools\vehicle_runtime_qa.py`: passed; backend `jolt`, samples=5, maxPositionDelta=2.54, recommendation=`promote`.
+
+Remaining limitations:
+
+- The Jolt runtime adapter is exercised only through an explicit QA switch.
+- Normal play still uses deterministic `VehicleController`.
+- The comparison script is compact and service-yard scoped; it does not prove full dock-road driving feel, camera behavior, collision against every authored object, traffic, damage, or production tuning.
+
+Next-goal prompt:
+
+```text
+Create a Codex goal for Tidebreak.
+
+Repository rules:
+- Follow AGENTS.md and docs/AI_WORKFLOW.md.
+- Use docs/CONTEXT_MAP.md for orientation.
+- Update docs/STATUS.md.
+- Run scripts/verify.ps1 before claiming success.
+- Commit and push only if validation passes and there are no unrelated user changes.
+
+Goal:
+Expose the v0.36 Jolt vehicle runtime adapter through a live opt-in playtest switch while keeping deterministic vehicle gameplay as the default fallback.
+
+Why now:
+The Jolt runtime adapter comparison passes as explicit QA evidence. The next useful decision is whether the adapter feels viable under real play, not more deterministic tuning or Job #2.
+
+Scope:
+- Add an explicit play/runtime switch for the service vehicle, such as a CLI flag or debug-only config path.
+- Keep deterministic `VehicleController` as default and fallback.
+- Keep Jolt vendor types private to `src\engine\physics`.
+- Surface enough debug text to prove which vehicle runtime is active.
+- Add automated smoke/QA coverage that the switch is parsed, default remains deterministic, unavailable opt-in backend falls back or reports honestly, and the Jolt path can be selected in the opt-in preset.
+
+Non-goals:
+- No Job #2.
+- No traffic, NPCs, damage, garage, economy, save/load, mission scripting, or broad map expansion.
+- No default replacement of deterministic vehicle gameplay.
+- No Jolt type leakage into `src\game`.
+- No broad camera or vehicle-feel tuning unless it is required to make the switch safe to test.
+
+Validation:
+- scripts/verify.ps1
+- cmake --preset windows-vs2022-debug-jolt
+- cmake --build --preset windows-vs2022-debug-jolt
+- ctest --preset windows-vs2022-debug-jolt --output-on-failure
+- python tools\physics_parity_qa.py
+- python tools\character_contact_qa.py
+- python tools\vehicle_physics_qa.py
+- python tools\vehicle_runtime_qa.py
+```

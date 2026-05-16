@@ -1,6 +1,7 @@
 #pragma once
 
 #include "engine/physics/VehicleProbe.h"
+#include "engine/physics/VehicleRuntime.h"
 
 #include <filesystem>
 #include <string>
@@ -26,9 +27,34 @@ struct FerryOfficeVehiclePhysicsQaResult {
     std::string error;
 };
 
+struct FerryOfficeVehicleRuntimeComparisonResult {
+    bool passed = false;
+    std::string scenario = "ferry-office-vehicle-runtime-comparison";
+    std::string adapterBackendName;
+    std::string sceneId;
+    std::string vehicleId;
+    std::filesystem::path scenePath;
+    std::filesystem::path reportPath;
+    int inputFrameCount = 0;
+    std::vector<engine::physics::VehicleProbeSample> deterministicSamples;
+    std::vector<engine::physics::VehicleProbeSample> adapterSamples;
+    float maxPositionDelta = 0.0f;
+    float maxYawDeltaDegrees = 0.0f;
+    float maxSpeedDelta = 0.0f;
+    std::string recommendation = "defer";
+    std::string recommendationReason;
+    std::string error;
+};
+
 std::filesystem::path DefaultFerryOfficeVehiclePhysicsReportPath();
+std::filesystem::path DefaultFerryOfficeVehicleRuntimeComparisonReportPath();
 
 FerryOfficeVehiclePhysicsQaResult RunFerryOfficeVehiclePhysicsQa(
+    const std::filesystem::path& scenePath,
+    const std::filesystem::path& reportPath = {},
+    engine::physics::PhysicsBackend backend = engine::physics::OptInPhysicsBackend());
+
+FerryOfficeVehicleRuntimeComparisonResult RunFerryOfficeVehicleRuntimeComparisonQa(
     const std::filesystem::path& scenePath,
     const std::filesystem::path& reportPath = {},
     engine::physics::PhysicsBackend backend = engine::physics::OptInPhysicsBackend());

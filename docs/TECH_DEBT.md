@@ -13,14 +13,14 @@ This file lists known foundation issues during the current playable-build phase.
 
 ### Fix Soon
 
-1. Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, and opt-in `python tools\vehicle_physics_qa.py` as bounded visual/behavioral/physics evidence before asking for a manual pass.
-2. The next non-packaging vehicle/physics pass should promote v0.35 into a narrow Jolt vehicle runtime adapter behind an explicit switch, then compare it against the deterministic vehicle path. Do not mix this with Job #2, map expansion, renderer polish, or extra authored props.
+1. Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded visual/behavioral/physics evidence before asking for a manual pass.
+2. The next non-packaging vehicle/physics pass should expose a live opt-in Jolt vehicle switch for manual playtest only, with deterministic gameplay still default. Do not mix this with Job #2, map expansion, renderer polish, or extra authored props.
 3. Keep the Blender/static mesh path narrow and honest. v0.27 adds one controlled original Blender prop; avoid more quantity until visual evidence proves prop language, not renderer readability or vehicle feel, is the blocker.
 
 ### Acceptable For Now
 
 1. No Job #2 yet. The existing first job needs polish and control confidence before more content.
-2. Deterministic vehicle movement remains acceptable as the live fallback after v0.35. Jolt VehicleConstraint now has QA feasibility evidence, but it still should not replace live gameplay until a switched runtime adapter proves automated and hand-play confidence.
+2. Deterministic vehicle movement remains the default live fallback after v0.36. Jolt VehicleConstraint now has feasibility and runtime-comparison evidence, but it still should not replace default gameplay until a live switched path proves hand-play confidence.
 3. `WorldState` and `FerryOfficeJob` remain explicit in-memory prototype systems, not a save/load or mission framework.
 4. The tiny custom `.gltf` subset remains acceptable while assets are simple embedded-buffer static props.
 5. GDI remains the most battle-tested visual/playtest renderer, but DX11 now has a tiny renderer-owned bitmap debug text overlay and can be used for bounded playtest checks. DX11 still often falls back to WARP on this laptop.
@@ -88,7 +88,8 @@ This file lists known foundation issues during the current playable-build phase.
 - v0.33 mirrors the authored Ferry Office static boxes plus a flat scene-floor body into the opt-in Jolt path and validates floor/raycast/overlap parity against `PrototypeWorld` through `tools\physics_parity_qa.py`.
 - v0.34 adds `tools\character_contact_qa.py`, which compares the current player proxy against opt-in physics contact candidates for floor grounding, walls, the service gate, service barrier, a clear lane, a corner pushout, and an opened-gate case.
 - v0.35 adds `tools\vehicle_physics_qa.py`, which validates an opt-in Jolt wheeled-vehicle feasibility script for the authored Ferry Office service vehicle and emits a promote/defer report.
-- No live player, traversal, service-gate, dynamic collider toggling, or production vehicle behavior has been migrated to Jolt yet. v0.10 uses a deterministic vehicle controller and only uses `engine::physics` for a small service-yard validation/debug world; v0.35 only proves the next vehicle adapter goal is worth attempting.
+- v0.36 adds `tools\vehicle_runtime_qa.py`, which compares a frame-stepped opt-in Jolt vehicle runtime adapter against the deterministic `VehicleController` fallback on the authored Ferry Office service vehicle.
+- No live player, traversal, service-gate, dynamic collider toggling, or default production vehicle behavior has been migrated to Jolt yet. v0.10 uses a deterministic vehicle controller and only uses `engine::physics` for a small service-yard validation/debug world; v0.36 proves the next live opt-in switch goal is worth attempting.
 
 ## Vehicle
 
@@ -99,7 +100,7 @@ This file lists known foundation issues during the current playable-build phase.
 - Vehicle camera uses the existing third-person camera with alternate settings. v0.13 retunes distance/height/smoothing for the small yard, but there is no camera collision, chase-camera lag tuning, or reset-behind-vehicle command.
 - The service-yard and v0.14 dock road segment are debug geometry only, not final art or a real road/terrain system.
 - The v0.14 road extends vehicle bounds for a compact out-and-back route, but vehicle collision is still a finite bounds clamp rather than road-edge collision against all debug rails/curbs.
-- Full Jolt vehicle integration remains deferred until a separate switched runtime-adapter goal. v0.35 proves compact VehicleConstraint feasibility for the authored service vehicle, not live replacement, vehicle camera integration, gameplay collision, tuning, or a complete road model.
+- Full default Jolt vehicle integration remains deferred until a separate live-switch/manual-playtest goal. v0.36 proves compact runtime adapter comparison for the authored service vehicle, not default replacement, vehicle camera integration, gameplay collision, tuning, or a complete road model.
 
 ## Interaction
 

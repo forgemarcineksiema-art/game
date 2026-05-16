@@ -37,6 +37,7 @@ add_library(EngineCore STATIC
     src/engine/platform/Window.cpp
     src/engine/physics/PhysicsWorld.cpp
     src/engine/physics/VehicleProbe.cpp
+    src/engine/physics/VehicleRuntime.cpp
     src/engine/renderer/BmpWriter.cpp
     src/engine/renderer/DebugBitmapText.cpp
     src/engine/renderer/NullRenderer.cpp
@@ -104,6 +105,7 @@ if(ENGINE_ENABLE_JOLT_PHYSICS)
         PRIVATE
             src/engine/physics/JoltPhysicsWorld.cpp
             src/engine/physics/JoltVehicleProbe.cpp
+            src/engine/physics/JoltVehicleRuntime.cpp
     )
     target_link_libraries(EngineCore PRIVATE Jolt::Jolt)
 endif()
@@ -219,6 +221,11 @@ if(ENGINE_BUILD_TESTS)
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_vehicle_physics_qa.py
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
+    add_test(
+        NAME VehicleRuntimeQaTests
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_vehicle_runtime_qa.py
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    )
     if(ENGINE_ENABLE_JOLT_PHYSICS)
         add_test(
             NAME FerryOfficeJoltPhysicsParitySmoke
@@ -245,6 +252,15 @@ if(ENGINE_BUILD_TESTS)
                 ${CMAKE_CURRENT_SOURCE_DIR}/tools/vehicle_physics_qa.py
                 --exe $<TARGET_FILE:EngineApp>
                 --report-json ${CMAKE_CURRENT_BINARY_DIR}/physics/ferry-office-vehicle-feasibility-report.json
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        )
+        add_test(
+            NAME FerryOfficeVehicleRuntimeQaSmoke
+            COMMAND
+                ${Python3_EXECUTABLE}
+                ${CMAKE_CURRENT_SOURCE_DIR}/tools/vehicle_runtime_qa.py
+                --exe $<TARGET_FILE:EngineApp>
+                --report-json ${CMAKE_CURRENT_BINARY_DIR}/physics/ferry-office-vehicle-runtime-comparison-report.json
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         )
     endif()

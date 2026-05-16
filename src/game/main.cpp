@@ -40,6 +40,19 @@ int main(int argc, const char* const* argv)
     }
 
     if (parseResult.config.qaPhysicsParityRequested()) {
+        if (parseResult.config.qaPhysicsParity == "ferry-office-vehicle-runtime-comparison") {
+            const auto result = RunFerryOfficeVehicleRuntimeComparisonQa(
+                parseResult.config.scenePath,
+                parseResult.config.qaPhysicsReportPath,
+                engine::physics::OptInPhysicsBackend());
+            if (result.passed) {
+                engine::Logger::info("QA vehicle runtime comparison passed: " + result.reportPath.string());
+                return 0;
+            }
+            engine::Logger::error("QA vehicle runtime comparison failed: " + result.error);
+            return 10;
+        }
+
         if (parseResult.config.qaPhysicsParity == "ferry-office-vehicle-feasibility") {
             const auto result = RunFerryOfficeVehiclePhysicsQa(
                 parseResult.config.scenePath,

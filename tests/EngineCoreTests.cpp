@@ -4,6 +4,7 @@
 #include "engine/core/FileSystem.h"
 #include "engine/math/Math.h"
 #include "engine/physics/PhysicsWorld.h"
+#include "engine/physics/VehicleRuntime.h"
 #include "engine/assets/StaticMesh.h"
 #include "engine/renderer/BmpWriter.h"
 #include "engine/renderer/DebugBitmapText.h"
@@ -444,6 +445,25 @@ void TestQaPhysicsParityArgumentsAcceptVehicleFeasibilityScenario()
     Expect(result.config.qaPhysicsParity == "ferry-office-vehicle-feasibility",
         "TestQaPhysicsParityArgumentsAcceptVehicleFeasibilityScenario",
         "Config should preserve the requested vehicle feasibility scenario.");
+}
+
+void TestQaPhysicsParityArgumentsAcceptVehicleRuntimeComparisonScenario()
+{
+    const char* argv[] = {
+        "EngineApp",
+        "--qa-physics-parity",
+        "ferry-office-vehicle-runtime-comparison",
+        "--qa-physics-report",
+        "build/physics/vehicle-runtime-comparison.json",
+    };
+    const auto result = engine::ParseArguments(5, argv);
+
+    Expect(result.errors.empty(),
+        "TestQaPhysicsParityArgumentsAcceptVehicleRuntimeComparisonScenario",
+        "QA physics parity should accept the explicit Ferry Office vehicle runtime comparison scenario.");
+    Expect(result.config.qaPhysicsParity == "ferry-office-vehicle-runtime-comparison",
+        "TestQaPhysicsParityArgumentsAcceptVehicleRuntimeComparisonScenario",
+        "Config should preserve the requested vehicle runtime comparison scenario.");
 }
 
 void TestHelpTextMentionsQaPhysicsParityFlags()
@@ -3283,6 +3303,118 @@ void TestFerryOfficeVehiclePhysicsQaHandlesUnavailableBackendExplicitly()
         "Unavailable opt-in vehicle physics QA should explain the build requirement.");
 }
 
+void TestVehicleRuntimeAdapterSimpleStepsFrameByFrame()
+{
+    engine::physics::VehicleRuntimeConfig config;
+    config.vehicleId = "service-yard-vehicle";
+    config.spawnPosition = {6.2f, 0.0f, -2.2f};
+    config.spawnYawRadians = engine::Radians(88.0f);
+    config.halfExtents = {0.58f, 0.53f, 0.92f};
+    config.boundsMin = {3.35f, -5.05f};
+    config.boundsMax = {19.45f, 0.95f};
+
+    std::unique_ptr<engine::physics::IVehicleRuntimeAdapter> adapter =
+        engine::physics::CreateVehicleRuntimeAdapter(engine::physics::PhysicsBackend::Simple);
+
+    Expect(adapter != nullptr,
+        "TestVehicleRuntimeAdapterSimpleStepsFrameByFrame",
+        "Simple vehicle runtime adapter should always be available for fallback comparison.");
+    if (!adapter) {
+        return;
+    }
+
+    Expect(adapter->initialize(config),
+        "TestVehicleRuntimeAdapterSimpleStepsFrameByFrame",
+        "Simple vehicle runtime adapter should initialize with authored vehicle config.");
+
+    const engine::physics::VehicleRuntimeState initial = adapter->state();
+    for (int frame = 0; frame < 40; ++frame) {
+        adapter->step({0.6f, 0.15f, 0.0f}, config.fixedStepSeconds);
+    }
+    const engine::physics::VehicleRuntimeState moved = adapter->state();
+
+    Expect(adapter->backendName() == "simple",
+        "TestVehicleRuntimeAdapterSimpleStepsFrameByFrame",
+        "Simple runtime adapter should expose its backend name.");
+    Expect(moved.frameIndex == 40,
+        "TestVehicleRuntimeAdapterSimpleStepsFrameByFrame",
+        "Runtime adapter should advance one frame at a time.");
+    Expect(engine::Length(moved.position - initial.position) > 0.1f,
+        "TestVehicleRuntimeAdapterSimpleStepsFrameByFrame",
+        "Runtime adapter should move the vehicle during scripted throttle input.");
+    Expect(moved.wheelContactCount == 4,
+        "TestVehicleRuntimeAdapterSimpleStepsFrameByFrame",
+        "Simple adapter should provide stable fallback wheel-contact telemetry.");
+    Expect(!moved.outOfBounds,
+        "TestVehicleRuntimeAdapterSimpleStepsFrameByFrame",
+        "Simple runtime adapter should stay inside authored service-yard bounds for this probe.");
+}
+
+void TestFerryOfficeVehicleRuntimeComparisonQaWritesReport()
+{
+    const std::filesystem::path reportPath =
+        std::filesystem::temp_directory_path() / "tidebreak-v036-vehicle-runtime-comparison-report.json";
+    std::filesystem::remove(reportPath);
+
+    const auto result = RunFerryOfficeVehicleRuntimeComparisonQa(
+        DefaultScenePathForTests(),
+        reportPath,
+        engine::physics::PhysicsBackend::Simple);
+
+    Expect(result.passed,
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        result.error.empty() ? "Vehicle runtime comparison should pass against the simple runtime adapter fallback." : result.error);
+    Expect(result.scenario == "ferry-office-vehicle-runtime-comparison",
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Runtime comparison QA should expose the explicit runtime scenario.");
+    Expect(result.deterministicSamples.size() >= 4 && result.adapterSamples.size() == result.deterministicSamples.size(),
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Runtime comparison QA should record paired deterministic and adapter samples.");
+    Expect(result.maxPositionDelta <= 0.75f,
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Simple runtime adapter should stay close to the deterministic fallback path.");
+    Expect(std::filesystem::exists(reportPath),
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Runtime comparison QA should write the requested JSON report.");
+
+    std::ifstream input(reportPath);
+    const nlohmann::json report = nlohmann::json::parse(input);
+    input.close();
+    Expect(report["schema"] == "v0.36-ferry-office-vehicle-runtime-comparison",
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Vehicle runtime comparison report should use the v0.36 schema.");
+    Expect(report["scenario"] == "ferry-office-vehicle-runtime-comparison",
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Vehicle runtime comparison report should expose the scenario.");
+    Expect(report["deterministic"]["samples"].size() >= 4,
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Runtime comparison report should include deterministic baseline samples.");
+    Expect(report["adapter"]["backend"] == "simple",
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Runtime comparison report should include adapter backend metadata.");
+
+    std::filesystem::remove(reportPath);
+}
+
+void TestFerryOfficeVehicleRuntimeComparisonQaHandlesUnavailableBackendExplicitly()
+{
+    if (engine::physics::IsJoltPhysicsAvailable()) {
+        return;
+    }
+
+    const auto result = RunFerryOfficeVehicleRuntimeComparisonQa(
+        DefaultScenePathForTests(),
+        {},
+        engine::physics::OptInPhysicsBackend());
+
+    Expect(!result.passed,
+        "TestFerryOfficeVehicleRuntimeComparisonQaHandlesUnavailableBackendExplicitly",
+        "Default builds should not pretend opt-in vehicle runtime comparison QA ran.");
+    Expect(!result.error.empty(),
+        "TestFerryOfficeVehicleRuntimeComparisonQaHandlesUnavailableBackendExplicitly",
+        "Unavailable opt-in vehicle runtime comparison QA should explain the build requirement.");
+}
+
 void TestSandboxDebugTextUsesReadableSections()
 {
     SandboxLayer layer;
@@ -3608,6 +3740,7 @@ int main()
     TestQaPhysicsParityArgumentsRejectUnknownScenario();
     TestQaPhysicsParityArgumentsAcceptCharacterContactScenario();
     TestQaPhysicsParityArgumentsAcceptVehicleFeasibilityScenario();
+    TestQaPhysicsParityArgumentsAcceptVehicleRuntimeComparisonScenario();
     TestHelpTextMentionsQaPhysicsParityFlags();
     TestCursorCaptureArguments();
     TestUiModeArguments();
@@ -3709,6 +3842,9 @@ int main()
     TestFerryOfficeCharacterContactQaHandlesUnavailableBackendExplicitly();
     TestFerryOfficeVehiclePhysicsQaWritesFeasibilityReport();
     TestFerryOfficeVehiclePhysicsQaHandlesUnavailableBackendExplicitly();
+    TestVehicleRuntimeAdapterSimpleStepsFrameByFrame();
+    TestFerryOfficeVehicleRuntimeComparisonQaWritesReport();
+    TestFerryOfficeVehicleRuntimeComparisonQaHandlesUnavailableBackendExplicitly();
     TestSandboxDebugTextUsesReadableSections();
     TestFerryOfficeOneShotManifestDoesNotDuplicateEvents();
     TestTraversalFocusSelectsAvailableAffordance();

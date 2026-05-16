@@ -194,6 +194,28 @@ Important limits:
 - The Jolt runner proves a compact scripted service-yard maneuver with a temporary floor/body setup, not a complete road, damage, traffic, suspension tuning, camera, audio, or gameplay vehicle system.
 - The next physics/vehicle goal should build a narrow runtime adapter that can be compared against the deterministic vehicle path behind a switch, then decide whether to promote it into live play.
 
+## v0.36 Vehicle Runtime Adapter Comparison Result
+
+Added:
+
+- `src/engine/physics/VehicleRuntime.h/.cpp`, a vendor-free frame-stepped vehicle runtime adapter boundary with a dependency-free simple fallback.
+- `src/engine/physics/JoltVehicleRuntime.cpp`, an opt-in Jolt-only runtime adapter that initializes a compact wheeled vehicle scene, steps one frame at a time, and returns vendor-free telemetry.
+- `--qa-physics-parity ferry-office-vehicle-runtime-comparison`, an explicit switch for comparing runtime adapter behavior without replacing live gameplay.
+- `tools/vehicle_runtime_qa.py`, which runs a Jolt-enabled `EngineApp.exe`, validates report schema `v0.36-ferry-office-vehicle-runtime-comparison`, requires backend `jolt`, checks paired deterministic/adapter samples, and enforces comparison thresholds.
+
+Validated so far:
+
+- Default dependency-free build passes with the simple runtime adapter and reports the opt-in runtime backend unavailable when requested without the Jolt preset.
+- Opt-in Jolt configure/build passes.
+- The Jolt runtime comparison report records 5 paired samples against the deterministic `VehicleController` baseline, 4 wheel contacts per adapter sample, max position delta about 2.54 meters in the compact service-yard script, and recommendation `promote`.
+- `rg -n "Jolt|JPH::|<Jolt/|JPH/" src\game` returns no matches; Jolt types remain private to engine-owned physics code.
+
+Important limits:
+
+- This is still a QA/runtime comparison switch, not a normal play-mode replacement.
+- The deterministic `VehicleController` remains the live gameplay fallback.
+- The Jolt runtime adapter is proven only against the compact scripted Ferry Office service-yard comparison. It still needs a live switch/human-feel pass before it becomes the default vehicle path.
+
 Important implementation choices:
 
 - Jolt is opt-in for now. `scripts/verify.ps1` keeps using the default dependency-free preset.
@@ -220,4 +242,4 @@ v0.10 used the physics foundation without promoting full Jolt vehicle constraint
 - Tests scan `src/game` to prevent accidental `Jolt` / `JPH::*` vendor references.
 - The opt-in `windows-vs2022-debug-jolt` preset remains the proof that the Jolt backend still configures, builds, and tests through the engine API.
 
-Next recommendation: promote the v0.35 evidence into a narrow Jolt vehicle runtime adapter spike behind an explicit switch. Keep live deterministic vehicle gameplay as the fallback until the adapter passes automated and human-feel evidence.
+Next recommendation: use the v0.36 comparison report to add a live, opt-in Jolt vehicle switch for manual playtest only. Keep deterministic vehicle gameplay as the default until the switched path passes automated runtime QA plus human driving confidence.
