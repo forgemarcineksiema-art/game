@@ -125,6 +125,71 @@ Next direction:
 
 - Either tune the opt-in Jolt route pace against deterministic arrival evidence, or build a fuller input-scripted Ferry Office runtime QA path that exercises enter, drive, exit, and confirmation through the live loop.
 
+## v0.47 Jolt Route Pace Tuning (2026-05-16)
+
+Selected milestone:
+
+- Tune the opt-in Jolt vehicle runtime so the straight Ferry Office service-run route reaches the authored checkpoint inside a 240-frame automated budget.
+
+Why selected:
+
+- v0.46 replaced "human comparison needed" with automated route evidence and showed a clear gap: deterministic reached the service-run checkpoint in 139 frames while Jolt reached it in 301 frames.
+- This was the highest-leverage next vehicle step because it improved playable progress evidence without changing deterministic default gameplay or starting new content on top of an uncertain vehicle path.
+
+Definition of Done:
+
+- A failing route-pace regression exists for the opt-in Jolt runtime.
+- The Jolt route check reaches the authored checkpoint inside 240 frames.
+- Existing tap/coast, brake, reverse, reverse-coast, route, and no-vendor-leak checks remain green.
+- Default `scripts\verify.ps1` and opt-in Jolt validation pass.
+- Docs record the new provisional vehicle decision.
+
+Implementation notes:
+
+- Added `TestJoltVehicleRuntimeReachesServiceCheckpointWithinRouteBudget` to cover the Jolt service-run route budget directly in the opt-in C++ test binary.
+- Tightened `tools\vehicle_runtime_qa.py` so stale or slow Jolt reports fail if the Jolt route takes more than 240 frames.
+- Tightened the C++ route report window from the exploratory v0.46 480 frames to the v0.47 240-frame route budget.
+- Tuned the private Jolt vehicle runtime profile: lighter service cart mass, stronger traction, shorter gearing, higher torque, quicker clutch/shift response, and softer reverse damping/input so compact-yard backing remains controlled.
+- Deterministic vehicle gameplay remains the default; Jolt remains explicit opt-in.
+
+Commands and results:
+
+- `build\windows-vs2022-debug-jolt\Debug\EngineCoreTests.exe`: failed as expected before tuning; `TestJoltVehicleRuntimeReachesServiceCheckpointWithinRouteBudget` reported that the Jolt route did not reach the checkpoint within 240 frames.
+- `python tools\vehicle_runtime_qa.py`: failed after the first torque/clutch-only tune; Jolt still reached the checkpoint in 301 frames, over the 240-frame budget.
+- Parallel same-preset command attempt `cmake --build --preset windows-vs2022-debug-jolt --target EngineCoreTests` while another Jolt build was running: failed with MSBuild PDB/tlog file-lock errors. This was a command scheduling mistake, not a source failure.
+- `python tools\vehicle_runtime_qa.py`: failed after the first faster physical profile because reverse control became too aggressive; the `reverseMovesBackward` control check failed while the route reached in 213 frames.
+- `cmake --build --preset windows-vs2022-debug-jolt --target EngineCoreTests`: passed after sequential rebuild.
+- `build\windows-vs2022-debug-jolt\Debug\EngineCoreTests.exe`: passed.
+- `python tests\test_vehicle_runtime_qa.py`: passed, 5 tests.
+- `python tools\vehicle_runtime_qa.py`: passed; backend=`jolt`, samples=5, controlChecks=4, routeChecks=2, maxPositionDelta=1.75, recommendation=`promote`.
+- Route evidence from the passing report: deterministic reached the checkpoint in 139 frames; Jolt reached it in 213 frames; both stayed in bounds.
+- `scripts\verify.ps1`: passed; doctor passed, default configure/build passed, default CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke loaded the Ferry Office scene.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed; Jolt opt-in CTest passed 15/15.
+- `python tools\physics_parity_qa.py`: passed; backend=`jolt`, floor=4, raycast=4, overlap=4.
+- `python tools\character_contact_qa.py`: passed; backend=`jolt`, probes=7.
+- `python tools\vehicle_physics_qa.py`: passed; backend=`jolt`, samples=5, recommendation=`promote`.
+- `python tools\vehicle_runtime_qa.py`: passed after full Jolt rebuild; backend=`jolt`, samples=5, controlChecks=4, routeChecks=2, maxPositionDelta=1.75, recommendation=`promote`.
+- `python tools\playthrough_qa.py`: passed; phase=`complete`, events=10.
+- `rg -n "Jolt|JPH::|<Jolt/|JPH/" src\game`: returned no matches; no Jolt/vendor type leakage into game code.
+- `git diff --check`: passed with expected CRLF normalization warnings only.
+
+Provisional decision:
+
+- Keep deterministic vehicle gameplay as the default.
+- Keep Jolt live runtime as an opt-in candidate with stronger evidence: it now passes controls QA and reaches the authored service-run checkpoint inside the 240-frame route budget.
+- Do not promote Jolt to default yet; the next decision needs fuller input-scripted live-loop evidence for enter, drive, exit, and service-run confirmation.
+
+Remaining limitations:
+
+- The route proxy is still a straight scripted drive, not a full keyboard/mouse runtime replay, obstacle-avoidance path, camera comfort check, or human feel substitute.
+- The Jolt runtime remains a private opt-in vehicle adapter; player collision, traversal, service-gate behavior, dynamic objects, traffic, damage, audio, and production vehicle tuning remain unchanged.
+
+Next direction:
+
+- Build input-scripted runtime QA for the Ferry Office service vehicle loop, using the straight route proxy as supporting evidence rather than the only vehicle proof.
+
 ## Changes Made for v0.1
 
 - Added CMake project files: `CMakeLists.txt`, `CMakePresets.json`.

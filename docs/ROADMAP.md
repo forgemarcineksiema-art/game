@@ -549,6 +549,14 @@ Status: implemented as a validation hardening pass. `tools\vehicle_runtime_qa.py
 
 Status: implemented as an automated proxy for the deferred manual deterministic-vs-Jolt route comparison. The Jolt-enabled report now includes 5 paired samples, 4 controls checks, and 2 route checks. Deterministic reaches the service-run checkpoint in 139 frames; Jolt reaches it in 301 frames. Both stay in bounds, so Jolt remains a viable opt-in candidate, but deterministic stays default until Jolt route pace is tuned.
 
+## v0.47 - Jolt Route Pace Tuning
+
+- Tune only the opt-in Jolt vehicle runtime so the authored Ferry Office service-run route closes the v0.46 pace gap without changing deterministic default gameplay.
+- Enforce a 240-frame service-run checkpoint budget in C++ route QA and the Python `tools\vehicle_runtime_qa.py` wrapper.
+- Keep tap/coast, brake, reverse, reverse coast, bounds, and no-vendor-leak checks green.
+
+Status: implemented as an opt-in Jolt vehicle runtime tuning pass. Deterministic still reaches the checkpoint in 139 frames; Jolt now reaches it in 213 frames under the 240-frame automated budget, keeps all controls checks green, stays in bounds, and remains behind the explicit Jolt runtime path.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. The next vehicle decision should tune or score the opt-in Jolt route pace against the v0.46 automated route evidence: deterministic reaches the service-run checkpoint in 139 frames, while Jolt reaches it in 301 frames. Keep deterministic default until Jolt either closes that pace gap or a fuller runtime replay proves the slower pace is intentional and readable. Avoid Job #2 until the first job is automatically validated, comfortable by evidence, and no longer blocked by core movement/vehicle confidence.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. The next vehicle decision should build a fuller input-scripted live-loop replay for the Ferry Office service job, especially enter-drive-checkpoint-exit-confirm behavior with deterministic and opt-in Jolt paths. Keep deterministic default until the Jolt path proves live-loop readability beyond the straight route proxy. Avoid Job #2 until the first job is automatically validated through the real update loop, not only scene/job helpers.

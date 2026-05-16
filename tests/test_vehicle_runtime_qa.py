@@ -254,6 +254,63 @@ class VehicleRuntimeQaTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "route checks"):
                 vehicle_runtime_qa.load_and_validate_report(report_path)
 
+    def test_report_validation_rejects_slow_jolt_route_check(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            report_path = pathlib.Path(temp) / "vehicle-runtime-comparison.json"
+            samples = [{"name": "accelerate", "passed": True, "wheelContactCount": 4, "outOfBounds": False}]
+            control_checks = [
+                {"name": "tapThrottleCoast", "passed": True, "frameIndex": 91, "speed": 0.08, "distance": 0.4},
+                {"name": "brakeStopsForwardMotion", "passed": True, "frameIndex": 75, "speed": 0.02, "distance": 0.0},
+                {"name": "reverseMovesBackward", "passed": True, "frameIndex": 135, "speed": -0.45, "distance": 0.6},
+                {"name": "reverseCoastSettles", "passed": True, "frameIndex": 225, "speed": -0.05, "distance": 0.4},
+            ]
+            report_path.write_text(
+                json.dumps(
+                    {
+                        "schema": vehicle_runtime_qa.SCHEMA,
+                        "scenario": vehicle_runtime_qa.SCENARIO,
+                        "passed": True,
+                        "vehicle": {"id": "service-yard-vehicle"},
+                        "deterministic": {"backend": "deterministic", "samples": samples},
+                        "adapter": {"backend": "jolt", "samples": samples},
+                        "routeChecks": [
+                            {
+                                "backend": "deterministic",
+                                "passed": True,
+                                "checkpointReached": True,
+                                "framesToCheckpoint": 139,
+                                "minDistanceToCheckpoint": 1.7,
+                                "finalPosition": [17.6, 0.0, -1.8],
+                                "finalYawDegrees": 88.0,
+                                "hitBounds": False,
+                            },
+                            {
+                                "backend": "jolt",
+                                "passed": True,
+                                "checkpointReached": True,
+                                "framesToCheckpoint": 301,
+                                "minDistanceToCheckpoint": 1.8,
+                                "finalPosition": [17.6, 1.1, -1.8],
+                                "finalYawDegrees": 88.0,
+                                "hitBounds": False,
+                            },
+                        ],
+                        "controlChecks": control_checks,
+                        "comparison": {
+                            "maxPositionDelta": 2.95,
+                            "maxYawDeltaDegrees": 25.0,
+                            "maxSpeedDelta": 2.8,
+                            "recommendation": "promote",
+                        },
+                        "error": "",
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(ValueError, "route frame budget"):
+                vehicle_runtime_qa.load_and_validate_report(report_path)
+
 
 if __name__ == "__main__":
     unittest.main()

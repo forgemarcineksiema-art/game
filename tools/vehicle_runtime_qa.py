@@ -17,6 +17,7 @@ SCHEMA = "v0.36-ferry-office-vehicle-runtime-comparison"
 MAX_POSITION_DELTA = 4.0
 MAX_YAW_DELTA_DEGREES = 130.0
 MAX_SPEED_DELTA = 5.0
+MAX_JOLT_ROUTE_FRAMES = 240
 REQUIRED_CONTROL_CHECKS = {
     "tapThrottleCoast",
     "brakeStopsForwardMotion",
@@ -91,6 +92,8 @@ def _require_route_checks(report: dict[str, Any]) -> list[dict[str, Any]]:
             raise ValueError(f"Vehicle runtime route check hit authored bounds: {check}")
         if int(check.get("framesToCheckpoint", -1)) <= 0:
             raise ValueError(f"Vehicle runtime route check is missing checkpoint timing: {check}")
+        if check.get("backend") == "jolt" and int(check.get("framesToCheckpoint", 9999)) > MAX_JOLT_ROUTE_FRAMES:
+            raise ValueError(f"Vehicle runtime route check exceeded Jolt route frame budget: {check}")
         if "minDistanceToCheckpoint" not in check or "finalPosition" not in check or "finalYawDegrees" not in check:
             raise ValueError(f"Vehicle runtime route check is missing telemetry: {check}")
 

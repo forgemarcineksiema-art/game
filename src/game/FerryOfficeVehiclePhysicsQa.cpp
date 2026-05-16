@@ -23,7 +23,7 @@ constexpr std::string_view ServiceRunConfirmMarkerId = "service-run-confirm-mark
 constexpr float RuntimePositionDeltaLimit = 4.0f;
 constexpr float RuntimeYawDeltaLimitDegrees = 130.0f;
 constexpr float RuntimeSpeedDeltaLimit = 5.0f;
-constexpr int RouteCheckMaxFrames = 480;
+constexpr int RouteCheckMaxFrames = 240;
 constexpr float RouteCheckThrottle = 0.72f;
 
 nlohmann::json Vec3Json(engine::Vec3 value)

@@ -3722,6 +3722,54 @@ void TestJoltVehicleRuntimeReportsReverseAsNegativeSpeed()
         "Reverse input should report negative longitudinal speed so live controls keep reversing instead of turning S into brake forever.");
 }
 
+void TestJoltVehicleRuntimeReachesServiceCheckpointWithinRouteBudget()
+{
+    if (!engine::physics::IsJoltPhysicsAvailable()) {
+        return;
+    }
+
+    engine::physics::VehicleRuntimeConfig config;
+    config.vehicleId = "service-yard-vehicle";
+    config.spawnPosition = {6.2f, 0.0f, -2.2f};
+    config.spawnYawRadians = engine::Radians(88.0f);
+    config.halfExtents = {0.58f, 0.53f, 0.92f};
+    config.boundsMin = {3.35f, -5.05f};
+    config.boundsMax = {19.45f, 0.95f};
+
+    std::unique_ptr<engine::physics::IVehicleRuntimeAdapter> adapter =
+        engine::physics::CreateVehicleRuntimeAdapter(engine::physics::PhysicsBackend::Jolt);
+    Expect(adapter != nullptr,
+        "TestJoltVehicleRuntimeReachesServiceCheckpointWithinRouteBudget",
+        "Jolt runtime adapter should exist in the opt-in build.");
+    if (!adapter) {
+        return;
+    }
+
+    Expect(adapter->initialize(config),
+        "TestJoltVehicleRuntimeReachesServiceCheckpointWithinRouteBudget",
+        "Jolt runtime adapter should initialize for service-run route pace QA.");
+
+    constexpr int routeBudgetFrames = 240;
+    const engine::Vec3 checkpoint {19.35f, 0.08f, -2.2f};
+    bool reached = false;
+    bool stable = true;
+    for (int frame = 0; frame < routeBudgetFrames; ++frame) {
+        adapter->step({0.72f, 0.0f, 0.0f}, config.fixedStepSeconds);
+        const engine::physics::VehicleRuntimeState state = adapter->state();
+        const float distance = engine::Length(engine::Vec2 {state.position.x - checkpoint.x, state.position.z - checkpoint.z});
+        stable = stable && !state.outOfBounds && state.wheelContactCount >= 2;
+        if (distance <= 1.8f) {
+            reached = true;
+            break;
+        }
+    }
+    adapter->shutdown();
+
+    Expect(stable && reached,
+        "TestJoltVehicleRuntimeReachesServiceCheckpointWithinRouteBudget",
+        "Jolt route pace should reach the authored service-run checkpoint within the automated 240-frame budget.");
+}
+
 void TestFerryOfficeVehicleRuntimeComparisonQaWritesReport()
 {
     const std::filesystem::path reportPath =
@@ -4254,6 +4302,7 @@ int main()
     TestVehicleRuntimeAdapterSimpleStepsFrameByFrame();
     TestJoltVehicleRuntimeTapThrottleDoesNotCoastForever();
     TestJoltVehicleRuntimeReportsReverseAsNegativeSpeed();
+    TestJoltVehicleRuntimeReachesServiceCheckpointWithinRouteBudget();
     TestFerryOfficeVehicleRuntimeComparisonQaWritesReport();
     TestFerryOfficeVehicleRuntimeComparisonQaHandlesUnavailableBackendExplicitly();
     TestSandboxDebugTextUsesReadableSections();

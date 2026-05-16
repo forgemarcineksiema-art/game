@@ -177,6 +177,9 @@ float ManualControlDamping(float throttle, float brake)
     if (brake > 0.001f) {
         return 8.0f;
     }
+    if (throttle < -0.001f) {
+        return 1.8f;
+    }
     if (std::abs(throttle) <= 0.001f) {
         return 5.5f;
     }
@@ -224,6 +227,7 @@ public:
                 JPH::Quat::sIdentity(),
                 JPH::EMotionType::Static,
                 Layers::NonMoving);
+            floorSettings.mFriction = 0.9f;
             JPH::Body* floorBody = bodyInterface.CreateBody(floorSettings);
             if (floorBody == nullptr) {
                 m_error = "Failed to create Jolt vehicle runtime floor.";
@@ -246,9 +250,10 @@ public:
             JPH::EMotionType::Dynamic,
             Layers::Moving);
         bodySettings.mOverrideMassProperties = JPH::EOverrideMassProperties::CalculateInertia;
-        bodySettings.mMassPropertiesOverride.mMass = 950.0f;
-        bodySettings.mLinearDamping = 0.35f;
+        bodySettings.mMassPropertiesOverride.mMass = 720.0f;
+        bodySettings.mLinearDamping = 0.25f;
         bodySettings.mAngularDamping = 0.45f;
+        bodySettings.mFriction = 0.8f;
 
         JPH::Body* body = bodyInterface.CreateBody(bodySettings);
         if (body == nullptr) {
@@ -293,12 +298,18 @@ public:
         controllerSettings->mDifferentials.resize(1);
         controllerSettings->mDifferentials[0].mLeftWheel = 0;
         controllerSettings->mDifferentials[0].mRightWheel = 1;
+        controllerSettings->mDifferentials[0].mDifferentialRatio = 4.1f;
         controllerSettings->mDifferentials[0].mEngineTorqueRatio = 1.0f;
-        controllerSettings->mEngine.mMaxTorque = 520.0f;
+        controllerSettings->mEngine.mMaxTorque = 1400.0f;
         controllerSettings->mEngine.mMinRPM = 800.0f;
         controllerSettings->mEngine.mMaxRPM = 5400.0f;
         controllerSettings->mTransmission.mMode = JPH::ETransmissionMode::Auto;
-        controllerSettings->mTransmission.mClutchStrength = 8.0f;
+        controllerSettings->mTransmission.mGearRatios = {3.25f, 2.05f, 1.45f, 1.08f, 0.86f};
+        controllerSettings->mTransmission.mReverseGearRatios = {-3.1f};
+        controllerSettings->mTransmission.mSwitchTime = 0.28f;
+        controllerSettings->mTransmission.mClutchReleaseTime = 0.18f;
+        controllerSettings->mTransmission.mSwitchLatency = 0.22f;
+        controllerSettings->mTransmission.mClutchStrength = 16.0f;
         vehicleSettings.mController = controllerSettings;
 
         m_constraint = new JPH::VehicleConstraint(*body, vehicleSettings);
@@ -349,10 +360,11 @@ public:
         }
 
         const float forward = Clamp(input.throttle, -1.0f, 1.0f);
+        const float driveForward = forward < 0.0f ? forward * 0.58f : forward;
         const float right = Clamp(input.steer, -1.0f, 1.0f);
         const float brake = Clamp(input.brake, 0.0f, 1.0f);
         const float effectiveBrake = std::max(brake, std::abs(forward) <= 0.001f ? 0.28f : 0.0f);
-        m_controller->SetDriverInput(forward, right, effectiveBrake, 0.0f);
+        m_controller->SetDriverInput(driveForward, right, effectiveBrake, 0.0f);
         if (std::abs(forward) > 0.001f || std::abs(right) > 0.001f || brake > 0.001f) {
             m_physicsSystem->GetBodyInterface().ActivateBody(m_bodyId);
         }

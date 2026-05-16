@@ -20,6 +20,7 @@ Recent history forms a clear arc:
 - v0.32: deterministic Ferry Office playthrough QA.
 - v0.33: Jolt static scene-query parity QA.
 - v0.34: Jolt character/contact probe QA.
+- v0.45-v0.47: Jolt vehicle runtime controls, service-run route proxy, and route-pace tuning.
 
 ## Architecture Map
 
@@ -366,13 +367,13 @@ Validation:
 
 ## Recommendation
 
-Best next move: tune or further replay-test the opt-in Jolt vehicle route pace against deterministic evidence.
+Best next move: build fuller input-scripted runtime QA for the Ferry Office service vehicle loop.
 
-Reason: v0.35 proved Jolt vehicle feasibility, v0.36 proved a frame-stepped runtime adapter comparison, v0.37 exposed that adapter through `--vehicle-runtime jolt`, v0.45 hardened tap/brake/reverse/coast checks, and v0.46 added automated service-run route checks. The route proxy shows deterministic reaches the checkpoint in 139 frames while Jolt reaches it in 301 frames. That supports keeping deterministic as default and tuning or replay-testing Jolt before default promotion.
+Reason: v0.35 proved Jolt vehicle feasibility, v0.36 proved a frame-stepped runtime adapter comparison, v0.37 exposed that adapter through `--vehicle-runtime jolt`, v0.45 hardened tap/brake/reverse/coast checks, v0.46 added automated service-run route checks, and v0.47 tuned Jolt route pace under a 240-frame budget. The straight route proxy now shows deterministic reaches the checkpoint in 139 frames and Jolt reaches it in 213 frames. That is enough for continued opt-in testing, but not enough for default promotion without real update-loop evidence.
 
-Second-best: fuller input-scripted runtime QA that exercises enter, drive, exit, and service-run confirmation through the live loop before adding Job #2.
+Second-best: a narrow presentation/readability pass only if the runtime replay exposes objective, prompt, or camera ambiguity.
 
-Do not start Job #2, map expansion, renderer polish, or more authored props while the first service vehicle path still has a clear route-pace confidence gap.
+Do not start Job #2, map expansion, renderer polish, or more authored props while the first service vehicle path still lacks input-scripted live-loop confidence.
 
 Ready next-goal prompt:
 
@@ -388,21 +389,21 @@ Repository rules:
 - Commit and push only if validation passes and there are no unrelated user changes.
 
 Goal:
-Tune or score the opt-in Jolt vehicle route pace for the Ferry Office service vehicle.
+Build input-scripted runtime QA for the Ferry Office service vehicle loop.
 
 Why now:
-The Jolt vehicle path now has feasibility, runtime-comparison, live opt-in switch, controls, and service-run route completion evidence. It reaches the checkpoint in the automated route proxy, but takes 301 frames versus deterministic's 139 frames.
+The Jolt vehicle path now has feasibility, runtime-comparison, live opt-in switch, controls, and service-run route completion evidence. After v0.47 it reaches the checkpoint in 213 frames under the 240-frame budget, but the project still lacks automated evidence for the real enter, drive, exit, and confirm loop.
 
 Scope:
-- Use the existing routeChecks in `tools\vehicle_runtime_qa.py` as the primary evidence.
-- Tune only the opt-in Jolt runtime or its route-control proxy if evidence shows the script is unfair.
+- Add or extend a scripted runtime QA path that drives the actual update loop far enough to enter the service vehicle, reach the service-run checkpoint, exit safely, and confirm the job beat.
+- Compare deterministic default behavior and opt-in Jolt where practical, using the existing routeChecks as supporting evidence.
 - Keep deterministic vehicle gameplay as the default.
-- Record whether Jolt should remain opt-in, get another tuning pass, or be considered for a fuller live-loop replay.
+- Record whether Jolt should remain opt-in, get another tuning pass, or be considered for broader live-loop testing.
 
 Non-goals:
 - No new job content.
 - No traffic, NPCs, damage, garage, economy, save/load, or Job #2.
-- No default vehicle replacement unless automated route/control evidence clearly supports it and validation remains clean.
+- No default vehicle replacement unless automated route/control/live-loop evidence clearly supports it and validation remains clean.
 - No extra deterministic vehicle polish unless it blocks a fair comparison.
 - No Jolt vendor types leaking into game-facing APIs.
 
