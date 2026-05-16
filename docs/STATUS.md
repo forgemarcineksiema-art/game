@@ -2,6 +2,73 @@
 
 Last updated: 2026-05-16
 
+## v0.97 Vehicle Camera Follow Tightening (2026-05-16)
+
+Selected milestone:
+
+- Make the Jolt/preferred live-driving path more readable by tightening vehicle camera yaw follow and turning the v0.96 camera-lag evidence into stricter QA.
+
+Candidate milestone triage:
+
+- Jolt live-driving camera tightening: impact high for moment-to-moment driving readability; risk low/medium because it touches shared vehicle camera settings and QA thresholds; validation path = default C++ tests, Jolt runtime QA, Jolt playthrough QA, Jolt CTest, `scripts\verify.ps1`.
+- Jolt route-pace tuning: impact high, risk medium/high. A first torque/mass/gear attempt did not improve route time and worsened reverse wheel contact, so it was rejected instead of shipped.
+- Low Dock readability pass: impact medium and lower risk, but less urgent than the vehicle readability issue raised by v0.96 evidence.
+
+Why selected:
+
+- v0.96 proved Jolt should stay the target runtime, but it also showed Jolt camera yaw lag at 16.00 degrees versus 6.13 deterministic. Tightening camera follow is a safe player-facing improvement that benefits both deterministic and Jolt vehicle modes without pretending the route-pace gap is solved.
+
+What changed:
+
+- Increased live vehicle camera target-yaw follow strength from `3.5` to `5.0`.
+- Matched the vehicle runtime QA camera proxy to the same follow strength.
+- Tightened driving-feel camera-lag thresholds from broad placeholders to `20` degrees for deterministic and `15` degrees for Jolt/runtime adapter.
+
+Files changed:
+
+- `src\game\SandboxLayer.cpp`
+- `src\game\FerryOfficeVehiclePhysicsQa.cpp`
+- `docs\STATUS.md`
+- `docs\ROADMAP.md`
+- `docs\PHYSICS_DECISION.md`
+- `docs\TECH_DEBT.md`
+- `docs\CONTEXT_MAP.md`
+
+Validation so far:
+
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests EngineApp`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt --target EngineApp EngineCoreTests`: passed.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `python tools\vehicle_runtime_qa.py --exe build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --report-json build\physics\v097-jolt-camera-follow-report.json`: passed; backend=jolt, drivingFeelChecks=12, recommendation=promote.
+- `python tools\playthrough_qa.py --exe build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --vehicle-runtime jolt --report-json build\playthroughs\ferry-office-service-call-v097-jolt-report.json`: passed; phase=complete, events=21, vehicleRuntime=jolt, framesToCheckpoint=212.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed 15/15.
+
+Automated evidence generated:
+
+- `build\physics\v097-jolt-camera-follow-report.json`.
+- Deterministic `cameraYawLag` improved from 6.13 to 4.52 degrees and now must stay under 20 degrees.
+- Jolt `cameraYawLag` improved from 16.00 to 12.24 degrees and now must stay under 15 degrees.
+- Obstacle replay camera delta improved from 4.81 to 3.56 degrees deterministic and from 5.25 to 4.05 degrees Jolt.
+- Jolt still reaches the checkpoint in 212 frames; this milestone did not solve route pace.
+
+Provisional decision:
+
+- Keep the tighter vehicle camera follow for live play and QA. Do not ship torque/mass route tuning unless it improves route time without degrading reverse contact or obstacle stability.
+
+Remaining limitations:
+
+- Route pace remains the next Jolt vehicle-feel gap: Jolt still reaches the checkpoint in 212 frames versus 139 deterministic.
+- This is camera-readability tuning, not full vehicle promotion, road-edge collision, suspension tuning, cargo, damage, traffic, or audio.
+
+Final validation:
+
+- `scripts\verify.ps1`: passed; doctor/configure/build succeeded, 11/11 default CTest tests passed, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke completed.
+- `git diff --check`: passed with expected CRLF normalization warnings only.
+
+Next direction:
+
+- If validation stays green, the next vehicle milestone should use controlled A/B route-pace probes before changing Jolt mass/torque/gearing. If route pace is not tackled immediately, choose a playable content/world-consequence step rather than another pure QA step.
+
 ## v0.96 Jolt-First Driving Feel Evidence (2026-05-16)
 
 Selected milestone:

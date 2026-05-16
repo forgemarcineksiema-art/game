@@ -453,7 +453,7 @@ ThirdPersonCamera BuildObstacleCamera(float yawRadians)
     settings.distance = 6.75f;
     settings.heightOffset = 1.95f;
     settings.smoothing = 9.0f;
-    settings.targetYawFollowStrength = 3.5f;
+    settings.targetYawFollowStrength = 5.0f;
     camera.setSettings(settings);
     camera.setYawRadians(yawRadians);
     return camera;
@@ -786,10 +786,10 @@ std::vector<FerryOfficeVehicleRuntimeComparisonResult::DrivingFeelCheck> RunDete
         checks.push_back(MakeDrivingFeelCheck(
             "deterministic",
             "cameraYawLag",
-            maxCameraYawDelta <= 55.0f && !hitBounds,
+            maxCameraYawDelta <= 20.0f && !hitBounds,
             maxCameraYawDelta,
             0.0f,
-            55.0f,
+            20.0f,
             "degrees",
             "Vehicle camera target should stay close enough to the turning vehicle for readable control."));
     }
@@ -961,10 +961,10 @@ std::vector<FerryOfficeVehicleRuntimeComparisonResult::DrivingFeelCheck> RunAdap
         checks.push_back(MakeDrivingFeelCheck(
             backendName,
             "cameraYawLag",
-            maxCameraYawDelta <= 65.0f && stable && !hitBounds,
+            maxCameraYawDelta <= 15.0f && stable && !hitBounds,
             maxCameraYawDelta,
             0.0f,
-            65.0f,
+            15.0f,
             "degrees",
             "Camera target should stay readable while following the runtime adapter vehicle candidate."));
     }

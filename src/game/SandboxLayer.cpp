@@ -320,7 +320,7 @@ void SandboxLayer::onAttach()
     m_vehicleCameraSettings.distance = 6.75f;
     m_vehicleCameraSettings.heightOffset = 1.95f;
     m_vehicleCameraSettings.smoothing = 9.0f;
-    m_vehicleCameraSettings.targetYawFollowStrength = 3.5f;
+    m_vehicleCameraSettings.targetYawFollowStrength = 5.0f;
     setupVehiclePhysicsWorld();
     setupVehicleRuntimeAdapter();
     loadStaticMeshAssets();

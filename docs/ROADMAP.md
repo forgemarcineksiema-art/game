@@ -977,10 +977,19 @@ Status: implemented and validated. Closing the Storm Pump Ticket now opens the s
 
 Status: implemented and validated. `vehicle_runtime_qa.py` now requires 12 driving-feel checks across deterministic and Jolt; Jolt reaches the checkpoint in 212 frames versus 139 deterministic, passes steering/brake/reverse/camera checks, keeps obstacle overlap frames at zero, keeps recommendation `promote`, and `scripts\verify.ps1` passes.
 
+## v0.97 - Vehicle Camera Follow Tightening
+
+- Tighten live vehicle camera yaw-follow for the service vehicle.
+- Match the runtime QA camera proxy to live vehicle camera settings.
+- Turn v0.96's broad camera-lag check into stricter evidence for deterministic and Jolt.
+- Preserve route behavior and avoid shipping ineffective torque/mass tuning.
+
+Status: implemented and validated. Vehicle camera follow strength is now `5.0`; deterministic camera yaw lag is 4.52 degrees, Jolt camera yaw lag is 12.24 degrees, Jolt playthrough QA still completes in 212 frames, Jolt CTest passes 15/15, and `scripts\verify.ps1` passes.
+
 ## Recommended Next Goal
 
 Read `docs\GAMEPLAY_REVIEW.md` before choosing the next milestone. Use `python tools\capture_visual_smoke.py`, `python tools\capture_visual_smoke.py --scenario relay-to-service-log --report-json build\captures\capture_visual_smoke_midchain_report.json`, `python tools\capture_visual_smoke.py --scenario low-dock-drain-access --report-json build\captures\capture_visual_smoke_low_dock_report.json`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play.
 
-After v0.96, the preferred next vehicle goal is a bounded `Jolt Live-Driving Promotion/Tuning Pass`: use the Jolt-first report as evidence, tune or promote Jolt where it still lags deterministic route pace/camera feel, and keep deterministic as the fallback/control rather than the main polish target.
+After v0.97, the remaining vehicle gap is route pace, not camera follow. The next vehicle goal should use controlled A/B route-pace probes before changing Jolt mass, torque, or gearing; otherwise choose a playable content/world-consequence step instead of another pure QA step.
 
 If the new Low Dock Drain access consequence exposes route/objective readability issues during capture review, choose a bounded readability pass instead, but do not add another administrative endpoint by default.

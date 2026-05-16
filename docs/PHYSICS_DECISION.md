@@ -217,6 +217,7 @@ Validated so far:
 - v0.65 adds collision-backed obstacle replay telemetry to the runtime comparison: deterministic and Jolt obstacle replays both clear a QA-only overlap probe with zero overlap frames, while preserving the existing controls, route, camera, and progress checks.
 - v0.68 refreshes the Jolt preset after the storm pump scene-content expansion and reruns the evidence stack: Jolt CTest passes 15/15; `tools\physics_parity_qa.py`, `tools\character_contact_qa.py`, `tools\vehicle_physics_qa.py`, and `tools\vehicle_runtime_qa.py` all pass; runtime comparison still reports `maxPositionDelta=1.49`, route completion in 212 frames for Jolt versus 139 for deterministic, zero obstacle overlap frames, and recommendation `promote`.
 - v0.96 adds explicit driving-feel checks to the runtime comparison. The report now requires deterministic and Jolt results for route time, route lateral deviation, brake stop distance, reverse distance, steering yaw response, and camera yaw lag before the wrapper accepts a Jolt promote recommendation.
+- v0.97 tightens the shared vehicle camera follow and the runtime-QA camera-lag thresholds: deterministic yaw lag is now 4.52 degrees and Jolt yaw lag is 12.24 degrees, while Jolt still completes the service-run checkpoint in 212 frames.
 - `rg -n "Jolt|JPH::|<Jolt/|JPH/" src\game` returns no matches; Jolt types remain private to engine-owned physics code.
 
 Important limits:
@@ -300,6 +301,33 @@ Decision:
 Revisit when:
 
 - Jolt route pace, camera follow, road-edge collision, dynamic object contact, player collision migration, damage/traffic, or a broader authored driving route is added.
+
+## v0.97 Vehicle Camera Follow Tightening
+
+v0.97 improves live vehicle camera readability without changing Jolt route pace or shipping speculative torque/gearing changes.
+
+Validated:
+
+- Default `EngineCoreTests.exe` passed.
+- Jolt preset build passed.
+- Jolt CTest passed 15/15.
+- `tools\vehicle_runtime_qa.py` passed with backend `jolt`: drivingFeelChecks=12, recommendation=`promote`.
+- Jolt playthrough QA completed the 21-event service-call chain with `framesToCheckpoint=212`.
+
+Evidence:
+
+- Vehicle camera target-yaw follow strength increased from `3.5` to `5.0` in live play and QA proxy.
+- Deterministic `cameraYawLag` improved from 6.13 to 4.52 degrees.
+- Jolt `cameraYawLag` improved from 16.00 to 12.24 degrees.
+- The QA ceiling is now 20 degrees deterministic and 15 degrees Jolt/runtime adapter.
+
+Decision:
+
+- Keep the tighter vehicle camera follow. Do not treat route pace as solved; tune Jolt pace only with a controlled route probe that preserves reverse contact and obstacle stability.
+
+Revisit when:
+
+- Route-pace tuning changes Jolt mass, engine torque, gearing, throttle shaping, or drivetrain behavior.
 
 Important implementation choices:
 
