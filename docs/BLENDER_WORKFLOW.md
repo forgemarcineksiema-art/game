@@ -55,6 +55,14 @@ blender --background --python tools\blender\create_tidebreak_harbor_backdrop.py
 
 It creates `assets/models/blender_harbor_backdrop.gltf`, a low project-original distant shoreline/harbor silhouette used as backdrop composition around the existing water-edge bands. It is not terrain, collision, streaming world, or a map boundary.
 
+v0.44 adds a fifth controlled Blender script:
+
+```powershell
+blender --background --python tools\blender\create_tidebreak_harbor_water_surface.py
+```
+
+It creates `assets/models/blender_harbor_water_surface.gltf`, a low project-original harbor water surface with shallow static ripple ridges. It is not simulated water, fluid physics, collision, transparency, or a shader/material system.
+
 ## Check Blender
 
 Run:
@@ -110,6 +118,12 @@ The current backdrop command is:
 
 ```powershell
 blender --background --python tools\blender\create_tidebreak_harbor_backdrop.py
+```
+
+The current water-surface command is:
+
+```powershell
+blender --background --python tools\blender\create_tidebreak_harbor_water_surface.py
 ```
 
 Blender 5.1.1 does not expose direct `GLTF_EMBEDDED` export in this environment. The script uses `GLTF_SEPARATE`, embeds the generated `.bin` buffer into the `.gltf`, and deletes the temporary `.bin`. Keep that post-export step small and deterministic; move to cgltf/tinygltf if broader Blender output is needed.

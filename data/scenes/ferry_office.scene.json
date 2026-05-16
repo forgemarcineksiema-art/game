@@ -464,6 +464,17 @@
       "provenance": "Authored procedurally by tools/blender/create_tidebreak_harbor_backdrop.py and exported headlessly by Blender 5.1.1 during v0.43.",
       "authoringBoundsHalfExtents": [0.56, 0.40, 0.10],
       "notes": "Low distant-shore and harbor-utility silhouette mesh for visual backdrop composition. It is untextured presentation geometry only, not terrain, collision, or a map boundary."
+    },
+    {
+      "id": "blender-harbor-water-surface-mesh",
+      "path": "assets/models/blender_harbor_water_surface.gltf",
+      "format": "gltf",
+      "units": "meter",
+      "upAxis": "Y",
+      "license": "project-original",
+      "provenance": "Authored procedurally by tools/blender/create_tidebreak_harbor_water_surface.py and exported headlessly by Blender 5.1.1 during v0.44.",
+      "authoringBoundsHalfExtents": [0.50, 0.02, 0.50],
+      "notes": "Low harbor water surface mesh with subtle static ripple ridges. It is untextured presentation geometry only, not simulated water, collision, fluid physics, or terrain."
     }
   ],
   "meshInstances": [
@@ -859,6 +870,36 @@
       "scale": [5.8, 1.0, 1.2],
       "colorKey": "misty-island-ground",
       "notes": "v0.43 right dock-edge harbor silhouette paired with the existing water band; visual only."
+    },
+    {
+      "id": "mesh-water-left-surface",
+      "assetId": "blender-harbor-water-surface-mesh",
+      "position": [-4.85, -0.125, -0.7],
+      "yawDegrees": 0.0,
+      "scale": [0.70, 1.0, 6.50],
+      "colorKey": "deep-harbor-blue",
+      "replacesVisualPlaceholderId": "water-left-band",
+      "notes": "v0.44 static harbor water surface over the left dock-start water band; visual only, no water simulation or collision."
+    },
+    {
+      "id": "mesh-water-right-surface",
+      "assetId": "blender-harbor-water-surface-mesh",
+      "position": [4.85, -0.125, -0.7],
+      "yawDegrees": 0.0,
+      "scale": [0.70, 1.0, 6.50],
+      "colorKey": "deep-harbor-blue",
+      "replacesVisualPlaceholderId": "water-right-band",
+      "notes": "v0.44 static harbor water surface over the right dock-start water band; visual only, no water simulation or collision."
+    },
+    {
+      "id": "mesh-dock-road-water-surface",
+      "assetId": "blender-harbor-water-surface-mesh",
+      "position": [13.7, -0.125, -4.15],
+      "yawDegrees": 90.0,
+      "scale": [0.90, 1.0, 11.40],
+      "colorKey": "deep-harbor-blue",
+      "replacesVisualPlaceholderId": "dock-road-water-edge",
+      "notes": "v0.44 static harbor water surface along the dock-road shoreline cue; visual only, no water simulation or collision."
     }
   ],
   "interactables": [

@@ -295,6 +295,30 @@ class SceneToolTests(unittest.TestCase):
             self.assertEqual("misty-island-ground", mesh_instances[instance_id]["colorKey"])
             self.assertIn("v0.43", mesh_instances[instance_id]["notes"])
 
+    def test_v044_harbor_water_surface_asset_and_instances_exist(self) -> None:
+        ids = scene_data.collect_ids(self.scene)
+        mesh_assets = {asset["id"]: asset for asset in self.scene["meshAssets"]}
+        mesh_instances = {instance["id"]: instance for instance in self.scene["meshInstances"]}
+
+        self.assertIn("blender-harbor-water-surface-mesh", mesh_assets)
+        self.assertEqual(
+            "assets/models/blender_harbor_water_surface.gltf",
+            mesh_assets["blender-harbor-water-surface-mesh"]["path"],
+        )
+        self.assertIn("Blender 5.1.1", mesh_assets["blender-harbor-water-surface-mesh"]["provenance"])
+
+        expected_instances = {
+            "mesh-water-left-surface": "water-left-band",
+            "mesh-water-right-surface": "water-right-band",
+            "mesh-dock-road-water-surface": "dock-road-water-edge",
+        }
+        for instance_id, placeholder_id in expected_instances.items():
+            self.assertIn(instance_id, ids)
+            self.assertEqual("blender-harbor-water-surface-mesh", mesh_instances[instance_id]["assetId"])
+            self.assertEqual("deep-harbor-blue", mesh_instances[instance_id]["colorKey"])
+            self.assertEqual(placeholder_id, mesh_instances[instance_id]["replacesVisualPlaceholderId"])
+            self.assertIn("v0.44", mesh_instances[instance_id]["notes"])
+
     def test_duplicate_mesh_replacement_links_are_reported(self) -> None:
         scene = copy.deepcopy(self.scene)
         first = copy.deepcopy(scene["meshInstances"][0])

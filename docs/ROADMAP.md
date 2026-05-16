@@ -519,6 +519,15 @@ Status: implemented as a focused visual surface pass. The Ferry Office scene now
 
 Status: implemented as a background composition pass. The Ferry Office scene now references 10 mesh assets and 43 mesh instances, including `blender_harbor_backdrop.gltf` used three times around the existing water-edge cues while keeping all gameplay and collision unchanged.
 
+## v0.44 - Harbor Water Surface Geometry Pass
+
+- Add one controlled Blender-authored harbor water surface mesh with shallow static ripple geometry.
+- Use it over the existing dock-start and dock-road water-edge placeholder bands so the shoreline reads as authored water instead of flat debug strips.
+- Preserve current gameplay, collision, vehicle bounds, road surfaces, harbor backdrop, scene validation, asset validation, DX11 visual smoke, and playthrough QA.
+- Avoid water simulation, transparency, fluid physics, shader/material systems, terrain, map expansion, or collision import.
+
+Status: implemented as a focused water presentation pass. The Ferry Office scene now references 11 mesh assets and 46 mesh instances, including `blender_harbor_water_surface.gltf` used three times over the existing water-edge cues while keeping all gameplay and collision unchanged.
+
 ## Recommended Next Goal
 
 Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. The next vehicle decision should be a short human comparison pass between normal deterministic driving and `--vehicle-runtime jolt`, then either defer Jolt vehicle promotion with concrete feel issues or promote one narrow follow-up to improve the switched path. Avoid Job #2 until the first job is automatically validated, comfortable by hand, and no longer blocked by core movement/vehicle confidence.

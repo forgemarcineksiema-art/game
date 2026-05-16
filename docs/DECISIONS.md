@@ -605,3 +605,11 @@ Decision: Add one small Blender-authored harbor backdrop mesh and a `misty-islan
 Reason: After v0.42, the road and service-yard surfaces read better, but the scene still had hard water-edge bands opening into empty space. A low distant-shore silhouette gives the Ferry Office a stronger Veyra Reach context while staying inside authored scene data and the current tiny static-mesh subset.
 
 Dependency impact: no new dependency, asset format, renderer feature, texture path, material system, collision source, terrain system, or gameplay system was added. Blender remains an optional authoring tool, and the generated `.gltf` is committed as the runtime asset.
+
+## v0.44 Static Harbor Water Mesh Before Water Rendering
+
+Decision: Add one Blender-authored static harbor water surface mesh for the existing water-edge bands before attempting transparent water, animated waves, fluid simulation, shoreline terrain, or shader material work.
+
+Reason: The water cues were still flat debug strips even after the road and distant backdrop improved. A small surface mesh with subtle ridges lets current overcast wet shading catch the harbor water without introducing renderer features the engine cannot honestly support yet.
+
+Dependency impact: no new dependency, asset format, renderer feature, texture path, material system, collision source, water simulation, transparency path, or gameplay system was added. Blender remains an optional authoring tool, and the generated `.gltf` is committed as the runtime asset.

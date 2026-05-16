@@ -147,3 +147,7 @@ v0.42 replaces the biggest flat service-yard and dock-road visual slabs with a s
 ## v0.43 Harbor Backdrop Observation
 
 v0.43 adds a low distant-shore/harbor silhouette around the dock-road and dock-start water bands. This is the first small step from a self-contained debug yard toward a place that hints at Veyra Reach beyond the immediate route. The backdrop should stay quiet and misty: it supports the island setting without becoming a fake open-world promise, terrain system, collision boundary, city block, or final skyline.
+
+## v0.44 Harbor Water Surface Observation
+
+v0.44 gives the three existing water-edge bands a shallow static ripple surface mesh. This keeps the water treatment honest for the current renderer: more authored and less strip-like, but still flat-tinted, untextured, nontransparent placeholder geometry. It should support the damp coastal mood without pretending Tidebreak has water simulation, reflective shaders, shoreline terrain, foam, or weather yet.
