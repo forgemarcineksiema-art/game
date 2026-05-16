@@ -109,6 +109,78 @@ Next direction:
 
 - With comparable deterministic and opt-in Jolt first-job evidence in place, the next milestone can safely choose either a tiny Job #2 beat backed by playthrough QA or a narrower Jolt steering/obstacle replay before any default vehicle promotion.
 
+## v0.50 Dock Road Relay Follow-up Beat (2026-05-16)
+
+Selected milestone:
+
+- Add one compact authored follow-up beat after the Ferry Office Service Call: reset the Dock Road Relay at the service-run endpoint.
+
+Candidate triage:
+
+- Tiny Job #2 relay reset beat: high playable/content impact, medium-low risk, validates through scene tools, C++ tests, and playthrough QA.
+- Deterministic-vs-Jolt steering/obstacle replay: high technical leverage, medium risk, but would make two consecutive vehicle/QA milestones after v0.49.
+- Objective wording/readability pass: low risk, lower impact than adding a remembered world-state consequence.
+
+Why selected:
+
+- v0.49 cleared enough first-job vehicle evidence for safe small content growth.
+- A tiny relay reset beat adds a visible authored follow-up interaction and a remembered local consequence without starting a mission framework, NPCs, economy, or map expansion.
+
+Definition of Done:
+
+- Scene data contains a stable Dock Road Relay interactable, route marker, and objective marker near the service-run endpoint.
+- World state records a new `dockRoadRelayReset` flag only after the first service call is complete.
+- Playthrough QA completes the relay beat and rejects stale reports missing the flag/step.
+- Docs and validation evidence are updated.
+
+Implementation notes:
+
+- Added `Dock Road Relay` names/prompts/messages/position/radius to `FerryOfficeData`.
+- Added `WorldFlag::DockRoadRelayReset` and exposed it in debug summaries and playthrough flags.
+- Added a scene-authored `dock-road-relay` interactable, `route-service-confirm-to-relay`, and `dock-road-relay-marker` at the service-run endpoint.
+- `PrototypeScene::applyInteractionResult(...)` now gates the relay reset behind `FerryOfficeJobComplete`, keeping it a small follow-up beat rather than a parallel shortcut.
+- `PrototypeScene::currentJobObjectiveText()` points the player to the relay after the service call, then acknowledges the follow-up completion.
+- `FerryOfficePlaythroughQa` now triggers `dockRoadRelayReset` after service-run confirmation, and `tools\playthrough_qa.py` requires the flag and step.
+
+Commands and results:
+
+- `python tests\test_scene_tools.py`: failed as expected before scene implementation because `dock-road-relay`, `dock-road-relay-marker`, and `route-service-confirm-to-relay` were missing.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: failed as expected before implementation because `FerryOffice::Names::DockRoadRelay` and `WorldFlag::DockRoadRelayReset` did not exist.
+- `python tests\test_scene_tools.py`: passed after implementation, 40 tests.
+- `python tests\test_playthrough_qa.py`: passed, 5 tests.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: passed.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `python tools\validate_scene.py`: passed.
+- `cmake --build --preset windows-vs2022-debug --target EngineApp`: passed.
+- `python tools\scene_report.py`: passed; scene now reports 7 interactables, 7 route markers, and 6 objective markers.
+- `python tools\scale_audit.py`: passed; no suspicious scale issues.
+- `python tools\playthrough_qa.py`: passed; phase=`complete`, events=11, vehicleRuntime=`deterministic`, framesToCheckpoint=139, final event `dockRoadRelayReset=true`.
+- `python tools\validate_assets.py`: passed; 11 model files.
+- `python tools\mesh_report.py`: passed; 11 mesh assets, 46 mesh instances, 11 model files.
+- `scripts\verify.ps1`: passed; doctor passed with known PATH warnings, configure/build succeeded, CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null smoke loaded the Ferry Office scene.
+- `cmake --build --preset windows-vs2022-debug-jolt; ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed; Jolt opt-in CTest passed 15/15.
+- `rg -n "Jolt|JPH::|<Jolt/|JPH/" src\game`: returned no matches; no Jolt/vendor type leakage into game code.
+- `python tools\playthrough_qa.py --exe build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --vehicle-runtime jolt --report-json build\playthroughs\ferry-office-service-call-jolt-report.json`: passed; phase=`complete`, events=11, vehicleRuntime=`jolt`, framesToCheckpoint=213.
+- `python tools\vehicle_runtime_qa.py`: passed; backend=`jolt`, samples=5, controlChecks=4, routeChecks=2, maxPositionDelta=1.75, recommendation=`promote`.
+
+Automated evidence generated:
+
+- `build\playthroughs\ferry-office-service-call-report.json` now ends with event `#11 dockRoadRelayReset=true from Dock Road Relay`.
+
+Provisional decision:
+
+- Treat this as a second micro-beat, not a generic Job #2 framework. The current explicit scene-owned C++ behavior is still the right fit until more job types prove a stable data shape.
+- Keep deterministic vehicle gameplay as the default; the relay beat does not change vehicle physics or Jolt promotion.
+
+Remaining limitations:
+
+- The relay reset is currently a debug/prompt/world-state consequence; it does not yet animate lights, change materials, unlock a new road, persist to save data, or alter traffic/NPC behavior.
+- The relay uses existing endpoint prop language rather than a new mesh asset.
+
+Next direction:
+
+- Either make the relay reset visibly change the endpoint presentation state, or add a second compact follow-up step that reuses the relay flag as a world-state prerequisite.
+
 ## Commands Run
 
 ```powershell

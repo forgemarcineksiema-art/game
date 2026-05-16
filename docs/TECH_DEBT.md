@@ -19,7 +19,7 @@ This file lists known foundation issues during the current playable-build phase.
 
 ### Acceptable For Now
 
-1. No broad Job #2 yet. v0.49 makes a small second beat less risky, but new content should stay compact and extend playthrough QA instead of bypassing it.
+1. No broad Job #2 framework yet. v0.50 adds one small Dock Road Relay follow-up beat, but new content should stay compact and extend playthrough QA instead of bypassing it.
 2. Deterministic vehicle movement remains the default live fallback after v0.49. Jolt VehicleConstraint now has feasibility, runtime-comparison, opt-in live-switch, controls-focused runtime QA, 240-frame service-run route evidence, and the same first-job enter-drive-exit-confirm playthrough evidence, but it still should not replace default gameplay until narrower steering, obstacle, camera, and collision replay evidence exists.
 3. `WorldState` and `FerryOfficeJob` remain explicit in-memory prototype systems, not a save/load or mission framework.
 4. The tiny custom `.gltf` subset remains acceptable while assets are simple embedded-buffer static props.
@@ -123,7 +123,7 @@ This file lists known foundation issues during the current playable-build phase.
 - There is no mission graph, quest scripting, dialogue integration, global event bus, or persistence layer.
 - Slice completion is a scene helper, not a mission/objective scripting system.
 - Job completion is also a scene helper. It proves one driver/fixer loop, but should not be generalized until more job types prove the real data shape.
-- The v0.49 playthrough QA runner now exercises the service-vehicle enter, drive, dock-road checkpoint, exit, and confirm beat through deterministic and opt-in Jolt runtime behavior. It still does not simulate full keyboard/mouse navigation, camera movement, obstacle avoidance, or human-readable feel.
+- The v0.50 playthrough QA runner now exercises the service-vehicle enter, drive, dock-road checkpoint, exit, confirm, and Dock Road Relay reset beat through deterministic runtime behavior; v0.49 also covers the service vehicle segment through opt-in Jolt. It still does not simulate full keyboard/mouse navigation, camera movement, obstacle avoidance, or human-readable feel.
 
 ## Traversal
 

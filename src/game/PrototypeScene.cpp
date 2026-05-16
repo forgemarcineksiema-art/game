@@ -75,6 +75,15 @@ void PrototypeScene::buildFromFerryOfficeData()
     serviceRunMarker.message = FerryOffice::Messages::ServiceRunMarker;
     m_interactions.addInteractable(serviceRunMarker);
 
+    Interactable dockRoadRelay;
+    dockRoadRelay.name = FerryOffice::Names::DockRoadRelay;
+    dockRoadRelay.prompt = FerryOffice::Prompts::DockRoadRelay;
+    dockRoadRelay.position = FerryOffice::Positions::DockRoadRelay;
+    dockRoadRelay.radius = FerryOffice::Radii::DockRoadRelay;
+    dockRoadRelay.type = InteractableType::Info;
+    dockRoadRelay.message = FerryOffice::Messages::DockRoadRelay;
+    m_interactions.addInteractable(dockRoadRelay);
+
     TraversalAffordance serviceVault;
     serviceVault.name = FerryOffice::Names::ServiceVault;
     serviceVault.prompt = FerryOffice::Prompts::ServiceVault;
@@ -224,6 +233,10 @@ bool PrototypeScene::applyInteractionResult(const InteractionResult& result)
         changed |= recordExitReached();
     } else if (result.name == FerryOffice::Names::ServiceRunMarker) {
         changed |= m_job.confirmServiceRun(m_worldState, result.name);
+    } else if (result.name == FerryOffice::Names::DockRoadRelay) {
+        if (m_job.isComplete(m_worldState)) {
+            changed |= m_worldState.setFlag(WorldFlag::DockRoadRelayReset, true, result.name);
+        }
     }
 
     return changed;
@@ -301,6 +314,12 @@ std::string PrototypeScene::currentObjectiveText() const
 
 std::string PrototypeScene::currentJobObjectiveText() const
 {
+    if (m_job.isComplete(m_worldState) && !m_worldState.isFlagSet(WorldFlag::DockRoadRelayReset)) {
+        return "Reset the Dock Road Relay beside the service-run marker.";
+    }
+    if (m_worldState.isFlagSet(WorldFlag::DockRoadRelayReset)) {
+        return "Dock Road Relay reset. Ferry Office follow-up complete.";
+    }
     return m_job.currentObjectiveText(m_worldState);
 }
 

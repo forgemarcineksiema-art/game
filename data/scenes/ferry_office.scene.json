@@ -967,6 +967,17 @@
       "oneShot": false,
       "message": "Service run marker checked. Complete the service route and vehicle checkpoint before final confirmation.",
       "worldFlagsSetWhenReady": ["serviceRunConfirmed", "ferryOfficeJobComplete"]
+    },
+    {
+      "id": "dock-road-relay",
+      "name": "Dock Road Relay",
+      "prompt": "Reset Dock Road Relay",
+      "type": "info",
+      "position": [18.05, 0.65, 0.25],
+      "radius": 1.4,
+      "oneShot": false,
+      "message": "Dock road relay reset: service-yard lights are back on.",
+      "worldFlagsSetWhenReady": ["dockRoadRelayReset"]
     }
   ],
   "traversalAffordances": [
@@ -1042,6 +1053,12 @@
       "from": "dock-road-marker",
       "to": "service-run-confirm-marker",
       "points": [[19.35, 0.08, -2.2], [18.6, 0.08, -0.55]]
+    },
+    {
+      "id": "route-service-confirm-to-relay",
+      "from": "service-run-confirm-marker",
+      "to": "dock-road-relay",
+      "points": [[18.6, 0.08, -0.55], [18.05, 0.08, 0.25]]
     }
   ],
   "objectiveMarkers": [
@@ -1069,6 +1086,11 @@
       "id": "service-run-checkpoint-marker",
       "label": "Vehicle service-run checkpoint",
       "position": [19.35, 0.08, -2.2]
+    },
+    {
+      "id": "dock-road-relay-marker",
+      "label": "Dock road relay reset",
+      "position": [18.05, 0.08, 0.25]
     }
   ],
   "authoringNotes": [

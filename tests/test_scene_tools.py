@@ -72,7 +72,7 @@ class SceneToolTests(unittest.TestCase):
         self.assertEqual("ferry-office", summary.scene_id)
         self.assertEqual(18, summary.material_count)
         self.assertGreaterEqual(summary.collider_count, 9)
-        self.assertEqual(6, summary.interactable_count)
+        self.assertEqual(7, summary.interactable_count)
         self.assertEqual(1, summary.traversal_count)
         self.assertEqual(1, summary.vehicle_count)
 
@@ -366,6 +366,9 @@ class SceneToolTests(unittest.TestCase):
             "service-run-confirm-marker",
             "service-run-checkpoint-marker",
             "route-dock-road-to-service-confirm",
+            "dock-road-relay",
+            "dock-road-relay-marker",
+            "route-service-confirm-to-relay",
         ]:
             self.assertIn(required_id, ids)
 

@@ -88,6 +88,12 @@ v0.17 keeps the Ferry Office Service Call as the only playable job and adds a fi
 
 The slice still uses debug text and markers, not a real UI framework. Job #2 remains intentionally deferred until the existing first job has stronger presentation, road identity, and prop style.
 
+## v0.50 Dock Road Relay Follow-up
+
+The first compact follow-up beat is `Dock Road Relay`.
+
+After the Ferry Office Service Call completes at the service-run marker, the player can reset a small relay at the dock-road endpoint. This records `dockRoadRelayReset=true` and gives the service-run area a remembered consequence without adding a mission framework, NPC AI, economy, save/load, new vehicle physics, or broader map expansion.
+
 ## Systems Explicitly Deferred
 
 - Additional vehicles beyond the one v0.16 service-yard vehicle beat.

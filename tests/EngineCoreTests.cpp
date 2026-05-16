@@ -1104,7 +1104,7 @@ void TestSceneLoaderLoadsDefaultFerryOfficeScene()
     Expect(result.scene.meshInstances.size() >= 15,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored mesh instances, including the v0.18 prop style kit.");
-    Expect(result.scene.interactables.size() == 6,
+    Expect(result.scene.interactables.size() == 7,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored interactables.");
     Expect(result.scene.traversalAffordances.size() == 1,
@@ -1176,6 +1176,35 @@ void TestSceneLoaderLoadsFirstJobMarkers()
     Expect(route != nullptr && route->points.size() >= 2,
         "TestSceneLoaderLoadsFirstJobMarkers",
         "Scene data should include a route from the dock road to the service confirmation marker.");
+}
+
+void TestSceneLoaderLoadsDockRoadRelayBeat()
+{
+    const SceneLoadResult result = LoadSceneDefinition(DefaultScenePathForTests());
+    const SceneInteractableDefinition* relay = FindSceneInteractable(result.scene, "dock-road-relay");
+    const SceneRouteMarkerDefinition* route = FindRouteMarker(result.scene, "route-service-confirm-to-relay");
+    const SceneObjectiveMarkerDefinition* marker = FindObjectiveMarker(result.scene, "dock-road-relay-marker");
+
+    Expect(result.ok(),
+        "TestSceneLoaderLoadsDockRoadRelayBeat",
+        "Default scene should load before querying the dock-road relay beat.");
+    Expect(relay != nullptr,
+        "TestSceneLoaderLoadsDockRoadRelayBeat",
+        "Scene data should include the second service beat relay interactable.");
+    if (relay != nullptr) {
+        Expect(relay->name == FerryOffice::Names::DockRoadRelay,
+            "TestSceneLoaderLoadsDockRoadRelayBeat",
+            "Dock-road relay should preserve its stable gameplay name.");
+        Expect(relay->radius >= 1.3f,
+            "TestSceneLoaderLoadsDockRoadRelayBeat",
+            "Dock-road relay should have a usable focus radius.");
+    }
+    Expect(route != nullptr,
+        "TestSceneLoaderLoadsDockRoadRelayBeat",
+        "Scene data should route from the service-run marker to the relay.");
+    Expect(marker != nullptr,
+        "TestSceneLoaderLoadsDockRoadRelayBeat",
+        "Scene data should expose an objective marker for the relay.");
 }
 
 void TestSceneLoaderReportsMissingSceneFile()
@@ -3328,6 +3357,38 @@ void TestFerryOfficeLoopCanCompleteThroughSceneSystems()
         "The Ferry Office slice should complete after the exit marker records the ready state.");
 }
 
+void TestDockRoadRelayRequiresCompletedServiceCall()
+{
+    PrototypeScene scene;
+
+    const bool earlyRelay = scene.applyInteractionResult(
+        MakeSceneInteraction(std::string(FerryOffice::Names::DockRoadRelay), InteractableType::Info));
+    Expect(!earlyRelay && !scene.worldState().isFlagSet(WorldFlag::DockRoadRelayReset),
+        "TestDockRoadRelayRequiresCompletedServiceCall",
+        "The second relay beat should not reset before the first service call is complete.");
+
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::FerryManifest), InteractableType::Pickup));
+    scene.recordServiceRouteUsed();
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::MaintenanceBox), InteractableType::Info));
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::WallButton), InteractableType::Info));
+    scene.recordServiceVehicleUsed();
+    scene.updateJobVehicleCheckpoint(FerryOffice::Positions::ServiceRunCheckpoint, true);
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::ServiceRunMarker), InteractableType::Info));
+
+    const bool relayReset = scene.applyInteractionResult(
+        MakeSceneInteraction(std::string(FerryOffice::Names::DockRoadRelay), InteractableType::Info));
+    Expect(relayReset,
+        "TestDockRoadRelayRequiresCompletedServiceCall",
+        "The second relay beat should reset after the first service call is complete.");
+    Expect(scene.worldState().isFlagSet(WorldFlag::DockRoadRelayReset),
+        "TestDockRoadRelayRequiresCompletedServiceCall",
+        "Dock-road relay reset should be remembered in world state.");
+    Expect(scene.currentJobObjectiveText().find("relay") != std::string::npos
+            || scene.currentJobObjectiveText().find("Relay") != std::string::npos,
+        "TestDockRoadRelayRequiresCompletedServiceCall",
+        "The objective should acknowledge the relay follow-up beat.");
+}
+
 void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
 {
     const std::filesystem::path reportPath =
@@ -3369,6 +3430,9 @@ void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
     Expect(state.isFlagSet(WorldFlag::ServiceRunConfirmed) && state.isFlagSet(WorldFlag::FerryOfficeJobComplete),
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should confirm and complete the service run.");
+    Expect(state.isFlagSet(WorldFlag::DockRoadRelayReset),
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "QA playthrough should complete the second dock-road relay beat.");
     Expect(result.steps.size() >= 7,
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should report each major authored phase.");
@@ -3389,6 +3453,9 @@ void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
     Expect(hasStep("serviceVehicleRuntimeExit"),
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should exit the service vehicle through runtime input.");
+    Expect(hasStep("dockRoadRelayReset"),
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "QA playthrough should record the second dock-road relay beat.");
     Expect(std::filesystem::exists(reportPath),
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should write a report artifact.");
@@ -3405,6 +3472,9 @@ void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
         Expect(report["final"]["flags"]["ferryOfficeJobComplete"] == true,
             "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
             "QA playthrough report should expose final job completion.");
+        Expect(report["final"]["flags"]["dockRoadRelayReset"] == true,
+            "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+            "QA playthrough report should expose the dock-road relay reset.");
         Expect(report["vehicleRuntime"]["backend"] == "deterministic",
             "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
             "QA playthrough report should expose the vehicle runtime backend.");
@@ -4237,6 +4307,7 @@ int main()
     TestSceneLoaderLoadsDefaultFerryOfficeScene();
     TestSceneLoaderLoadsV018VisualIdentityPropKit();
     TestSceneLoaderLoadsFirstJobMarkers();
+    TestSceneLoaderLoadsDockRoadRelayBeat();
     TestSceneLoaderReportsMissingSceneFile();
     TestSceneLoaderLoadsVehicleBoundsAndRoadMarkers();
     TestPrototypeWorldBuildsFerryOfficeCollidersFromSceneData();
@@ -4313,6 +4384,7 @@ int main()
     TestFerryOfficeSliceStartsIncomplete();
     TestFerryOfficeObjectiveTextGuidesRouteSteps();
     TestFerryOfficeCompletionRequiresRememberedLoop();
+    TestDockRoadRelayRequiresCompletedServiceCall();
     TestFerryOfficeExitMarkerRequiresReadyState();
     TestWallButtonOpenLatchesServiceGateColliderState();
     TestFerryOfficeServiceVaultFocusesFromAccessibleSide();

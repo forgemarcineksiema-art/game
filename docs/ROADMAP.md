@@ -577,6 +577,16 @@ Status: implemented as a stronger first-job behavioral QA pass. The default play
 
 Status: implemented as comparable first-job vehicle evidence for the opt-in Jolt path. The deterministic playthrough still reaches the dock-road checkpoint in 139 frames; the Jolt playthrough reaches it in 213 frames, exits at a clear position, confirms the service run, and reports no fallback or bounds hit. Jolt remains opt-in rather than default.
 
+## v0.50 - Dock Road Relay Follow-up Beat
+
+- Add one small authored follow-up interaction after the Ferry Office Service Call.
+- Place a Dock Road Relay marker at the service-run endpoint using existing scene/prop language.
+- Record a remembered `dockRoadRelayReset` world-state flag only after the first service call is complete.
+- Extend playthrough QA so the first service job now ends with the relay reset consequence.
+- Avoid a generic mission framework, new vehicle physics, new assets, save/load, NPCs, economy, or map expansion.
+
+Status: implemented as a second compact service beat. The scene now has 7 interactables, 7 route markers, and 6 objective markers; the playthrough reaches the service-run checkpoint in 139 frames and completes with 11 world events, ending in `dockRoadRelayReset=true`.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. With v0.49 comparable first-job vehicle evidence in place, the next useful milestone is either a very small Job #2 beat backed by playthrough QA or a narrower deterministic-vs-Jolt steering/obstacle replay before any default vehicle-runtime promotion.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. With v0.50 proving one follow-up content beat, the next useful milestone is either a small visible relay-reset presentation consequence or a narrower deterministic-vs-Jolt steering/obstacle replay before any default vehicle-runtime promotion.
