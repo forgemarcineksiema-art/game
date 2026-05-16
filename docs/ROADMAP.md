@@ -425,6 +425,17 @@ Status: implemented as an opt-in static scene-query parity bridge. The Jolt-enab
 
 Status: implemented as an opt-in read-only character/contact probe. The Jolt-enabled path validates 7 player-proxy contact cases, writes `build\physics\ferry-office-character-contact-report.json`, and keeps live gameplay on the existing prototype collision path.
 
+## v0.35 - Jolt Vehicle Feasibility / Promotion Spike
+
+- Keep default gameplay unchanged.
+- Build a QA-only service-vehicle probe that answers whether Jolt wheeled vehicles are ready for a runtime-adapter goal.
+- Keep Jolt vendor types private to engine physics code.
+- Use the authored Ferry Office `service-yard-vehicle`, a compact throttle/steer/brake/reverse script, and a JSON promote/defer report.
+- Preserve the deterministic live vehicle controller as fallback evidence.
+- Avoid replacing live gameplay, adding traffic, Job #2, damage, save/load, broad vehicle tuning, or mission expansion.
+
+Status: implemented as an opt-in vehicle feasibility probe. The Jolt-enabled path validates 5 compact service-yard samples with 4 wheel contacts per sample, writes `build\physics\ferry-office-vehicle-feasibility-report.json`, recommends `promote`, and keeps live gameplay on the deterministic vehicle path.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, and opt-in `python tools\character_contact_qa.py` as bounded evidence before asking for manual play. The next small goal should probably target one remaining gap: a narrow live player collision migration probe, a contained Jolt vehicle feasibility spike, an input-scripted runtime pass, or resize/text-quality renderer polish if capture reliability blocks validation. Avoid Job #2 until the first job is both automatically validated and comfortable by hand.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, and opt-in `python tools\vehicle_physics_qa.py` as bounded evidence before asking for manual play. The next goal should be a narrow Jolt vehicle runtime adapter behind an explicit switch, compared against the current deterministic vehicle path. Avoid Job #2 until the first job is automatically validated, comfortable by hand, and no longer blocked by core movement/vehicle confidence.

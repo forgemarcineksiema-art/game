@@ -5288,3 +5288,120 @@ Validation results:
 Commit/push status:
 
 - A commit is created for this direction correction; final hash and push status are reported in the final response.
+
+## v0.35 Jolt Vehicle Feasibility / Promotion Spike (2026-05-16)
+
+Goal:
+
+- Build an opt-in Jolt vehicle feasibility / promotion spike for the Ferry Office service vehicle.
+- Compare a Jolt-backed vehicle probe against the current deterministic vehicle baseline.
+- Document promote/defer/replace evidence, validate, commit, push, and prepare the next goal direction.
+
+Scope:
+
+- Added QA-only vehicle feasibility coverage for the authored `service-yard-vehicle`.
+- Kept live Ferry Office gameplay on the deterministic `VehicleController`.
+- Kept all Jolt-specific types and headers private to `src\engine\physics`.
+- Avoided Job #2, map expansion, traffic, damage, save/load, live gameplay replacement, and broad vehicle-feel polish.
+
+TDD and implementation notes:
+
+- Added failing C++ tests for the new CLI scenario, JSON report, simple baseline, and default-build unavailable-backend behavior before implementation.
+- Added failing Python report-validator tests before adding `tools\vehicle_physics_qa.py`.
+- Added `src\engine\physics\VehicleProbe.h/.cpp` as the vendor-free feasibility boundary.
+- Added `src\engine\physics\JoltVehicleProbe.cpp` as the opt-in Jolt VehicleConstraint implementation.
+- Added `src\game\FerryOfficeVehiclePhysicsQa.h/.cpp` to load the Ferry Office scene vehicle and write report schema `v0.35-ferry-office-vehicle-feasibility`.
+- Added `--qa-physics-parity ferry-office-vehicle-feasibility`.
+- Added `VehiclePhysicsQaTests` to default CTest and `FerryOfficeVehiclePhysicsQaSmoke` to opt-in Jolt CTest.
+
+Focused results:
+
+- Default simple baseline stayed within authored service-yard bounds and produced the expected report shape.
+- Default build reports the opt-in backend unavailable for the Jolt vehicle scenario instead of pretending it ran.
+- Jolt-enabled vehicle QA passed with backend `jolt`, 5 samples, 250 input frames, 4 wheel contacts per sample, in-bounds motion, and recommendation `promote`.
+- `rg -n "Jolt|JPH::|<Jolt/|JPH/" src\game` returned no matches.
+
+Commands run so far:
+
+```powershell
+git status --short --branch
+git log --oneline -5
+Get-Content AGENTS.md
+Get-Content docs\AI_WORKFLOW.md
+Get-Content docs\CONTEXT_MAP.md
+Get-Content docs\PHYSICS_DECISION.md
+Get-Content docs\TECH_DEBT.md
+Get-Content docs\ROADMAP.md
+python tests\test_vehicle_physics_qa.py
+cmake --build --preset windows-vs2022-debug --target EngineCoreTests
+build\windows-vs2022-debug\Debug\EngineCoreTests.exe
+cmake --preset windows-vs2022-debug-jolt
+cmake --build --preset windows-vs2022-debug-jolt --target EngineApp
+python tools\vehicle_physics_qa.py
+rg -n "Jolt|JPH::|<Jolt/|JPH/" src\game
+```
+
+Validation status:
+
+- `python tests\test_vehicle_physics_qa.py`: passed, 2 tests.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: passed.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt --target EngineApp`: passed.
+- `python tools\vehicle_physics_qa.py`: passed.
+- `scripts\verify.ps1`: passed; CTest passed 10/10 including `VehiclePhysicsQaTests`, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke loaded the Ferry Office scene and all 8 static mesh assets.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 13/13 including `FerryOfficeVehiclePhysicsQaSmoke`.
+- `python tools\physics_parity_qa.py`: passed; backend `jolt`, floor=4, raycast=4, overlap=4.
+- `python tools\character_contact_qa.py`: passed; backend `jolt`, probes=7.
+- `python tools\vehicle_physics_qa.py`: passed after final verify; backend `jolt`, samples=5, recommendation=`promote`.
+- `git diff --check`: passed; only expected Windows CRLF warnings were reported.
+
+Remaining limitations:
+
+- The Jolt vehicle path is QA-only and does not run the normal gameplay update loop or open a window.
+- The live service vehicle still uses deterministic game-layer movement.
+- The temporary Jolt probe uses a compact floor/body setup and scripted input; it does not prove full road collision, camera integration, suspension tuning, damage, traffic, or production vehicle behavior.
+
+Next-goal prompt:
+
+```text
+Create a Codex goal for Tidebreak.
+
+Repository rules:
+- Follow AGENTS.md and docs/AI_WORKFLOW.md.
+- Use docs/CONTEXT_MAP.md for orientation.
+- Update docs/STATUS.md.
+- Run scripts/verify.ps1 before claiming success.
+- Commit and push only if validation passes and there are no unrelated user changes.
+
+Goal:
+Promote the v0.35 Jolt vehicle feasibility evidence into a narrow runtime adapter spike behind an explicit switch.
+
+Why now:
+The opt-in Jolt VehicleConstraint feasibility probe passed for the authored Ferry Office service vehicle and recommended promote. The next useful decision is not more deterministic vehicle polish; it is whether a small Jolt-backed runtime adapter can coexist with and outperform the current deterministic vehicle path in bounded evidence.
+
+Scope:
+- Add a switched/opt-in live-runtime Jolt vehicle adapter path without removing the deterministic fallback.
+- Keep Jolt vendor types private to `src/engine/physics`.
+- Compare deterministic and Jolt vehicle paths on the same Ferry Office service-yard/dock-road script.
+- Extend automated QA/reporting to cover runtime update-loop behavior, not only standalone feasibility.
+- Preserve existing playthrough, capture, static physics parity, character contact, and default validation.
+
+Non-goals:
+- No Job #2.
+- No traffic, NPCs, damage, garage, economy, save/load, mission scripting, or broad map expansion.
+- No deterministic vehicle feel polish unless needed as comparison instrumentation.
+- No Jolt type leakage into `src/game`.
+- No removal of the deterministic vehicle fallback in this goal.
+
+Validation:
+- scripts/verify.ps1
+- cmake --preset windows-vs2022-debug-jolt
+- cmake --build --preset windows-vs2022-debug-jolt
+- ctest --preset windows-vs2022-debug-jolt --output-on-failure
+- python tools\physics_parity_qa.py
+- python tools\character_contact_qa.py
+- python tools\vehicle_physics_qa.py
+- a new runtime vehicle adapter QA wrapper/report
+```

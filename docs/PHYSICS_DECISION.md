@@ -8,7 +8,7 @@ Choose Jolt Physics as Tidebreak's default production physics candidate unless a
 
 Keep PhysX as the backup candidate. Do not choose Bullet for the main engine path unless a future, narrow test gives a strong reason.
 
-This decision does not mean every current gameplay collision path should be rewritten immediately. v0.9.2 adds a vendor-safe `src/engine/physics` boundary and an opt-in Jolt backend spike. v0.33 adds a QA-only Ferry Office static-collision parity bridge, but the existing Ferry Office gameplay still uses the tested prototype collision path until a later goal migrates one behavior at a time.
+This decision does not mean every current gameplay collision path should be rewritten immediately. v0.9.2 adds a vendor-safe `src/engine/physics` boundary and an opt-in Jolt backend spike. v0.33 adds a QA-only Ferry Office static-collision parity bridge, v0.34 adds a player-proxy contact probe, and v0.35 adds a wheeled vehicle feasibility probe. Existing Ferry Office gameplay still uses the tested prototype paths until a later goal migrates one behavior at a time.
 
 ## Why Decide Now
 
@@ -170,6 +170,30 @@ Important limits:
 - It is not a live `PlayerController` migration, Jolt character controller, sweep/capsule implementation, dynamic contact solver, or vehicle physics step.
 - The service-gate opened case is represented by omitting the gate body from that probe's mirrored static world; this proves the nonblocking expectation, not a general runtime dynamic-collider system.
 
+## v0.35 Vehicle Feasibility Probe Result
+
+Added:
+
+- `src/engine/physics/VehicleProbe.h/.cpp`, an engine-owned vehicle feasibility API that returns vendor-free samples and promote/defer evidence.
+- `src/engine/physics/JoltVehicleProbe.cpp`, an opt-in Jolt-only runner using a `VehicleConstraint` with four wheeled-vehicle settings, kept private to `src/engine/physics`.
+- `src/game/FerryOfficeVehiclePhysicsQa.h/.cpp`, a QA-only Ferry Office service-vehicle report runner with schema `v0.35-ferry-office-vehicle-feasibility`.
+- `--qa-physics-parity ferry-office-vehicle-feasibility`.
+- `tools/vehicle_physics_qa.py`, which runs the Jolt-enabled `EngineApp.exe`, requires backend `jolt`, validates the authored `service-yard-vehicle`, checks samples, wheel contacts, bounds, and the promote/defer recommendation.
+
+Validated so far:
+
+- Default dependency-free build still passes and reports the opt-in backend unavailable for the vehicle scenario.
+- The dependency-free simple baseline can run the same compact input script and produce a bounded report for C++ regression coverage.
+- Opt-in Jolt configure/build passes.
+- The Jolt vehicle feasibility report records 5 samples, 250 input frames, 4 wheel contacts per sample, in-bounds motion on the Ferry Office service-yard vehicle, and recommendation `promote`.
+- `rg -n "Jolt|JPH::|<Jolt/|JPH/" src\game` returns no matches; Jolt types remain private to engine-owned physics code.
+
+Important limits:
+
+- This is a QA-only feasibility probe. It does not replace live `VehicleController` gameplay yet.
+- The Jolt runner proves a compact scripted service-yard maneuver with a temporary floor/body setup, not a complete road, damage, traffic, suspension tuning, camera, audio, or gameplay vehicle system.
+- The next physics/vehicle goal should build a narrow runtime adapter that can be compared against the deterministic vehicle path behind a switch, then decide whether to promote it into live play.
+
 Important implementation choices:
 
 - Jolt is opt-in for now. `scripts/verify.ps1` keeps using the default dependency-free preset.
@@ -196,4 +220,4 @@ v0.10 used the physics foundation without promoting full Jolt vehicle constraint
 - Tests scan `src/game` to prevent accidental `Jolt` / `JPH::*` vendor references.
 - The opt-in `windows-vs2022-debug-jolt` preset remains the proof that the Jolt backend still configures, builds, and tests through the engine API.
 
-Next recommendation: if the project wants vehicle feel "only with Jolt", the next step can be either a narrow live player collision migration spike using the proven probe cases, or a contained Jolt vehicle feasibility spike that does not replace the live Service Call until its behavior is proven.
+Next recommendation: promote the v0.35 evidence into a narrow Jolt vehicle runtime adapter spike behind an explicit switch. Keep live deterministic vehicle gameplay as the fallback until the adapter passes automated and human-feel evidence.

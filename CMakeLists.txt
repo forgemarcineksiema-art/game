@@ -36,6 +36,7 @@ add_library(EngineCore STATIC
     src/engine/core/Logger.cpp
     src/engine/platform/Window.cpp
     src/engine/physics/PhysicsWorld.cpp
+    src/engine/physics/VehicleProbe.cpp
     src/engine/renderer/BmpWriter.cpp
     src/engine/renderer/DebugBitmapText.cpp
     src/engine/renderer/NullRenderer.cpp
@@ -102,6 +103,7 @@ if(ENGINE_ENABLE_JOLT_PHYSICS)
     target_sources(EngineCore
         PRIVATE
             src/engine/physics/JoltPhysicsWorld.cpp
+            src/engine/physics/JoltVehicleProbe.cpp
     )
     target_link_libraries(EngineCore PRIVATE Jolt::Jolt)
 endif()
@@ -123,6 +125,7 @@ add_library(GamePrototype STATIC
     src/game/FerryOfficeJob.cpp
     src/game/FerryOfficePhysicsParity.cpp
     src/game/FerryOfficePlaythroughQa.cpp
+    src/game/FerryOfficeVehiclePhysicsQa.cpp
     src/game/InteractionSystem.cpp
     src/game/PlayerController.cpp
     src/game/SandboxLayer.cpp
@@ -211,6 +214,11 @@ if(ENGINE_BUILD_TESTS)
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_character_contact_qa.py
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
+    add_test(
+        NAME VehiclePhysicsQaTests
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_vehicle_physics_qa.py
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    )
     if(ENGINE_ENABLE_JOLT_PHYSICS)
         add_test(
             NAME FerryOfficeJoltPhysicsParitySmoke
@@ -228,6 +236,15 @@ if(ENGINE_BUILD_TESTS)
                 ${CMAKE_CURRENT_SOURCE_DIR}/tools/character_contact_qa.py
                 --exe $<TARGET_FILE:EngineApp>
                 --report-json ${CMAKE_CURRENT_BINARY_DIR}/physics/ferry-office-character-contact-report.json
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        )
+        add_test(
+            NAME FerryOfficeVehiclePhysicsQaSmoke
+            COMMAND
+                ${Python3_EXECUTABLE}
+                ${CMAKE_CURRENT_SOURCE_DIR}/tools/vehicle_physics_qa.py
+                --exe $<TARGET_FILE:EngineApp>
+                --report-json ${CMAKE_CURRENT_BINARY_DIR}/physics/ferry-office-vehicle-feasibility-report.json
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         )
     endif()

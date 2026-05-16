@@ -6,6 +6,7 @@
 #include "game/FerryOfficeCharacterContactQa.h"
 #include "game/FerryOfficePhysicsParity.h"
 #include "game/FerryOfficePlaythroughQa.h"
+#include "game/FerryOfficeVehiclePhysicsQa.h"
 
 #include <iostream>
 #include <memory>
@@ -39,6 +40,19 @@ int main(int argc, const char* const* argv)
     }
 
     if (parseResult.config.qaPhysicsParityRequested()) {
+        if (parseResult.config.qaPhysicsParity == "ferry-office-vehicle-feasibility") {
+            const auto result = RunFerryOfficeVehiclePhysicsQa(
+                parseResult.config.scenePath,
+                parseResult.config.qaPhysicsReportPath,
+                engine::physics::OptInPhysicsBackend());
+            if (result.passed) {
+                engine::Logger::info("QA vehicle physics passed: " + result.reportPath.string());
+                return 0;
+            }
+            engine::Logger::error("QA vehicle physics failed: " + result.error);
+            return 9;
+        }
+
         if (parseResult.config.qaPhysicsParity == "ferry-office-character-contact") {
             const auto result = RunFerryOfficeCharacterContactQa(
                 parseResult.config.scenePath,

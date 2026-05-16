@@ -18,6 +18,7 @@
 #include "game/FerryOfficeJob.h"
 #include "game/FerryOfficePhysicsParity.h"
 #include "game/FerryOfficePlaythroughQa.h"
+#include "game/FerryOfficeVehiclePhysicsQa.h"
 #include "game/PrototypeScene.h"
 #include "game/PrototypeWorld.h"
 #include "game/SandboxLayer.h"
@@ -424,6 +425,25 @@ void TestQaPhysicsParityArgumentsAcceptCharacterContactScenario()
     Expect(result.config.qaPhysicsParity == "ferry-office-character-contact",
         "TestQaPhysicsParityArgumentsAcceptCharacterContactScenario",
         "Config should preserve the requested character/contact scenario.");
+}
+
+void TestQaPhysicsParityArgumentsAcceptVehicleFeasibilityScenario()
+{
+    const char* argv[] = {
+        "EngineApp",
+        "--qa-physics-parity",
+        "ferry-office-vehicle-feasibility",
+        "--qa-physics-report",
+        "build/physics/ferry-office-vehicle-feasibility-report.json",
+    };
+    const auto result = engine::ParseArguments(5, argv);
+
+    Expect(result.errors.empty(),
+        "TestQaPhysicsParityArgumentsAcceptVehicleFeasibilityScenario",
+        "QA physics parity should accept the Ferry Office vehicle feasibility scenario.");
+    Expect(result.config.qaPhysicsParity == "ferry-office-vehicle-feasibility",
+        "TestQaPhysicsParityArgumentsAcceptVehicleFeasibilityScenario",
+        "Config should preserve the requested vehicle feasibility scenario.");
 }
 
 void TestHelpTextMentionsQaPhysicsParityFlags()
@@ -3195,6 +3215,74 @@ void TestFerryOfficeCharacterContactQaHandlesUnavailableBackendExplicitly()
         "Unavailable opt-in character contact QA should explain the build requirement.");
 }
 
+void TestFerryOfficeVehiclePhysicsQaWritesFeasibilityReport()
+{
+    const std::filesystem::path reportPath =
+        std::filesystem::temp_directory_path() / "tidebreak-v035-vehicle-feasibility-report.json";
+    std::filesystem::remove(reportPath);
+
+    const auto result = RunFerryOfficeVehiclePhysicsQa(
+        DefaultScenePathForTests(),
+        reportPath,
+        engine::physics::PhysicsBackend::Simple);
+
+    Expect(result.passed,
+        "TestFerryOfficeVehiclePhysicsQaWritesFeasibilityReport",
+        result.error.empty() ? "Vehicle physics QA should pass against the engine simple backend baseline." : result.error);
+    Expect(result.sceneId == "ferry-office",
+        "TestFerryOfficeVehiclePhysicsQaWritesFeasibilityReport",
+        "Vehicle physics QA should report the loaded Ferry Office scene.");
+    Expect(result.vehicleId == "service-yard-vehicle",
+        "TestFerryOfficeVehiclePhysicsQaWritesFeasibilityReport",
+        "Vehicle physics QA should use the authored service-yard vehicle.");
+    Expect(result.samples.size() >= 4,
+        "TestFerryOfficeVehiclePhysicsQaWritesFeasibilityReport",
+        "Vehicle physics QA should record feasibility samples across the scripted run.");
+    Expect(result.recommendation == "defer" || result.recommendation == "promote",
+        "TestFerryOfficeVehiclePhysicsQaWritesFeasibilityReport",
+        "Vehicle physics QA should make an explicit promote/defer recommendation.");
+    Expect(std::filesystem::exists(reportPath),
+        "TestFerryOfficeVehiclePhysicsQaWritesFeasibilityReport",
+        "Vehicle physics QA should write the requested JSON report.");
+
+    std::ifstream input(reportPath);
+    const nlohmann::json report = nlohmann::json::parse(input);
+    input.close();
+    Expect(report["schema"] == "v0.35-ferry-office-vehicle-feasibility",
+        "TestFerryOfficeVehiclePhysicsQaWritesFeasibilityReport",
+        "Vehicle feasibility report should use the v0.35 schema.");
+    Expect(report["scenario"] == "ferry-office-vehicle-feasibility",
+        "TestFerryOfficeVehiclePhysicsQaWritesFeasibilityReport",
+        "Vehicle feasibility report should expose the scenario.");
+    Expect(report["vehicle"]["id"] == "service-yard-vehicle",
+        "TestFerryOfficeVehiclePhysicsQaWritesFeasibilityReport",
+        "Vehicle feasibility report should include the tested vehicle id.");
+    Expect(report["samples"].size() >= 4,
+        "TestFerryOfficeVehiclePhysicsQaWritesFeasibilityReport",
+        "Vehicle feasibility report should include sampled metrics.");
+
+    std::filesystem::remove(reportPath);
+}
+
+void TestFerryOfficeVehiclePhysicsQaHandlesUnavailableBackendExplicitly()
+{
+    if (engine::physics::IsJoltPhysicsAvailable()) {
+        return;
+    }
+
+    const auto result = RunFerryOfficeVehiclePhysicsQa(
+        DefaultScenePathForTests(),
+        {},
+        engine::physics::OptInPhysicsBackend());
+
+    Expect(!result.passed,
+        "TestFerryOfficeVehiclePhysicsQaHandlesUnavailableBackendExplicitly",
+        "Default builds should not pretend opt-in vehicle physics QA ran.");
+    Expect(!result.error.empty(),
+        "TestFerryOfficeVehiclePhysicsQaHandlesUnavailableBackendExplicitly",
+        "Unavailable opt-in vehicle physics QA should explain the build requirement.");
+}
+
 void TestSandboxDebugTextUsesReadableSections()
 {
     SandboxLayer layer;
@@ -3519,6 +3607,7 @@ int main()
     TestQaPhysicsParityArgumentsSelectScenarioAndReportPath();
     TestQaPhysicsParityArgumentsRejectUnknownScenario();
     TestQaPhysicsParityArgumentsAcceptCharacterContactScenario();
+    TestQaPhysicsParityArgumentsAcceptVehicleFeasibilityScenario();
     TestHelpTextMentionsQaPhysicsParityFlags();
     TestCursorCaptureArguments();
     TestUiModeArguments();
@@ -3618,6 +3707,8 @@ int main()
     TestFerryOfficePhysicsParityHandlesUnavailableJoltExplicitly();
     TestFerryOfficeCharacterContactQaComparesPlayerProxyAndWritesReport();
     TestFerryOfficeCharacterContactQaHandlesUnavailableBackendExplicitly();
+    TestFerryOfficeVehiclePhysicsQaWritesFeasibilityReport();
+    TestFerryOfficeVehiclePhysicsQaHandlesUnavailableBackendExplicitly();
     TestSandboxDebugTextUsesReadableSections();
     TestFerryOfficeOneShotManifestDoesNotDuplicateEvents();
     TestTraversalFocusSelectsAvailableAffordance();
