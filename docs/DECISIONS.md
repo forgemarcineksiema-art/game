@@ -557,3 +557,11 @@ Decision: Add a DX11-only world-to-clip matrix shader path and depth-stencil buf
 Reason: v0.27 reduced arbitrary-looking overlap, but DX11 still flattened solid/mesh triangles to NDC with `z=0`, so a real depth buffer could not help until triangles reached the GPU in world space. v0.28 proves that the existing `DebugCamera` can drive a compact matrix constant buffer and depth test without introducing materials, textures, lighting, static GPU mesh resources, scene renderer ownership, or a broad renderer rewrite. Lines, wire boxes, grid/axes, and text intentionally stay depth-disabled/overlay-style so route, prompt, collision, and validation markers remain readable.
 
 Dependency impact: no new dependency was added. This uses only the existing Windows SDK DX11/D3DCompiler path.
+
+## v0.38 Clean Playtest Presentation And Fake Overcast Shading
+
+Decision: Keep raw route lines, wire boxes, trigger radii, and marker beacons behind F1/debug mode, and add a small game-layer face-shading pass for current scene boxes and flat mesh triangles.
+
+Reason: The current visual blocker is that normal play still looks like an editor/debug capture. A clean playtest render plus fixed overcast shading makes existing scene geometry read as volume without pretending the engine has a material, texture, lighting, terrain, or production asset system. Reusing the existing dock-road props for a storm-wet work-zone cue improves place identity without growing the loader or adding unvalidated art.
+
+Dependency impact: no new dependency or asset format was added. The v0.38 dock-road work-zone uses the existing 8 referenced `.gltf` files and raises scene mesh instances from 32 to 37.

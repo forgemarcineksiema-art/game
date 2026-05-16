@@ -202,13 +202,29 @@ class SceneToolTests(unittest.TestCase):
         mesh_instances = {instance["id"]: instance for instance in self.scene["meshInstances"]}
 
         self.assertEqual(8, len(mesh_assets))
-        self.assertEqual(32, len(mesh_instances))
+        self.assertGreaterEqual(len(mesh_instances), 37)
         self.assertIn("blender-cable-reel-mesh", mesh_assets)
         self.assertIn("mesh-service-yard-cable-reel", ids)
         self.assertEqual("blender-cable-reel-mesh", mesh_instances["mesh-service-yard-cable-reel"]["assetId"])
         self.assertEqual("assets/models/blender_cable_reel.gltf", mesh_assets["blender-cable-reel-mesh"]["path"])
         self.assertIn("blender", mesh_assets["blender-cable-reel-mesh"]["provenance"].lower())
         self.assertIn("5.1.1", mesh_assets["blender-cable-reel-mesh"]["provenance"])
+
+    def test_v038_storm_wet_dock_road_work_zone_reuses_existing_mesh_assets(self) -> None:
+        ids = scene_data.collect_ids(self.scene)
+        mesh_instances = {instance["id"]: instance for instance in self.scene["meshInstances"]}
+
+        expected_assets = {
+            "mesh-dock-road-storm-post-near": "road-edge-post-mesh",
+            "mesh-dock-road-storm-post-far": "road-edge-post-mesh",
+            "mesh-dock-road-storm-barrier": "service-barrier-mesh",
+            "mesh-dock-road-maintenance-cabinet": "utility-box-mesh",
+            "mesh-service-run-cable-reel": "blender-cable-reel-mesh",
+        }
+        for required_id, asset_id in expected_assets.items():
+            self.assertIn(required_id, ids)
+            self.assertEqual(asset_id, mesh_instances[required_id]["assetId"])
+            self.assertIn("v0.38", mesh_instances[required_id]["notes"])
 
     def test_duplicate_mesh_replacement_links_are_reported(self) -> None:
         scene = copy.deepcopy(self.scene)

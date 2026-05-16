@@ -15,6 +15,7 @@ v0.12 adds the first narrow static mesh path. v0.19 stabilizes the surrounding a
   - `BuildFlatTriangleList`.
 - `IRenderer::drawDebugFlatTriangles` submits immediate flat-colored triangle lists.
 - DX11 now renders debug solid boxes and flat mesh triangles through a real world-to-clip matrix path with a depth buffer. Lines, wire boxes, grid/axes, and debug text still use the existing debug projection / overlay path.
+- v0.38 adds a small game-layer overcast face-shading pass before submitting scene boxes and static mesh triangles. It derives shading from triangle normals and existing color keys; it is presentation shading only, not a renderer lighting/material system.
 - GDI renders projected triangle polygons as a fallback.
 - Null renderer accepts the call and counts it for smoke/test visibility.
 - `assets/models/unit_box.gltf` is a tiny original project-owned placeholder mesh.
@@ -78,7 +79,7 @@ There is still no material system, texture path, lighting, shader file pipeline,
 
 Keep wire/debug markers visible until a later overlay and asset pipeline exist.
 
-The v0.12.1, v0.18, v0.20, and v0.20.1 mesh instances are still flat-tinted composition placeholders. They improve scale/readability and prop language, but they are not final art, material assets, or collision sources.
+The v0.12.1, v0.18, v0.20, v0.20.1, v0.27, and v0.38 mesh instances are still composition placeholders. v0.38 shades their submitted faces enough to improve volume readability, but they are not final art, material assets, or collision sources.
 
 ## How To Add A Simple Mesh
 

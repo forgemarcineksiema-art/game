@@ -148,9 +148,9 @@ python tools/mesh_report.py
 - [ ] `python tools/validate_scene.py` reports `Scene validation passed.`
 - [ ] `python tools/validate_assets.py` reports `Asset validation passed.`
 - [ ] `python tools/scene_report.py` reports scene id `ferry-office`.
-- [ ] Scene report lists 9 colliders, 24 visual placeholders, 8 mesh assets, 32 mesh instances, 6 interactables, 1 traversal affordance, 1 vehicle, 6 route markers, and 5 objective markers.
+- [ ] Scene report lists 9 colliders, 24 visual placeholders, 8 mesh assets, 37 mesh instances, 6 interactables, 1 traversal affordance, 1 vehicle, 6 route markers, and 5 objective markers.
 - [ ] `python tools/scale_audit.py` reports no suspicious scale issues, or any issue is documented.
-- [ ] `python tools/mesh_report.py` reports 8 mesh assets, 32 Ferry Office/service-yard/dock-road mesh instances, and 8 referenced `.gltf` model files.
+- [ ] `python tools/mesh_report.py` reports 8 mesh assets, 37 Ferry Office/service-yard/dock-road mesh instances, and 8 referenced `.gltf` model files.
 - [ ] `data/scenes/ferry_office.scene.json` contains the service gate, manifest, maintenance box, wall button, exit marker, service vault, player start, and service-yard vehicle ids.
 - [ ] `data/scenes/ferry_office.scene.json` contains the v0.25 composition ids: `office-approach-runner`, `office-front-threshold`, `service-yard-entry-lane-cue`, and `mesh-service-run-confirm-sign`.
 - [ ] `data/scenes/ferry_office.scene.json` contains the v0.26 prop/identity ids: `mesh-manifest-counter-shelf`, `mesh-manifest-paper-stack`, `mesh-office-side-service-panel`, `mesh-dock-cleat-left`, `mesh-dock-cleat-right`, `mesh-service-yard-tool-crate`, and `mesh-service-run-review-board`.

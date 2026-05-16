@@ -43,6 +43,7 @@ This file lists known foundation issues during the current playable-build phase.
 - v0.29 adds renderer-owned 32-bit BMP capture for bounded local validation. GDI capture includes the GDI text overlay; v0.31 means DX11 capture now includes the renderer-owned bitmap text overlay as well as geometry/depth presentation.
 - v0.30 strengthens the capture harness with dimension, color-diversity, luminance, broad scene-presence, GDI/DX11 dimension parity, and JSON report checks. v0.31 adds a conservative bright text-signal heuristic without OCR or pixel-perfect golden images.
 - Debug boxes/lines/solid boxes and v0.12 flat mesh triangles are enough for prototypes but not a real mesh/material pipeline.
+- v0.38 makes playtest rendering cleaner and adds fixed overcast face shading for existing scene geometry, but this is still not real lighting, materials, textures, terrain, a production character model, or an art pipeline.
 - v0.9 solid debug boxes and v0.12 mesh triangles remain placeholder geometry. v0.27 adds a small painter-depth sort for projected solid-box and flat-mesh triangle batches; v0.28 adds a DX11-only real world-to-clip matrix and depth-buffer path for solid boxes and flat mesh triangles.
 - GDI remains on CPU projection/painter-depth. DX11 lines, wire boxes, grid, route/debug lines, and bitmap text are still overlay/debug-projection rendering rather than fully depth-aware renderer primitives.
 - There is no resize handling, camera clip tuning, or resource lifetime stress testing for the new DX11 depth resources.

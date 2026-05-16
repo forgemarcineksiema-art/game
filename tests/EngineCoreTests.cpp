@@ -1908,6 +1908,52 @@ void TestSandboxLayerDrawsEveryLoadedSceneMeshInstance()
     std::filesystem::remove(tempScenePath);
 }
 
+void TestSandboxLayerPlaytestRenderSuppressesRawDebugScaffolding()
+{
+    const SceneLoadResult loadedScene = LoadSceneDefinition(DefaultScenePathForTests());
+    Expect(loadedScene.ok(),
+        "TestSandboxLayerPlaytestRenderSuppressesRawDebugScaffolding",
+        "Default scene should load before checking playtest render scaffolding.");
+
+    SandboxLayer layer(DefaultScenePathForTests(), engine::UiMode::Playtest);
+    layer.onAttach();
+    CountingRenderer renderer;
+    renderer.initialize({});
+    renderer.beginFrame(1);
+    layer.onRender(renderer);
+    renderer.endFrame();
+    layer.onDetach();
+
+    Expect(renderer.flatTriangleDrawCount >= loadedScene.scene.meshInstances.size(),
+        "TestSandboxLayerPlaytestRenderSuppressesRawDebugScaffolding",
+        "Playtest rendering should keep authored mesh instances visible.");
+    Expect(renderer.boxCalls.empty(),
+        "TestSandboxLayerPlaytestRenderSuppressesRawDebugScaffolding",
+        "Playtest rendering should suppress raw wire boxes, trigger radii, and debug outlines.");
+    Expect(CountLinesWithColor(renderer, {0.70f, 0.92f, 1.0f, 1.0f}) == 0,
+        "TestSandboxLayerPlaytestRenderSuppressesRawDebugScaffolding",
+        "Playtest rendering should not draw raw route debug lines.");
+}
+
+void TestSandboxLayerDebugRenderKeepsRawDebugScaffolding()
+{
+    SandboxLayer layer(DefaultScenePathForTests(), engine::UiMode::Debug);
+    layer.onAttach();
+    CountingRenderer renderer;
+    renderer.initialize({});
+    renderer.beginFrame(1);
+    layer.onRender(renderer);
+    renderer.endFrame();
+    layer.onDetach();
+
+    Expect(!renderer.boxCalls.empty(),
+        "TestSandboxLayerDebugRenderKeepsRawDebugScaffolding",
+        "Debug rendering should keep wire boxes, trigger radii, and debug outlines available behind F1.");
+    Expect(CountLinesWithColor(renderer, {0.70f, 0.92f, 1.0f, 1.0f}) > 0,
+        "TestSandboxLayerDebugRenderKeepsRawDebugScaffolding",
+        "Debug rendering should keep route debug lines available for validation.");
+}
+
 void TestSandboxLayerPlaytestTextPrioritizesObjectiveAndPrompt()
 {
     SandboxLayer layer(DefaultScenePathForTests(), engine::UiMode::Playtest);
@@ -2014,7 +2060,7 @@ void TestSandboxLayerUsesScenePlayerStartYawForInitialComposition()
         "Initial debug camera should be offset sideways when the authored start yaw composes the scene off-axis.");
 }
 
-void TestSandboxLayerPlaytestRevealsNextRouteAfterManifest()
+void TestSandboxLayerPlaytestKeepsRouteDebugHiddenAfterManifest()
 {
     SandboxLayer layer(DefaultScenePathForTests(), engine::UiMode::Playtest);
     layer.onAttach();
@@ -2034,9 +2080,9 @@ void TestSandboxLayerPlaytestRevealsNextRouteAfterManifest()
     layer.onDetach();
 
     const engine::Color routeColor {0.70f, 0.92f, 1.0f, 1.0f};
-    Expect(CountLinesWithColor(renderer, routeColor) == 1,
-        "TestSandboxLayerPlaytestRevealsNextRouteAfterManifest",
-        "After collecting the manifest, playtest mode should reveal only the immediate route toward the Service Barrier Vault.");
+    Expect(CountLinesWithColor(renderer, routeColor) == 0,
+        "TestSandboxLayerPlaytestKeepsRouteDebugHiddenAfterManifest",
+        "After collecting the manifest, playtest mode should keep raw route debug lines hidden; F1 debug preserves route validation.");
 }
 
 void TestSandboxLayerDebugTextPreservesFullTelemetry()
@@ -3938,11 +3984,13 @@ int main()
     TestSandboxLayerDebugTextMarksLiveVehicleRuntimeAdapterWhenOptedIn();
     TestSandboxLayerDebugTextIncludesDockRoadTelemetry();
     TestSandboxLayerDrawsEveryLoadedSceneMeshInstance();
+    TestSandboxLayerPlaytestRenderSuppressesRawDebugScaffolding();
+    TestSandboxLayerDebugRenderKeepsRawDebugScaffolding();
     TestSandboxLayerPlaytestTextPrioritizesObjectiveAndPrompt();
     TestSandboxLayerPlaytestDefersFutureRouteGuidanceAtStart();
     TestSandboxLayerDebugPreservesFullRouteGuidanceAtStart();
     TestSandboxLayerUsesScenePlayerStartYawForInitialComposition();
-    TestSandboxLayerPlaytestRevealsNextRouteAfterManifest();
+    TestSandboxLayerPlaytestKeepsRouteDebugHiddenAfterManifest();
     TestSandboxLayerDebugTextPreservesFullTelemetry();
     TestSandboxLayerMinimalTextStaysSmallButUseful();
     TestSandboxLayerF1TogglesBetweenPlaytestAndDebugText();

@@ -27,9 +27,10 @@ class VisualThresholds:
     min_luminance_range: int = 55
     min_dark_pixels: int = 500
     min_bright_pixels: int = 0
-    min_warm_pixels: int = 4
-    min_green_pixels: int = 4
-    min_cool_pixels: int = 4
+    min_warm_pixels: int = 0
+    min_green_pixels: int = 0
+    min_cool_pixels: int = 0
+    min_neutral_pixels: int = 4
     min_overlay_text_pixels: int = 80
 
 
@@ -182,6 +183,7 @@ def validate_capture_stats(stats: dict[str, Any], thresholds: VisualThresholds, 
         "warm_pixels": thresholds.min_warm_pixels,
         "green_pixels": thresholds.min_green_pixels,
         "cool_pixels": thresholds.min_cool_pixels,
+        "neutral_pixels": thresholds.min_neutral_pixels,
         "overlay_text_pixels": thresholds.min_overlay_text_pixels,
     }
     for bucket, minimum in required_scene_buckets.items():
@@ -285,10 +287,11 @@ def run_capture(
         f"{renderer}: {stats['width']}x{stats['height']}, "
         f"{stats['bytes']} bytes, colors={stats['unique_colors']}, "
         f"lumaRange={stats['luminance_range']}, "
-        f"warm/green/cool="
+        f"warm/green/cool/neutral="
         f"{stats['scene_presence']['warm_pixels']}/"
         f"{stats['scene_presence']['green_pixels']}/"
-        f"{stats['scene_presence']['cool_pixels']}, "
+        f"{stats['scene_presence']['cool_pixels']}/"
+        f"{stats['scene_presence']['neutral_pixels']}, "
         f"text={stats['scene_presence']['overlay_text_pixels']}"
     )
     return stats

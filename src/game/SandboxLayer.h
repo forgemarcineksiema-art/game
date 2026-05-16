@@ -42,6 +42,8 @@ private:
     void drawWorldStateDebug(engine::IRenderer& renderer);
     void drawSliceDebug(engine::IRenderer& renderer);
     void drawSceneVisualPlaceholders(engine::IRenderer& renderer);
+    void drawPlayerPresentation(engine::IRenderer& renderer);
+    void drawPlayerDebug(engine::IRenderer& renderer);
     void recordWorldStateChange(bool changed);
     void loadSceneDefinition();
     void configureRuntimeFromScene();

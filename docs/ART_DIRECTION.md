@@ -135,3 +135,7 @@ v0.20.1 adds a second notice-board style prop, this time generated through a rea
 ## v0.27 Renderer / Cable Reel Observation
 
 v0.27 adds painter-depth ordering for projected solid-box and flat-mesh triangle batches, plus one small Blender-authored cable reel in the service yard. This is still debug rendering, not real lighting/material/depth-buffer presentation, but it should make overlapping flat meshes feel less arbitrary while giving the service yard one more practical infrastructure silhouette.
+
+## v0.38 Clean Presentation / Overcast Shading Observation
+
+v0.38 makes the default playtest view less like a debug editor: raw route lines, wire boxes, trigger radii, and marker beacons are now reserved for F1/debug mode. Scene boxes and flat mesh triangles receive a small fixed overcast face-shading treatment so existing props read as volumes instead of single-color cutouts. The dock-road endpoint also reuses existing road posts, barrier, utility-box, and cable-reel meshes for a storm-wet work-zone cue. This is still not final art, textures, materials, lighting, terrain, or a production character model, but the saved screenshot at `docs/images/v0.38-gdi-playtest-clean-shaded.png` is the current visual reference for the cleaner playtest presentation.

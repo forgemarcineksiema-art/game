@@ -643,6 +643,51 @@
       "scale": [0.9, 0.9, 0.9],
       "colorKey": "dock-muted-sign-yellow",
       "notes": "v0.26 review-board cue for the existing Service Run Marker; confirms the endpoint without adding Job #2."
+    },
+    {
+      "id": "mesh-dock-road-storm-post-near",
+      "assetId": "road-edge-post-mesh",
+      "position": [12.95, 0.0, -3.45],
+      "yawDegrees": 0.0,
+      "scale": [0.95, 0.95, 0.95],
+      "colorKey": "salt-white-road-post",
+      "notes": "v0.38 storm-wet dock-road rhythm post; visual shoreline readability only."
+    },
+    {
+      "id": "mesh-dock-road-storm-post-far",
+      "assetId": "road-edge-post-mesh",
+      "position": [17.05, 0.0, -3.45],
+      "yawDegrees": 0.0,
+      "scale": [0.95, 0.95, 0.95],
+      "colorKey": "salt-white-road-post",
+      "notes": "v0.38 paired shoreline rhythm post to make the short road feel authored rather than empty."
+    },
+    {
+      "id": "mesh-dock-road-storm-barrier",
+      "assetId": "service-barrier-mesh",
+      "position": [15.95, 0.0, -3.18],
+      "yawDegrees": 0.0,
+      "scale": [0.9, 0.9, 0.9],
+      "colorKey": "warning-service-orange",
+      "notes": "v0.38 low storm-work barrier near the water edge; no collision or new job beat."
+    },
+    {
+      "id": "mesh-dock-road-maintenance-cabinet",
+      "assetId": "utility-box-mesh",
+      "position": [16.7, 0.0, -0.62],
+      "yawDegrees": -18.0,
+      "scale": [0.85, 0.85, 0.85],
+      "colorKey": "oxidized-service-green",
+      "notes": "v0.38 roadside maintenance cabinet at the service-run endpoint; visual identity only."
+    },
+    {
+      "id": "mesh-service-run-cable-reel",
+      "assetId": "blender-cable-reel-mesh",
+      "position": [18.15, 0.0, 0.38],
+      "yawDegrees": -28.0,
+      "scale": [0.85, 0.85, 0.85],
+      "colorKey": "wet-timber",
+      "notes": "v0.38 extra endpoint work-zone prop using the existing Blender cable reel asset; no collision or gameplay behavior."
     }
   ],
   "interactables": [

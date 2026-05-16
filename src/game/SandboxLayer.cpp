@@ -6,8 +6,10 @@
 #include "game/SceneLoader.h"
 
 #include <algorithm>
+#include <array>
 #include <filesystem>
 #include <iomanip>
+#include <span>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -50,6 +52,57 @@ const engine::Vec3 VehicleCabinHalfExtents {0.42f, 0.20f, 0.46f};
 engine::Color ScaleColor(engine::Color color, float scale)
 {
     return {color.r * scale, color.g * scale, color.b * scale, color.a};
+}
+
+engine::Color ShadedSceneColor(engine::Color color, engine::Vec3 a, engine::Vec3 b, engine::Vec3 c)
+{
+    const engine::Vec3 normal = engine::Normalize(engine::Cross(b - a, c - a));
+    const engine::Vec3 overcastLight = engine::Normalize(engine::Vec3 {-0.35f, 0.82f, -0.45f});
+    const float directional = std::max(0.0f, engine::Dot(normal, overcastLight));
+    const float topLight = std::max(0.0f, normal.y);
+    const float underside = std::max(0.0f, -normal.y);
+    const float shade = engine::Clamp(0.62f + directional * 0.28f + topLight * 0.10f - underside * 0.08f, 0.50f, 1.10f);
+    return ScaleColor(color, shade);
+}
+
+void DrawShadedTriangle(engine::IRenderer& renderer, engine::Vec3 a, engine::Vec3 b, engine::Vec3 c, engine::Color color)
+{
+    const std::array<engine::Vec3, 3> triangle {a, b, c};
+    renderer.drawDebugFlatTriangles(triangle, ShadedSceneColor(color, a, b, c));
+}
+
+void DrawShadedBox(engine::IRenderer& renderer, engine::Vec3 center, engine::Vec3 halfExtents, engine::Color color)
+{
+    const std::array<engine::Vec3, 8> corners {{
+        center + engine::Vec3 {-halfExtents.x, -halfExtents.y, -halfExtents.z},
+        center + engine::Vec3 { halfExtents.x, -halfExtents.y, -halfExtents.z},
+        center + engine::Vec3 { halfExtents.x, -halfExtents.y,  halfExtents.z},
+        center + engine::Vec3 {-halfExtents.x, -halfExtents.y,  halfExtents.z},
+        center + engine::Vec3 {-halfExtents.x,  halfExtents.y, -halfExtents.z},
+        center + engine::Vec3 { halfExtents.x,  halfExtents.y, -halfExtents.z},
+        center + engine::Vec3 { halfExtents.x,  halfExtents.y,  halfExtents.z},
+        center + engine::Vec3 {-halfExtents.x,  halfExtents.y,  halfExtents.z},
+    }};
+
+    const int triangles[][3] = {
+        {0, 1, 2}, {0, 2, 3},
+        {4, 5, 6}, {4, 6, 7},
+        {0, 1, 5}, {0, 5, 4},
+        {1, 2, 6}, {1, 6, 5},
+        {2, 3, 7}, {2, 7, 6},
+        {3, 0, 4}, {3, 4, 7},
+    };
+
+    for (const auto& triangle : triangles) {
+        DrawShadedTriangle(renderer, corners[triangle[0]], corners[triangle[1]], corners[triangle[2]], color);
+    }
+}
+
+void DrawShadedTriangleList(engine::IRenderer& renderer, std::span<const engine::Vec3> triangles, engine::Color color)
+{
+    for (std::size_t index = 0; index + 2 < triangles.size(); index += 3) {
+        DrawShadedTriangle(renderer, triangles[index], triangles[index + 1], triangles[index + 2], color);
+    }
 }
 
 std::string_view PresentationJobStepText(FerryOfficeJobPhase phase)
@@ -306,7 +359,7 @@ void DrawDockRoadBase(engine::IRenderer& renderer, float floor)
 void DrawMeshInstance(engine::IRenderer& renderer, const engine::StaticMeshAsset& mesh, const engine::StaticMeshInstance& instance)
 {
     const std::vector<engine::Vec3> triangles = engine::BuildFlatTriangleList(mesh, instance);
-    renderer.drawDebugFlatTriangles(triangles, instance.tint);
+    DrawShadedTriangleList(renderer, triangles, instance.tint);
 }
 
 } // namespace
@@ -505,30 +558,14 @@ void SandboxLayer::onRender(engine::IRenderer& renderer)
             renderer.drawDebugBox(collider.bounds.center, collider.bounds.halfExtents, ColliderWireColor(collider, routeOpened));
         }
     }
-    drawWorldStateDebug(renderer);
-    drawSliceDebug(renderer);
-
-    const PlayerState& player = m_player.state();
-    renderer.drawDebugSolidBox(player.position + engine::Vec3 {0.0f, m_player.settings().height * 0.5f, 0.0f},
-        {m_player.settings().radius, m_player.settings().height * 0.5f, m_player.settings().radius},
-        {0.10f, 0.28f, 0.65f, 1.0f});
-    renderer.drawDebugBox(player.position + engine::Vec3 {0.0f, m_player.settings().height * 0.5f, 0.0f},
-        {m_player.settings().radius, m_player.settings().height * 0.5f, m_player.settings().radius},
-        {0.25f, 0.55f, 1.0f, 1.0f});
-
-    const engine::Vec3 facing = engine::ForwardFromYaw(player.facingYawRadians);
-    renderer.drawDebugLine(player.position + engine::Vec3 {0.0f, 1.0f, 0.0f},
-        player.position + engine::Vec3 {0.0f, 1.0f, 0.0f} + facing * 1.25f,
-        {1.0f, 1.0f, 1.0f, 1.0f});
-    if (engine::Length(player.lastCollisionPush) > 0.0f) {
-        renderer.drawDebugLine(player.position + engine::Vec3 {0.0f, 0.25f, 0.0f},
-            player.position + engine::Vec3 {0.0f, 0.25f, 0.0f} + player.lastCollisionNormal,
-            {1.0f, 0.2f, 0.2f, 1.0f});
-    }
-    drawTraversalDebug(renderer);
-    drawInteractionDebug(renderer);
-    drawVehicleDebug(renderer);
+    drawPlayerPresentation(renderer);
     if (fullDebug) {
+        drawWorldStateDebug(renderer);
+        drawSliceDebug(renderer);
+        drawPlayerDebug(renderer);
+        drawTraversalDebug(renderer);
+        drawInteractionDebug(renderer);
+        drawVehicleDebug(renderer);
         renderer.drawDebugBox(m_camera.state().target, {0.08f, 0.08f, 0.08f}, {1.0f, 0.25f, 0.7f, 1.0f});
     }
     renderer.drawDebugText(m_debugText);
@@ -942,20 +979,51 @@ void SandboxLayer::drawSceneVisualPlaceholders(engine::IRenderer& renderer)
     const bool routeOpened = m_scene.worldState().isFlagSet(WorldFlag::RouteOpened);
     const bool powerRestored = m_scene.worldState().isFlagSet(WorldFlag::PowerRestored);
     const bool vehicleOccupied = m_vehicle.state().occupied;
+    const bool fullDebug = m_uiMode == engine::UiMode::Debug;
 
     for (const SceneVisualPlaceholderDefinition& placeholder : m_sceneDefinition.visualPlaceholders) {
         const engine::Color color = ColorForSceneKey(placeholder.colorKey, routeOpened, powerRestored, vehicleOccupied);
-        renderer.drawDebugSolidBox(placeholder.center, placeholder.halfExtents, color);
+        DrawShadedBox(renderer, placeholder.center, placeholder.halfExtents, color);
 
-        if (placeholder.role.find("pad") != std::string::npos
+        if (fullDebug
+            && (placeholder.role.find("pad") != std::string::npos
             || placeholder.role.find("marker") != std::string::npos
             || placeholder.role.find("bound") != std::string::npos
-            || placeholder.role.find("curb") != std::string::npos) {
+            || placeholder.role.find("curb") != std::string::npos)) {
             renderer.drawDebugBox(
                 {placeholder.center.x, placeholder.center.y + 0.02f, placeholder.center.z},
                 {placeholder.halfExtents.x, std::max(placeholder.halfExtents.y, 0.02f), placeholder.halfExtents.z},
                 ScaleColor(color, 1.65f));
         }
+    }
+}
+
+void SandboxLayer::drawPlayerPresentation(engine::IRenderer& renderer)
+{
+    const PlayerState& player = m_player.state();
+    renderer.drawDebugSolidBox(player.position + engine::Vec3 {0.0f, 0.76f, 0.0f},
+        {0.24f, 0.58f, 0.18f},
+        {0.08f, 0.16f, 0.18f, 1.0f});
+    renderer.drawDebugSolidBox(player.position + engine::Vec3 {0.0f, 1.46f, 0.0f},
+        {0.16f, 0.16f, 0.16f},
+        {0.38f, 0.30f, 0.22f, 1.0f});
+}
+
+void SandboxLayer::drawPlayerDebug(engine::IRenderer& renderer)
+{
+    const PlayerState& player = m_player.state();
+    renderer.drawDebugBox(player.position + engine::Vec3 {0.0f, m_player.settings().height * 0.5f, 0.0f},
+        {m_player.settings().radius, m_player.settings().height * 0.5f, m_player.settings().radius},
+        {0.25f, 0.55f, 1.0f, 1.0f});
+
+    const engine::Vec3 facing = engine::ForwardFromYaw(player.facingYawRadians);
+    renderer.drawDebugLine(player.position + engine::Vec3 {0.0f, 1.0f, 0.0f},
+        player.position + engine::Vec3 {0.0f, 1.0f, 0.0f} + facing * 1.25f,
+        {1.0f, 1.0f, 1.0f, 1.0f});
+    if (engine::Length(player.lastCollisionPush) > 0.0f) {
+        renderer.drawDebugLine(player.position + engine::Vec3 {0.0f, 0.25f, 0.0f},
+            player.position + engine::Vec3 {0.0f, 0.25f, 0.0f} + player.lastCollisionNormal,
+            {1.0f, 0.2f, 0.2f, 1.0f});
     }
 }
 

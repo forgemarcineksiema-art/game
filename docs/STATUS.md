@@ -5508,6 +5508,82 @@ Validation:
 - python tools\vehicle_runtime_qa.py
 ```
 
+## v0.38 Clean Playtest Presentation / Overcast Scene Shading (2026-05-16)
+
+Goal:
+
+- Start moving Tidebreak's normal play view away from raw debug rendering and toward a scene that can be enjoyed as a game.
+- Keep debug validation available behind F1 instead of deleting it.
+- Improve current Ferry Office/service-yard/dock-road volume readability without pretending the engine has final materials, textures, lighting, terrain, or a real art pipeline.
+- Add one compact authored visual pass on the existing dock-road endpoint using existing project-owned mesh assets only.
+
+Scope:
+
+- `SandboxLayer` now keeps raw route lines, wire boxes, trigger/focus radii, objective marker beacons, traversal markers, interaction marker beacons, vehicle guidance rings, collider overlays, and physics debug lines in debug mode only.
+- Playtest/minimal rendering still draws the scene, static meshes, text overlay, and a small player placeholder, but does not expose the old editor/debug scaffolding by default.
+- Existing scene boxes and static mesh triangle submissions now receive a tiny fixed overcast face-shading pass from triangle normals before submission to GDI/DX11.
+- The dock-road/service-run endpoint reuses existing `road-edge-post`, `service-barrier`, `utility-box`, and `blender-cable-reel` meshes for a storm-wet work-zone cue. No new `.gltf` files were added.
+- Visual smoke thresholds now accept the cleaner presentation mode, where debug marker warm/cool color buckets are no longer required; neutral geometry, text, luminance, color diversity, and non-flat output remain checked.
+
+Evidence:
+
+- Saved current GDI playtest reference screenshot: `docs\images\v0.38-gdi-playtest-clean-shaded.png`.
+- Scene now reports 9 colliders, 24 visual placeholders, 8 mesh assets, 37 mesh instances, 6 interactables, 1 traversal affordance, 1 vehicle, 6 route markers, and 5 objective markers.
+
+Validation:
+
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests; build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `python tools\validate_scene.py`: passed.
+- `python tools\validate_assets.py`: passed; 8 model files.
+- `python tools\scale_audit.py`: passed; no suspicious scale issues.
+- `python tools\mesh_report.py`: passed; 8 mesh assets, 37 mesh instances, 8 model files.
+- `python tools\scene_report.py`: passed; counts match the v0.38 scene.
+- `python tests\test_scene_tools.py`: passed, 34 tests.
+- `python tests\test_capture_visual_smoke.py`: passed, 6 tests.
+- `cmake --build --preset windows-vs2022-debug --target EngineApp; python tools\capture_visual_smoke.py`: passed after rebuilding `EngineApp`; GDI captured 60 unique colors and neutral geometry signal 6487, DX11 captured 39 unique colors and neutral geometry signal 14452, both 1280x720 with text signal and luminance range over 200. DX11 still fell back to WARP in this environment.
+- `python tools\playthrough_qa.py`: passed; Ferry Office Service Call reached `phase=complete` with 10 events.
+- `scripts\verify.ps1`: passed; doctor completed with known PATH warnings, configure/build succeeded, CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null smoke loaded the v0.38 scene.
+
+Remaining limitations:
+
+- The scene is cleaner and more volumetric, but still uses placeholder geometry, flat color keys, and immediate debug-triangle submission.
+- There are still no textures, UVs, real materials, lighting system, shadows, terrain, animation, production character model, asset registry, mesh resource cache, or editor.
+- The current playtest view relies more on overlay text and authored scene props because raw route/debug lines are hidden until F1/debug mode.
+
+Next-goal prompt:
+
+```text
+Create a Codex goal for Tidebreak.
+
+Repository rules:
+- Follow AGENTS.md and docs/AI_WORKFLOW.md.
+- Use docs/CONTEXT_MAP.md for orientation.
+- Update docs/STATUS.md.
+- Run scripts/verify.ps1 before claiming success.
+- Commit and push only if validation passes and there are no unrelated user changes.
+
+Goal:
+Build the next visual capability after v0.38: either a tiny renderer-owned material/color-preset boundary for scene color keys, or a small authored Ferry Office facade/road prop kit if renderer evidence shows geometry quantity is the blocker.
+
+Why now:
+v0.38 proves that clean playtest rendering and face shading help the scene read more like a game. The next step should turn color keys into a more durable presentation boundary or replace another obvious placeholder cluster, not add random debug props.
+
+Scope:
+- Inspect the v0.38 screenshot and capture report.
+- Choose material-boundary versus prop-kit based on current visual evidence.
+- Preserve F1/debug validation.
+- Keep gameplay, collision, Jolt vehicle work, Job #2, textures/PBR, and broad asset-loader changes out of scope.
+- Update docs/status and visual evidence.
+
+Validation:
+- scripts/verify.ps1
+- python tools\capture_visual_smoke.py
+- python tools\playthrough_qa.py
+- python tools\validate_scene.py
+- python tools\validate_assets.py
+- python tools\mesh_report.py
+```
+
 ## v0.37.1 Jolt-live Vehicle Control Triage (2026-05-16)
 
 User playtest feedback:
