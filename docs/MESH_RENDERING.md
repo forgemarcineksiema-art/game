@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-16
 
-v0.12 adds the first narrow static mesh path. v0.19 stabilizes the surrounding asset workflow, v0.20 proves the Blender gap plus a small fallback prop workflow, v0.20.1 proves one real headless Blender export, v0.27 adds a tiny painter-depth presentation spike plus one more Blender prop, v0.39 moves scene palette/shading rules into a game-layer presentation boundary, v0.40 gives scene color keys tiny material-like shading presets, v0.41 authors those presets in scene data, v0.42 adds a Blender-authored wet-road surface mesh for the current service-yard and dock-road pads, v0.43 adds a Blender-authored harbor backdrop silhouette mesh, and v0.44 adds a Blender-authored harbor water surface mesh. This remains a render spike and authoring bridge, not a full asset pipeline.
+v0.12 adds the first narrow static mesh path. v0.19 stabilizes the surrounding asset workflow, v0.20 proves the Blender gap plus a small fallback prop workflow, v0.20.1 proves one real headless Blender export, v0.27 adds a tiny painter-depth presentation spike plus one more Blender prop, v0.39 moves scene palette/shading rules into a game-layer presentation boundary, v0.40 gives scene color keys tiny material-like shading presets, v0.41 authors those presets in scene data, v0.42 adds a Blender-authored wet-road surface mesh for the current service-yard and dock-road pads, v0.43 adds a Blender-authored harbor backdrop silhouette mesh, v0.44 adds a Blender-authored harbor water surface mesh, and v0.58 adds a tiny fallback-generated clearance-tag prop. This remains a render spike and authoring bridge, not a full asset pipeline.
 
 ## What Exists
 
@@ -83,7 +83,7 @@ There is still no material system, texture path, lighting, shader file pipeline,
 
 Keep wire/debug markers visible until a later overlay and asset pipeline exist.
 
-The v0.12.1, v0.18, v0.20, v0.20.1, v0.27, v0.38, v0.42, v0.43, and v0.44 mesh instances are still composition placeholders. `ScenePresentation` shades their submitted faces with small wet/matte/painted response presets enough to improve volume readability, but they are not final art, material assets, terrain, water simulation, or collision sources.
+The v0.12.1, v0.18, v0.20, v0.20.1, v0.27, v0.38, v0.42, v0.43, v0.44, and v0.58 mesh instances are still composition placeholders. `ScenePresentation` shades their submitted faces with small wet/matte/painted response presets enough to improve volume readability, but they are not final art, material assets, terrain, water simulation, or collision sources.
 
 ## How To Add A Simple Mesh
 

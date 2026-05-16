@@ -29,6 +29,42 @@ def write_ferry_notice_board(output_path: pathlib.Path, overwrite: bool = True) 
     _append_box(vertices, indices, center=(0.0, 1.18, 0.0), half_extents=(0.58, 0.24, 0.045))
     _append_box(vertices, indices, center=(0.0, 0.04, 0.0), half_extents=(0.22, 0.04, 0.16))
 
+    _write_embedded_gltf(
+        output_path=output_path,
+        vertices=vertices,
+        indices=indices,
+        name="ferry_notice_board",
+        generator="Tidebreak tools/create_simple_prop_gltf.py v0.20 fallback helper",
+    )
+
+
+def write_clearance_tag(output_path: pathlib.Path, overwrite: bool = True) -> None:
+    if output_path.exists() and not overwrite:
+        raise FileExistsError(f"{output_path} already exists; pass --overwrite to replace it")
+
+    vertices: list[tuple[float, float, float]] = []
+    indices: list[int] = []
+    _append_box(vertices, indices, center=(0.0, 0.04, 0.0), half_extents=(0.14, 0.04, 0.10))
+    _append_box(vertices, indices, center=(0.0, 0.42, 0.0), half_extents=(0.035, 0.38, 0.035))
+    _append_box(vertices, indices, center=(0.0, 0.78, 0.0), half_extents=(0.26, 0.12, 0.035))
+    _append_box(vertices, indices, center=(-0.18, 0.92, 0.0), half_extents=(0.055, 0.05, 0.03))
+
+    _write_embedded_gltf(
+        output_path=output_path,
+        vertices=vertices,
+        indices=indices,
+        name="clearance_tag",
+        generator="Tidebreak tools/create_simple_prop_gltf.py v0.58 clearance tag fallback helper",
+    )
+
+
+def _write_embedded_gltf(
+    output_path: pathlib.Path,
+    vertices: list[tuple[float, float, float]],
+    indices: list[int],
+    name: str,
+    generator: str,
+) -> None:
     vertex_bytes = b"".join(struct.pack("<fff", *vertex) for vertex in vertices)
     index_bytes = b"".join(struct.pack("<H", index) for index in indices)
     index_offset = _align4(len(vertex_bytes))
@@ -39,7 +75,7 @@ def write_ferry_notice_board(output_path: pathlib.Path, overwrite: bool = True) 
     gltf = {
         "asset": {
             "version": "2.0",
-            "generator": "Tidebreak tools/create_simple_prop_gltf.py v0.20 fallback helper",
+            "generator": generator,
             "extras": {
                 "tidebreakSource": "project-original fallback geometry",
                 "notBlenderExport": True,
@@ -47,10 +83,10 @@ def write_ferry_notice_board(output_path: pathlib.Path, overwrite: bool = True) 
         },
         "scene": 0,
         "scenes": [{"nodes": [0]}],
-        "nodes": [{"mesh": 0, "name": "ferry_notice_board"}],
+        "nodes": [{"mesh": 0, "name": name}],
         "meshes": [
             {
-                "name": "ferry_notice_board",
+                "name": name,
                 "primitives": [
                     {
                         "attributes": {"POSITION": 0},

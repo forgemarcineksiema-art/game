@@ -446,6 +446,17 @@
       "notes": "Small original ferry notice board silhouette for route readability. No textures, logos, text, or final signage."
     },
     {
+      "id": "clearance-tag-mesh",
+      "path": "assets/models/clearance_tag.gltf",
+      "format": "gltf",
+      "units": "meter",
+      "upAxis": "Y",
+      "license": "project-original",
+      "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v0.58 fallback clearance-tag prop because Blender was unnecessary for this tiny endpoint cue; not a Blender export.",
+      "authoringBoundsHalfExtents": [0.26, 0.485, 0.10],
+      "notes": "Small original dock-road clearance tag silhouette. No text, logos, textures, decals, or final signage."
+    },
+    {
       "id": "blender-ferry-notice-board-mesh",
       "path": "assets/models/blender_ferry_notice_board.gltf",
       "format": "gltf",
@@ -792,6 +803,16 @@
       "scale": [0.9, 0.9, 0.9],
       "colorKey": "dock-muted-sign-yellow",
       "notes": "v0.26 review-board cue for the existing Service Run Marker; confirms the endpoint without adding Job #2."
+    },
+    {
+      "id": "mesh-dock-road-clearance-tag",
+      "assetId": "clearance-tag-mesh",
+      "position": [17.1, 0.0, 0.08],
+      "yawDegrees": -18.0,
+      "scale": [1.0, 1.0, 1.0],
+      "colorKey": "dock-road-clearance-state",
+      "replacesVisualPlaceholderId": "dock-road-clearance-status-tag",
+      "notes": "v0.58 original endpoint prop for the Dock Road Clearance Tag; its tint follows remembered clearance state."
     },
     {
       "id": "mesh-dock-road-storm-post-near",

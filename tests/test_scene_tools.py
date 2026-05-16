@@ -49,6 +49,7 @@ class SceneToolTests(unittest.TestCase):
             "relay-service-log",
             "dock-road-clearance-tag",
             "dock-road-clearance-status-tag",
+            "mesh-dock-road-clearance-tag",
             "route-service-confirm-to-relay",
             "route-relay-to-service-log",
             "route-service-log-to-clearance-tag",
@@ -332,6 +333,20 @@ class SceneToolTests(unittest.TestCase):
             self.assertEqual(placeholder_id, mesh_instances[instance_id]["replacesVisualPlaceholderId"])
             self.assertIn("v0.44", mesh_instances[instance_id]["notes"])
 
+    def test_v058_clearance_tag_prop_asset_and_instance_exist(self) -> None:
+        ids = scene_data.collect_ids(self.scene)
+        mesh_assets = {asset["id"]: asset for asset in self.scene["meshAssets"]}
+        mesh_instances = {instance["id"]: instance for instance in self.scene["meshInstances"]}
+
+        self.assertIn("clearance-tag-mesh", mesh_assets)
+        self.assertEqual("assets/models/clearance_tag.gltf", mesh_assets["clearance-tag-mesh"]["path"])
+        self.assertIn("fallback", mesh_assets["clearance-tag-mesh"]["provenance"].lower())
+        self.assertIn("v0.58", mesh_assets["clearance-tag-mesh"]["provenance"])
+        self.assertIn("mesh-dock-road-clearance-tag", ids)
+        self.assertEqual("clearance-tag-mesh", mesh_instances["mesh-dock-road-clearance-tag"]["assetId"])
+        self.assertEqual("dock-road-clearance-state", mesh_instances["mesh-dock-road-clearance-tag"]["colorKey"])
+        self.assertEqual("dock-road-clearance-status-tag", mesh_instances["mesh-dock-road-clearance-tag"]["replacesVisualPlaceholderId"])
+
     def test_duplicate_mesh_replacement_links_are_reported(self) -> None:
         scene = copy.deepcopy(self.scene)
         first = copy.deepcopy(scene["meshInstances"][0])
@@ -514,19 +529,25 @@ class SceneToolTests(unittest.TestCase):
 
         self.assertIn("assets/models/unit_box.gltf", files_by_path)
         self.assertIn("assets/models/service_road_sign.gltf", files_by_path)
+        self.assertIn("assets/models/clearance_tag.gltf", files_by_path)
         self.assertIn("assets/models/ferry_notice_board.gltf", files_by_path)
         self.assertIn("assets/models/blender_ferry_notice_board.gltf", files_by_path)
         self.assertTrue(files_by_path["assets/models/unit_box.gltf"].referenced)
+        self.assertTrue(files_by_path["assets/models/clearance_tag.gltf"].referenced)
         self.assertTrue(files_by_path["assets/models/ferry_notice_board.gltf"].referenced)
         self.assertTrue(files_by_path["assets/models/blender_ferry_notice_board.gltf"].referenced)
         self.assertGreater(files_by_path["assets/models/unit_box.gltf"].vertex_count or 0, 0)
         self.assertGreater(files_by_path["assets/models/unit_box.gltf"].index_count or 0, 0)
+        self.assertGreater(files_by_path["assets/models/clearance_tag.gltf"].vertex_count or 0, 0)
+        self.assertGreater(files_by_path["assets/models/clearance_tag.gltf"].index_count or 0, 0)
         self.assertGreater(files_by_path["assets/models/ferry_notice_board.gltf"].vertex_count or 0, 0)
         self.assertGreater(files_by_path["assets/models/ferry_notice_board.gltf"].index_count or 0, 0)
         self.assertGreater(files_by_path["assets/models/blender_ferry_notice_board.gltf"].vertex_count or 0, 0)
         self.assertGreater(files_by_path["assets/models/blender_ferry_notice_board.gltf"].index_count or 0, 0)
         self.assertIsNotNone(files_by_path["assets/models/unit_box.gltf"].bounds_min)
         self.assertIsNotNone(files_by_path["assets/models/unit_box.gltf"].bounds_max)
+        self.assertIsNotNone(files_by_path["assets/models/clearance_tag.gltf"].bounds_min)
+        self.assertIsNotNone(files_by_path["assets/models/clearance_tag.gltf"].bounds_max)
         self.assertIsNotNone(files_by_path["assets/models/ferry_notice_board.gltf"].bounds_min)
         self.assertIsNotNone(files_by_path["assets/models/ferry_notice_board.gltf"].bounds_max)
         self.assertIsNotNone(files_by_path["assets/models/blender_ferry_notice_board.gltf"].bounds_min)
@@ -545,6 +566,19 @@ class SceneToolTests(unittest.TestCase):
             output_path = pathlib.Path(temp_dir) / "ferry_notice_board.gltf"
 
             create_simple_prop_gltf.write_ferry_notice_board(output_path)
+            metadata = mesh_report.asset_data.load_gltf_metadata(output_path)
+
+        self.assertGreater(metadata.vertex_count or 0, 0)
+        self.assertGreater(metadata.index_count or 0, 0)
+        self.assertIsNotNone(metadata.bounds_min)
+        self.assertIsNotNone(metadata.bounds_max)
+        self.assertEqual([], metadata.errors)
+
+    def test_fallback_clearance_tag_generator_writes_supported_embedded_gltf(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output_path = pathlib.Path(temp_dir) / "clearance_tag.gltf"
+
+            create_simple_prop_gltf.write_clearance_tag(output_path)
             metadata = mesh_report.asset_data.load_gltf_metadata(output_path)
 
         self.assertGreater(metadata.vertex_count or 0, 0)

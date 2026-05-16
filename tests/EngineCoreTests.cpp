@@ -1187,6 +1187,7 @@ void TestSceneLoaderLoadsDockRoadRelayBeat()
     const SceneRouteMarkerDefinition* clearanceRoute = FindRouteMarker(result.scene, "route-service-log-to-clearance-tag");
     const SceneObjectiveMarkerDefinition* marker = FindObjectiveMarker(result.scene, "dock-road-relay-marker");
     const SceneObjectiveMarkerDefinition* clearanceMarker = FindObjectiveMarker(result.scene, "dock-road-clearance-marker");
+    const SceneMeshInstanceDefinition* clearanceTagMesh = FindMeshInstance(result.scene, "mesh-dock-road-clearance-tag");
 
     Expect(result.ok(),
         "TestSceneLoaderLoadsDockRoadRelayBeat",
@@ -1225,6 +1226,9 @@ void TestSceneLoaderLoadsDockRoadRelayBeat()
     Expect(clearanceMarker != nullptr,
         "TestSceneLoaderLoadsDockRoadRelayBeat",
         "Scene data should expose an objective marker for the clearance tag.");
+    Expect(clearanceTagMesh != nullptr && clearanceTagMesh->assetId == "clearance-tag-mesh",
+        "TestSceneLoaderLoadsDockRoadRelayBeat",
+        "Scene data should expose an authored clearance-tag mesh prop at the endpoint.");
 }
 
 void TestSceneLoaderReportsMissingSceneFile()

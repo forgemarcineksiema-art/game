@@ -647,6 +647,15 @@ Status: implemented and validated. Both deterministic and Jolt obstacle checks s
 
 Status: implemented and validated. Scene data now has 20 scene materials and 26 visual placeholders; deterministic playthrough QA still completes the 13-event service-call follow-up chain, and GDI/DX11 visual smoke remains green.
 
+## v0.58 - Clearance Tag Mesh Prop
+
+- Generate a tiny original `clearance_tag.gltf` fallback prop inside the existing embedded-buffer glTF subset.
+- Add `clearance-tag-mesh` and `mesh-dock-road-clearance-tag` to the Ferry Office scene.
+- Bind the mesh to `dock-road-clearance-state` so the endpoint prop still shifts from inactive metal to clear cyan after tagging.
+- Keep this as a visual-only endpoint prop, not a texture/decal pass, collision source, save/load feature, or new asset pipeline.
+
+Status: implemented and validated. Scene data now has 12 mesh assets, 47 mesh instances, and 12 referenced model files; deterministic playthrough QA still completes the 13-event service-call follow-up chain, and visual smoke remains green.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. With v0.56 proving Jolt is camera-readable but still under-progresses in the obstacle proxy, the next useful vehicle milestone is Jolt steering/acceleration tuning or a collision-backed obstacle route. If staying presentation-facing, replace the clearance-tag placeholder with a small original mesh prop before extending the chain again.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. With v0.56 proving Jolt is camera-readable but still under-progresses in the obstacle proxy, the next useful vehicle milestone is Jolt steering/acceleration tuning or a collision-backed obstacle route. If staying content-facing, choose a compact Job #2 micro-slice rather than continuing endpoint polish.
