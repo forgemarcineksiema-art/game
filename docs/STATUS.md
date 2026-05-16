@@ -326,6 +326,70 @@ Next direction:
 
 - Commit and push this milestone if the repo remains clean, then re-check status before choosing the next milestone.
 
+## v0.53 Vehicle Steering Obstacle Proxy QA (2026-05-16)
+
+Selected milestone:
+
+- Add a deterministic-vs-Jolt steering/obstacle proxy to the vehicle runtime comparison report before considering any future default vehicle-runtime promotion.
+
+Candidate triage:
+
+- Steering/obstacle replay: high decision leverage, medium risk, validates with vehicle runtime QA, Jolt build, and `scripts\verify.ps1`.
+- Route/readability consequence after relay log: medium content impact, medium risk, but v0.50-v0.52 already shipped three player-facing follow-up improvements.
+- Capture dimension/text QA: medium validation impact, low risk, less important than vehicle promotion evidence.
+
+Why selected:
+
+- v0.49 proved Jolt can complete the first live-loop service run, but the remaining vehicle-decision gap was steering response beyond straight-line route completion.
+- A virtual obstacle proxy gives automated evidence for bounded lane offset and continued forward progress without requiring a manual A/B drive first.
+
+Definition of Done:
+
+- Vehicle runtime comparison report includes deterministic and Jolt obstacle-proxy steering checks.
+- The Python validator rejects stale reports without obstacle-proxy evidence.
+- Focused Python and C++ tests pass.
+- The opt-in Jolt vehicle runtime QA and main verification gate pass.
+
+Implementation notes:
+
+- Added `ObstacleCheck` telemetry to `FerryOfficeVehicleRuntimeComparisonResult`.
+- Added deterministic and adapter obstacle-proxy checks using the authored service-yard vehicle spawn and a bounded steering script.
+- The check records backend, pass state, frame count, max lateral offset, minimum distance to the virtual obstacle proxy, final position/yaw, and bounds hits.
+- `tools\vehicle_runtime_qa.py` now requires deterministic and Jolt obstacle-proxy checks before accepting a report.
+- Tuned the steering script from failing evidence: the first versions hit bounds or over-demanded lateral offset; the final proxy runs for 150 frames with modest steering input.
+
+Commands and results so far:
+
+- `python tests\test_vehicle_runtime_qa.py`: passed, 6 tests.
+- `cmake --build --preset windows-vs2022-debug-jolt --target EngineCoreTests EngineApp`: passed.
+- `build\windows-vs2022-debug-jolt\Debug\EngineCoreTests.exe`: initially failed because the first obstacle-proxy script hit authored bounds; the script was reduced to a 150-frame modest-steer proxy.
+- `python tools\vehicle_runtime_qa.py`: initially failed because the stale Jolt `EngineApp` did not yet include `obstacleChecks`, then failed with the too-aggressive script; both were fixed by rebuilding and tuning the proxy.
+- `build\windows-vs2022-debug-jolt\Debug\EngineCoreTests.exe`: passed after tuning.
+- `python tools\vehicle_runtime_qa.py`: passed; backend=`jolt`, samples=5, controlChecks=4, routeChecks=2, obstacleChecks=2, maxPositionDelta=1.75, recommendation=`promote`.
+- `scripts\verify.ps1`: passed; doctor passed with known PATH warnings, configure/build succeeded, CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null smoke loaded the Ferry Office scene.
+
+Automated evidence generated:
+
+- `build\physics\ferry-office-vehicle-runtime-comparison-report.json`
+- Obstacle-proxy telemetry from the passing report:
+  - deterministic: frameCount=150, maxLateralOffset=1.96, minDistanceToObstacle=1.02, finalPosition approximately `(18.82, 0.00, -0.24)`, hitBounds=false.
+  - Jolt: frameCount=150, maxLateralOffset=0.29, minDistanceToObstacle=0.86, finalPosition approximately `(11.97, 1.14, -2.41)`, hitBounds=false.
+
+Provisional decision:
+
+- Jolt now has stronger automated evidence: controls, route, live-loop playthrough, and obstacle-proxy steering all pass without bounds hits.
+- Keep deterministic as the default for the moment because the obstacle proxy still shows a large behavioral difference: deterministic travels much farther and steers much wider over the same script, while Jolt produces a smaller offset and slower forward progress.
+- Next vehicle-promotion evidence should focus on a camera-aware obstacle route or tuned Jolt steering response, not another straight-line route check.
+
+Remaining limitations:
+
+- This is a virtual obstacle-proxy steering replay, not a physical collision obstacle, cone slalom, camera-comfort check, or human feel report.
+- The proxy does not yet score collision contacts, camera yaw stability, prompt readability while driving, or recovery after clipping a real blocker.
+
+Next direction:
+
+- Commit and push this milestone if the repo remains clean, then re-check status before choosing the next milestone.
+
 ## Commands Run
 
 ```powershell

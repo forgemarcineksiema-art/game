@@ -605,6 +605,14 @@ Status: implemented and validated. Scene data now has 19 scene materials and 25 
 
 Status: implemented and validated. Scene data now has 8 interactables, 8 route markers, and 7 objective markers; deterministic and opt-in Jolt playthroughs both complete with 12 events, with checkpoint timing still 139 frames for deterministic and 213 frames for Jolt.
 
+## v0.53 - Vehicle Steering Obstacle Proxy QA
+
+- Add an obstacle-proxy steering check to `ferry-office-vehicle-runtime-comparison`.
+- Require deterministic and opt-in Jolt reports to prove bounded lateral steering response, forward progress, and no authored-bounds hits.
+- Keep this as automated promotion evidence, not a physical cone/collision course or human feel replacement.
+
+Status: implemented and validated. The passing Jolt report records 2 obstacle-proxy checks: deterministic reaches max lateral offset 1.96 and final x 18.82, while Jolt reaches max lateral offset 0.29 and final x 11.97 over the same 150-frame proxy. Both stay in bounds, but the behavioral difference keeps deterministic as the default for now.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. With v0.52 extending the first follow-up chain to a reset-and-log endpoint, the next useful milestone is either a narrow deterministic-vs-Jolt steering/obstacle replay before any default vehicle-runtime promotion, or a small scene-authored consequence that changes route/readability after `dockRoadRelayLogged`.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. With v0.53 covering a first obstacle-proxy steering comparison, the next useful milestone is either a camera-aware obstacle route/tuning pass for Jolt or a small scene-authored consequence that changes route/readability after `dockRoadRelayLogged`.

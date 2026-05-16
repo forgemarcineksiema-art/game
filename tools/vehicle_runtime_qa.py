@@ -102,6 +102,30 @@ def _require_route_checks(report: dict[str, Any]) -> list[dict[str, Any]]:
     return checks
 
 
+def _require_obstacle_checks(report: dict[str, Any]) -> list[dict[str, Any]]:
+    checks = report.get("obstacleChecks")
+    if not isinstance(checks, list) or len(checks) < 2:
+        raise ValueError("Vehicle runtime report is missing obstacle-proxy steering checks.")
+
+    backends = set()
+    for check in checks:
+        if not isinstance(check, dict):
+            raise ValueError(f"Vehicle runtime obstacle check is invalid: {check}")
+        backends.add(str(check.get("backend", "")))
+        if check.get("passed") is not True or check.get("clearedObstacleProxy") is not True:
+            raise ValueError(f"Vehicle runtime obstacle check failed: {check}")
+        if check.get("hitBounds") is True:
+            raise ValueError(f"Vehicle runtime obstacle check hit authored bounds: {check}")
+        if int(check.get("frameCount", -1)) <= 0:
+            raise ValueError(f"Vehicle runtime obstacle check is missing frame count: {check}")
+        if "maxLateralOffset" not in check or "minDistanceToObstacle" not in check or "finalPosition" not in check:
+            raise ValueError(f"Vehicle runtime obstacle check is missing telemetry: {check}")
+
+    if "deterministic" not in backends or "jolt" not in backends:
+        raise ValueError(f"Vehicle runtime obstacle checks must include deterministic and jolt backends: {sorted(backends)}")
+    return checks
+
+
 def load_and_validate_report(report_path: pathlib.Path) -> dict[str, Any]:
     if not report_path.exists():
         raise FileNotFoundError(f"Vehicle runtime comparison report was not created: {report_path}")
@@ -126,6 +150,7 @@ def load_and_validate_report(report_path: pathlib.Path) -> dict[str, Any]:
         raise ValueError(f"Vehicle runtime QA must run against opt-in Jolt backend, got: {report['adapter'].get('backend')}")
     _require_control_checks(report)
     _require_route_checks(report)
+    _require_obstacle_checks(report)
 
     comparison = report.get("comparison")
     if not isinstance(comparison, dict):
@@ -178,6 +203,7 @@ def run_vehicle_runtime(exe: pathlib.Path, scene: pathlib.Path, report_path: pat
         f"samples={len(report['adapter']['samples'])}, "
         f"controlChecks={len(report['controlChecks'])}, "
         f"routeChecks={len(report['routeChecks'])}, "
+        f"obstacleChecks={len(report['obstacleChecks'])}, "
         f"maxPositionDelta={comparison['maxPositionDelta']:.2f}, "
         f"recommendation={comparison['recommendation']}, "
         f"report={report_path}"

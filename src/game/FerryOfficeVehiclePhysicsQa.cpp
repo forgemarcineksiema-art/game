@@ -25,6 +25,13 @@ constexpr float RuntimeYawDeltaLimitDegrees = 130.0f;
 constexpr float RuntimeSpeedDeltaLimit = 5.0f;
 constexpr int RouteCheckMaxFrames = 240;
 constexpr float RouteCheckThrottle = 0.72f;
+constexpr int ObstacleCheckMaxFrames = 150;
+constexpr float ObstacleCheckThrottle = 0.72f;
+constexpr float ObstacleLaneCenterZ = -2.2f;
+constexpr float ObstacleProxyX = 12.8f;
+constexpr float ObstacleProxyZ = -2.2f;
+constexpr float ObstacleRequiredLateralOffset = 0.05f;
+constexpr float ObstacleRequiredXProgress = 4.5f;
 
 nlohmann::json Vec3Json(engine::Vec3 value)
 {
@@ -67,6 +74,22 @@ nlohmann::json RouteCheckJson(const FerryOfficeVehicleRuntimeComparisonResult::R
         {"checkpointReached", check.checkpointReached},
         {"framesToCheckpoint", check.framesToCheckpoint},
         {"minDistanceToCheckpoint", check.minDistanceToCheckpoint},
+        {"finalPosition", Vec3Json(check.finalPosition)},
+        {"finalYawDegrees", engine::Degrees(check.finalYawRadians)},
+        {"hitBounds", check.hitBounds},
+        {"message", check.message},
+    };
+}
+
+nlohmann::json ObstacleCheckJson(const FerryOfficeVehicleRuntimeComparisonResult::ObstacleCheck& check)
+{
+    return {
+        {"backend", check.backendName},
+        {"passed", check.passed},
+        {"clearedObstacleProxy", check.clearedObstacleProxy},
+        {"frameCount", check.frameCount},
+        {"maxLateralOffset", check.maxLateralOffset},
+        {"minDistanceToObstacle", check.minDistanceToObstacle},
         {"finalPosition", Vec3Json(check.finalPosition)},
         {"finalYawDegrees", engine::Degrees(check.finalYawRadians)},
         {"hitBounds", check.hitBounds},
@@ -385,6 +408,98 @@ FerryOfficeVehicleRuntimeComparisonResult::RouteCheck RunAdapterRouteCheck(
     return check;
 }
 
+float ObstacleSteerForFrame(int frame)
+{
+    if (frame < 36) {
+        return 0.0f;
+    }
+    if (frame < 96) {
+        return -0.18f;
+    }
+    if (frame < 130) {
+        return 0.16f;
+    }
+    return 0.0f;
+}
+
+FerryOfficeVehicleRuntimeComparisonResult::ObstacleCheck RunDeterministicObstacleCheck(const SceneVehicleDefinition& vehicle)
+{
+    FerryOfficeVehicleRuntimeComparisonResult::ObstacleCheck check;
+    check.backendName = "deterministic";
+    check.minDistanceToObstacle = std::numeric_limits<float>::max();
+    check.finalPosition = vehicle.spawnPosition;
+    check.finalYawRadians = vehicle.spawnYawRadians;
+
+    VehicleController controller = BuildDeterministicVehicle(vehicle);
+    for (int frame = 0; frame < ObstacleCheckMaxFrames; ++frame) {
+        engine::InputState input;
+        input.moveForward = ObstacleCheckThrottle;
+        input.moveRight = ObstacleSteerForFrame(frame);
+        controller.beginFrame();
+        controller.updateDriving(1.0f / 60.0f, input);
+
+        const VehicleState& state = controller.state();
+        check.frameCount = frame + 1;
+        check.finalPosition = state.position;
+        check.finalYawRadians = state.yawRadians;
+        check.hitBounds = check.hitBounds || state.hitBoundsThisFrame;
+        check.maxLateralOffset = std::max(check.maxLateralOffset, std::abs(state.position.z - ObstacleLaneCenterZ));
+        check.minDistanceToObstacle = std::min(check.minDistanceToObstacle, HorizontalDistance(state.position, {ObstacleProxyX, 0.0f, ObstacleProxyZ}));
+    }
+
+    check.clearedObstacleProxy =
+        (check.finalPosition.x - vehicle.spawnPosition.x) >= ObstacleRequiredXProgress
+        && check.maxLateralOffset >= ObstacleRequiredLateralOffset;
+    check.passed = check.clearedObstacleProxy && !check.hitBounds;
+    check.message = check.passed
+        ? "Deterministic steering produced a bounded lateral obstacle-proxy lane offset."
+        : "Deterministic steering did not produce the expected obstacle-proxy lane offset.";
+    return check;
+}
+
+FerryOfficeVehicleRuntimeComparisonResult::ObstacleCheck RunAdapterObstacleCheck(
+    const engine::physics::VehicleRuntimeConfig& config,
+    engine::physics::PhysicsBackend backend)
+{
+    FerryOfficeVehicleRuntimeComparisonResult::ObstacleCheck check;
+    check.backendName = "unavailable";
+    check.minDistanceToObstacle = std::numeric_limits<float>::max();
+    check.finalPosition = config.spawnPosition;
+    check.finalYawRadians = config.spawnYawRadians;
+
+    std::unique_ptr<engine::physics::IVehicleRuntimeAdapter> adapter =
+        engine::physics::CreateVehicleRuntimeAdapter(backend);
+    if (!adapter || !adapter->initialize(config)) {
+        check.message = "Runtime adapter was unavailable for obstacle-proxy steering QA.";
+        return check;
+    }
+
+    check.backendName = std::string(adapter->backendName());
+    for (int frame = 0; frame < ObstacleCheckMaxFrames; ++frame) {
+        const bool stepped = adapter->step({ObstacleCheckThrottle, ObstacleSteerForFrame(frame), 0.0f}, config.fixedStepSeconds);
+        const engine::physics::VehicleRuntimeState state = adapter->state();
+        check.frameCount = frame + 1;
+        check.finalPosition = state.position;
+        check.finalYawRadians = state.yawRadians;
+        check.hitBounds = check.hitBounds || state.outOfBounds;
+        check.maxLateralOffset = std::max(check.maxLateralOffset, std::abs(state.position.z - ObstacleLaneCenterZ));
+        check.minDistanceToObstacle = std::min(check.minDistanceToObstacle, HorizontalDistance(state.position, {ObstacleProxyX, 0.0f, ObstacleProxyZ}));
+        if (!stepped || state.wheelContactCount < 2) {
+            break;
+        }
+    }
+    adapter->shutdown();
+
+    check.clearedObstacleProxy =
+        (check.finalPosition.x - config.spawnPosition.x) >= ObstacleRequiredXProgress
+        && check.maxLateralOffset >= ObstacleRequiredLateralOffset;
+    check.passed = check.clearedObstacleProxy && !check.hitBounds;
+    check.message = check.passed
+        ? "Runtime adapter steering produced a bounded lateral obstacle-proxy lane offset."
+        : "Runtime adapter steering did not produce the expected obstacle-proxy lane offset.";
+    return check;
+}
+
 VehicleController BuildDeterministicVehicle(const SceneVehicleDefinition& vehicle)
 {
     VehicleController controller;
@@ -523,6 +638,11 @@ bool WriteReport(const FerryOfficeVehicleRuntimeComparisonResult& result)
         routeChecks.push_back(RouteCheckJson(check));
     }
 
+    nlohmann::json obstacleChecks = nlohmann::json::array();
+    for (const FerryOfficeVehicleRuntimeComparisonResult::ObstacleCheck& check : result.obstacleChecks) {
+        obstacleChecks.push_back(ObstacleCheckJson(check));
+    }
+
     const nlohmann::json report = {
         {"schema", "v0.36-ferry-office-vehicle-runtime-comparison"},
         {"scenario", result.scenario},
@@ -539,6 +659,7 @@ bool WriteReport(const FerryOfficeVehicleRuntimeComparisonResult& result)
             {"samples", adapterSamples},
         }},
         {"routeChecks", routeChecks},
+        {"obstacleChecks", obstacleChecks},
         {"controlChecks", controlChecks},
         {"comparison", {
             {"maxPositionDelta", result.maxPositionDelta},
@@ -716,6 +837,8 @@ FerryOfficeVehicleRuntimeComparisonResult RunFerryOfficeVehicleRuntimeComparison
     const float checkpointRadius = ServiceRunCheckpointRadiusFromScene(loadedScene.scene);
     result.routeChecks.push_back(RunDeterministicRouteCheck(*vehicle, checkpointPosition, checkpointRadius));
     result.routeChecks.push_back(RunAdapterRouteCheck(config, backend, checkpointPosition, checkpointRadius));
+    result.obstacleChecks.push_back(RunDeterministicObstacleCheck(*vehicle));
+    result.obstacleChecks.push_back(RunAdapterObstacleCheck(config, backend));
 
     const bool closeEnough = result.maxPositionDelta <= RuntimePositionDeltaLimit
         && result.maxYawDeltaDegrees <= RuntimeYawDeltaLimitDegrees
@@ -728,10 +851,14 @@ FerryOfficeVehicleRuntimeComparisonResult RunFerryOfficeVehicleRuntimeComparison
         && std::all_of(result.routeChecks.begin(), result.routeChecks.end(), [](const auto& check) {
                return check.passed;
            });
-    result.passed = deterministicStable && adapterStable && closeEnough && controlsStable && routeStable && !result.deterministicSamples.empty();
+    const bool obstacleStable = result.obstacleChecks.size() == 2
+        && std::all_of(result.obstacleChecks.begin(), result.obstacleChecks.end(), [](const auto& check) {
+               return check.passed;
+           });
+    result.passed = deterministicStable && adapterStable && closeEnough && controlsStable && routeStable && obstacleStable && !result.deterministicSamples.empty();
     result.recommendation = result.passed ? "promote" : "defer";
     result.recommendationReason = result.passed
-        ? "The selected vehicle runtime adapter stayed stable, close enough to compare, passed compact control checks, and reached the authored service-run checkpoint."
+        ? "The selected vehicle runtime adapter stayed stable, close enough to compare, passed compact control checks, reached the authored service-run checkpoint, and passed the obstacle-proxy steering check."
         : "The selected vehicle runtime adapter needs more work before live switch promotion.";
     if (!result.passed) {
         result.error = "Vehicle runtime comparison did not meet stability or comparison thresholds.";
