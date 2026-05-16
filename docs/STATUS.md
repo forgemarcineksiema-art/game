@@ -33,6 +33,62 @@ Last updated: 2026-05-16
 6. Add PowerShell/Python workbench commands for doctor, configure/build, verify, and status reporting.
 7. Run the available validation commands, record exact results here, and keep any compiler/graphics blockers honest.
 
+## v0.61 Follow-up Next-step Readability (2026-05-16)
+
+Selected milestone:
+
+- Make the longer 15-event Ferry Office / Harbor Parts chain clearer in playtest text with a compact next-step line.
+
+Candidate triage:
+
+- 15-event objective/readability pass: high player-facing impact, low risk, validates through focused UI/job text tests, playthrough QA, visual smoke, and `scripts\verify.ps1`.
+- Scene action bindings: high future-content impact, medium risk, better after confirming the longer chain reads well.
+- Collision-backed Jolt obstacle route: high vehicle-promotion impact, medium risk, but v0.59 was already the last vehicle-tech milestone.
+
+Why selected:
+
+- v0.60 added real content length. The safest immediate follow-up was to reduce player confusion before adding another beat or larger architecture.
+
+Definition of Done:
+
+- Add tested follow-up next-step text for relay, log, clear tag, Harbor Parts pickup, and Harbor Parts delivery.
+- Show that text in non-minimal playtest presentation once the service-call follow-up chain is relevant.
+- Preserve minimal/debug modes and the initial manifest prompt.
+- Run focused tests, playthrough QA, visual smoke, `scripts\verify.ps1`, and `git diff --check`.
+
+Implementation notes:
+
+- Added `FerryOfficeFollowupNextStepText()` beside the existing compact follow-up status helper.
+- Added a `Next:` line under `Follow-up:` in playtest mode.
+- Kept the helper hidden before `ferryOfficeJobComplete=true` so the start of the game remains uncluttered.
+
+Commands and results:
+
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: failed as expected before implementation because `FerryOfficeFollowupNextStepText` did not exist.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests EngineApp`: passed after implementation.
+- `python tests\test_playthrough_qa.py`: passed, 5 tests.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `python tools\playthrough_qa.py`: passed; phase=`complete`, events=15, vehicleRuntime=`deterministic`, framesToCheckpoint=139.
+- `python tools\capture_visual_smoke.py`: passed for GDI and DX11 captures; DX11 used WARP in this environment.
+- `scripts\verify.ps1`: passed; doctor, configure, build, CTest 11/11, scene validation, asset validation, mesh report, and smoke run completed.
+
+Automated evidence generated:
+
+- Focused C++ tests now cover every follow-up next-step transition through Harbor Parts delivery.
+- Visual smoke still starts at `Press E: Collect Ferry Manifest`, so the new next-step text did not clutter the initial prompt.
+
+Provisional decision:
+
+- Keep the playtest UI as lightweight text for now, but give the longer chain explicit next-step guidance before investing in a real HUD.
+
+Remaining limitations:
+
+- This is still not a route-arrow HUD, minimap, objective tracker widget, or input-scripted full UI progression capture.
+
+Next direction:
+
+- Scene action bindings are now the strongest content-growth unlock if the next milestone stays in gameplay; collision-backed Jolt obstacle replay remains the strongest vehicle-promotion milestone.
+
 ## v0.60 Harbor Parts Return Micro-slice (2026-05-16)
 
 Selected milestone:

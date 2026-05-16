@@ -538,6 +538,10 @@ std::string SandboxLayer::buildPresentationText(bool minimal) const
             || m_scene.worldState().isFlagSet(WorldFlag::DockRoadClearanceTagged);
         if (showFollowupStatus) {
             output << FerryOfficeFollowupStatusText(m_scene.worldState()) << "\n";
+            const std::string nextStep = FerryOfficeFollowupNextStepText(m_scene.worldState());
+            if (!nextStep.empty()) {
+                output << "Next: " << nextStep << "\n";
+            }
         }
         if (vehicle.occupied) {
             output << "Drive: speed=" << vehicle.speed

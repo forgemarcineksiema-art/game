@@ -674,6 +674,15 @@ Status: implemented and validated. Jolt vehicle runtime QA now passes with maxPo
 
 Status: implemented and validated. Scene data now has 11 interactables, 11 route markers, and 10 objective markers; deterministic playthrough QA completes the 15-event chain with Harbor Parts pickup and delivery, while the initial playtest prompt still focuses the Ferry Manifest.
 
+## v0.61 - Follow-up Next-step Readability
+
+- Add compact next-step text for the post-service-call follow-up chain.
+- Surface it in playtest mode after the service call reaches follow-up state.
+- Keep minimal mode small and keep the initial prompt focused on the Ferry Manifest.
+- Avoid a HUD framework, minimap, route-arrow system, or new content.
+
+Status: implemented and validated. Playtest text now pairs the compact `Follow-up:` state summary with a `Next:` line for relay, log, clear tag, Harbor Parts pickup, Harbor Parts delivery, and completion; focused tests, deterministic playthrough QA, visual smoke, and `scripts\verify.ps1` pass.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. With v0.60 adding a second compact content loop, the next useful content milestone is either a presentation/readability pass for the 15-event chain or scene action bindings to reduce `PrototypeScene` hardcoding before adding another beat. For vehicle promotion, the next useful milestone remains a collision-backed obstacle route before default Jolt promotion.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. With v0.61 covering the 15-event chain's next-step readability, the next useful content-growth milestone is scene action bindings to reduce `PrototypeScene` hardcoding before adding another beat. For vehicle promotion, the next useful milestone remains a collision-backed obstacle route before default Jolt promotion.

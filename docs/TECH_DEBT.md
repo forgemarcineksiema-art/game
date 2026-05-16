@@ -24,7 +24,7 @@ This file lists known foundation issues during the current playable-build phase.
 3. `WorldState` and `FerryOfficeJob` remain explicit in-memory prototype systems, not a save/load, inventory, economy, or mission framework.
 4. The tiny custom `.gltf` subset remains acceptable while assets are simple embedded-buffer static props.
 5. GDI remains the most battle-tested visual/playtest renderer, but DX11 now has a tiny renderer-owned bitmap debug text overlay and can be used for bounded playtest checks. DX11 still often falls back to WARP on this laptop.
-6. Scene data is the runtime source of truth for layout, while behavior mappings stay in C++ until more job types prove a stable data shape.
+6. Scene data is the runtime source of truth for layout, while behavior mappings stay in C++ until more job types prove a stable data shape. After v0.61, the follow-up chain is readable enough that scene action bindings are the likely next content-growth cleanup before another authored beat.
 7. v0.23 adds launch scripts, not release packaging, an installer, signing, updater, config UI, or save/settings persistence.
 8. v0.32 adds deterministic first-job QA coverage, not a replacement for human feel testing.
 9. v0.33 adds opt-in Jolt static-collision parity coverage for Ferry Office scene queries, not a migration of live player, traversal, gate, or vehicle behavior.
@@ -120,7 +120,7 @@ This file lists known foundation issues during the current playable-build phase.
 - Flag mappings are hardcoded in `PrototypeScene`; v0.8 reduced string-id repetition by using centralized Ferry Office names, and v0.60 shows the pattern stretching with Harbor Parts pickup/delivery gating.
 - `FerryOfficeJob` is one explicit scene-owned job helper for the Ferry Office Service Call. It is not a generic mission graph, quest scripting layer, reward system, or persistence layer.
 - Repeated same-value flag writes are ignored, which is correct for v0.6 but may need richer event semantics later.
-- Debug summary text became longer in v0.7 because it now includes objective, completion, and `exitReached`. v0.17 adds playtest/minimal/debug text modes, and v0.55 adds a compact follow-up status for the Dock Road endpoint chain, but there is still no real UI overlay or HUD framework.
+- Debug summary text became longer in v0.7 because it now includes objective, completion, and `exitReached`. v0.17 adds playtest/minimal/debug text modes, v0.55 adds compact follow-up status, and v0.61 adds compact follow-up next-step text, but there is still no real UI overlay, HUD framework, minimap, or route-arrow system.
 - There is no mission graph, quest scripting, dialogue integration, global event bus, or persistence layer.
 - Slice completion is a scene helper, not a mission/objective scripting system.
 - Job completion is also a scene helper. It proves one driver/fixer loop, but should not be generalized until more job types prove the real data shape.

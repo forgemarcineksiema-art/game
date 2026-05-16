@@ -20,7 +20,7 @@ Recent history forms a clear arc:
 - v0.32: deterministic Ferry Office playthrough QA.
 - v0.33: Jolt static scene-query parity QA.
 - v0.34: Jolt character/contact probe QA.
-- v0.45-v0.60: Jolt vehicle runtime controls, service-run route proxy, route-pace tuning, deterministic service-vehicle runtime playthrough QA, opt-in Jolt first-job live-loop QA, the Dock Road Relay follow-up beat, relay/log/clearance endpoint consequences, compact playtest follow-up text, camera-aware obstacle-proxy vehicle steering evidence, a clearance-tag visual cue, a tiny original clearance-tag mesh prop, Jolt obstacle-progress tuning, and a compact Harbor Parts return micro-slice.
+- v0.45-v0.61: Jolt vehicle runtime controls, service-run route proxy, route-pace tuning, deterministic service-vehicle runtime playthrough QA, opt-in Jolt first-job live-loop QA, the Dock Road Relay follow-up beat, relay/log/clearance endpoint consequences, compact playtest follow-up text, camera-aware obstacle-proxy vehicle steering evidence, a clearance-tag visual cue, a tiny original clearance-tag mesh prop, Jolt obstacle-progress tuning, a compact Harbor Parts return micro-slice, and a follow-up next-step readability line.
 
 ## Architecture Map
 
@@ -201,7 +201,7 @@ Commands run on 2026-05-16:
 - `python tools/scale_audit.py`: passed, no suspicious scale issues.
 - `python tools/mesh_report.py`: passed, 12 referenced model files.
 - `python tools/playthrough_qa.py`: passed; service-call phase `complete`, 15 events. After v0.60 this report is also expected to include vehicle runtime evidence, runtime service-vehicle enter, dock-road checkpoint, exit steps, the Dock Road Relay reset step, the relay service log sign-off, the dock-road clear-tag consequence, Harbor Parts pickup, and Harbor Parts delivery.
-- `python tools/capture_visual_smoke.py`: passed for GDI and DX11 captures; DX11 used WARP in this environment. After v0.55, playtest presentation also includes a compact `Follow-up: relay=... | log=... | road=...` line once endpoint follow-up state is relevant; after v0.58 the clearance-tag endpoint also has a tiny dynamic mesh prop; after v0.60 the initial playtest prompt still focuses `Collect Ferry Manifest` despite the new office shelf delivery interaction.
+- `python tools/capture_visual_smoke.py`: passed for GDI and DX11 captures; DX11 used WARP in this environment. After v0.55, playtest presentation also includes a compact `Follow-up: relay=... | log=... | road=...` line once endpoint follow-up state is relevant; after v0.58 the clearance-tag endpoint also has a tiny dynamic mesh prop; after v0.60 the initial playtest prompt still focuses `Collect Ferry Manifest` despite the new office shelf delivery interaction; after v0.61 the follow-up state also gets a compact `Next:` line.
 - `python tools/physics_parity_qa.py`: passed with Jolt backend; floor=4, raycast=4, overlap=4.
 - `python tools/character_contact_qa.py`: passed with Jolt backend; probes=7.
 
@@ -367,13 +367,13 @@ Validation:
 
 ## Recommendation
 
-Best next move: build a collision-backed obstacle route if vehicle promotion is the priority; otherwise make the 15-event service/Harbor Parts chain easier to read or extract scene action bindings before adding another content beat.
+Best next move: build a collision-backed obstacle route if vehicle promotion is the priority; otherwise extract scene action bindings before adding another content beat.
 
 Reason: v0.35 proved Jolt vehicle feasibility, v0.36 proved a frame-stepped runtime adapter comparison, v0.37 exposed that adapter through `--vehicle-runtime jolt`, v0.45 hardened tap/brake/reverse/coast checks, v0.46 added automated service-run route checks, v0.47 tuned Jolt route pace under a 240-frame budget, v0.48 proved the deterministic first-job vehicle beat can enter, drive, checkpoint, exit, and confirm through runtime controller behavior, v0.49 proved the same beat through the opt-in Jolt path, and v0.59 closes the camera-aware obstacle proxy progress gap. That is enough for stronger opt-in testing and small content growth, but not enough for default Jolt promotion until collision-backed obstacle replay evidence exists.
 
-Second-best: a small authored content beat only after the current Harbor Parts return loop remains readable and the repeated `PrototypeScene` gating pattern is either accepted deliberately or moved into a small data binding.
+Second-best: a small authored content beat only after the repeated `PrototypeScene` gating pattern is either accepted deliberately or moved into a small data binding.
 
-Do not start broad map expansion, renderer polish, or more authored props while the first service vehicle path still lacks narrower steering/obstacle evidence for any default vehicle-runtime promotion and the new 15-event chain still relies on explicit hardcoded gating.
+Do not start broad map expansion, renderer polish, or more authored props while the first service vehicle path still lacks narrower steering/obstacle evidence for any default vehicle-runtime promotion and the 15-event chain still relies on explicit hardcoded gating.
 
 Ready next-goal prompt:
 
@@ -389,13 +389,13 @@ Repository rules:
 - Commit and push only if validation passes and there are no unrelated user changes.
 
 Goal:
-Make the 15-event Ferry Office/Harbor Parts chain easier to read or reduce repeated scene-action hardcoding if content progress is the priority, or build a deterministic-vs-Jolt collision-backed steering/obstacle replay if vehicle promotion is the priority.
+Reduce repeated scene-action hardcoding if content progress is the priority, or build a deterministic-vs-Jolt collision-backed steering/obstacle replay if vehicle promotion is the priority.
 
 Why now:
 The first service job now has runtime enter, drive, checkpoint, exit, and confirm evidence for both deterministic and opt-in Jolt vehicle paths, v0.54 adds a compact Dock Road Relay reset, relay service log sign-off, and dock-road clear-tag consequence with remembered state, v0.55 makes that chain readable in playtest text, v0.58 gives the clearance endpoint a small dynamic mesh prop, v0.59 closes the camera-aware obstacle proxy progress gap, and v0.60 adds a Harbor Parts return micro-slice with a 15-event scripted playthrough. Content can keep growing from a better-covered first job, while Jolt default promotion still needs collision-backed obstacle evidence.
 
 Scope:
-- Either add a collision-backed obstacle route for Jolt/default-promotion evidence, improve objective/presentation readability for the Harbor Parts return loop, or introduce a narrow scene action binding if another content beat would otherwise add more `PrototypeScene` gating branches.
+- Either add a collision-backed obstacle route for Jolt/default-promotion evidence, or introduce a narrow scene action binding if another content beat would otherwise add more `PrototypeScene` gating branches.
 - Keep deterministic vehicle gameplay as the default.
 - Record whether Jolt should remain opt-in, get another tuning pass, or be considered for broader steering/obstacle testing; if adding content, extend playthrough QA to cover the new beat.
 

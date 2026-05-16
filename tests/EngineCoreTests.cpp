@@ -3287,6 +3287,45 @@ void TestFerryOfficeFollowupStatusSummarizesEndpointChain()
         "Follow-up status should show when the Harbor Parts crate has been delivered.");
 }
 
+void TestFerryOfficeFollowupNextStepGuidesLongChain()
+{
+    WorldState state;
+
+    Expect(FerryOfficeFollowupNextStepText(state).empty(),
+        "TestFerryOfficeFollowupNextStepGuidesLongChain",
+        "Follow-up next-step text should stay hidden before the service call is complete.");
+
+    state.setFlag(WorldFlag::FerryOfficeJobComplete, true, "Ferry Office Service Call");
+    Expect(FerryOfficeFollowupNextStepText(state).find("Dock Road Relay") != std::string::npos,
+        "TestFerryOfficeFollowupNextStepGuidesLongChain",
+        "The first follow-up next step should point to the relay.");
+
+    state.setFlag(WorldFlag::DockRoadRelayReset, true, "Dock Road Relay");
+    Expect(FerryOfficeFollowupNextStepText(state).find("Relay Service Log") != std::string::npos,
+        "TestFerryOfficeFollowupNextStepGuidesLongChain",
+        "After the relay reset, the next step should point to the log.");
+
+    state.setFlag(WorldFlag::DockRoadRelayLogged, true, "Relay Service Log");
+    Expect(FerryOfficeFollowupNextStepText(state).find("clear") != std::string::npos,
+        "TestFerryOfficeFollowupNextStepGuidesLongChain",
+        "After the log, the next step should point to the clear tag.");
+
+    state.setFlag(WorldFlag::DockRoadClearanceTagged, true, "Dock Road Clearance Tag");
+    Expect(FerryOfficeFollowupNextStepText(state).find("Harbor Parts") != std::string::npos,
+        "TestFerryOfficeFollowupNextStepGuidesLongChain",
+        "After clearance, the next step should point to the Harbor Parts crate.");
+
+    state.setFlag(WorldFlag::HarborPartsPickedUp, true, "Harbor Parts Crate");
+    Expect(FerryOfficeFollowupNextStepText(state).find("Ferry Office") != std::string::npos,
+        "TestFerryOfficeFollowupNextStepGuidesLongChain",
+        "After pickup, the next step should point back to the Ferry Office shelf.");
+
+    state.setFlag(WorldFlag::HarborPartsDelivered, true, "Ferry Office Parts Shelf");
+    Expect(FerryOfficeFollowupNextStepText(state).find("complete") != std::string::npos,
+        "TestFerryOfficeFollowupNextStepGuidesLongChain",
+        "After delivery, the next step should acknowledge follow-up completion.");
+}
+
 void TestFerryOfficeObjectiveTextGuidesRouteSteps()
 {
     PrototypeScene scene;
@@ -4595,6 +4634,7 @@ int main()
     TestFerryOfficeJobVehicleCheckpointRequiresOccupiedVehicle();
     TestFerryOfficeJobCompletionRequiresAllJobFlags();
     TestFerryOfficeFollowupStatusSummarizesEndpointChain();
+    TestFerryOfficeFollowupNextStepGuidesLongChain();
     TestFerryOfficeSliceStartsIncomplete();
     TestFerryOfficeObjectiveTextGuidesRouteSteps();
     TestFerryOfficeCompletionRequiresRememberedLoop();

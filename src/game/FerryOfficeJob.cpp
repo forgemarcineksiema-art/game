@@ -63,6 +63,29 @@ std::string FerryOfficeFollowupStatusText(const WorldState& state)
     return output.str();
 }
 
+std::string FerryOfficeFollowupNextStepText(const WorldState& state)
+{
+    if (!state.isFlagSet(WorldFlag::FerryOfficeJobComplete)) {
+        return {};
+    }
+    if (!state.isFlagSet(WorldFlag::DockRoadRelayReset)) {
+        return "Reset the Dock Road Relay.";
+    }
+    if (!state.isFlagSet(WorldFlag::DockRoadRelayLogged)) {
+        return "Sign the Relay Service Log.";
+    }
+    if (!state.isFlagSet(WorldFlag::DockRoadClearanceTagged)) {
+        return "Tag Dock Road clear.";
+    }
+    if (!state.isFlagSet(WorldFlag::HarborPartsPickedUp)) {
+        return "Collect Harbor Parts at the dock-road cabinet.";
+    }
+    if (!state.isFlagSet(WorldFlag::HarborPartsDelivered)) {
+        return "Deliver Harbor Parts to the Ferry Office shelf.";
+    }
+    return "Harbor Parts returned. Ferry Office follow-up complete.";
+}
+
 void FerryOfficeJob::configure(FerryOfficeJobConfig config)
 {
     m_config = std::move(config);
