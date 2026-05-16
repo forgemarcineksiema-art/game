@@ -2,6 +2,60 @@
 
 Last updated: 2026-05-16
 
+## v0.75 Overcast Background Separation Pass (2026-05-16)
+
+Selected milestone:
+
+- Make the default background read less like a black void and more like restrained coastal overcast.
+
+Candidate visual pass triage:
+
+- Overcast Background Pass: visible impact = high because the background occupies much of the default first frame; risk = medium because it changes renderer default clear color; validation/capture path = rebuild, GDI/DX11 visual smoke, `scripts\verify.ps1`.
+- More scene dressing: visible impact = medium; risk = medium because the last three passes already added camera/gate/dock structure.
+- New mesh replacement: visible impact = high; risk = higher because it would add asset generation scope.
+
+Why selected:
+
+- After v0.74, the dock and Ferry Office had stronger authored reads, but the large background still felt like a flat dark void. A small renderer clear-color adjustment improves coastal atmosphere without adding a sky system, fog renderer, lighting, or new scene clutter.
+
+Implementation notes:
+
+- Changed the default renderer clear color from a near-black blue to a slightly lighter overcast blue-gray.
+- The same `RendererConfig` default feeds GDI and DX11, so both capture paths get the same atmospheric baseline.
+- No scene layout, gameplay, text rendering, or material system behavior changed.
+
+Files changed:
+
+- `src\engine\renderer\RendererTypes.h`
+- `docs\STATUS.md`
+- `docs\ROADMAP.md`
+
+Focused validation:
+
+- `scripts\build.ps1`: passed.
+- `python tools\capture_visual_smoke.py`: passed after rebuild; GDI colors=69/lumaRange=221, DX11 colors=39/lumaRange=221 with WARP fallback in this environment.
+- `scripts\verify.ps1`: passed; doctor completed with known plain-PATH tool warnings, configure/build succeeded, default CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke completed.
+- `python tools\validate_scene.py`: passed.
+- `python tools\validate_assets.py`: passed.
+- `python tools\mesh_report.py`: passed; 12 mesh assets, 54 mesh instances, 12 referenced model files.
+- `python tools\scene_report.py`: passed; 24 scene materials, 30 visual placeholders, 54 mesh instances, 16 interactables, 16 route markers, and 15 objective markers.
+- `python tools\scale_audit.py`: passed.
+- `git diff --check`: passed with only the expected CRLF normalization warning for the touched header.
+
+Automated evidence generated:
+
+- `build\captures\v0.31-gdi-capture.bmp`
+- `build\captures\v0.31-dx11-capture.bmp`
+- `build\captures\capture_visual_smoke_report.json`
+
+Remaining visual weakness:
+
+- The background is still a flat clear color rather than real sky/fog/haze, and several repeated unit-box props still read as placeholder geometry. The next visual improvement should likely be a tiny original mesh replacement for one repeated high-visibility cue or a bounded fog/horizon treatment if the renderer path is ready.
+
+Commit/push:
+
+- Pending.
+
 ## v0.74 Dock Foreground Material Rhythm Pass (2026-05-16)
 
 Selected milestone:

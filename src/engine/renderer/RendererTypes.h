@@ -17,7 +17,7 @@ struct RendererConfig {
     std::string appName;
     int width = 1280;
     int height = 720;
-    Color clearColor = {0.08f, 0.11f, 0.16f, 1.0f};
+    Color clearColor = {0.14f, 0.18f, 0.20f, 1.0f};
     bool headless = false;
     void* nativeWindow = nullptr;
 };

@@ -796,6 +796,14 @@ Status: implemented and validated. The scene now has 50 mesh instances, includin
 
 Status: implemented and validated. The scene now has 54 mesh instances, including four visual-only dock-board seam meshes that add damp foreground rhythm and lead the eye toward the Ferry Office approach; `scripts/verify.ps1`, scene/asset/mesh/scale checks, and GDI/DX11 visual smoke pass.
 
+## v0.75 - Overcast Background Separation Pass
+
+- Adjust the default renderer clear color so the first frame reads as restrained coastal overcast rather than a near-black void.
+- Keep this as a tiny atmospheric baseline change, not a sky, fog, lighting, post-process, or weather system.
+- Preserve scene layout, gameplay, text overlay behavior, and validation/capture tooling.
+
+Status: implemented and validated. GDI and DX11 now use a slightly lighter overcast blue-gray default clear color; `scripts/verify.ps1`, scene/asset/mesh/scale checks, and GDI/DX11 visual smoke pass while text contrast remains usable.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.74, the next useful future milestone should either improve coastal atmospheric separation from fresh capture evidence, replace a small repeated unit-box cue with a richer original mesh, add an automated route-walking proxy for the longer Ferry Office follow-up chain, or use preferred-runtime evidence to harden Jolt road-edge/live-control behavior.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.75, the next useful future milestone should either replace a small repeated high-visibility unit-box cue with a richer original mesh, add a bounded fog/horizon treatment if the renderer path is ready, add an automated route-walking proxy for the longer Ferry Office follow-up chain, or use preferred-runtime evidence to harden Jolt road-edge/live-control behavior.
