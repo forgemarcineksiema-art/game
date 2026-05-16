@@ -13,8 +13,8 @@ This file lists known foundation issues during the current playable-build phase.
 
 ### Fix Soon
 
-1. Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, and the opt-in `python tools\physics_parity_qa.py` Jolt path as bounded visual/behavioral/physics evidence before asking for a manual pass.
-2. Decide whether the next non-packaging pass should be a narrow Jolt player/contact migration spike, Jolt vehicle feasibility spike, a second renderer polish pass around resize/text quality, an input-scripted runtime pass, or one more tiny authored prop. Do not expand several at once.
+1. Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, and opt-in `python tools\character_contact_qa.py` as bounded visual/behavioral/physics evidence before asking for a manual pass.
+2. Decide whether the next non-packaging pass should be a narrow live player collision migration spike, Jolt vehicle feasibility spike, a second renderer polish pass around resize/text quality, an input-scripted runtime pass, or one more tiny authored prop. Do not expand several at once.
 3. Keep the Blender/static mesh path narrow and honest. v0.27 adds one controlled original Blender prop; avoid more quantity until visual evidence proves prop language, not renderer readability or vehicle feel, is the blocker.
 
 ### Acceptable For Now
@@ -28,6 +28,7 @@ This file lists known foundation issues during the current playable-build phase.
 7. v0.23 adds launch scripts, not release packaging, an installer, signing, updater, config UI, or save/settings persistence.
 8. v0.32 adds deterministic first-job QA coverage, not a replacement for human feel testing.
 9. v0.33 adds opt-in Jolt static-collision parity coverage for Ferry Office scene queries, not a migration of live player, traversal, gate, or vehicle behavior.
+10. v0.34 adds opt-in character/contact probe coverage against the mirrored Ferry Office static scene, not a live `PlayerController` migration.
 
 ## Build / Toolchain
 
@@ -85,7 +86,8 @@ This file lists known foundation issues during the current playable-build phase.
 - Jolt integration currently uses pinned FetchContent, not vcpkg manifest mode. Revisit dependency management before making Jolt the default backend.
 - Jolt debug draw is exposed only as simple box debug lines for now. There is no full Jolt debug renderer bridge to `IRenderer`.
 - v0.33 mirrors the authored Ferry Office static boxes plus a flat scene-floor body into the opt-in Jolt path and validates floor/raycast/overlap parity against `PrototypeWorld` through `tools\physics_parity_qa.py`.
-- No player, traversal, service-gate, dynamic collider toggling, or production vehicle behavior has been migrated to Jolt yet. v0.10 uses a deterministic vehicle controller and only uses `engine::physics` for a small service-yard validation/debug world.
+- v0.34 adds `tools\character_contact_qa.py`, which compares the current player proxy against opt-in physics contact candidates for floor grounding, walls, the service gate, service barrier, a clear lane, a corner pushout, and an opened-gate case.
+- No live player, traversal, service-gate, dynamic collider toggling, or production vehicle behavior has been migrated to Jolt yet. v0.10 uses a deterministic vehicle controller and only uses `engine::physics` for a small service-yard validation/debug world.
 
 ## Vehicle
 

@@ -4970,3 +4970,65 @@ Remaining limitations:
 - Live Ferry Office gameplay still uses `PrototypeWorld` collision.
 - The validation floor body is a flat helper, not terrain, slopes, stairs, ramps, or a production ground model.
 - Overlap parity validates static box overlap-style behavior through the engine API; it is not a swept capsule, character controller, dynamic contact solver, or vehicle physics migration.
+
+## v0.34 Jolt Character Contact / Player Collision Probe (2026-05-16)
+
+Scope:
+
+- Built on v0.33's opt-in Ferry Office static-collision parity bridge.
+- Kept default gameplay unchanged; live `PlayerController`, traversal, service-gate behavior, and vehicle driving still use `PrototypeWorld`.
+- Added a narrow QA-only character/contact scenario to check whether the current player proxy can be represented against the mirrored opt-in physics scene with useful contact and grounding behavior.
+- Avoided Jolt VehicleConstraint, wheel/suspension physics, Job #2, NPCs, save/load, mission scripting, and broad collision rewrites.
+
+Focused TDD result:
+
+- Added C++ tests for accepting `--qa-physics-parity ferry-office-character-contact`, report writing, the probe set, opened-gate clear behavior, and default-build unavailable-backend handling before implementation.
+- Added `tests\test_character_contact_qa.py` before implementation for wrapper/report validation.
+- `scripts\build.ps1` failed as expected before implementation because `game/FerryOfficeCharacterContactQa.h` was missing.
+- After implementation, C++ contact tests and Python wrapper tests passed.
+- The first Jolt-enabled standalone run crashed before writing a report because the initial runner repeatedly shut down and reinitialized the same physics world across probes. The runner now creates a fresh physics world per probe, which made the standalone smoke pass and keeps lifecycle expectations simpler.
+
+Implementation notes:
+
+- Added `src\game\FerryOfficeCharacterContactQa.h/.cpp`.
+- Added `tools\character_contact_qa.py`.
+- Added scenario parsing for `ferry-office-character-contact` under the existing `--qa-physics-parity` flag and routes it before normal `Application` startup.
+- The probe runner loads the authored scene, builds `PrototypeWorld`, mirrors blocking scene colliders plus a validation floor body into a fresh opt-in physics world per probe, uses physics overlap results as contact candidates, and compares resolved player-proxy output to `PrototypeWorld::resolvePlayer`.
+- The report schema is `v0.34-ferry-office-character-contact`.
+- Added `CharacterContactQaTests` to default CTest and `FerryOfficeCharacterContactQaSmoke` to opt-in Jolt CTest.
+- Updated `docs\PHYSICS_DECISION.md`, `docs\RUNBOOK.md`, `docs\MANUAL_TEST_CHECKLIST.md`, `docs\TECH_DEBT.md`, and `docs\ROADMAP.md`.
+
+Validation so far:
+
+- `scripts\build.ps1`: failed as expected before implementation because `game/FerryOfficeCharacterContactQa.h` was missing.
+- `scripts\build.ps1`: passed after implementation.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed after implementation.
+- `python tests\test_character_contact_qa.py`: failed once because the test fixture had too few probes for the validator; the fixture was corrected.
+- `python tests\test_character_contact_qa.py`: passed, 2 tests.
+- `build\windows-vs2022-debug\Debug\EngineApp.exe --qa-physics-parity ferry-office-character-contact --scene data\scenes\ferry_office.scene.json --qa-physics-report build\physics\default-character-contact-unavailable-report.json`: failed as expected on the default build because the opt-in backend was unavailable.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `python tools\character_contact_qa.py --exe build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --report-json build\physics\ferry-office-character-contact-report.json`: initially failed with process exit `2147483651` before report output; fixed by creating a fresh physics world per probe.
+- `python tools\character_contact_qa.py --exe build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --report-json build\physics\ferry-office-character-contact-report.json`: passed after lifecycle fix; backend `jolt`, probes=7.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 11/11 tests including `FerryOfficeCharacterContactQaSmoke`.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 9/9 tests including `CharacterContactQaTests`.
+- `rg -n "Jolt|JPH|<Jolt/" src\game`: returned no matches; game code still avoids direct vendor references.
+- `scripts\doctor.ps1`: passed after docs/tooling updates; expected PATH warnings remain for compiler/tool binaries.
+- `scripts\configure.ps1`: passed for `windows-vs2022-debug`.
+- `scripts\build.ps1`: passed after final docs/tooling updates.
+- `scripts\verify.ps1`: passed; CTest 9/9 passed including `CharacterContactQaTests` and `FerryOfficePlaythroughQaSmoke`, scene validation passed, asset validation passed, mesh report passed, and null smoke loaded all 8 static mesh assets.
+- `python tools\playthrough_qa.py`: passed; `phase=complete`, `events=10`.
+- `python tools\capture_visual_smoke.py`: passed; GDI and DX11 captures stayed 1280x720 with expected scene and overlay text signals. DX11 hardware still fell back to WARP.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `python tools\physics_parity_qa.py`: passed after final verify using `build\windows-vs2022-debug-jolt\Debug\EngineApp.exe`; backend `jolt`, floor=4, raycast=4, overlap=4.
+- `python tools\character_contact_qa.py`: passed after final verify using `build\windows-vs2022-debug-jolt\Debug\EngineApp.exe`; backend `jolt`, probes=7.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed after final verify, 11/11 tests.
+- `git diff --check`: passed; expected line-ending warnings remain on this Windows checkout.
+
+Remaining limitations:
+
+- The character/contact path is QA-only and does not run the normal update loop or open a window.
+- Live Ferry Office gameplay still uses `PrototypeWorld` collision.
+- The adapter is not a Jolt character controller, swept capsule, shape cast, dynamic contact solver, slope/step system, or vehicle physics migration.
+- The opened-gate case omits the gate body for that probe; it proves the desired nonblocking result, not a general dynamic collider system.

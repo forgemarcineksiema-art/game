@@ -14,6 +14,7 @@
 #include "game/InteractionSystem.h"
 #include "game/PlayerController.h"
 #include "game/FerryOfficeData.h"
+#include "game/FerryOfficeCharacterContactQa.h"
 #include "game/FerryOfficeJob.h"
 #include "game/FerryOfficePhysicsParity.h"
 #include "game/FerryOfficePlaythroughQa.h"
@@ -404,6 +405,25 @@ void TestQaPhysicsParityArgumentsRejectUnknownScenario()
     Expect(!result.errors.empty(),
         "TestQaPhysicsParityArgumentsRejectUnknownScenario",
         "Unknown QA physics parity scenarios should be rejected.");
+}
+
+void TestQaPhysicsParityArgumentsAcceptCharacterContactScenario()
+{
+    const char* argv[] = {
+        "EngineApp",
+        "--qa-physics-parity",
+        "ferry-office-character-contact",
+        "--qa-physics-report",
+        "build/physics/ferry-office-character-contact-report.json",
+    };
+    const auto result = engine::ParseArguments(5, argv);
+
+    Expect(result.errors.empty(),
+        "TestQaPhysicsParityArgumentsAcceptCharacterContactScenario",
+        "QA physics parity should accept the Ferry Office character/contact scenario.");
+    Expect(result.config.qaPhysicsParity == "ferry-office-character-contact",
+        "TestQaPhysicsParityArgumentsAcceptCharacterContactScenario",
+        "Config should preserve the requested character/contact scenario.");
 }
 
 void TestHelpTextMentionsQaPhysicsParityFlags()
@@ -3103,6 +3123,78 @@ void TestFerryOfficePhysicsParityHandlesUnavailableJoltExplicitly()
         "Unavailable Jolt parity should explain the opt-in build requirement.");
 }
 
+void TestFerryOfficeCharacterContactQaComparesPlayerProxyAndWritesReport()
+{
+    const std::filesystem::path reportPath =
+        std::filesystem::temp_directory_path() / "tidebreak-v034-character-contact-report.json";
+    std::filesystem::remove(reportPath);
+
+    const auto result = RunFerryOfficeCharacterContactQa(
+        DefaultScenePathForTests(),
+        reportPath,
+        engine::physics::PhysicsBackend::Simple);
+
+    Expect(result.passed,
+        "TestFerryOfficeCharacterContactQaComparesPlayerProxyAndWritesReport",
+        result.error.empty() ? "Character contact QA should pass against the engine simple backend." : result.error);
+    Expect(result.sceneId == "ferry-office",
+        "TestFerryOfficeCharacterContactQaComparesPlayerProxyAndWritesReport",
+        "Character contact QA should report the loaded Ferry Office scene.");
+    Expect(result.staticColliderCount == 9,
+        "TestFerryOfficeCharacterContactQaComparesPlayerProxyAndWritesReport",
+        "Character contact QA should mirror authored static colliders.");
+    Expect(result.probes.size() >= 7,
+        "TestFerryOfficeCharacterContactQaComparesPlayerProxyAndWritesReport",
+        "Character contact QA should include grounding, blockers, clear lane, corner, and opened-gate probes.");
+    bool foundOpenedGate = false;
+    for (const FerryOfficeCharacterContactProbeResult& probe : result.probes) {
+        foundOpenedGate = foundOpenedGate || probe.name == "opened-gate-clear";
+        Expect(probe.passed,
+            "TestFerryOfficeCharacterContactQaComparesPlayerProxyAndWritesReport",
+            "Character contact probe should pass: " + probe.name + " / " + probe.message);
+    }
+    Expect(foundOpenedGate,
+        "TestFerryOfficeCharacterContactQaComparesPlayerProxyAndWritesReport",
+        "Character contact QA should include an opened-gate nonblocking probe.");
+    Expect(std::filesystem::exists(reportPath),
+        "TestFerryOfficeCharacterContactQaComparesPlayerProxyAndWritesReport",
+        "Character contact QA should write the requested JSON report.");
+
+    std::ifstream input(reportPath);
+    const nlohmann::json report = nlohmann::json::parse(input);
+    input.close();
+    Expect(report["schema"] == "v0.34-ferry-office-character-contact",
+        "TestFerryOfficeCharacterContactQaComparesPlayerProxyAndWritesReport",
+        "Character contact report should use the v0.34 schema.");
+    Expect(report["passed"] == true,
+        "TestFerryOfficeCharacterContactQaComparesPlayerProxyAndWritesReport",
+        "Character contact report should mark the simple-backend run as passed.");
+    Expect(report["probes"].size() >= 7,
+        "TestFerryOfficeCharacterContactQaComparesPlayerProxyAndWritesReport",
+        "Character contact report should include the expected probe set.");
+
+    std::filesystem::remove(reportPath);
+}
+
+void TestFerryOfficeCharacterContactQaHandlesUnavailableBackendExplicitly()
+{
+    if (engine::physics::IsJoltPhysicsAvailable()) {
+        return;
+    }
+
+    const auto result = RunFerryOfficeCharacterContactQa(
+        DefaultScenePathForTests(),
+        {},
+        engine::physics::OptInPhysicsBackend());
+
+    Expect(!result.passed,
+        "TestFerryOfficeCharacterContactQaHandlesUnavailableBackendExplicitly",
+        "Default builds should not pretend opt-in character contact QA ran.");
+    Expect(!result.error.empty(),
+        "TestFerryOfficeCharacterContactQaHandlesUnavailableBackendExplicitly",
+        "Unavailable opt-in character contact QA should explain the build requirement.");
+}
+
 void TestSandboxDebugTextUsesReadableSections()
 {
     SandboxLayer layer;
@@ -3426,6 +3518,7 @@ int main()
     TestHelpTextMentionsQaPlaythroughFlags();
     TestQaPhysicsParityArgumentsSelectScenarioAndReportPath();
     TestQaPhysicsParityArgumentsRejectUnknownScenario();
+    TestQaPhysicsParityArgumentsAcceptCharacterContactScenario();
     TestHelpTextMentionsQaPhysicsParityFlags();
     TestCursorCaptureArguments();
     TestUiModeArguments();
@@ -3523,6 +3616,8 @@ int main()
     TestFerryOfficePlaythroughQaCompletesJobAndWritesReport();
     TestFerryOfficePhysicsParityBuildsSceneStaticWorldAndWritesReport();
     TestFerryOfficePhysicsParityHandlesUnavailableJoltExplicitly();
+    TestFerryOfficeCharacterContactQaComparesPlayerProxyAndWritesReport();
+    TestFerryOfficeCharacterContactQaHandlesUnavailableBackendExplicitly();
     TestSandboxDebugTextUsesReadableSections();
     TestFerryOfficeOneShotManifestDoesNotDuplicateEvents();
     TestTraversalFocusSelectsAvailableAffordance();

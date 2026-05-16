@@ -414,6 +414,17 @@ Status: implemented as a bounded behavioral QA harness. `--qa-playthrough ferry-
 
 Status: implemented as an opt-in static scene-query parity bridge. The Jolt-enabled path validates 9 Ferry Office static colliders, 4 floor probes, 4 raycast probes, and 4 overlap probes, writes `build\physics\ferry-office-collision-parity-report.json`, and keeps live gameplay on the existing prototype collision path.
 
+## v0.34 - Jolt Character Contact / Player Collision Probe
+
+- Keep default gameplay unchanged.
+- Build on v0.33's mirrored Ferry Office static scene and add a QA-only character/contact scenario for the current player collision proxy.
+- Add `--qa-physics-parity ferry-office-character-contact` and `tools\character_contact_qa.py`.
+- Compare deterministic player-proxy cases against `PrototypeWorld`: dock-floor grounding, office wall blocking, service gate blocking, service barrier blocking, clear lane movement, corner pushout, and opened-gate clear movement.
+- Preserve live `PlayerController` movement on `PrototypeWorld`.
+- Avoid Jolt VehicleConstraint, wheel/suspension physics, Job #2, NPCs, save/load, mission scripting, or broad collision rewrites.
+
+Status: implemented as an opt-in read-only character/contact probe. The Jolt-enabled path validates 7 player-proxy contact cases, writes `build\physics\ferry-office-character-contact-report.json`, and keeps live gameplay on the existing prototype collision path.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, and opt-in `python tools\physics_parity_qa.py` as bounded evidence before asking for manual play. The next small goal should probably target one remaining gap: a narrow Jolt player/contact migration probe, a contained Jolt vehicle feasibility spike, an input-scripted runtime pass, or resize/text-quality renderer polish if capture reliability blocks validation. Avoid Job #2 until the first job is both automatically validated and comfortable by hand.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, and opt-in `python tools\character_contact_qa.py` as bounded evidence before asking for manual play. The next small goal should probably target one remaining gap: a narrow live player collision migration probe, a contained Jolt vehicle feasibility spike, an input-scripted runtime pass, or resize/text-quality renderer polish if capture reliability blocks validation. Avoid Job #2 until the first job is both automatically validated and comfortable by hand.

@@ -149,6 +149,27 @@ Important limits:
 - The floor body is a bounded validation helper for scene-query parity, not terrain, slopes, stairs, ramps, or a full ground model.
 - Overlap parity currently validates static box overlap-style behavior through the engine physics API. It is not a character controller, sweep test, contact solver, dynamic rigid-body migration, or vehicle constraint.
 
+## v0.34 Character Contact Probe Result
+
+Added:
+
+- `src/game/FerryOfficeCharacterContactQa.h/.cpp`, a QA-only runner that compares the current player collision proxy against opt-in physics contact candidates in the mirrored Ferry Office static scene.
+- `--qa-physics-parity ferry-office-character-contact` as a second physics QA scenario.
+- `tools/character_contact_qa.py`, which runs a Jolt-enabled `EngineApp.exe`, validates report schema `v0.34-ferry-office-character-contact`, and checks the contact probe set.
+
+Validated:
+
+- Default dependency-free build still passes and reports the opt-in backend unavailable for the character/contact scenario.
+- Opt-in `windows-vs2022-debug-jolt` configure/build passes.
+- Opt-in CTest now includes `FerryOfficeCharacterContactQaSmoke` and passes.
+- The character/contact report validates 7 probes: dock-floor grounding, office back wall blocking, service gate blocking, service barrier blocking, dock lane clear movement, office corner pushout, and opened-gate clear movement.
+
+Important limits:
+
+- The v0.34 adapter is read-only QA. It uses physics overlap candidates plus the existing player-proxy resolution shape to compare against `PrototypeWorld`.
+- It is not a live `PlayerController` migration, Jolt character controller, sweep/capsule implementation, dynamic contact solver, or vehicle physics step.
+- The service-gate opened case is represented by omitting the gate body from that probe's mirrored static world; this proves the nonblocking expectation, not a general runtime dynamic-collider system.
+
 Important implementation choices:
 
 - Jolt is opt-in for now. `scripts/verify.ps1` keeps using the default dependency-free preset.
@@ -164,7 +185,7 @@ Important implementation choices:
 - Do not add physics scene serialization yet.
 - Do not require vcpkg until the dependency strategy is revisited.
 - Do not expose Jolt types to `src/game`.
-- Do not treat the v0.33 parity bridge as a gameplay migration.
+- Do not treat the v0.33 parity bridge or v0.34 character/contact probe as a gameplay migration.
 
 ## Next Recommendation
 
@@ -175,4 +196,4 @@ v0.10 used the physics foundation without promoting full Jolt vehicle constraint
 - Tests scan `src/game` to prevent accidental `Jolt` / `JPH::*` vendor references.
 - The opt-in `windows-vs2022-debug-jolt` preset remains the proof that the Jolt backend still configures, builds, and tests through the engine API.
 
-Next recommendation: if the project wants vehicle feel "only with Jolt", do one more narrow migration step before wheel constraints: either a Jolt player/contact probe for the current static scene, or a contained Jolt vehicle feasibility spike that does not replace the live Service Call until its behavior is proven.
+Next recommendation: if the project wants vehicle feel "only with Jolt", the next step can be either a narrow live player collision migration spike using the proven probe cases, or a contained Jolt vehicle feasibility spike that does not replace the live Service Call until its behavior is proven.

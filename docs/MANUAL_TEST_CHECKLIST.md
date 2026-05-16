@@ -65,6 +65,7 @@ cmake --preset windows-vs2022-debug-jolt
 cmake --build --preset windows-vs2022-debug-jolt
 ctest --preset windows-vs2022-debug-jolt --output-on-failure
 python tools\physics_parity_qa.py
+python tools\character_contact_qa.py
 ```
 
 Optional scene authoring checks:
@@ -131,6 +132,7 @@ python tools/mesh_report.py
 - [ ] `windows-vs2022-debug-jolt` configures and builds when intentionally testing physics dependency work.
 - [ ] Jolt tests pass through the engine-owned `IPhysicsWorld` API.
 - [ ] `python tools\physics_parity_qa.py` passes with a Jolt-enabled build and writes `build\physics\ferry-office-collision-parity-report.json`.
+- [ ] `python tools\character_contact_qa.py` passes with a Jolt-enabled build and writes `build\physics\ferry-office-character-contact-report.json`.
 - [ ] `src/game` has no direct `JPH::*` or Jolt header usage.
 - [ ] Ferry Office player/camera/collision behavior still feels unchanged after physics foundation work.
 

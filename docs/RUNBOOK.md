@@ -163,10 +163,14 @@ Opt-in Ferry Office physics parity QA:
 cmake --preset windows-vs2022-debug-jolt
 cmake --build --preset windows-vs2022-debug-jolt
 python tools\physics_parity_qa.py
+python tools\character_contact_qa.py
 build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --qa-physics-parity ferry-office-collision --qa-physics-report build\physics\ferry-office-collision-parity-report.json
+build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --qa-physics-parity ferry-office-character-contact --qa-physics-report build\physics\ferry-office-character-contact-report.json
 ```
 
 `--qa-physics-parity ferry-office-collision` is a QA-only path, off by default. It requires the opt-in Jolt-enabled executable for the real backend check. It loads the authored Ferry Office scene, mirrors the 9 static scene colliders plus a validation floor body into the engine physics API, compares floor, raycast, and player-overlap-style probes against `PrototypeWorld`, and writes `build\physics\ferry-office-collision-parity-report.json` by default. This proves static scene-query parity only; it does not migrate live player collision, traversal, service-gate toggling, or vehicle behavior.
+
+`--qa-physics-parity ferry-office-character-contact` is also QA-only and off by default. It compares the current player collision proxy against opt-in physics overlap/contact candidates for dock-floor grounding, office wall blocking, service gate blocking, service barrier blocking, clear lane movement, corner pushout, and an opened-gate clear case. It writes `build\physics\ferry-office-character-contact-report.json` by default. This is a probe for future migration, not a live `PlayerController` change or a character-controller implementation.
 
 Headless smoke mode:
 
@@ -222,6 +226,7 @@ Ferry Office physics parity smoke:
 
 ```powershell
 python tools\physics_parity_qa.py
+python tools\character_contact_qa.py
 ```
 
 ## Scene Tools
@@ -367,7 +372,7 @@ build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi
 - If all windowed rendering fails, keep `--renderer null --headless` working while the renderer issue is fixed.
 - If captured mouse-look feels risky in a VM or remote session, run with `--free-cursor` and use arrow keys for camera orbit.
 - If the Jolt preset fails while normal validation passes, keep using the default preset and inspect `docs/PHYSICS_DECISION.md`. The Jolt path is opt-in until the physics backend is promoted by a later goal.
-- If `tools\physics_parity_qa.py` fails because `build\windows-vs2022-debug-jolt\Debug\EngineApp.exe` is missing, configure/build the `windows-vs2022-debug-jolt` preset first. A default executable should report the opt-in physics backend as unavailable rather than pretending parity ran.
+- If `tools\physics_parity_qa.py` or `tools\character_contact_qa.py` fails because `build\windows-vs2022-debug-jolt\Debug\EngineApp.exe` is missing, configure/build the `windows-vs2022-debug-jolt` preset first. A default executable should report the opt-in physics backend as unavailable rather than pretending parity/contact QA ran.
 - If the runtime logs `Runtime scene load failed`, check the `--scene` path first, then run `python tools/validate_scene.py <path>`.
 - If scene validation fails, inspect `data/scenes/ferry_office.scene.json` and run `python tools/scene_report.py` to see the current object counts and required ids.
 - If mesh references fail, run `python tools/validate_assets.py` and `python tools/mesh_report.py`. Verify referenced files exist under `assets/models`, every committed `.gltf` is scene-referenced, `.glb`/external buffers are not used yet, and license/provenance exists in scene data.

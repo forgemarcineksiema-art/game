@@ -3,6 +3,7 @@
 #include "engine/application/Application.h"
 #include "engine/core/Config.h"
 #include "engine/core/Logger.h"
+#include "game/FerryOfficeCharacterContactQa.h"
 #include "game/FerryOfficePhysicsParity.h"
 #include "game/FerryOfficePlaythroughQa.h"
 
@@ -38,6 +39,19 @@ int main(int argc, const char* const* argv)
     }
 
     if (parseResult.config.qaPhysicsParityRequested()) {
+        if (parseResult.config.qaPhysicsParity == "ferry-office-character-contact") {
+            const auto result = RunFerryOfficeCharacterContactQa(
+                parseResult.config.scenePath,
+                parseResult.config.qaPhysicsReportPath,
+                engine::physics::OptInPhysicsBackend());
+            if (result.passed) {
+                engine::Logger::info("QA character contact passed: " + result.reportPath.string());
+                return 0;
+            }
+            engine::Logger::error("QA character contact failed: " + result.error);
+            return 8;
+        }
+
         const auto result = RunFerryOfficePhysicsParityQa(
             parseResult.config.scenePath,
             parseResult.config.qaPhysicsReportPath,
