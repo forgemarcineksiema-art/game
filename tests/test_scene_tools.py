@@ -439,6 +439,25 @@ class SceneToolTests(unittest.TestCase):
         self.assertNotIn("mesh-ferry-office-left-entry-post", ids)
         self.assertNotIn("mesh-ferry-office-right-entry-post", ids)
 
+    def test_v088_sign_panel_mesh_replaces_front_sign_box(self) -> None:
+        ids = scene_data.collect_ids(self.scene)
+        mesh_assets = {asset["id"]: asset for asset in self.scene["meshAssets"]}
+        mesh_instances = {instance["id"]: instance for instance in self.scene["meshInstances"]}
+
+        self.assertIn("ferry-office-sign-panel-mesh", mesh_assets)
+        self.assertEqual(
+            "assets/models/ferry_office_sign_panel.gltf",
+            mesh_assets["ferry-office-sign-panel-mesh"]["path"],
+        )
+        self.assertIn("v0.88", mesh_assets["ferry-office-sign-panel-mesh"]["provenance"])
+        self.assertIn("not a blender export", mesh_assets["ferry-office-sign-panel-mesh"]["provenance"].lower())
+        self.assertIn("mesh-ferry-office-sign-board", ids)
+        self.assertEqual(
+            "ferry-office-sign-panel-mesh",
+            mesh_instances["mesh-ferry-office-sign-board"]["assetId"],
+        )
+        self.assertEqual("dock-muted-sign-yellow", mesh_instances["mesh-ferry-office-sign-board"]["colorKey"])
+
     def test_duplicate_mesh_replacement_links_are_reported(self) -> None:
         scene = copy.deepcopy(self.scene)
         first = copy.deepcopy(scene["meshInstances"][0])

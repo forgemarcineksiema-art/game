@@ -593,6 +593,17 @@
       "notes": "Original low-poly facade surround with inset panel breaks, side piers, and a raised lintel. Visual only; Ferry Office collision, prompts, route space, gate state, and sign cue remain authored separately."
     },
     {
+      "id": "ferry-office-sign-panel-mesh",
+      "path": "assets/models/ferry_office_sign_panel.gltf",
+      "format": "gltf",
+      "units": "meter",
+      "upAxis": "Y",
+      "license": "project-original",
+      "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v0.88 fallback Ferry Office sign panel because the front sign was the loudest remaining facade unit-box cue; not a Blender export.",
+      "authoringBoundsHalfExtents": [0.82, 0.20, 0.13],
+      "notes": "Original low-poly non-text sign panel with a raised frame and inset bands. Visual only; no readable text, texture, branding, collision, prompt logic, or final signage pipeline."
+    },
+    {
       "id": "service-yard-cart-body-mesh",
       "path": "assets/models/service_yard_cart_body.gltf",
       "format": "gltf",
@@ -675,12 +686,12 @@
     },
     {
       "id": "mesh-ferry-office-sign-board",
-      "assetId": "unit-box-mesh",
-      "position": [0.0, 1.45, 1.98],
+      "assetId": "ferry-office-sign-panel-mesh",
+      "position": [0.0, 1.24, 1.98],
       "yawDegrees": 0.0,
-      "scale": [1.35, 0.28, 0.08],
+      "scale": [1.0, 1.0, 1.0],
       "colorKey": "dock-muted-sign-yellow",
-      "notes": "Simple original sign/timetable placeholder; not text, texture, or final signage."
+      "notes": "v0.88 original non-text sign-panel mesh replaces the front sign unit box with a framed facade cue; visual only."
     },
     {
       "id": "mesh-service-gate",
