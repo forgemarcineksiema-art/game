@@ -33,6 +33,7 @@ KNOWN_COLOR_KEYS = {
     "damp-service-concrete",
     "deep-harbor-blue",
     "dock-muted-sign-yellow",
+    "dock-road-relay-state",
     "dock-weathered-wood",
     "ferry-route-sign-blue",
     "misty-island-ground",

@@ -587,6 +587,15 @@ Status: implemented as comparable first-job vehicle evidence for the opt-in Jolt
 
 Status: implemented as a second compact service beat. The scene now has 7 interactables, 7 route markers, and 6 objective markers; the playthrough reaches the service-run checkpoint in 139 frames and completes with 11 world events, ending in `dockRoadRelayReset=true`.
 
+## v0.51 - Relay Reset Presentation State
+
+- Add a small authored status-light placeholder beside the Dock Road Relay.
+- Add `dock-road-relay-state` to scene materials and dynamic presentation colors.
+- Turn the relay cue from warning orange to reset green when `dockRoadRelayReset` is true.
+- Keep this as a tiny world-state feedback cue, not a lighting system, save/load feature, new mesh asset, or broader job framework.
+
+Status: implemented pending final verification. Scene data now has 19 scene materials and 25 visual placeholders, and the deterministic playthrough still completes the 11-event service-call plus relay loop.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. With v0.50 proving one follow-up content beat, the next useful milestone is either a small visible relay-reset presentation consequence or a narrower deterministic-vs-Jolt steering/obstacle replay before any default vehicle-runtime promotion.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. With v0.51 giving the first follow-up beat a visible local consequence, the next useful milestone is either one more tiny scene-authored content beat that depends on `dockRoadRelayReset`, or a narrower deterministic-vs-Jolt steering/obstacle replay before any default vehicle-runtime promotion.

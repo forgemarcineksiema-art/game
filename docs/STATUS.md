@@ -181,6 +181,79 @@ Next direction:
 
 - Either make the relay reset visibly change the endpoint presentation state, or add a second compact follow-up step that reuses the relay flag as a world-state prerequisite.
 
+## v0.51 Relay Reset Presentation State (2026-05-16)
+
+Selected milestone:
+
+- Make the Dock Road Relay reset visibly change the endpoint presentation state instead of being only a prompt/debug/world-state consequence.
+
+Candidate triage:
+
+- Relay reset presentation consequence: medium playable/readability impact, low risk, validates through scene tools, presentation tests, playthrough QA, and visual smoke.
+- Second compact follow-up step: higher content impact, medium risk, but v0.50's first follow-up still needed a visible state change before more beats stack on it.
+- Deterministic-vs-Jolt steering/obstacle replay: high technical leverage, medium risk, but would defer a direct player-facing consequence after the relay content beat.
+
+Why selected:
+
+- v0.50 added remembered state, but the endpoint did not yet visibly acknowledge the relay reset.
+- A small dynamic presentation cue keeps the authored place feeling more reactive while staying inside the existing scene-material and playthrough validation path.
+
+Definition of Done:
+
+- Scene data has a relay status light and authored material preset for `dock-road-relay-state`.
+- Runtime presentation turns that key from warning orange to reset green when `dockRoadRelayReset` is set.
+- Scene tests and tools expect the new material/visual counts.
+- Playthrough QA and visual smoke remain green.
+
+Implementation notes:
+
+- Added `dock-road-relay-state` to `ScenePresentation`, `tools\scene_data.py`, and `data\scenes\ferry_office.scene.json`.
+- Added `dock-road-relay-status-light` as a small visual placeholder beside the relay endpoint.
+- Extended `ScenePresentationState` with `dockRoadRelayReset` and passed it from `SandboxLayer` for visual placeholders and static mesh tinting.
+- Added a C++ presentation test proving the relay color shifts from orange to green after reset.
+- Updated scene-tool and C++ scene-count expectations to 19 scene materials and 25 visual placeholders.
+
+Commands and results so far:
+
+- `python tests\test_scene_tools.py`: failed as expected before implementation because the expected material count moved to 19 while scene data still had 18.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: failed as expected before implementation because `ScenePresentationState::dockRoadRelayReset` did not exist.
+- `python tests\test_scene_tools.py`: passed after implementation, 40 tests.
+- `python tests\test_playthrough_qa.py`: passed, 5 tests.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: passed.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: initially failed because the default scene-count test still expected 24 visual placeholders and 18 scene materials; fixed to 25 and 19.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed after count fix.
+- `python tools\validate_scene.py`: passed.
+- `python tools\scene_report.py`: passed; scene now reports 19 scene materials and 25 visual placeholders.
+- `python tools\scale_audit.py`: passed; no suspicious scale issues.
+- `python tools\playthrough_qa.py`: passed; phase=`complete`, events=11, vehicleRuntime=`deterministic`, framesToCheckpoint=139.
+- `python tools\validate_assets.py`: passed; 11 model files.
+- `python tools\mesh_report.py`: passed; 11 mesh assets, 46 mesh instances, 11 model files.
+- `python tools\capture_visual_smoke.py`: passed; GDI and DX11 captures were produced, with DX11 using WARP after hardware device creation failed in this environment.
+- `scripts\verify.ps1`: passed; doctor passed with known PATH warnings, configure/build succeeded, CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null smoke loaded the Ferry Office scene.
+- `python tools\playthrough_qa.py --exe build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --vehicle-runtime jolt --report-json build\playthroughs\ferry-office-service-call-jolt-report.json`: passed; phase=`complete`, events=11, vehicleRuntime=`jolt`, framesToCheckpoint=213.
+- `git diff --check`: passed with expected CRLF normalization warnings only.
+
+Automated evidence generated:
+
+- `build\playthroughs\ferry-office-service-call-report.json`
+- `build\captures\capture_visual_smoke_report.json`
+- `build\captures\v0.31-gdi-capture.bmp`
+- `build\captures\v0.31-dx11-capture.bmp`
+
+Provisional decision:
+
+- Keep the relay reset as the right next content consequence, and use the existing scene-material dynamic palette path rather than adding a new mesh asset or renderer feature.
+- The visible cue is intentionally small: it proves local world-state feedback without turning the relay beat into a broader electrical/lighting system.
+
+Remaining limitations:
+
+- The relay cue is a simple colored placeholder, not an animated light, persistent save-state consequence, road unlock, or NPC/world simulation change.
+- The visual smoke capture starts at the opening objective, so the dynamic post-reset color is covered by presentation tests and playthrough state rather than a before/after screenshot pair.
+
+Next direction:
+
+- Commit and push this milestone if the repo remains clean, then re-check status before choosing the next milestone.
+
 ## Commands Run
 
 ```powershell

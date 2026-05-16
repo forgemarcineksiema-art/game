@@ -70,8 +70,9 @@ class SceneToolTests(unittest.TestCase):
         summary = scene_data.build_summary(self.scene)
 
         self.assertEqual("ferry-office", summary.scene_id)
-        self.assertEqual(18, summary.material_count)
+        self.assertEqual(19, summary.material_count)
         self.assertGreaterEqual(summary.collider_count, 9)
+        self.assertEqual(25, summary.visual_count)
         self.assertEqual(7, summary.interactable_count)
         self.assertEqual(1, summary.traversal_count)
         self.assertEqual(1, summary.vehicle_count)

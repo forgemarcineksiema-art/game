@@ -868,6 +868,7 @@ void SandboxLayer::drawSceneVisualPlaceholders(engine::IRenderer& renderer)
         m_scene.worldState().isFlagSet(WorldFlag::RouteOpened),
         m_scene.worldState().isFlagSet(WorldFlag::PowerRestored),
         m_vehicle.state().occupied,
+        m_scene.worldState().isFlagSet(WorldFlag::DockRoadRelayReset),
     };
     const bool fullDebug = m_uiMode == engine::UiMode::Debug;
 
@@ -1108,6 +1109,7 @@ void SandboxLayer::drawStaticMeshDebug(engine::IRenderer& renderer)
         m_scene.worldState().isFlagSet(WorldFlag::RouteOpened),
         m_scene.worldState().isFlagSet(WorldFlag::PowerRestored),
         m_vehicle.state().occupied,
+        m_scene.worldState().isFlagSet(WorldFlag::DockRoadRelayReset),
     };
 
     for (const SceneMeshInstanceDefinition& authored : m_sceneDefinition.meshInstances) {

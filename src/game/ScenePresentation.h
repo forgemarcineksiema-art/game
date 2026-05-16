@@ -11,6 +11,7 @@ struct ScenePresentationState {
     bool routeOpened = false;
     bool powerRestored = false;
     bool vehicleOccupied = false;
+    bool dockRoadRelayReset = false;
 };
 
 struct SceneMaterial {

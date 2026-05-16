@@ -102,6 +102,11 @@
       "baseColor": [0.82, 0.35, 0.12, 1.0]
     },
     {
+      "key": "dock-road-relay-state",
+      "response": "painted",
+      "baseColor": [0.82, 0.46, 0.12, 1.0]
+    },
+    {
       "key": "service-gate-state",
       "response": "painted",
       "baseColor": [0.42, 0.12, 0.08, 1.0]
@@ -352,6 +357,13 @@
       "center": [19.35, 0.38, -2.2],
       "halfExtents": [0.25, 0.38, 0.25],
       "colorKey": "dock-muted-sign-yellow"
+    },
+    {
+      "id": "dock-road-relay-status-light",
+      "role": "relay-status-light",
+      "center": [18.05, 0.72, 0.25],
+      "halfExtents": [0.16, 0.08, 0.16],
+      "colorKey": "dock-road-relay-state"
     }
   ],
   "meshAssets": [
