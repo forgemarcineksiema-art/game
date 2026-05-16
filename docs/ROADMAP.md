@@ -780,6 +780,14 @@ Status: implemented and validated. The deterministic and Jolt playthroughs now c
 
 Status: implemented and validated. The default third-person camera now starts at a 22 degree pitch, making the dock and Ferry Office approach occupy more of the GDI/DX11 visual smoke captures while `scripts/verify.ps1` and scene/asset/mesh/capture checks pass.
 
+## v0.73 - Ferry Office Gate Focal Hierarchy Pass
+
+- Break up the flat closed service-gate/facade silhouette in the default Ferry Office first view.
+- Add only visual-only gate structure using existing placeholder mesh/material language.
+- Preserve service-gate collision, route state, prompts, and gameplay behavior.
+
+Status: implemented and validated. The scene now has 50 mesh instances, including three visual-only closed-gate slat/seam meshes that make the Ferry Office gate read as weathered service infrastructure rather than one flat slab; `scripts/verify.ps1`, scene/asset/mesh/scale checks, and GDI/DX11 visual smoke pass.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.72, the next useful future milestone should either improve the Ferry Office facade/closed-gate focal hierarchy from fresh capture evidence, add an automated route-walking proxy for the longer Ferry Office follow-up chain, or use preferred-runtime evidence to harden Jolt road-edge/live-control behavior.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.73, the next useful future milestone should either improve dock foreground material rhythm/coastal atmosphere from fresh capture evidence, add an automated route-walking proxy for the longer Ferry Office follow-up chain, or use preferred-runtime evidence to harden Jolt road-edge/live-control behavior.

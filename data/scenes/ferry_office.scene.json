@@ -616,6 +616,33 @@
       "linkedColliderId": "service-gate"
     },
     {
+      "id": "mesh-service-gate-upper-slat",
+      "assetId": "unit-box-mesh",
+      "position": [0.0, 1.22, 2.16],
+      "yawDegrees": 0.0,
+      "scale": [4.55, 0.12, 0.08],
+      "colorKey": "weathered-yard-rail",
+      "notes": "v0.73 visual-only closed-gate slat that breaks up the flat Ferry Office front without changing collision."
+    },
+    {
+      "id": "mesh-service-gate-lower-slat",
+      "assetId": "unit-box-mesh",
+      "position": [0.0, 0.48, 2.16],
+      "yawDegrees": 0.0,
+      "scale": [4.55, 0.12, 0.08],
+      "colorKey": "weathered-yard-rail",
+      "notes": "v0.73 paired lower closed-gate slat for Ferry Office focal hierarchy; visual only."
+    },
+    {
+      "id": "mesh-service-gate-center-seam",
+      "assetId": "unit-box-mesh",
+      "position": [0.0, 0.82, 2.12],
+      "yawDegrees": 0.0,
+      "scale": [0.10, 1.18, 0.08],
+      "colorKey": "rusted-roof-trim",
+      "notes": "v0.73 center seam so the closed service gate reads as authored infrastructure rather than one debug slab."
+    },
+    {
       "id": "mesh-maintenance-box",
       "assetId": "unit-box-mesh",
       "position": [2.8, 0.65, 1.9],

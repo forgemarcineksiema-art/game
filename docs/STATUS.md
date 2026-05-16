@@ -2,6 +2,59 @@
 
 Last updated: 2026-05-16
 
+## v0.73 Ferry Office Gate Focal Hierarchy Pass (2026-05-16)
+
+Selected milestone:
+
+- Break up the flat closed service-gate/facade read in the default Ferry Office first view.
+
+Candidate visual pass triage:
+
+- Ferry Office Focal Hierarchy Pass: visible impact = high because the gate dominates the current first frame; risk = low because the pass can use existing mesh/material data without changing collision or interactions; validation/capture path = scene tools, GDI/DX11 visual smoke, `scripts\verify.ps1`.
+- Dock Road Atmosphere Pass: visible impact = medium; risk = low, but the dock road is less prominent in the default first frame.
+- Service Yard Identity Pass: visible impact = medium; risk = medium because more equipment near the vehicle could drift into clutter.
+
+Why selected:
+
+- After v0.72 improved camera composition, fresh capture evidence showed the Ferry Office front still read as a broad flat block. Adding a small amount of gate structure gives the focal building more authored infrastructure detail without expanding content or crowding objectives.
+
+Implementation notes:
+
+- Added visual-only upper/lower slats and a center seam to the scene-authored service gate.
+- Reused `unit-box-mesh` plus existing `weathered-yard-rail` and `rusted-roof-trim` material keys.
+- Left the `service-gate` collider, route state, prompts, player start, and gameplay flow unchanged.
+
+Files changed:
+
+- `data\scenes\ferry_office.scene.json`
+- `docs\STATUS.md`
+- `docs\ROADMAP.md`
+
+Focused validation:
+
+- `python tools\validate_scene.py`: passed.
+- `python tools\validate_assets.py`: passed.
+- `python tools\mesh_report.py`: passed; 12 mesh assets, 50 mesh instances, 12 referenced model files.
+- `python tools\scene_report.py`: passed; 24 scene materials, 30 visual placeholders, 50 mesh instances, 16 interactables, 16 route markers, and 15 objective markers.
+- `python tools\scale_audit.py`: passed.
+- `python tools\capture_visual_smoke.py`: passed; GDI colors=69/lumaRange=221, DX11 colors=39/lumaRange=221 with WARP fallback in this environment.
+- `scripts\verify.ps1`: passed; doctor completed with known plain-PATH tool warnings, configure/build succeeded, default CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke completed.
+- `git diff --check`: passed with only the expected CRLF normalization warning for the touched scene file.
+
+Automated evidence generated:
+
+- `build\captures\v0.31-gdi-capture.bmp`
+- `build\captures\v0.31-dx11-capture.bmp`
+- `build\captures\capture_visual_smoke_report.json`
+
+Remaining visual weakness:
+
+- The default slice still has a very dark, flat sky/background and the dock/service-yard foreground could use more grounded material rhythm. The next safe visual pass should target dock foreground material rhythm or coastal atmosphere from fresh capture evidence.
+
+Commit/push:
+
+- Pending.
+
 ## v0.72 Default Camera Composition Pass (2026-05-16)
 
 Selected milestone:
