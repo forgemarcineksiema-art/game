@@ -363,6 +363,74 @@ Next direction:
 
 - Return to Jolt steering/acceleration tuning or build a collision-backed obstacle route before revisiting default vehicle promotion. If staying content-facing, the next larger step should be a compact Job #2 micro-slice rather than more endpoint polish.
 
+## v0.59 Jolt Obstacle Progress Tuning (2026-05-16)
+
+Selected milestone:
+
+- Tune the opt-in Jolt vehicle runtime so the camera-aware obstacle proxy no longer under-progresses compared with deterministic.
+
+Candidate triage:
+
+- Jolt steering/acceleration tuning: high vehicle-decision impact, medium risk, validates through stricter vehicle runtime QA, opt-in Jolt CTest, Jolt playthrough QA, and `scripts\verify.ps1`.
+- Collision-backed obstacle route: stronger future promotion evidence, higher risk, best after the current proxy gap is closed.
+- Compact Job #2 micro-slice: high content impact, but vehicle evidence had a crisp failing metric from v0.56.
+
+Why selected:
+
+- v0.56 showed the Jolt route was stable and camera-readable but ended the obstacle proxy at `x=11.97` while deterministic reached `x=18.82`.
+- v0.58 completed the immediate endpoint-presentation follow-up, so it was time to close the strongest automated vehicle gap before adding more vehicle-dependent content.
+
+Definition of Done:
+
+- `tools\vehicle_runtime_qa.py` rejects stale reports where deterministic and Jolt obstacle final X progress differs by more than 4.0 units.
+- Opt-in Jolt runtime tuning brings obstacle progress inside that threshold while preserving control checks, service-run route completion, and first-job playthrough completion.
+- Deterministic default gameplay remains unchanged.
+- Jolt CTest, Jolt playthrough QA, default `scripts\verify.ps1`, and `git diff --check` pass.
+
+Implementation notes:
+
+- Added a wrapper-level obstacle-progress threshold to `tools\vehicle_runtime_qa.py`.
+- Added Python coverage proving v0.56-style obstacle-progress divergence is rejected.
+- Tuned only `src\engine\physics\JoltVehicleRuntime.cpp`: raised Jolt engine max torque and added a small steering-drive assist that applies only when positive throttle and steering are both active.
+- Kept Jolt/vendor types inside `src\engine\physics`; no `src\game` vendor leakage and no deterministic vehicle changes.
+
+Commands and results:
+
+- `python tests\test_vehicle_runtime_qa.py`: passed after adding the stale-report rejection test, 8 tests.
+- `cmake --build --preset windows-vs2022-debug-jolt --target EngineApp`: passed before tuning.
+- `python tools\vehicle_runtime_qa.py`: failed as expected before tuning with `deterministicX=18.82`, `joltX=11.97`, `delta=6.85`.
+- `cmake --build --preset windows-vs2022-debug-jolt --target EngineApp`: passed after the initial throttle-assist attempt.
+- `python tools\vehicle_runtime_qa.py`: still failed after that attempt with `delta=6.85`; driver input magnitude alone was not enough.
+- `cmake --build --preset windows-vs2022-debug-jolt --target EngineApp`: passed after torque and steering-drive assist tuning.
+- `python tools\vehicle_runtime_qa.py`: passed; backend=`jolt`, samples=5, controlChecks=4, routeChecks=2, obstacleChecks=2, maxPositionDelta=1.49, recommendation=`promote`.
+- `python tools\playthrough_qa.py --exe build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --vehicle-runtime jolt --report-json build\playthroughs\ferry-office-service-call-jolt-report.json`: passed; phase=`complete`, events=13, vehicleRuntime=`jolt`, framesToCheckpoint=212.
+- `cmake --build --preset windows-vs2022-debug-jolt --target EngineCoreTests`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 15/15 tests.
+- `scripts\verify.ps1`: passed; doctor, configure, build, CTest 11/11, scene validation, asset validation, mesh report, and smoke run completed.
+
+Automated evidence generated:
+
+- `build\physics\ferry-office-vehicle-runtime-comparison-report.json` now recommends `promote` for the opt-in Jolt runtime comparison.
+- Comparison metrics: maxPositionDelta=1.49, maxSpeedDelta=2.25, maxYawDelta=29.10 degrees.
+- Route check: deterministic reaches the checkpoint in 139 frames; Jolt reaches it in 212 frames with no bounds hit.
+- Obstacle proxy: deterministic final position approximately `(18.82, -0.24)`, max lateral offset 1.96, max camera yaw delta 4.81 degrees; Jolt final position approximately `(15.91, -2.98)`, max lateral offset 0.94, max camera yaw delta 5.25 degrees. Obstacle final-X delta is now about 2.91, inside the 4.0-unit threshold.
+- Control checks still pass for tap/coast, braking, reverse motion, and reverse coast settling.
+
+Provisional decision:
+
+- Keep deterministic as the default live vehicle runtime for now.
+- Treat Jolt as stronger opt-in candidate evidence because the automated comparison now passes and recommends promotion, but require collision-backed obstacle replay or a broader live-play evidence milestone before changing the default runtime.
+
+Remaining limitations:
+
+- The steering-drive assist is an adapter-level tuning aid, not a physical tire model.
+- The obstacle route is still a scripted proxy with no physical cone/collider course and no camera obstruction evidence.
+- Human playtest remains useful later, but it is not a blocker because the automated evidence now covers the previous progress gap.
+
+Next direction:
+
+- Build a collision-backed obstacle route for Jolt/default-promotion evidence, or switch back to player-facing progress with a compact Job #2 micro-slice.
+
 ## v0.49 Opt-in Jolt Live-loop Playthrough QA (2026-05-16)
 
 Selected milestone:

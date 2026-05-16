@@ -656,6 +656,15 @@ Status: implemented and validated. Scene data now has 20 scene materials and 26 
 
 Status: implemented and validated. Scene data now has 12 mesh assets, 47 mesh instances, and 12 referenced model files; deterministic playthrough QA still completes the 13-event service-call follow-up chain, and visual smoke remains green.
 
+## v0.59 - Jolt Obstacle Progress Tuning
+
+- Tighten `tools\vehicle_runtime_qa.py` so stale obstacle reports fail when deterministic and Jolt final X progress differs by more than 4.0 units.
+- Tune only the opt-in Jolt vehicle runtime adapter to preserve compact steering-route progress.
+- Keep deterministic as the default vehicle runtime while treating Jolt as a stronger opt-in candidate.
+- Avoid collision-backed obstacle routes, default runtime promotion, vehicle damage, traffic, or vendor leakage into `src/game`.
+
+Status: implemented and validated. Jolt vehicle runtime QA now passes with maxPositionDelta=1.49 and recommendation=`promote`; the obstacle proxy final-X gap shrank from 6.85 to about 2.91 units, Jolt reaches the service checkpoint in 212 frames, opt-in Jolt playthrough QA completes the 13-event chain, and deterministic remains default pending collision-backed evidence.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. With v0.56 proving Jolt is camera-readable but still under-progresses in the obstacle proxy, the next useful vehicle milestone is Jolt steering/acceleration tuning or a collision-backed obstacle route. If staying content-facing, choose a compact Job #2 micro-slice rather than continuing endpoint polish.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. With v0.59 closing the obstacle-progress proxy gap, the next useful vehicle milestone is a collision-backed obstacle route before default Jolt promotion. If staying content-facing, choose a compact Job #2 micro-slice rather than continuing endpoint polish.

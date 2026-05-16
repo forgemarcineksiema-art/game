@@ -18,6 +18,7 @@ MAX_POSITION_DELTA = 4.0
 MAX_YAW_DELTA_DEGREES = 130.0
 MAX_SPEED_DELTA = 5.0
 MAX_JOLT_ROUTE_FRAMES = 240
+MAX_OBSTACLE_PROGRESS_DELTA = 4.0
 REQUIRED_CONTROL_CHECKS = {
     "tapThrottleCoast",
     "brakeStopsForwardMotion",
@@ -129,6 +130,16 @@ def _require_obstacle_checks(report: dict[str, Any]) -> list[dict[str, Any]]:
 
     if "deterministic" not in backends or "jolt" not in backends:
         raise ValueError(f"Vehicle runtime obstacle checks must include deterministic and jolt backends: {sorted(backends)}")
+
+    by_backend = {str(check.get("backend", "")): check for check in checks}
+    deterministic_x = float(by_backend["deterministic"]["finalPosition"][0])
+    jolt_x = float(by_backend["jolt"]["finalPosition"][0])
+    progress_delta = abs(deterministic_x - jolt_x)
+    if progress_delta > MAX_OBSTACLE_PROGRESS_DELTA:
+        raise ValueError(
+            "Vehicle runtime obstacle progress delta exceeded threshold: "
+            f"deterministicX={deterministic_x:.2f}, joltX={jolt_x:.2f}, delta={progress_delta:.2f}"
+        )
     return checks
 
 
