@@ -45,6 +45,7 @@ constexpr std::array RequiredFlags = {
     WorldFlag::FerryOfficeHandoffFiled,
     WorldFlag::StormPumpReset,
     WorldFlag::StormPumpTicketClosed,
+    WorldFlag::LowDockDrainCleared,
 };
 
 const Interactable* FindInteractableByName(const PrototypeScene& scene, std::string_view name)
@@ -584,6 +585,14 @@ FerryOfficePlaythroughQaResult RunFerryOfficeServiceCallPlaythroughQa(
         scene,
         "stormPumpTicketClosed",
         {WorldFlag::StormPumpTicketClosed},
+        actionOk,
+        message);
+
+    actionOk = TriggerInteraction(scene, FerryOffice::Names::LowDockDrainMarker, message);
+    RecordActionStep(result,
+        scene,
+        "lowDockDrainCleared",
+        {WorldFlag::LowDockDrainCleared},
         actionOk,
         message);
 

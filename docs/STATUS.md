@@ -2,6 +2,102 @@
 
 Last updated: 2026-05-16
 
+## v0.71 Low Dock Drain Clear Tag (2026-05-16)
+
+Selected milestone:
+
+- Add a compact authored Low Dock Drain clear-tag follow-up after the storm pump ticket.
+
+Candidate milestone triage:
+
+- Low Dock Drain clear tag: impact = extends the storm pump job seed into one more readable out-and-back world-state consequence; risk = low/medium because it follows existing scene action bindings and dynamic cue patterns; validation path = scene/tool tests, playthrough QA, visual smoke, `scripts\verify.ps1`.
+- Jolt live-control hardening: impact = medium/high, but v0.70 was already a technical vehicle milestone and another non-playable milestone would delay content progress.
+- Larger Job #3 seed: impact = higher, risk = higher because it would need more objective text, routing, and QA scope.
+
+Why selected:
+
+- After v0.70 moved Jolt into the preferred play-wrapper path, the next useful step should improve playable content. The storm pump sequence already mentions the low dock drain, so the smallest strong expansion is to make the player return to that drain and tag it clear with visible remembered state.
+
+Implementation notes:
+
+- Added `lowDockDrainCleared` world state.
+- Added `Low Dock Drain Marker` constants, built-in fallback interactable, authored scene interactable, route marker, objective marker, and dynamic status light.
+- Extended the follow-up next-step/status text so the pump ticket leads to the drain clear tag before the follow-up chain completes.
+- Extended `ScenePresentationState` and the dynamic palette with `low-dock-drain-state`.
+- Extended playthrough QA and scene/tool tests to require the new flag and step.
+
+Files changed:
+
+- `data\scenes\ferry_office.scene.json`
+- `src\game\WorldState.h`
+- `src\game\WorldState.cpp`
+- `src\game\FerryOfficeData.h`
+- `src\game\FerryOfficeJob.cpp`
+- `src\game\PrototypeScene.cpp`
+- `src\game\ScenePresentation.h`
+- `src\game\ScenePresentation.cpp`
+- `src\game\SandboxLayer.cpp`
+- `src\game\FerryOfficePlaythroughQa.cpp`
+- `tools\scene_data.py`
+- `tools\playthrough_qa.py`
+- `tests\EngineCoreTests.cpp`
+- `tests\test_scene_tools.py`
+- `docs\STATUS.md`
+- `docs\ROADMAP.md`
+- `docs\CONTEXT_MAP.md`
+
+Focused validation:
+
+- `python tools\validate_scene.py`: passed.
+- `python tests\test_scene_tools.py`: passed, 44 tests.
+- `cmake --build --preset windows-vs2022-debug --target EngineApp EngineCoreTests`: passed.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `python tools\playthrough_qa.py`: passed; phase `complete`, 20 events, vehicleRuntime `deterministic`, 139 frames to checkpoint.
+- `python tools\scene_report.py`: passed; now reports 24 scene materials, 30 visual placeholders, 16 interactables, 16 route markers, and 15 objective markers.
+- `python tools\capture_visual_smoke.py`: passed; GDI colors=65/lumaRange=221, DX11 colors=44/lumaRange=221 with WARP fallback in this environment.
+- `python tools\scale_audit.py`: passed.
+- `python tools\mesh_report.py`: passed.
+- `python tools\validate_assets.py`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt --target EngineApp EngineCoreTests`: passed.
+- `python tools\playthrough_qa.py --exe build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --vehicle-runtime jolt --report-json build\playthroughs\ferry-office-service-call-jolt-report.json`: passed; phase `complete`, 20 events, vehicleRuntime `jolt`, 212 frames to checkpoint.
+- `python tools\vehicle_runtime_qa.py`: passed; backend `jolt`, samples=5, controlChecks=4, routeChecks=2, obstacleChecks=2, maxPositionDelta=1.49, recommendation=`promote`.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: initially failed `PlaythroughQaTests` because Python unit-test report fixtures lacked the new `lowDockDrainCleared` flag/step; fixed the stale fixtures.
+- `python tests\test_playthrough_qa.py`: passed, 5 tests.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed after fixture update, 15/15 tests.
+
+Automated evidence generated:
+
+- `build\playthroughs\ferry-office-service-call-report.json`
+- `build\playthroughs\ferry-office-service-call-jolt-report.json`
+- `build\captures\capture_visual_smoke_report.json`
+- `build\physics\ferry-office-vehicle-runtime-comparison-report.json`
+
+Decision note:
+
+- Decision made: extend the storm pump seed with a low dock drain clear tag rather than starting a larger new job arc.
+- Alternatives considered: stop at the pump ticket, start a larger Job #3, or do another Jolt hardening pass immediately after v0.70.
+- Evidence used: green scene validation, green C++ tests, green 20-event playthrough QA, and green visual smoke.
+- Why this helps Tidebreak: the storm pump now visibly resolves at the actual low dock drain, strengthening local world-state consequence without adding a mission framework.
+- Revisit when: the drain needs a bespoke mesh/animation, save/load persistence, or physical route-walking QA instead of direct interaction triggers.
+
+Remaining limitations:
+
+- The drain cue is a placeholder status light, not a bespoke drain mesh or water/pump animation.
+- Playthrough QA triggers interactions directly; it does not yet path the player on foot from the office back to the drain.
+
+Final validation:
+
+- `scripts\verify.ps1`: passed; doctor completed with known plain-PATH tool warnings, configure/build succeeded, default CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke completed.
+- `git diff --check`: passed with only expected CRLF normalization warnings.
+
+Commit/push:
+
+- Pending.
+
+Next direction:
+
+- The longer Ferry Office chain now needs an automated route-walking proxy so objective growth is measured by movement/path readability instead of direct interaction triggers only.
+
 ## v0.70 Preferred Jolt Live Runtime Trial (2026-05-16)
 
 Selected milestone:
@@ -88,7 +184,7 @@ Final validation:
 
 Commit/push:
 
-- Pending.
+- Committed and pushed as `9e5f4f6` (`v0.70 preferred jolt runtime trial`).
 
 Next direction:
 

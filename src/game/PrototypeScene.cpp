@@ -158,6 +158,15 @@ void PrototypeScene::buildFromFerryOfficeData()
     stormPumpTicket.message = FerryOffice::Messages::StormPumpTicket;
     m_interactions.addInteractable(stormPumpTicket);
 
+    Interactable lowDockDrainMarker;
+    lowDockDrainMarker.name = FerryOffice::Names::LowDockDrainMarker;
+    lowDockDrainMarker.prompt = FerryOffice::Prompts::LowDockDrainMarker;
+    lowDockDrainMarker.position = FerryOffice::Positions::LowDockDrainMarker;
+    lowDockDrainMarker.radius = FerryOffice::Radii::LowDockDrainMarker;
+    lowDockDrainMarker.type = InteractableType::Info;
+    lowDockDrainMarker.message = FerryOffice::Messages::LowDockDrainMarker;
+    m_interactions.addInteractable(lowDockDrainMarker);
+
     addInteractableActionBinding(std::string(FerryOffice::Names::FerryManifest),
         {WorldFlag::ManifestCollected},
         {},
@@ -225,6 +234,10 @@ void PrototypeScene::buildFromFerryOfficeData()
         {},
         {WorldFlag::StormPumpReset},
         {WorldFlag::StormPumpTicketClosed});
+    addInteractableActionBinding(std::string(FerryOffice::Names::LowDockDrainMarker),
+        {},
+        {WorldFlag::StormPumpTicketClosed},
+        {WorldFlag::LowDockDrainCleared});
 
     TraversalAffordance serviceVault;
     serviceVault.name = FerryOffice::Names::ServiceVault;
@@ -509,8 +522,12 @@ std::string PrototypeScene::currentJobObjectiveText() const
         && !m_worldState.isFlagSet(WorldFlag::StormPumpTicketClosed)) {
         return "Close the storm pump ticket at the Ferry Office board.";
     }
-    if (m_worldState.isFlagSet(WorldFlag::StormPumpTicketClosed)) {
-        return "Storm pump ticket closed. Ferry Office follow-up complete.";
+    if (m_worldState.isFlagSet(WorldFlag::StormPumpTicketClosed)
+        && !m_worldState.isFlagSet(WorldFlag::LowDockDrainCleared)) {
+        return "Tag the low dock drain clear beside the service-run marker.";
+    }
+    if (m_worldState.isFlagSet(WorldFlag::LowDockDrainCleared)) {
+        return "Low dock drain clear. Ferry Office follow-up complete.";
     }
     return m_job.currentObjectiveText(m_worldState);
 }

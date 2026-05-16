@@ -1157,16 +1157,16 @@ void TestSceneLoaderLoadsDefaultFerryOfficeScene()
     Expect(result.scene.colliders.size() == 9,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored static colliders.");
-    Expect(result.scene.visualPlaceholders.size() == 29,
+    Expect(result.scene.visualPlaceholders.size() == 30,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored visual placeholders.");
-    Expect(result.scene.sceneMaterials.size() == 23,
+    Expect(result.scene.sceneMaterials.size() == 24,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored presentation materials for every current scene color key.");
     Expect(result.scene.meshInstances.size() >= 15,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored mesh instances, including the v0.18 prop style kit.");
-    Expect(result.scene.interactables.size() == 15,
+    Expect(result.scene.interactables.size() == 16,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored interactables.");
     Expect(result.scene.traversalAffordances.size() == 1,
@@ -1314,6 +1314,9 @@ void TestSceneLoaderLoadsHarborPartsJobBeat()
     const SceneRouteMarkerDefinition* stormTicketRoute = FindRouteMarker(result.scene, "route-storm-pump-to-ticket");
     const SceneObjectiveMarkerDefinition* stormPumpMarker = FindObjectiveMarker(result.scene, "storm-pump-marker");
     const SceneObjectiveMarkerDefinition* stormTicketMarker = FindObjectiveMarker(result.scene, "storm-pump-ticket-marker");
+    const SceneInteractableDefinition* lowDockDrain = FindSceneInteractable(result.scene, "low-dock-drain-marker");
+    const SceneRouteMarkerDefinition* lowDockDrainRoute = FindRouteMarker(result.scene, "route-storm-ticket-to-low-dock-drain");
+    const SceneObjectiveMarkerDefinition* lowDockDrainMarker = FindObjectiveMarker(result.scene, "low-dock-drain-objective-marker");
 
     Expect(result.ok(),
         "TestSceneLoaderLoadsHarborPartsJobBeat",
@@ -1366,6 +1369,15 @@ void TestSceneLoaderLoadsHarborPartsJobBeat()
     Expect(stormPumpMarker != nullptr && stormTicketMarker != nullptr,
         "TestSceneLoaderLoadsHarborPartsJobBeat",
         "Scene data should expose objective markers for the storm pump job seed.");
+    Expect(lowDockDrain != nullptr && lowDockDrain->name == FerryOffice::Names::LowDockDrainMarker,
+        "TestSceneLoaderLoadsHarborPartsJobBeat",
+        "Scene data should include the low dock drain clear-tag follow-up.");
+    Expect(lowDockDrainRoute != nullptr && lowDockDrainRoute->points.size() >= 2,
+        "TestSceneLoaderLoadsHarborPartsJobBeat",
+        "Scene data should route from the storm pump ticket back to the low dock drain.");
+    Expect(lowDockDrainMarker != nullptr,
+        "TestSceneLoaderLoadsHarborPartsJobBeat",
+        "Scene data should expose an objective marker for the low dock drain clear tag.");
 }
 
 void TestSceneLoaderLoadsInteractableActionPrerequisites()
@@ -1407,6 +1419,10 @@ void TestSceneLoaderLoadsInteractableActionPrerequisites()
     Expect(stormTicket != nullptr && ContainsString(stormTicket->requiredWorldFlags, "stormPumpReset"),
         "TestSceneLoaderLoadsInteractableActionPrerequisites",
         "Storm Pump Ticket should declare the storm pump reset prerequisite.");
+    const SceneInteractableDefinition* lowDockDrain = FindSceneInteractable(result.scene, "low-dock-drain-marker");
+    Expect(lowDockDrain != nullptr && ContainsString(lowDockDrain->requiredWorldFlags, "stormPumpTicketClosed"),
+        "TestSceneLoaderLoadsInteractableActionPrerequisites",
+        "Low Dock Drain Marker should declare the closed pump ticket prerequisite.");
 }
 
 void TestSceneLoaderReportsMissingSceneFile()
@@ -2193,6 +2209,8 @@ void TestScenePresentationDynamicPaletteStatesRemainDistinct()
     stormPumpResetState.stormPumpReset = true;
     ScenePresentationState stormPumpTicketClosedState;
     stormPumpTicketClosedState.stormPumpTicketClosed = true;
+    ScenePresentationState lowDockDrainClearedState;
+    lowDockDrainClearedState.lowDockDrainCleared = true;
 
     const engine::Color closedGate = SceneColorForKey("service-gate-state", {});
     const engine::Color openGate = SceneColorForKey("service-gate-state", openGateState);
@@ -2210,6 +2228,8 @@ void TestScenePresentationDynamicPaletteStatesRemainDistinct()
     const engine::Color stormPumpReset = SceneColorForKey("storm-pump-state", stormPumpResetState);
     const engine::Color stormTicketPending = SceneColorForKey("storm-pump-ticket-state", {});
     const engine::Color stormTicketClosed = SceneColorForKey("storm-pump-ticket-state", stormPumpTicketClosedState);
+    const engine::Color drainPending = SceneColorForKey("low-dock-drain-state", {});
+    const engine::Color drainCleared = SceneColorForKey("low-dock-drain-state", lowDockDrainClearedState);
 
     Expect(!ColorNear(closedGate, openGate),
         "TestScenePresentationDynamicPaletteStatesRemainDistinct",
@@ -2235,6 +2255,9 @@ void TestScenePresentationDynamicPaletteStatesRemainDistinct()
     Expect(stormTicketClosed.g > stormTicketPending.g && stormTicketClosed.r < stormTicketPending.r,
         "TestScenePresentationDynamicPaletteStatesRemainDistinct",
         "Storm pump ticket palette should shift from pending amber toward closed green.");
+    Expect(drainCleared.g > drainPending.g && drainCleared.r < drainPending.r,
+        "TestScenePresentationDynamicPaletteStatesRemainDistinct",
+        "Low dock drain palette should shift from pending amber toward clear green.");
 }
 
 void TestScenePresentationMaterialPresetsStayBoundedForAuthoredKeys()
@@ -3550,6 +3573,18 @@ void TestFerryOfficeFollowupStatusSummarizesEndpointChain()
     Expect(FerryOfficeFollowupStatusText(state).find("handoff=filed") != std::string::npos,
         "TestFerryOfficeFollowupStatusSummarizesEndpointChain",
         "Follow-up status should show when the Ferry Office handoff note has been filed.");
+
+    state.setFlag(WorldFlag::StormPumpReset, true, "Storm Pump Switch");
+    state.setFlag(WorldFlag::StormPumpTicketClosed, true, "Storm Pump Ticket");
+    Expect(FerryOfficeFollowupStatusText(state).find("pump=closed") != std::string::npos
+            && FerryOfficeFollowupStatusText(state).find("drain=later") != std::string::npos,
+        "TestFerryOfficeFollowupStatusSummarizesEndpointChain",
+        "Follow-up status should show that the low dock drain remains after the pump ticket closes.");
+
+    state.setFlag(WorldFlag::LowDockDrainCleared, true, "Low Dock Drain Marker");
+    Expect(FerryOfficeFollowupStatusText(state).find("drain=clear") != std::string::npos,
+        "TestFerryOfficeFollowupStatusSummarizesEndpointChain",
+        "Follow-up status should show when the low dock drain has been tagged clear.");
 }
 
 void TestFerryOfficeFollowupNextStepGuidesLongChain()
@@ -3606,9 +3641,14 @@ void TestFerryOfficeFollowupNextStepGuidesLongChain()
         "After the storm pump reset, the next step should point to the office ticket.");
 
     state.setFlag(WorldFlag::StormPumpTicketClosed, true, "Storm Pump Ticket");
+    Expect(FerryOfficeFollowupNextStepText(state).find("low dock drain") != std::string::npos,
+        "TestFerryOfficeFollowupNextStepGuidesLongChain",
+        "After the storm pump ticket, the next step should point to the low dock drain.");
+
+    state.setFlag(WorldFlag::LowDockDrainCleared, true, "Low Dock Drain Marker");
     Expect(FerryOfficeFollowupNextStepText(state).find("complete") != std::string::npos,
         "TestFerryOfficeFollowupNextStepGuidesLongChain",
-        "After the storm pump ticket, the next step should acknowledge follow-up completion.");
+        "After the low dock drain is clear, the next step should acknowledge follow-up completion.");
 }
 
 void TestFerryOfficeObjectiveTextGuidesRouteSteps()
@@ -3899,6 +3939,15 @@ void TestHarborPartsJobRequiresClearedDockRoad()
     Expect(ticketClosed && scene.worldState().isFlagSet(WorldFlag::StormPumpTicketClosed),
         "TestHarborPartsJobRequiresClearedDockRoad",
         "The storm pump ticket should close after the pump has been reset.");
+    Expect(scene.currentJobObjectiveText().find("low dock drain") != std::string::npos,
+        "TestHarborPartsJobRequiresClearedDockRoad",
+        "The objective should route the closed pump ticket back to the low dock drain.");
+
+    const bool drainCleared = scene.applyInteractionResult(
+        MakeSceneInteraction(std::string(FerryOffice::Names::LowDockDrainMarker), InteractableType::Info));
+    Expect(drainCleared && scene.worldState().isFlagSet(WorldFlag::LowDockDrainCleared),
+        "TestHarborPartsJobRequiresClearedDockRoad",
+        "The low dock drain marker should remember the final clear tag after the ticket is closed.");
 }
 
 void TestPrototypeSceneAppliesAuthoredInteractableFlagBindings()
@@ -4013,6 +4062,9 @@ void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
     Expect(state.isFlagSet(WorldFlag::StormPumpTicketClosed),
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should close the storm pump ticket.");
+    Expect(state.isFlagSet(WorldFlag::LowDockDrainCleared),
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "QA playthrough should tag the low dock drain clear after the pump ticket.");
     Expect(result.steps.size() >= 9,
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should report each major authored phase.");
@@ -4060,6 +4112,9 @@ void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
     Expect(hasStep("stormPumpTicketClosed"),
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should record the storm pump ticket closeout beat.");
+    Expect(hasStep("lowDockDrainCleared"),
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "QA playthrough should record the low dock drain clear-tag beat.");
     Expect(std::filesystem::exists(reportPath),
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should write a report artifact.");
@@ -4103,6 +4158,9 @@ void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
         Expect(report["final"]["flags"]["stormPumpTicketClosed"] == true,
             "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
             "QA playthrough report should expose the storm pump ticket closeout.");
+        Expect(report["final"]["flags"]["lowDockDrainCleared"] == true,
+            "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+            "QA playthrough report should expose the low dock drain clear tag.");
         Expect(report["vehicleRuntime"]["backend"] == "deterministic",
             "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
             "QA playthrough report should expose the vehicle runtime backend.");

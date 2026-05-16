@@ -47,6 +47,7 @@ class PlaythroughQaTests(unittest.TestCase):
                             {"name": "ferryOfficeHandoffFiled", "passed": True},
                             {"name": "stormPumpReset", "passed": True},
                             {"name": "stormPumpTicketClosed", "passed": True},
+                            {"name": "lowDockDrainCleared", "passed": True},
                         ],
                         "vehicleRuntime": {
                             "requested": "deterministic",
@@ -76,6 +77,7 @@ class PlaythroughQaTests(unittest.TestCase):
                                 "ferryOfficeHandoffFiled": True,
                                 "stormPumpReset": True,
                                 "stormPumpTicketClosed": True,
+                                "lowDockDrainCleared": True,
                             },
                         },
                     }
@@ -119,6 +121,7 @@ class PlaythroughQaTests(unittest.TestCase):
                                 "ferryOfficeHandoffFiled": False,
                                 "stormPumpReset": False,
                                 "stormPumpTicketClosed": False,
+                                "lowDockDrainCleared": False,
                             },
                         },
                     }
@@ -166,6 +169,7 @@ class PlaythroughQaTests(unittest.TestCase):
                                 "ferryOfficeHandoffFiled": True,
                                 "stormPumpReset": True,
                                 "stormPumpTicketClosed": True,
+                                "lowDockDrainCleared": True,
                             },
                         },
                     }
@@ -199,6 +203,7 @@ class PlaythroughQaTests(unittest.TestCase):
                             {"name": "ferryOfficeHandoffFiled", "passed": True},
                             {"name": "stormPumpReset", "passed": True},
                             {"name": "stormPumpTicketClosed", "passed": True},
+                            {"name": "lowDockDrainCleared", "passed": True},
                         ],
                         "final": {
                             "phase": "complete",
@@ -221,6 +226,7 @@ class PlaythroughQaTests(unittest.TestCase):
                                 "ferryOfficeHandoffFiled": True,
                                 "stormPumpReset": True,
                                 "stormPumpTicketClosed": True,
+                                "lowDockDrainCleared": True,
                             },
                         },
                     }

@@ -27,6 +27,7 @@ enum class WorldFlag {
     FerryOfficeHandoffFiled,
     StormPumpReset,
     StormPumpTicketClosed,
+    LowDockDrainCleared,
     Count,
 };
 

@@ -27,6 +27,7 @@ constexpr std::array AllFlags = {
     WorldFlag::FerryOfficeHandoffFiled,
     WorldFlag::StormPumpReset,
     WorldFlag::StormPumpTicketClosed,
+    WorldFlag::LowDockDrainCleared,
 };
 
 } // namespace
@@ -74,6 +75,8 @@ std::string_view WorldFlagName(WorldFlag flag)
         return "stormPumpReset";
     case WorldFlag::StormPumpTicketClosed:
         return "stormPumpTicketClosed";
+    case WorldFlag::LowDockDrainCleared:
+        return "lowDockDrainCleared";
     case WorldFlag::Count:
     default:
         return "unknown";

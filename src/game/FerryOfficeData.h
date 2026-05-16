@@ -24,6 +24,7 @@ inline constexpr std::string_view FerryOfficeWorkBoard = "Ferry Office Work Boar
 inline constexpr std::string_view FerryOfficeHandoffNote = "Ferry Office Handoff Note";
 inline constexpr std::string_view StormPumpSwitch = "Storm Pump Switch";
 inline constexpr std::string_view StormPumpTicket = "Storm Pump Ticket";
+inline constexpr std::string_view LowDockDrainMarker = "Low Dock Drain Marker";
 } // namespace Names
 
 namespace Prompts {
@@ -43,6 +44,7 @@ inline constexpr std::string_view FerryOfficeWorkBoard = "Update Work Board";
 inline constexpr std::string_view FerryOfficeHandoffNote = "File Handoff Note";
 inline constexpr std::string_view StormPumpSwitch = "Reset Storm Pump";
 inline constexpr std::string_view StormPumpTicket = "Close Pump Ticket";
+inline constexpr std::string_view LowDockDrainMarker = "Tag Low Dock Drain Clear";
 } // namespace Prompts
 
 namespace Messages {
@@ -63,6 +65,7 @@ inline constexpr std::string_view FerryOfficeWorkBoard = "Ferry Office work boar
 inline constexpr std::string_view FerryOfficeHandoffNote = "Ferry Office handoff note filed for the next ferry crew.";
 inline constexpr std::string_view StormPumpSwitch = "Storm pump reset for the low dock drain.";
 inline constexpr std::string_view StormPumpTicket = "Storm pump ticket closed on the Ferry Office board.";
+inline constexpr std::string_view LowDockDrainMarker = "Low dock drain tagged clear after the pump reset.";
 } // namespace Messages
 
 namespace Positions {
@@ -83,6 +86,7 @@ inline constexpr engine::Vec3 FerryOfficeWorkBoard {-2.08f, 0.68f, 2.82f};
 inline constexpr engine::Vec3 FerryOfficeHandoffNote {-2.35f, 0.68f, 3.42f};
 inline constexpr engine::Vec3 StormPumpSwitch {7.02f, 0.55f, 0.48f};
 inline constexpr engine::Vec3 StormPumpTicket {-1.92f, 0.68f, 2.56f};
+inline constexpr engine::Vec3 LowDockDrainMarker {18.92f, 0.55f, -1.25f};
 inline constexpr engine::Vec3 ServiceRunCheckpoint {19.35f, 0.08f, -2.2f};
 inline constexpr engine::Vec3 ServiceVaultStart {2.8f, 0.0f, -0.35f};
 inline constexpr engine::Vec3 ServiceVaultEnd {2.8f, 0.0f, 1.45f};
@@ -109,6 +113,7 @@ inline constexpr float FerryOfficeWorkBoard = 1.4f;
 inline constexpr float FerryOfficeHandoffNote = 1.3f;
 inline constexpr float StormPumpSwitch = 1.4f;
 inline constexpr float StormPumpTicket = 1.3f;
+inline constexpr float LowDockDrainMarker = 1.4f;
 inline constexpr float ServiceRunCheckpoint = 1.5f;
 } // namespace Radii
 

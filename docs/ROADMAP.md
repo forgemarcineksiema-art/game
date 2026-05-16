@@ -763,6 +763,15 @@ Status: implemented and validated. Scene data now has 23 authored scene material
 
 Status: implemented and validated. `--vehicle-runtime preferred` resolves to deterministic in the dependency-free executable and to `jolt-live` in the Jolt-enabled executable; `scripts/play.ps1` now requests preferred by default while direct app and QA defaults remain deterministic.
 
+## v0.71 - Low Dock Drain Clear Tag
+
+- Add a compact low dock drain clear-tag follow-up after the storm pump ticket.
+- Route the player from the Ferry Office pump ticket back to the low dock drain beside the service-run marker.
+- Record `lowDockDrainCleared` as remembered local world state and drive a compact dynamic status light from it.
+- Keep this as authored content growth, not a larger job framework or water/pump simulation.
+
+Status: implemented and validated. The deterministic and Jolt playthroughs now complete a 20-event Ferry Office chain including the low dock drain clear tag; scene/tool tests, visual smoke, vehicle runtime QA, Jolt CTest, and `scripts/verify.ps1` pass.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.70, the next useful future milestone should use preferred-runtime evidence to decide whether Jolt needs one more live-control hardening pass or whether playable content should grow around the now-preferred vehicle path.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.71, the next useful future milestone should either add an automated route-walking proxy for the longer Ferry Office follow-up chain or use preferred-runtime evidence to harden Jolt road-edge/live-control behavior.

@@ -127,6 +127,11 @@
       "baseColor": [0.70, 0.56, 0.22, 1.0]
     },
     {
+      "key": "low-dock-drain-state",
+      "response": "painted",
+      "baseColor": [0.68, 0.54, 0.20, 1.0]
+    },
+    {
       "key": "service-gate-state",
       "response": "painted",
       "baseColor": [0.42, 0.12, 0.08, 1.0]
@@ -412,6 +417,13 @@
       "center": [-1.92, 0.92, 2.56],
       "halfExtents": [0.16, 0.08, 0.05],
       "colorKey": "storm-pump-ticket-state"
+    },
+    {
+      "id": "low-dock-drain-status-light",
+      "role": "low-dock-drain-status-light",
+      "center": [18.92, 0.82, -1.25],
+      "halfExtents": [0.16, 0.08, 0.12],
+      "colorKey": "low-dock-drain-state"
     }
   ],
   "meshAssets": [
@@ -1167,6 +1179,18 @@
       "message": "Storm pump ticket closed on the Ferry Office board.",
       "requiredWorldFlags": ["stormPumpReset"],
       "worldFlagsSetWhenReady": ["stormPumpTicketClosed"]
+    },
+    {
+      "id": "low-dock-drain-marker",
+      "name": "Low Dock Drain Marker",
+      "prompt": "Tag Low Dock Drain Clear",
+      "type": "info",
+      "position": [18.92, 0.55, -1.25],
+      "radius": 1.4,
+      "oneShot": false,
+      "message": "Low dock drain tagged clear after the pump reset.",
+      "requiredWorldFlags": ["stormPumpTicketClosed"],
+      "worldFlagsSetWhenReady": ["lowDockDrainCleared"]
     }
   ],
   "traversalAffordances": [
@@ -1296,6 +1320,12 @@
       "from": "storm-pump-switch",
       "to": "storm-pump-ticket",
       "points": [[7.02, 0.08, 0.48], [3.0, 0.08, -0.35], [-1.92, 0.08, 2.56]]
+    },
+    {
+      "id": "route-storm-ticket-to-low-dock-drain",
+      "from": "storm-pump-ticket",
+      "to": "low-dock-drain-marker",
+      "points": [[-1.92, 0.08, 2.56], [3.0, 0.08, -0.35], [10.0, 0.08, -2.2], [18.92, 0.08, -1.25]]
     }
   ],
   "objectiveMarkers": [
@@ -1368,6 +1398,11 @@
       "id": "storm-pump-ticket-marker",
       "label": "Storm pump ticket closeout",
       "position": [-1.92, 0.08, 2.56]
+    },
+    {
+      "id": "low-dock-drain-objective-marker",
+      "label": "Low dock drain clear tag",
+      "position": [18.92, 0.08, -1.25]
     }
   ],
   "authoringNotes": [

@@ -16,6 +16,7 @@ struct ScenePresentationState {
     bool ferryOfficeHandoffFiled = false;
     bool stormPumpReset = false;
     bool stormPumpTicketClosed = false;
+    bool lowDockDrainCleared = false;
 };
 
 struct SceneMaterial {
