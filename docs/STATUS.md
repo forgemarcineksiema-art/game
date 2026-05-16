@@ -1,6 +1,102 @@
 # Project Status
 
-Last updated: 2026-05-16
+Last updated: 2026-05-17
+
+## v0.99 Whole-Project Audit (2026-05-17)
+
+Goal:
+
+- Audit the current post-v0.99 Tidebreak repository across engine, runtime, gameplay slice, renderer, scene/world data, assets, tools, tests, docs, git history, and real readiness for the next milestone.
+
+Scope:
+
+- No production code or content changes.
+- Created audit artifacts under `docs\audits\v0.99\`.
+- Collected raw command logs under `docs\audits\v0.99\raw\`.
+- Captured renderer screenshots under `docs\audits\v0.99\screenshots\`.
+- Used five read-only subagents for build/runtime/tools, renderer/visuals/scene, gameplay/player/vehicle/physics, tests/QA/evidence, and git/docs/history. Coordinator integrated and verified findings.
+
+Audit artifacts:
+
+- `docs\audits\v0.99\README.md`
+- `docs\audits\v0.99\project-map.md`
+- `docs\audits\v0.99\validation-log.md`
+- `docs\audits\v0.99\code-review.md`
+- `docs\audits\v0.99\game-review.md`
+- `docs\audits\v0.99\git-history.md`
+- `docs\audits\v0.99\subagent-findings.md`
+- `docs\audits\v0.99\reflections.md`
+- `docs\audits\v0.99\next-steps.md`
+- `docs\audits\v0.99\checkpoint.md`
+
+Commands run and result:
+
+- `git status --short`: passed; audit files were the only new changes after artifact creation.
+- `git branch --show-current`: passed; branch `main`.
+- `git log --oneline --decorate --date=short --max-count=200`: passed; audited HEAD `f5e2fdb v0.99 tune jolt route pace`.
+- `scripts\doctor.ps1`: passed with expected PATH warnings for `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- `scripts\configure.ps1`: passed for `windows-vs2022-debug`.
+- `scripts\build.ps1`: passed.
+- `scripts\verify.ps1`: passed; 11/11 default CTest passed, scene/assets/mesh validation passed, null smoke passed.
+- `scripts\play.ps1 -Frames 5 -CaptureDir docs\audits\v0.99\screenshots\play-gdi`: passed and captured GDI.
+- `scripts\play.ps1 -Dx11 -Frames 5 -CaptureDir docs\audits\v0.99\screenshots\play-dx11`: passed and captured DX11 through WARP after hardware DX11 device creation failed.
+- `scripts\run.ps1 -Args @("--smoke-test", "--frames", "3")`: passed.
+- `python tools\scene_report.py`: passed; scene has 25 scene materials, 10 colliders, 32 visual placeholders, 20 mesh assets, 66 mesh instances, 17 interactables, 17 route markers, and 16 objective markers.
+- `python tools\validate_scene.py`: passed.
+- `python tools\scale_audit.py`: passed; no suspicious scale issues.
+- `python tools\mesh_report.py`: passed; 20 referenced model files.
+- `python tools\validate_assets.py`: passed.
+- `python tools\capture_visual_smoke.py` for initial, `relay-to-service-log`, and `low-dock-drain-access`: passed for GDI and DX11/WARP captures.
+- `python tools\playthrough_qa.py --report-json docs\audits\v0.99\raw\playthrough-deterministic-report.json`: passed; deterministic, 21 events, checkpoint in 139 frames.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed; 15/15 tests.
+- `python tools\physics_parity_qa.py --report-json docs\audits\v0.99\raw\physics-parity-report.json`: passed.
+- `python tools\character_contact_qa.py --report-json docs\audits\v0.99\raw\character-contact-report.json`: passed.
+- `python tools\vehicle_physics_qa.py --report-json docs\audits\v0.99\raw\vehicle-physics-report.json`: passed; recommendation `promote`.
+- `python tools\vehicle_runtime_qa.py --report-json docs\audits\v0.99\raw\vehicle-runtime-report.json`: passed; Jolt route 169 frames, deterministic route 139 frames, recommendation `promote`.
+- `python tools\playthrough_qa.py --exe build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --vehicle-runtime jolt --report-json docs\audits\v0.99\raw\playthrough-jolt-report.json`: passed; Jolt, 21 events, checkpoint in 169 frames, no fallback, no bounds hit.
+- `ctest --preset windows-vs2022-debug-jolt --show-only=json-v1`: passed; confirms the current `FerryOfficePlaythroughQaSmoke` test does not pass `--vehicle-runtime jolt`.
+
+Key audit verdict:
+
+- No P0 blocker was found.
+- Tidebreak v0.99 is a strong engine/game workbench and a real playable prototype, but not yet a robust player-facing vertical slice.
+- The biggest technical/process risk is evidence overclaiming: green default verification does not prove visual quality, full player navigation, or Jolt live playthrough unless those are run explicitly.
+- The strongest foundation is validation discipline plus engine/game/physics/scene boundaries.
+- The biggest illusion of progress is treating a long scripted 21-event chain and visual smoke as proof of fun or natural playability.
+
+Top risks recorded:
+
+- P1: Jolt preset CTest playthrough smoke is deterministic unless `--vehicle-runtime jolt` is explicitly supplied.
+- P1: `scripts\verify.ps1` does not run visual smoke or opt-in Jolt gameplay/vehicle gates.
+- P1: playthrough QA proves a scripted state chain and runtime vehicle segment, not full keyboard/mouse navigation.
+- P1: vehicle/Jolt path proves route pace and controls proxies, not full authored world vehicle collision.
+- P1: visual smoke is nonblank/statistical proof, not objective readability proof.
+- P1: GDI shaded triangle ordering can be misleading because scene presentation submits per-triangle batches while GDI sorts within one call.
+- P2: route budget naming is split between 190-frame vehicle runtime QA and 240-frame playthrough/core-test language.
+- P2: runtime version still logs `0.23.0`.
+- P2: current docs have useful but stale snapshots and split decision ledgers.
+
+Recommended next milestone:
+
+- Jolt-first live controls/camera and authored road-edge evidence gate.
+- Add live-input or `SandboxLayer`-driven QA for a short on-foot plus vehicle route.
+- Add collision-backed replay against authored scene/road-edge geometry.
+- Add explicit Jolt playthrough CTest with `--vehicle-runtime jolt`.
+- Keep deterministic as baseline/fallback.
+
+Do not do next:
+
+- Do not add another administrative `E` prompt endpoint.
+- Do not build a generic mission framework.
+- Do not broaden the map.
+- Do not promote Jolt as the gameplay default solely from current reports.
+- Do not start a renderer rewrite or asset-pipeline expansion as a side quest.
+
+Commit/push status:
+
+- Final `scripts\verify.ps1` passed after audit/status artifacts were written. `git diff --check` passed with only Git's CRLF normalization warning for `docs/STATUS.md`. The worktree is limited to audit/status artifacts, so this audit is eligible for commit and push on `main` per `AGENTS.md`.
 
 ## v0.99 Controlled Jolt Straight-Drive Assist (2026-05-16)
 

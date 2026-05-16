@@ -1,0 +1,123 @@
+COMMAND: git log --oneline --decorate --date=short --max-count=200
+START:
+2026-05-17T00:21:10.4271812+02:00
+f5e2fdb (HEAD -> main, origin/main) v0.99 tune jolt route pace
+845c5b8 v0.98 jolt route pace sensitivity
+9f45d8a v0.97 tighten vehicle camera follow
+6008775 v0.96 jolt driving feel report
+c6492fd v0.95 low dock access consequence
+628cbd1 v0.94.1 gameplay review methodology
+107e4c4 v0.94 mid-chain route capture evidence
+751399e v0.93 ferry office service panel mesh
+e12906a v0.92 late-chain playtest route guidance
+af07303 v0.91 preferred jolt evidence refresh
+619a0b0 v0.90 ferry office drain log state cue
+f17145d v0.89 low dock drain office log closeout
+4744b5b v0.88 ferry office sign panel mesh pass
+5b79998 v0.87 ferry office facade frame mesh pass
+72e6058 v0.86 player proxy silhouette pass
+1e3f6e9 v0.85 ferry office service gate mesh pass
+0416b9b v0.84 service vehicle proxy mesh pass
+30540c2 v0.83 service yard route threshold pass
+eb9b3f6 v0.82 overcast sky readability pass
+71148b4 v0.81 ferry office canopy mesh pass
+6bb5234 v0.80 ferry office roofline grounding pass
+6c9ccb3 v0.79 playtest proxy readability pass
+d34101b v0.78 ferry office sign detail pass
+dd45939 v0.77 ferry office distant shoreline pass
+a15edfa v0.76 player proxy silhouette cleanup
+0d4db78 v0.75 overcast background separation pass
+d4307e4 v0.74 dock foreground material rhythm pass
+cdfbdfe v0.73 ferry office gate focal hierarchy pass
+a91dd6b v0.72 default camera composition pass
+90143c7 v0.71 low dock drain clear tag
+9e5f4f6 v0.70 preferred jolt runtime trial
+4a3f539 v0.69 storm pump state cues
+2f99391 v0.68 choose jolt vehicle runtime direction
+191268b v0.67 storm pump job seed
+ac30c75 v0.66 ferry office handoff state cue
+00df100 v0.65 collision-backed vehicle obstacle replay
+ac15082 v0.64 ferry office handoff note
+b4b5910 Fix scene binding validation and mesh stride handling
+90571e9 v0.63 work board signoff
+7c95f40 v0.62 scene action bindings
+30aa1dc v0.61 followup next step text
+faddacb v0.60 harbor parts return job
+cf8962c v0.59 jolt obstacle progress tuning
+02f6364 v0.58 clearance tag mesh prop
+6282bfa v0.57 clearance tag visual cue
+2ec711b v0.56 camera aware vehicle obstacle evidence
+1071154 v0.55 dock road followup readability
+2fbb8d0 v0.54 dock road clearance tag
+8cc719d v0.53 vehicle steering obstacle proxy
+e457ec8 v0.52 relay service log beat
+3a437da v0.51 relay reset presentation state
+9967e2c v0.50 dock road relay beat
+a11419d v0.49 jolt live-loop playthrough qa
+1481caf v0.48 service vehicle runtime playthrough QA
+164405f v0.47 jolt route pace tuning
+5002006 v0.46 vehicle route QA proxy
+9364d9d Harden vehicle runtime controls QA
+eb3fe94 Add harbor water surface mesh
+46c26f1 Add harbor backdrop mesh
+2bde25d Add wet road surface mesh
+7b64fb6 Author scene material presets
+0df2d7f Add tiny scene material presets
+6995abb Extract scene presentation palette
+8871da1 Make playtest rendering read less debug
+71bc319 Tune Jolt live vehicle controls
+f604a50 Add live Jolt vehicle runtime switch
+185ddb0 Add Jolt vehicle runtime comparison QA
+c2bb96a Add Jolt vehicle feasibility QA
+463eafc Correct next goal toward Jolt vehicle promotion
+7190607 Document goal-based delivery workflow
+47af160 Add Ferry Office character contact QA
+7a86978 Add Ferry Office Jolt physics parity QA
+221dc08 Add automated Ferry Office playthrough QA
+9b70992 Add DX11 capture debug text parity
+525ff8a Build v0.30 capture parity QA
+0b2eb5d Build v0.29 visual capture harness
+1288921 Build v0.28 dx11 depth matrix spike
+2819194 Build v0.27 renderer depth presentation spike
+1977a26 Build v0.26 ferry office prop identity pass
+318e8ab Build v0.25 ferry office composition pass
+e6555cc Build v0.24 presentation guidance polish
+96273b5 Fix debug projection clipping
+e0efc5b Fix DX11 overlay and engine cleanup
+075b900 Build v0.23.1 engine quality and bugfix pass
+6c8ae06 Build v0.23 playable run UX
+20f7622 Build v0.22 vehicle control polish
+e14e88b Build v0.21 playable polish bug bash
+4769a04 Build v0.20.1 Blender export workflow
+99297d7 Build v0.20 Blender static prop workflow spike
+58ccc69 Build v0.19 static mesh workflow stabilization
+919411a Build v0.18 island road prop style spike
+c95fd9c Build v0.17 playable presentation mode
+6821af4 Build v0.16 first driver fixer job
+eca5f8e Build v0.15 runtime scene loading
+a2ef79a Build v0.14 dock road mood pass
+b4f01d8 Polish vehicle exit marker and GDI debug UI
+1417bf4 Lock Tidebreak island driver fixer direction
+62e07b8 Build v0.13 vehicle feel polish
+0389a0d Build v0.12.1 ferry office prop scale pass
+ae62da5 Build v0.12 static mesh glTF spike
+80432bd Build v0.11 scene authoring tools
+403bdf3 Build v0.10 vehicle feel spike
+3bd1e2c Build v0.9.2 physics foundation spike
+14ec255 Polish Ferry Office readability for v0.9.1
+f2f1b7c Build v0.9 atmospheric ferry office mood
+b867809 Build v0.8.1 cursor capture polish
+4ded68b Build v0.8 prototype scene cleanup
+cf3c5f2 Polish Ferry Office micro-slice
+41ae90a Build v0.7 Ferry Office micro-slice
+0f0695c Update agent completion policy
+1743f59 Add v0.6 world state prototype
+4bc6da0 Polish traversal handoff
+3a9624c Add v0.5 traversal prototype
+078fcba Lock v0.4.1 game direction
+c96125d Add v0.4 interaction prototype
+36f1b3a Build world collision prototype
+73deab9 Build third-person player camera prototype
+e7e5fac Build AI-native engine foundation
+6960e00 first commit
+EXIT_CODE: 0

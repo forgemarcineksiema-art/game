@@ -1,0 +1,7 @@
+COMMAND: python tools/playthrough_qa.py --exe build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --vehicle-runtime jolt --report-json docs\audits\v0.99\raw\playthrough-jolt-report.json
+START:
+2026-05-17T00:26:26.1974181+02:00
+Running: build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --qa-playthrough ferry-office-service-call --scene C:\Users\Marcin\Documents\New project\data\scenes\ferry_office.scene.json --qa-playthrough-report docs\audits\v0.99\raw\playthrough-jolt-report.json --vehicle-runtime jolt
+[00:26:26] [info] QA playthrough passed: docs\audits\v0.99\raw\playthrough-jolt-report.json
+Playthrough QA passed: phase=complete, events=21, vehicleRuntime=jolt, framesToCheckpoint=169, report=docs\audits\v0.99\raw\playthrough-jolt-report.json
+EXIT_CODE: 0

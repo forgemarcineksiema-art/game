@@ -1,0 +1,6 @@
+COMMAND: python tools/scale_audit.py
+START:
+2026-05-17T00:23:24.2819683+02:00
+Scale audit: ferry-office
+No suspicious scale issues found.
+EXIT_CODE: 0

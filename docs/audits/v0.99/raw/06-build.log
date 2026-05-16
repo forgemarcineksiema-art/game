@@ -1,0 +1,10 @@
+COMMAND: scripts/build.ps1
+START:
+2026-05-17T00:21:41.6437285+02:00
+Wersja programu MSBuild 17.14.40+3e7442088 dla .NET Framework
+
+  EngineCore.vcxproj -> C:\Users\Marcin\Documents\New project\build\windows-vs2022-debug\Debug\EngineCore.lib
+  GamePrototype.vcxproj -> C:\Users\Marcin\Documents\New project\build\windows-vs2022-debug\Debug\GamePrototype.lib
+  EngineApp.vcxproj -> C:\Users\Marcin\Documents\New project\build\windows-vs2022-debug\Debug\EngineApp.exe
+  EngineCoreTests.vcxproj -> C:\Users\Marcin\Documents\New project\build\windows-vs2022-debug\Debug\EngineCoreTests.exe
+EXIT_CODE: 0

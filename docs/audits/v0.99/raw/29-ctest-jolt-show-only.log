@@ -1,0 +1,440 @@
+COMMAND: ctest --preset windows-vs2022-debug-jolt --show-only=json-v1
+START:
+2026-05-17T00:26:46.0002030+02:00
+{
+  "backtraceGraph" :
+  {
+    "commands" :
+    [
+      "add_test"
+    ],
+    "files" :
+    [
+      "C:/Users/Marcin/Documents/New project/CMakeLists.txt"
+    ],
+    "nodes" :
+    [
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 188,
+        "parent" : 0
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 189,
+        "parent" : 2
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 190,
+        "parent" : 4
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 195,
+        "parent" : 6
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 200,
+        "parent" : 8
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 205,
+        "parent" : 10
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 210,
+        "parent" : 12
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 215,
+        "parent" : 14
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 220,
+        "parent" : 16
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 225,
+        "parent" : 18
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 231,
+        "parent" : 20
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 240,
+        "parent" : 22
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 249,
+        "parent" : 24
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 258,
+        "parent" : 26
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 268,
+        "parent" : 28
+      }
+    ]
+  },
+  "kind" : "ctestInfo",
+  "tests" :
+  [
+    {
+      "backtrace" : 1,
+      "command" :
+      [
+        "C:/Users/Marcin/Documents/New project/build/windows-vs2022-debug-jolt/Debug/EngineCoreTests.exe"
+      ],
+      "config" : "Debug",
+      "name" : "EngineCoreTests",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "C:/Users/Marcin/Documents/New project/build/windows-vs2022-debug-jolt"
+        }
+      ]
+    },
+    {
+      "backtrace" : 3,
+      "command" :
+      [
+        "C:/Users/Marcin/Documents/New project/build/windows-vs2022-debug-jolt/Debug/EngineApp.exe",
+        "--smoke-test",
+        "--frames",
+        "3"
+      ],
+      "config" : "Debug",
+      "name" : "EngineSmokeTest",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "C:/Users/Marcin/Documents/New project/build/windows-vs2022-debug-jolt"
+        }
+      ]
+    },
+    {
+      "backtrace" : 5,
+      "command" :
+      [
+        "C:/Users/Marcin/AppData/Local/Programs/Python/Python313/python.exe",
+        "C:/Users/Marcin/Documents/New project/tests/test_scene_tools.py"
+      ],
+      "config" : "Debug",
+      "name" : "SceneToolTests",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "C:/Users/Marcin/Documents/New project"
+        }
+      ]
+    },
+    {
+      "backtrace" : 7,
+      "command" :
+      [
+        "C:/Users/Marcin/AppData/Local/Programs/Python/Python313/python.exe",
+        "C:/Users/Marcin/Documents/New project/tests/test_run_scripts.py"
+      ],
+      "config" : "Debug",
+      "name" : "RunScriptTests",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "C:/Users/Marcin/Documents/New project"
+        }
+      ]
+    },
+    {
+      "backtrace" : 9,
+      "command" :
+      [
+        "C:/Users/Marcin/AppData/Local/Programs/Python/Python313/python.exe",
+        "C:/Users/Marcin/Documents/New project/tests/test_capture_visual_smoke.py"
+      ],
+      "config" : "Debug",
+      "name" : "CaptureVisualSmokeTests",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "C:/Users/Marcin/Documents/New project"
+        }
+      ]
+    },
+    {
+      "backtrace" : 11,
+      "command" :
+      [
+        "C:/Users/Marcin/AppData/Local/Programs/Python/Python313/python.exe",
+        "C:/Users/Marcin/Documents/New project/tests/test_playthrough_qa.py"
+      ],
+      "config" : "Debug",
+      "name" : "PlaythroughQaTests",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "C:/Users/Marcin/Documents/New project"
+        }
+      ]
+    },
+    {
+      "backtrace" : 13,
+      "command" :
+      [
+        "C:/Users/Marcin/AppData/Local/Programs/Python/Python313/python.exe",
+        "C:/Users/Marcin/Documents/New project/tests/test_physics_parity_tool.py"
+      ],
+      "config" : "Debug",
+      "name" : "PhysicsParityToolTests",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "C:/Users/Marcin/Documents/New project"
+        }
+      ]
+    },
+    {
+      "backtrace" : 15,
+      "command" :
+      [
+        "C:/Users/Marcin/AppData/Local/Programs/Python/Python313/python.exe",
+        "C:/Users/Marcin/Documents/New project/tests/test_character_contact_qa.py"
+      ],
+      "config" : "Debug",
+      "name" : "CharacterContactQaTests",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "C:/Users/Marcin/Documents/New project"
+        }
+      ]
+    },
+    {
+      "backtrace" : 17,
+      "command" :
+      [
+        "C:/Users/Marcin/AppData/Local/Programs/Python/Python313/python.exe",
+        "C:/Users/Marcin/Documents/New project/tests/test_vehicle_physics_qa.py"
+      ],
+      "config" : "Debug",
+      "name" : "VehiclePhysicsQaTests",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "C:/Users/Marcin/Documents/New project"
+        }
+      ]
+    },
+    {
+      "backtrace" : 19,
+      "command" :
+      [
+        "C:/Users/Marcin/AppData/Local/Programs/Python/Python313/python.exe",
+        "C:/Users/Marcin/Documents/New project/tests/test_vehicle_runtime_qa.py"
+      ],
+      "config" : "Debug",
+      "name" : "VehicleRuntimeQaTests",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "C:/Users/Marcin/Documents/New project"
+        }
+      ]
+    },
+    {
+      "backtrace" : 21,
+      "command" :
+      [
+        "C:/Users/Marcin/AppData/Local/Programs/Python/Python313/python.exe",
+        "C:/Users/Marcin/Documents/New project/tools/physics_parity_qa.py",
+        "--exe",
+        "C:/Users/Marcin/Documents/New project/build/windows-vs2022-debug-jolt/Debug/EngineApp.exe",
+        "--report-json",
+        "C:/Users/Marcin/Documents/New project/build/windows-vs2022-debug-jolt/physics/ferry-office-collision-parity-report.json"
+      ],
+      "config" : "Debug",
+      "name" : "FerryOfficeJoltPhysicsParitySmoke",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "C:/Users/Marcin/Documents/New project"
+        }
+      ]
+    },
+    {
+      "backtrace" : 23,
+      "command" :
+      [
+        "C:/Users/Marcin/AppData/Local/Programs/Python/Python313/python.exe",
+        "C:/Users/Marcin/Documents/New project/tools/character_contact_qa.py",
+        "--exe",
+        "C:/Users/Marcin/Documents/New project/build/windows-vs2022-debug-jolt/Debug/EngineApp.exe",
+        "--report-json",
+        "C:/Users/Marcin/Documents/New project/build/windows-vs2022-debug-jolt/physics/ferry-office-character-contact-report.json"
+      ],
+      "config" : "Debug",
+      "name" : "FerryOfficeCharacterContactQaSmoke",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "C:/Users/Marcin/Documents/New project"
+        }
+      ]
+    },
+    {
+      "backtrace" : 25,
+      "command" :
+      [
+        "C:/Users/Marcin/AppData/Local/Programs/Python/Python313/python.exe",
+        "C:/Users/Marcin/Documents/New project/tools/vehicle_physics_qa.py",
+        "--exe",
+        "C:/Users/Marcin/Documents/New project/build/windows-vs2022-debug-jolt/Debug/EngineApp.exe",
+        "--report-json",
+        "C:/Users/Marcin/Documents/New project/build/windows-vs2022-debug-jolt/physics/ferry-office-vehicle-feasibility-report.json"
+      ],
+      "config" : "Debug",
+      "name" : "FerryOfficeVehiclePhysicsQaSmoke",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "C:/Users/Marcin/Documents/New project"
+        }
+      ]
+    },
+    {
+      "backtrace" : 27,
+      "command" :
+      [
+        "C:/Users/Marcin/AppData/Local/Programs/Python/Python313/python.exe",
+        "C:/Users/Marcin/Documents/New project/tools/vehicle_runtime_qa.py",
+        "--exe",
+        "C:/Users/Marcin/Documents/New project/build/windows-vs2022-debug-jolt/Debug/EngineApp.exe",
+        "--report-json",
+        "C:/Users/Marcin/Documents/New project/build/windows-vs2022-debug-jolt/physics/ferry-office-vehicle-runtime-comparison-report.json"
+      ],
+      "config" : "Debug",
+      "name" : "FerryOfficeVehicleRuntimeQaSmoke",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "C:/Users/Marcin/Documents/New project"
+        }
+      ]
+    },
+    {
+      "backtrace" : 29,
+      "command" :
+      [
+        "C:/Users/Marcin/AppData/Local/Programs/Python/Python313/python.exe",
+        "C:/Users/Marcin/Documents/New project/tools/playthrough_qa.py",
+        "--exe",
+        "C:/Users/Marcin/Documents/New project/build/windows-vs2022-debug-jolt/Debug/EngineApp.exe",
+        "--report-json",
+        "C:/Users/Marcin/Documents/New project/build/windows-vs2022-debug-jolt/playthroughs/ferry-office-service-call-report.json"
+      ],
+      "config" : "Debug",
+      "name" : "FerryOfficePlaythroughQaSmoke",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "C:/Users/Marcin/Documents/New project"
+        }
+      ]
+    }
+  ],
+  "version" :
+  {
+    "major" : 1,
+    "minor" : 0
+  }
+}
+EXIT_CODE: 0

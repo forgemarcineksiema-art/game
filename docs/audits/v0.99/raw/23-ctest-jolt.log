@@ -1,0 +1,39 @@
+COMMAND: ctest --preset windows-vs2022-debug-jolt --output-on-failure
+START:
+2026-05-17T00:25:33.8722332+02:00
+Test project C:/Users/Marcin/Documents/New project/build/windows-vs2022-debug-jolt
+      Start  1: EngineCoreTests
+ 1/15 Test  #1: EngineCoreTests ......................   Passed    4.10 sec
+      Start  2: EngineSmokeTest
+ 2/15 Test  #2: EngineSmokeTest ......................   Passed    0.19 sec
+      Start  3: SceneToolTests
+ 3/15 Test  #3: SceneToolTests .......................   Passed    0.38 sec
+      Start  4: RunScriptTests
+ 4/15 Test  #4: RunScriptTests .......................   Passed    4.72 sec
+      Start  5: CaptureVisualSmokeTests
+ 5/15 Test  #5: CaptureVisualSmokeTests ..............   Passed    0.17 sec
+      Start  6: PlaythroughQaTests
+ 6/15 Test  #6: PlaythroughQaTests ...................   Passed    0.23 sec
+      Start  7: PhysicsParityToolTests
+ 7/15 Test  #7: PhysicsParityToolTests ...............   Passed    0.23 sec
+      Start  8: CharacterContactQaTests
+ 8/15 Test  #8: CharacterContactQaTests ..............   Passed    0.25 sec
+      Start  9: VehiclePhysicsQaTests
+ 9/15 Test  #9: VehiclePhysicsQaTests ................   Passed    0.22 sec
+      Start 10: VehicleRuntimeQaTests
+10/15 Test #10: VehicleRuntimeQaTests ................   Passed    0.27 sec
+      Start 11: FerryOfficeJoltPhysicsParitySmoke
+11/15 Test #11: FerryOfficeJoltPhysicsParitySmoke ....   Passed    0.28 sec
+      Start 12: FerryOfficeCharacterContactQaSmoke
+12/15 Test #12: FerryOfficeCharacterContactQaSmoke ...   Passed    0.27 sec
+      Start 13: FerryOfficeVehiclePhysicsQaSmoke
+13/15 Test #13: FerryOfficeVehiclePhysicsQaSmoke .....   Passed    0.26 sec
+      Start 14: FerryOfficeVehicleRuntimeQaSmoke
+14/15 Test #14: FerryOfficeVehicleRuntimeQaSmoke .....   Passed    0.86 sec
+      Start 15: FerryOfficePlaythroughQaSmoke
+15/15 Test #15: FerryOfficePlaythroughQaSmoke ........   Passed    0.31 sec
+
+100% tests passed, 0 tests failed out of 15
+
+Total Test time (real) =  12.79 sec
+EXIT_CODE: 0

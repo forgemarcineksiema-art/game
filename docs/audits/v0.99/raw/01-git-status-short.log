@@ -1,0 +1,5 @@
+COMMAND: git status --short
+START:
+2026-05-17T00:21:10.4003013+02:00
+?? docs/audits/
+EXIT_CODE: 0

@@ -1,0 +1,105 @@
+{
+  "captures": {
+    "dx11": {
+      "bytes": 3686454,
+      "channels": {
+        "blue_range": 238,
+        "green_range": 214,
+        "red_range": 232
+      },
+      "different_pixels": 234469,
+      "height": 720,
+      "luminance_average": 40.47,
+      "luminance_max": 234,
+      "luminance_min": 20,
+      "luminance_range": 214,
+      "path": "C:\\Users\\Marcin\\Documents\\New project\\docs\\audits\\v0.99\\screenshots\\visual-smoke-relay\\v0.94-relay-to-service-log-dx11-capture.bmp",
+      "pixel_count": 921600,
+      "renderer": "dx11",
+      "scene_presence": {
+        "bright_pixels": 21050,
+        "cool_pixels": 36,
+        "dark_pixels": 861338,
+        "green_pixels": 5200,
+        "neutral_pixels": 21942,
+        "overlay_text_pixels": 17732,
+        "warm_pixels": 0
+      },
+      "thresholds": {
+        "expected_height": 720,
+        "expected_width": 1280,
+        "min_bright_pixels": 0,
+        "min_cool_pixels": 0,
+        "min_dark_pixels": 500,
+        "min_different_pixels": 500,
+        "min_green_pixels": 0,
+        "min_luminance_range": 55,
+        "min_neutral_pixels": 4,
+        "min_overlay_text_pixels": 80,
+        "min_unique_colors": 12,
+        "min_warm_pixels": 0
+      },
+      "unique_colors": 43,
+      "width": 1280
+    },
+    "gdi": {
+      "bytes": 3686454,
+      "channels": {
+        "blue_range": 239,
+        "green_range": 214,
+        "red_range": 232
+      },
+      "different_pixels": 223911,
+      "height": 720,
+      "luminance_average": 37.25,
+      "luminance_max": 234,
+      "luminance_min": 20,
+      "luminance_range": 214,
+      "path": "C:\\Users\\Marcin\\Documents\\New project\\docs\\audits\\v0.99\\screenshots\\visual-smoke-relay\\v0.94-relay-to-service-log-gdi-capture.bmp",
+      "pixel_count": 921600,
+      "renderer": "gdi",
+      "scene_presence": {
+        "bright_pixels": 10811,
+        "cool_pixels": 62,
+        "dark_pixels": 891401,
+        "green_pixels": 4287,
+        "neutral_pixels": 10351,
+        "overlay_text_pixels": 8689,
+        "warm_pixels": 0
+      },
+      "thresholds": {
+        "expected_height": 720,
+        "expected_width": 1280,
+        "min_bright_pixels": 0,
+        "min_cool_pixels": 0,
+        "min_dark_pixels": 500,
+        "min_different_pixels": 500,
+        "min_green_pixels": 0,
+        "min_luminance_range": 55,
+        "min_neutral_pixels": 4,
+        "min_overlay_text_pixels": 80,
+        "min_unique_colors": 12,
+        "min_warm_pixels": 0
+      },
+      "unique_colors": 68,
+      "width": 1280
+    }
+  },
+  "parity": {
+    "baseline": "dx11",
+    "compared": true,
+    "cool_pixel_delta": 26,
+    "dark_pixel_delta": 30063,
+    "dimensions_match": true,
+    "green_pixel_delta": 913,
+    "luminance_range_delta": 0,
+    "renderers": [
+      "dx11",
+      "gdi"
+    ],
+    "unique_color_delta": 25,
+    "warm_pixel_delta": 0
+  },
+  "scenario": "relay-to-service-log",
+  "schema": "v0.31-capture-visual-smoke"
+}

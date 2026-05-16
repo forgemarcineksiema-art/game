@@ -1,0 +1,11 @@
+COMMAND: git diff --check
+START:
+2026-05-17T00:41:19.3375979+02:00
+git : warning: in the working copy of 'docs/STATUS.md', LF will be replaced by CRLF the next time Git touches it
+At line:2 char:150
++ ...  o)) | Set-Content $log -Encoding utf8; git diff --check *>&1 | Tee-O ...
++                                             ~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (warning: in the... Git touches it:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+EXIT_CODE: 0

@@ -1,0 +1,484 @@
+{
+  "adapter": {
+    "backend": "jolt",
+    "samples": [
+      {
+        "maxPitchDegrees": 0.005140676628798246,
+        "maxRollDegrees": 0.0052488138899207115,
+        "message": "Runtime adapter sample from selected physics backend.",
+        "name": "settle",
+        "outOfBounds": false,
+        "passed": true,
+        "position": [
+          6.200000286102295,
+          1.1375173330307007,
+          -2.2000010013580322
+        ],
+        "speed": 0.0,
+        "wheelContactCount": 4,
+        "yawDegrees": 88.0002212524414
+      },
+      {
+        "maxPitchDegrees": 1.5688658952713013,
+        "maxRollDegrees": 3.6695633752970025e-05,
+        "message": "Runtime adapter sample from selected physics backend.",
+        "name": "accelerate",
+        "outOfBounds": false,
+        "passed": true,
+        "position": [
+          7.399065971374512,
+          1.137454867362976,
+          -2.158125638961792
+        ],
+        "speed": 2.848965644836426,
+        "wheelContactCount": 4,
+        "yawDegrees": 88.0002212524414
+      },
+      {
+        "maxPitchDegrees": 10.953556060791016,
+        "maxRollDegrees": 9.917256355285645,
+        "message": "Runtime adapter sample from selected physics backend.",
+        "name": "steer",
+        "outOfBounds": false,
+        "passed": true,
+        "position": [
+          9.940862655639648,
+          1.1358251571655273,
+          -1.593658447265625
+        ],
+        "speed": 4.9412760734558105,
+        "wheelContactCount": 4,
+        "yawDegrees": 71.32734680175781
+      },
+      {
+        "maxPitchDegrees": 0.030591784045100212,
+        "maxRollDegrees": 0.010556807741522789,
+        "message": "Runtime adapter sample from selected physics backend.",
+        "name": "brake",
+        "outOfBounds": false,
+        "passed": true,
+        "position": [
+          10.515032768249512,
+          1.1377112865447998,
+          -1.3271688222885132
+        ],
+        "speed": -0.0033184264320880175,
+        "wheelContactCount": 4,
+        "yawDegrees": 71.127197265625
+      },
+      {
+        "maxPitchDegrees": 29.361547470092773,
+        "maxRollDegrees": 12.554007530212402,
+        "message": "Runtime adapter sample from selected physics backend.",
+        "name": "reverse",
+        "outOfBounds": false,
+        "passed": true,
+        "position": [
+          9.604018211364746,
+          1.2795078754425049,
+          -1.5570968389511108
+        ],
+        "speed": -2.310023307800293,
+        "wheelContactCount": 2,
+        "yawDegrees": 71.39387512207031
+      }
+    ]
+  },
+  "comparison": {
+    "maxPositionDelta": 1.0830663442611694,
+    "maxSpeedDelta": 2.2500154972076416,
+    "maxYawDeltaDegrees": 33.19618225097656,
+    "recommendation": "promote",
+    "recommendationReason": "The selected vehicle runtime adapter stayed stable, close enough to compare, passed compact control checks, reached the authored service-run checkpoint, and cleared the overlap-backed obstacle replay with aligned progress."
+  },
+  "controlChecks": [
+    {
+      "distance": 0.004563349764794111,
+      "frameIndex": 91,
+      "message": "Short throttle tap settled without service-yard creep.",
+      "name": "tapThrottleCoast",
+      "passed": true,
+      "speed": 4.147127037867904e-05
+    },
+    {
+      "distance": 0.14079992473125458,
+      "frameIndex": 46,
+      "message": "Brake input stopped forward motion before reverse was requested.",
+      "name": "brakeStopsForwardMotion",
+      "passed": true,
+      "speed": 0.1368526667356491
+    },
+    {
+      "distance": 2.5522849559783936,
+      "frameIndex": 80,
+      "message": "Reverse input produced negative speed and backward motion.",
+      "name": "reverseMovesBackward",
+      "passed": true,
+      "speed": -1.8677160739898682
+    },
+    {
+      "distance": 1.1291654109954834,
+      "frameIndex": 120,
+      "message": "Neutral input settled reverse motion after backing up.",
+      "name": "reverseCoastSettles",
+      "passed": true,
+      "speed": 0.00016878638416528702
+    }
+  ],
+  "deterministic": {
+    "backend": "deterministic",
+    "samples": [
+      {
+        "maxPitchDegrees": 0.0,
+        "maxRollDegrees": 0.0,
+        "message": "Deterministic live VehicleController fallback sample.",
+        "name": "settle",
+        "outOfBounds": false,
+        "passed": true,
+        "position": [
+          6.199999809265137,
+          0.0,
+          -2.200000047683716
+        ],
+        "speed": 0.0,
+        "wheelContactCount": 4,
+        "yawDegrees": 88.00000762939453
+      },
+      {
+        "maxPitchDegrees": 0.0,
+        "maxRollDegrees": 0.0,
+        "message": "Deterministic live VehicleController fallback sample.",
+        "name": "accelerate",
+        "outOfBounds": false,
+        "passed": true,
+        "position": [
+          7.695442199707031,
+          0.0,
+          -2.147778272628784
+        ],
+        "speed": 3.52083420753479,
+        "wheelContactCount": 4,
+        "yawDegrees": 88.00000762939453
+      },
+      {
+        "maxPitchDegrees": 0.0,
+        "maxRollDegrees": 0.0,
+        "message": "Deterministic live VehicleController fallback sample.",
+        "name": "steer",
+        "outOfBounds": false,
+        "passed": true,
+        "position": [
+          10.403951644897461,
+          0.0,
+          -2.3112220764160156
+        ],
+        "speed": 4.604169845581055,
+        "wheelContactCount": 4,
+        "yawDegrees": 98.63905334472656
+      },
+      {
+        "maxPitchDegrees": 0.0,
+        "maxRollDegrees": 0.0,
+        "message": "Deterministic live VehicleController fallback sample.",
+        "name": "brake",
+        "outOfBounds": false,
+        "passed": true,
+        "position": [
+          10.801594734191895,
+          0.0,
+          -2.3716375827789307
+        ],
+        "speed": 2.253333806991577,
+        "wheelContactCount": 4,
+        "yawDegrees": 98.63905334472656
+      },
+      {
+        "maxPitchDegrees": 0.0,
+        "maxRollDegrees": 0.0,
+        "message": "Deterministic live VehicleController fallback sample.",
+        "name": "reverse",
+        "outOfBounds": false,
+        "passed": true,
+        "position": [
+          9.085247993469238,
+          0.0,
+          -2.0137181282043457
+        ],
+        "speed": 2.75,
+        "wheelContactCount": 4,
+        "yawDegrees": 104.59004974365234
+      }
+    ]
+  },
+  "drivingFeelChecks": [
+    {
+      "backend": "deterministic",
+      "maxValue": 170.0,
+      "message": "Deterministic vehicle should reach the service-run checkpoint without feeling sluggish.",
+      "minValue": 1.0,
+      "name": "routeFramesToCheckpoint",
+      "passed": true,
+      "units": "frames",
+      "value": 139.0
+    },
+    {
+      "backend": "deterministic",
+      "maxValue": 0.75,
+      "message": "Straight service-road throttle should stay visually centered in the authored lane.",
+      "minValue": 0.0,
+      "name": "routeMaxLateralDeviation",
+      "passed": true,
+      "units": "meters",
+      "value": 0.39882516860961914
+    },
+    {
+      "backend": "deterministic",
+      "maxValue": 2.6500000953674316,
+      "message": "Brake input should stop the cart within the compact service-yard road budget.",
+      "minValue": 0.0,
+      "name": "brakeStopDistance",
+      "passed": true,
+      "units": "meters",
+      "value": 1.0562235116958618
+    },
+    {
+      "backend": "deterministic",
+      "maxValue": 5.0,
+      "message": "Reverse should produce clear backward motion without a manual-feel dead zone.",
+      "minValue": 0.75,
+      "name": "reverseDistance",
+      "passed": true,
+      "units": "meters",
+      "value": 2.7945847511291504
+    },
+    {
+      "backend": "deterministic",
+      "maxValue": 70.0,
+      "message": "A moderate steering hold should visibly turn the vehicle without spinning it around.",
+      "minValue": 12.0,
+      "name": "steeringYawResponse",
+      "passed": true,
+      "units": "degrees",
+      "value": 21.728736877441406
+    },
+    {
+      "backend": "deterministic",
+      "maxValue": 20.0,
+      "message": "Vehicle camera target should stay close enough to the turning vehicle for readable control.",
+      "minValue": 0.0,
+      "name": "cameraYawLag",
+      "passed": true,
+      "units": "degrees",
+      "value": 4.519385814666748
+    },
+    {
+      "backend": "jolt",
+      "maxValue": 190.0,
+      "message": "Runtime adapter candidate should reach the service-run checkpoint inside the authored route budget.",
+      "minValue": 1.0,
+      "name": "routeFramesToCheckpoint",
+      "passed": true,
+      "units": "frames",
+      "value": 169.0
+    },
+    {
+      "backend": "jolt",
+      "maxValue": 0.8500000238418579,
+      "message": "Runtime adapter candidate should hold the straight dock-road lane without drifting into bounds.",
+      "minValue": 0.0,
+      "name": "routeMaxLateralDeviation",
+      "passed": true,
+      "units": "meters",
+      "value": 0.4004340171813965
+    },
+    {
+      "backend": "jolt",
+      "maxValue": 4.5,
+      "message": "Runtime adapter candidate should brake within the compact service-yard road budget.",
+      "minValue": 0.0,
+      "name": "brakeStopDistance",
+      "passed": true,
+      "units": "meters",
+      "value": 0.3838803470134735
+    },
+    {
+      "backend": "jolt",
+      "maxValue": 6.0,
+      "message": "Runtime adapter candidate should produce clear backward motion from reverse input.",
+      "minValue": 0.3499999940395355,
+      "name": "reverseDistance",
+      "passed": true,
+      "units": "meters",
+      "value": 2.5522849559783936
+    },
+    {
+      "backend": "jolt",
+      "maxValue": 95.0,
+      "message": "Runtime adapter candidate should respond visibly to steering without over-rotating.",
+      "minValue": 4.0,
+      "name": "steeringYawResponse",
+      "passed": true,
+      "units": "degrees",
+      "value": 41.21535110473633
+    },
+    {
+      "backend": "jolt",
+      "maxValue": 15.0,
+      "message": "Camera target should stay readable while following the runtime adapter vehicle candidate.",
+      "minValue": 0.0,
+      "name": "cameraYawLag",
+      "passed": true,
+      "units": "degrees",
+      "value": 12.2405424118042
+    }
+  ],
+  "error": "",
+  "inputFrameCount": 250,
+  "obstacleChecks": [
+    {
+      "backend": "deterministic",
+      "clearedObstacleProxy": true,
+      "collisionBacked": true,
+      "finalCameraYawDegrees": 83.42633056640625,
+      "finalPosition": [
+        18.818281173706055,
+        0.0,
+        -0.2411642074584961
+      ],
+      "finalYawDegrees": 84.02751922607422,
+      "frameCount": 150,
+      "hitBounds": false,
+      "maxCameraYawDeltaDegrees": 3.5560150146484375,
+      "maxLateralOffset": 1.9588358402252197,
+      "message": "Deterministic steering cleared the overlap-backed obstacle probe.",
+      "minCollisionClearance": 0.5348944664001465,
+      "minDistanceToObstacle": 1.0189112424850464,
+      "obstacleCollisionClear": true,
+      "obstacleOverlapFrames": 0,
+      "passed": true
+    },
+    {
+      "backend": "jolt",
+      "clearedObstacleProxy": true,
+      "collisionBacked": true,
+      "finalCameraYawDegrees": 81.87562561035156,
+      "finalPosition": [
+        17.292375564575195,
+        1.142946481704712,
+        -3.561732769012451
+      ],
+      "finalYawDegrees": 85.0993881225586,
+      "frameCount": 150,
+      "hitBounds": false,
+      "maxCameraYawDeltaDegrees": 4.608171463012695,
+      "maxLateralOffset": 1.4237186908721924,
+      "message": "Runtime adapter steering cleared the overlap-backed obstacle probe.",
+      "minCollisionClearance": 0.7086019515991211,
+      "minDistanceToObstacle": 1.1844756603240967,
+      "obstacleCollisionClear": true,
+      "obstacleOverlapFrames": 0,
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "routeChecks": [
+    {
+      "backend": "deterministic",
+      "checkpointReached": true,
+      "finalPosition": [
+        17.62083625793457,
+        0.0,
+        -1.8011748790740967
+      ],
+      "finalYawDegrees": 88.00000762939453,
+      "framesToCheckpoint": 139,
+      "hitBounds": false,
+      "message": "Deterministic route reached the authored service-run checkpoint.",
+      "minDistanceToCheckpoint": 1.774561882019043,
+      "passed": true
+    },
+    {
+      "backend": "jolt",
+      "checkpointReached": true,
+      "finalPosition": [
+        17.666980743408203,
+        1.1374707221984863,
+        -1.7995660305023193
+      ],
+      "finalYawDegrees": 88.00031280517578,
+      "framesToCheckpoint": 169,
+      "hitBounds": false,
+      "message": "Runtime adapter route reached the authored service-run checkpoint.",
+      "minDistanceToCheckpoint": 1.7300007343292236,
+      "passed": true
+    }
+  ],
+  "routePaceProbes": [
+    {
+      "backend": "jolt",
+      "checkpointReached": true,
+      "finalPosition": [
+        17.666980743408203,
+        1.1374707221984863,
+        -1.7995660305023193
+      ],
+      "finalSpeed": 7.753819465637207,
+      "finalYawDegrees": 88.00031280517578,
+      "framesToCheckpoint": 169,
+      "hitBounds": false,
+      "message": "Runtime adapter route-pace probe reached the authored service-run checkpoint.",
+      "minDistanceToCheckpoint": 1.7300007343292236,
+      "name": "routePaceThrottle72",
+      "passed": true,
+      "stable": true,
+      "throttle": 0.7200000286102295
+    },
+    {
+      "backend": "jolt",
+      "checkpointReached": true,
+      "finalPosition": [
+        17.638442993164063,
+        1.137505054473877,
+        -1.8005616664886475
+      ],
+      "finalSpeed": 8.032581329345703,
+      "finalYawDegrees": 88.0000228881836,
+      "framesToCheckpoint": 163,
+      "hitBounds": false,
+      "message": "Runtime adapter route-pace probe reached the authored service-run checkpoint.",
+      "minDistanceToCheckpoint": 1.7575494050979614,
+      "name": "routePaceThrottle86",
+      "passed": true,
+      "stable": true,
+      "throttle": 0.8600000143051147
+    },
+    {
+      "backend": "jolt",
+      "checkpointReached": true,
+      "finalPosition": [
+        17.66779327392578,
+        1.1375393867492676,
+        -1.799527645111084
+      ],
+      "finalSpeed": 8.319704055786133,
+      "finalYawDegrees": 88.0001220703125,
+      "framesToCheckpoint": 158,
+      "hitBounds": false,
+      "message": "Runtime adapter route-pace probe reached the authored service-run checkpoint.",
+      "minDistanceToCheckpoint": 1.7292191982269287,
+      "name": "routePaceThrottle100",
+      "passed": true,
+      "stable": true,
+      "throttle": 1.0
+    }
+  ],
+  "scenario": "ferry-office-vehicle-runtime-comparison",
+  "scene": {
+    "id": "ferry-office",
+    "path": "C:/Users/Marcin/Documents/New project/data/scenes/ferry_office.scene.json"
+  },
+  "schema": "v0.36-ferry-office-vehicle-runtime-comparison",
+  "vehicle": {
+    "id": "service-yard-vehicle"
+  }
+}

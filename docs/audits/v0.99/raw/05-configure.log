@@ -1,0 +1,6 @@
+COMMAND: scripts/configure.ps1
+START:
+2026-05-17T00:21:29.8153907+02:00
+Configuring preset: windows-vs2022-debug
+Configured with preset: windows-vs2022-debug
+EXIT_CODE: 0

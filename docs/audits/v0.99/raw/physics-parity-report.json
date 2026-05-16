@@ -1,0 +1,218 @@
+{
+  "backend": "jolt",
+  "error": "",
+  "floorProbes": [
+    {
+      "message": "Floor probe matched PrototypeWorld floor height.",
+      "name": "dock-start",
+      "passed": true,
+      "physicsDistance": 1.25,
+      "physicsGrounded": true,
+      "position": [
+        0.0,
+        0.0,
+        -1.0
+      ],
+      "prototypeGrounded": true
+    },
+    {
+      "message": "Floor probe matched PrototypeWorld floor height.",
+      "name": "ferry-office-floor",
+      "passed": true,
+      "physicsDistance": 1.25,
+      "physicsGrounded": true,
+      "position": [
+        0.0,
+        0.0,
+        3.25
+      ],
+      "prototypeGrounded": true
+    },
+    {
+      "message": "Floor probe matched PrototypeWorld floor height.",
+      "name": "service-yard-pad",
+      "passed": true,
+      "physicsDistance": 1.25,
+      "physicsGrounded": true,
+      "position": [
+        6.300000190734863,
+        0.0,
+        -2.200000047683716
+      ],
+      "prototypeGrounded": true
+    },
+    {
+      "message": "Floor probe matched PrototypeWorld floor height.",
+      "name": "dock-road-turnaround",
+      "passed": true,
+      "physicsDistance": 1.25,
+      "physicsGrounded": true,
+      "position": [
+        17.799999237060547,
+        0.0,
+        -2.200000047683716
+      ],
+      "prototypeGrounded": true
+    }
+  ],
+  "overlapProbes": [
+    {
+      "message": "Overlap probe matched PrototypeWorld.",
+      "name": "service-gate-blocked",
+      "passed": true,
+      "physicsBodies": [
+        "service-gate"
+      ],
+      "position": [
+        0.0,
+        0.0,
+        2.3499999046325684
+      ],
+      "prototypeColliders": [
+        "service-gate"
+      ]
+    },
+    {
+      "message": "Overlap probe matched PrototypeWorld.",
+      "name": "office-counter-blocked",
+      "passed": true,
+      "physicsBodies": [
+        "office-counter"
+      ],
+      "position": [
+        -1.350000023841858,
+        0.0,
+        1.4500000476837158
+      ],
+      "prototypeColliders": [
+        "office-counter"
+      ]
+    },
+    {
+      "message": "Overlap probe matched PrototypeWorld.",
+      "name": "dock-lane-clear",
+      "passed": true,
+      "physicsBodies": [],
+      "position": [
+        0.0,
+        0.0,
+        -1.0
+      ],
+      "prototypeColliders": []
+    },
+    {
+      "message": "Overlap probe matched PrototypeWorld.",
+      "name": "dock-right-rail-blocked",
+      "passed": true,
+      "physicsBodies": [
+        "dock-rail-right"
+      ],
+      "position": [
+        4.199999809265137,
+        0.0,
+        -0.5
+      ],
+      "prototypeColliders": [
+        "dock-rail-right"
+      ]
+    }
+  ],
+  "passed": true,
+  "raycastProbes": [
+    {
+      "direction": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "maxDistance": 3.0,
+      "message": "Raycast probe matched PrototypeWorld.",
+      "name": "service-gate-front",
+      "origin": [
+        0.0,
+        0.75,
+        1.2000000476837158
+      ],
+      "passed": true,
+      "physicsBody": "service-gate",
+      "physicsDistance": 0.9900000095367432,
+      "physicsHit": true,
+      "prototypeCollider": "service-gate",
+      "prototypeDistance": 0.9899997711181641,
+      "prototypeHit": true
+    },
+    {
+      "direction": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "maxDistance": 4.0,
+      "message": "Raycast probe matched PrototypeWorld.",
+      "name": "office-back-wall",
+      "origin": [
+        0.0,
+        0.75,
+        3.0
+      ],
+      "passed": true,
+      "physicsBody": "ferry-office-back-wall",
+      "physicsDistance": 2.1500000953674316,
+      "physicsHit": true,
+      "prototypeCollider": "ferry-office-back-wall",
+      "prototypeDistance": 2.1500000953674316,
+      "prototypeHit": true
+    },
+    {
+      "direction": [
+        -1.0,
+        0.0,
+        0.0
+      ],
+      "maxDistance": 2.0,
+      "message": "Raycast probe matched PrototypeWorld.",
+      "name": "dock-left-rail",
+      "origin": [
+        -3.4000000953674316,
+        0.44999998807907104,
+        -0.5
+      ],
+      "passed": true,
+      "physicsBody": "dock-rail-left",
+      "physicsDistance": 0.599999725818634,
+      "physicsHit": true,
+      "prototypeCollider": "dock-rail-left",
+      "prototypeDistance": 0.5999996662139893,
+      "prototypeHit": true
+    },
+    {
+      "direction": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "maxDistance": 3.0,
+      "message": "Raycast probe matched PrototypeWorld.",
+      "name": "dock-lane-clear",
+      "origin": [
+        0.0,
+        0.5,
+        -1.0
+      ],
+      "passed": true,
+      "physicsBody": "",
+      "physicsDistance": 0.0,
+      "physicsHit": false,
+      "prototypeCollider": "",
+      "prototypeDistance": 0.0,
+      "prototypeHit": false
+    }
+  ],
+  "scenario": "ferry-office-collision",
+  "scene": {
+    "id": "ferry-office",
+    "path": "C:/Users/Marcin/Documents/New project/data/scenes/ferry_office.scene.json"
+  },
+  "schema": "v0.33-ferry-office-physics-parity",
+  "staticColliderCount": 10
+}

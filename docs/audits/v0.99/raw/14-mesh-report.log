@@ -1,0 +1,209 @@
+COMMAND: python tools/mesh_report.py
+START:
+2026-05-17T00:23:24.2859672+02:00
+Tidebreak mesh report
+scene: ferry-office
+meshAssets: 20
+meshInstances: 66
+modelFiles: 20
+
+file: assets/models/blender_cable_reel.gltf
+  referenced: yes
+  assetIds: blender-cable-reel-mesh
+  uses: 2
+  license: project-original
+  provenance: Authored procedurally by tools/blender/create_tidebreak_cable_reel.py and exported headlessly by Blender 5.1.1 during v0.27.
+  sizeBytes: 15298
+  gltf: vertices=368 indices=720
+  bounds: min=(-0.34, 0.00, -0.38) max=(0.34, 0.76, 0.38)
+
+file: assets/models/blender_ferry_notice_board.gltf
+  referenced: yes
+  assetIds: blender-ferry-notice-board-mesh
+  uses: 2
+  license: project-original
+  provenance: Authored procedurally by tools/blender/create_tidebreak_notice_board.py and exported headlessly by Blender 5.1.1 during v0.20.1.
+  sizeBytes: 5069
+  gltf: vertices=96 indices=144
+  bounds: min=(-0.62, 0.00, -0.16) max=(0.62, 1.41, 0.16)
+
+file: assets/models/blender_harbor_backdrop.gltf
+  referenced: yes
+  assetIds: blender-harbor-backdrop-mesh
+  uses: 4
+  license: project-original
+  provenance: Authored procedurally by tools/blender/create_tidebreak_harbor_backdrop.py and exported headlessly by Blender 5.1.1 during v0.43.
+  sizeBytes: 10251
+  gltf: vertices=240 indices=360
+  bounds: min=(-0.54, 0.00, -0.09) max=(0.55, 0.40, 0.06)
+
+file: assets/models/blender_harbor_water_surface.gltf
+  referenced: yes
+  assetIds: blender-harbor-water-surface-mesh
+  uses: 3
+  license: project-original
+  provenance: Authored procedurally by tools/blender/create_tidebreak_harbor_water_surface.py and exported headlessly by Blender 5.1.1 during v0.44.
+  sizeBytes: 6745
+  gltf: vertices=144 indices=216
+  bounds: min=(-0.50, 0.00, -0.50) max=(0.50, 0.02, 0.50)
+
+file: assets/models/blender_wet_road_surface.gltf
+  referenced: yes
+  assetIds: blender-wet-road-surface-mesh
+  uses: 3
+  license: project-original
+  provenance: Authored procedurally by tools/blender/create_tidebreak_wet_road_surface.py and exported headlessly by Blender 5.1.1 during v0.42.
+  sizeBytes: 7632
+  gltf: vertices=168 indices=252
+  bounds: min=(-0.52, 0.00, -0.50) max=(0.52, 0.04, 0.50)
+
+file: assets/models/clearance_tag.gltf
+  referenced: yes
+  assetIds: clearance-tag-mesh
+  uses: 1
+  license: project-original
+  provenance: Generated in-repo by tools/create_simple_prop_gltf.py as a v0.58 fallback clearance-tag prop because Blender was unnecessary for this tiny endpoint cue; not a Blender export.
+  sizeBytes: 2439
+  gltf: vertices=32 indices=144
+  bounds: min=(-0.26, 0.00, -0.10) max=(0.26, 0.97, 0.10)
+
+file: assets/models/ferry_notice_board.gltf
+  referenced: yes
+  assetIds: ferry-notice-board-mesh
+  uses: 2
+  license: project-original
+  provenance: Generated in-repo by tools/create_simple_prop_gltf.py as a v0.20 fallback static prop because Blender was unavailable; not a Blender export.
+  sizeBytes: 2213
+  gltf: vertices=24 indices=108
+  bounds: min=(-0.58, 0.00, -0.16) max=(0.58, 1.42, 0.16)
+
+file: assets/models/ferry_office_canopy.gltf
+  referenced: yes
+  assetIds: ferry-office-canopy-mesh
+  uses: 1
+  license: project-original
+  provenance: Generated in-repo by tools/create_simple_prop_gltf.py as a v0.81 fallback Ferry Office canopy because the roofline is a high-visibility first-frame silhouette; not a Blender export.
+  sizeBytes: 2232
+  gltf: vertices=24 indices=108
+  bounds: min=(-2.95, 0.00, 0.00) max=(2.95, 0.36, 3.70)
+
+file: assets/models/ferry_office_facade_frame.gltf
+  referenced: yes
+  assetIds: ferry-office-facade-frame-mesh
+  uses: 1
+  license: project-original
+  provenance: Generated in-repo by tools/create_simple_prop_gltf.py as a v0.87 fallback Ferry Office facade frame because the front wall and entry posts still read as broad unit-box blockout; not a Blender export.
+  sizeBytes: 3823
+  gltf: vertices=80 indices=360
+  bounds: min=(-2.42, 0.00, -0.33) max=(2.42, 2.12, 0.07)
+
+file: assets/models/ferry_office_service_gate.gltf
+  referenced: yes
+  assetIds: ferry-office-service-gate-mesh
+  uses: 1
+  license: project-original
+  provenance: Generated in-repo by tools/create_simple_prop_gltf.py as a v0.85 fallback Ferry Office service gate because the gate was still a high-visibility unit-box slab/slat cluster; not a Blender export.
+  sizeBytes: 3374
+  gltf: vertices=64 indices=288
+  bounds: min=(-2.45, 0.03, -0.26) max=(2.45, 1.47, 0.10)
+
+file: assets/models/ferry_office_service_panel.gltf
+  referenced: yes
+  assetIds: ferry-office-service-panel-mesh
+  uses: 1
+  license: project-original
+  provenance: Generated in-repo by tools/create_simple_prop_gltf.py as a v0.93 fallback Ferry Office service panel because the office-side service/control cue was still a generic utility-box reuse; not a Blender export.
+  sizeBytes: 3829
+  gltf: vertices=80 indices=360
+  bounds: min=(-0.39, 0.00, -0.12) max=(0.39, 1.16, 0.06)
+
+file: assets/models/ferry_office_sign_panel.gltf
+  referenced: yes
+  assetIds: ferry-office-sign-panel-mesh
+  uses: 1
+  license: project-original
+  provenance: Generated in-repo by tools/create_simple_prop_gltf.py as a v0.88 fallback Ferry Office sign panel because the front sign was the loudest remaining facade unit-box cue; not a Blender export.
+  sizeBytes: 3373
+  gltf: vertices=64 indices=288
+  bounds: min=(-0.82, -0.01, -0.12) max=(0.82, 0.38, 0.04)
+
+file: assets/models/road_edge_post.gltf
+  referenced: yes
+  assetIds: road-edge-post-mesh
+  uses: 7
+  license: project-original
+  provenance: Generated in-repo for the v0.18 Tidebreak service-road prop style spike.
+  sizeBytes: 1616
+  gltf: vertices=16 indices=72
+  bounds: min=(-0.09, 0.00, -0.09) max=(0.09, 0.84, 0.09)
+
+file: assets/models/service_barrier.gltf
+  referenced: yes
+  assetIds: service-barrier-mesh
+  uses: 2
+  license: project-original
+  provenance: Generated in-repo for the v0.18 Tidebreak service-road prop style spike.
+  sizeBytes: 1841
+  gltf: vertices=24 indices=108
+  bounds: min=(-0.92, 0.00, -0.09) max=(0.92, 0.58, 0.09)
+
+file: assets/models/service_road_sign.gltf
+  referenced: yes
+  assetIds: service-road-sign-mesh
+  uses: 2
+  license: project-original
+  provenance: Generated in-repo for the v0.18 Tidebreak service-road prop style spike.
+  sizeBytes: 1618
+  gltf: vertices=16 indices=72
+  bounds: min=(-0.48, 0.00, -0.04) max=(0.48, 1.18, 0.04)
+
+file: assets/models/service_yard_cart_body.gltf
+  referenced: yes
+  assetIds: service-yard-cart-body-mesh
+  uses: 1
+  license: project-original
+  provenance: Generated in-repo by tools/create_simple_prop_gltf.py as a v0.84 fallback service-yard cart body because the vehicle proxy was a high-visibility unit-box cluster; not a Blender export.
+  sizeBytes: 2692
+  gltf: vertices=40 indices=180
+  bounds: min=(-0.58, 0.18, -0.96) max=(0.58, 0.90, 0.96)
+
+file: assets/models/service_yard_cart_cabin.gltf
+  referenced: yes
+  assetIds: service-yard-cart-cabin-mesh
+  uses: 1
+  license: project-original
+  provenance: Generated in-repo by tools/create_simple_prop_gltf.py as a v0.84 fallback service-yard cart cabin because the vehicle proxy was a high-visibility unit-box cluster; not a Blender export.
+  sizeBytes: 2024
+  gltf: vertices=16 indices=72
+  bounds: min=(-0.38, 0.62, -0.54) max=(0.38, 1.20, 0.24)
+
+file: assets/models/service_yard_cart_wheel.gltf
+  referenced: yes
+  assetIds: service-yard-cart-wheel-mesh
+  uses: 4
+  license: project-original
+  provenance: Generated in-repo by tools/create_simple_prop_gltf.py as a v0.84 fallback rounded wheel because the old vehicle wheels were unit boxes; not a Blender export.
+  sizeBytes: 2381
+  gltf: vertices=26 indices=144
+  bounds: min=(-0.13, -0.01, -0.27) max=(0.13, 0.53, 0.27)
+
+file: assets/models/unit_box.gltf
+  referenced: yes
+  assetIds: unit-box-mesh
+  uses: 25
+  license: project-original
+  provenance: Created in-repo for the v0.12 static mesh render spike.
+  sizeBytes: 1358
+  gltf: vertices=8 indices=36
+  bounds: min=(-0.50, -0.50, -0.50) max=(0.50, 0.50, 0.50)
+
+file: assets/models/utility_box.gltf
+  referenced: yes
+  assetIds: utility-box-mesh
+  uses: 2
+  license: project-original
+  provenance: Generated in-repo for the v0.18 Tidebreak service-road prop style spike.
+  sizeBytes: 1841
+  gltf: vertices=24 indices=108
+  bounds: min=(-0.32, 0.00, -0.25) max=(0.32, 0.88, 0.22)
+EXIT_CODE: 0

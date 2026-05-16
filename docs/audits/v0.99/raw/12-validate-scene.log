@@ -1,0 +1,6 @@
+COMMAND: python tools/validate_scene.py
+START:
+2026-05-17T00:23:24.2839676+02:00
+Scene validation: ferry-office
+Scene validation passed.
+EXIT_CODE: 0

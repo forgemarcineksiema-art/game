@@ -1,0 +1,82 @@
+COMMAND: python tools/capture_visual_smoke.py --output-dir docs\audits\v0.99\screenshots\visual-smoke-initial --report-json docs\audits\v0.99\raw\visual-smoke-initial-report.json
+START:
+2026-05-17T00:23:51.6897429+02:00
+Running: C:\Users\Marcin\Documents\New project\build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --ui-mode playtest --scene C:\Users\Marcin\Documents\New project\data\scenes\ferry_office.scene.json --frames 6 --free-cursor --capture-frame C:\Users\Marcin\Documents\New project\docs\audits\v0.99\screenshots\visual-smoke-initial\v0.31-gdi-capture.bmp
+[00:23:51] [info] Initializing engine v0.23.0
+[00:23:51] [info] App: Tidebreak Prototype
+[00:23:51] [info] Win32 window created.
+[00:23:51] [info] GDI fallback renderer initialized.
+[00:23:51] [info] Runtime started with renderer: gdi-fallback
+[00:23:51] [info] Sandbox layer attached.
+[00:23:51] [info] Loaded runtime scene data: ferry-office from C:\Users\Marcin\Documents\New project\data\scenes\ferry_office.scene.json
+[00:23:51] [info] Loaded static mesh asset: unit-box-mesh from assets/models/unit_box.gltf
+[00:23:51] [info] Loaded static mesh asset: service-road-sign-mesh from assets/models/service_road_sign.gltf
+[00:23:51] [info] Loaded static mesh asset: road-edge-post-mesh from assets/models/road_edge_post.gltf
+[00:23:51] [info] Loaded static mesh asset: service-barrier-mesh from assets/models/service_barrier.gltf
+[00:23:51] [info] Loaded static mesh asset: utility-box-mesh from assets/models/utility_box.gltf
+[00:23:51] [info] Loaded static mesh asset: ferry-notice-board-mesh from assets/models/ferry_notice_board.gltf
+[00:23:51] [info] Loaded static mesh asset: clearance-tag-mesh from assets/models/clearance_tag.gltf
+[00:23:51] [info] Loaded static mesh asset: blender-ferry-notice-board-mesh from assets/models/blender_ferry_notice_board.gltf
+[00:23:51] [info] Loaded static mesh asset: blender-cable-reel-mesh from assets/models/blender_cable_reel.gltf
+[00:23:51] [info] Loaded static mesh asset: blender-wet-road-surface-mesh from assets/models/blender_wet_road_surface.gltf
+[00:23:51] [info] Loaded static mesh asset: blender-harbor-backdrop-mesh from assets/models/blender_harbor_backdrop.gltf
+[00:23:51] [info] Loaded static mesh asset: blender-harbor-water-surface-mesh from assets/models/blender_harbor_water_surface.gltf
+[00:23:51] [info] Loaded static mesh asset: ferry-office-canopy-mesh from assets/models/ferry_office_canopy.gltf
+[00:23:51] [info] Loaded static mesh asset: ferry-office-service-gate-mesh from assets/models/ferry_office_service_gate.gltf
+[00:23:51] [info] Loaded static mesh asset: ferry-office-facade-frame-mesh from assets/models/ferry_office_facade_frame.gltf
+[00:23:52] [info] Loaded static mesh asset: ferry-office-sign-panel-mesh from assets/models/ferry_office_sign_panel.gltf
+[00:23:52] [info] Loaded static mesh asset: ferry-office-service-panel-mesh from assets/models/ferry_office_service_panel.gltf
+[00:23:52] [info] Loaded static mesh asset: service-yard-cart-body-mesh from assets/models/service_yard_cart_body.gltf
+[00:23:52] [info] Loaded static mesh asset: service-yard-cart-cabin-mesh from assets/models/service_yard_cart_cabin.gltf
+[00:23:52] [info] Loaded static mesh asset: service-yard-cart-wheel-mesh from assets/models/service_yard_cart_wheel.gltf
+[00:23:52] [info] Objective: Check the Ferry Manifest to start the Ferry Office service call.
+Prompt: Press E: Collect Ferry Manifest
+Job: Collect manifest | in progress | vehicle=later | checkpoint=later | confirm=later
+Status: service gate=closed | power=offline | mode=on foot
+F1: debug | Esc: quit
+[00:23:52] [info] Captured renderer frame to: C:\Users\Marcin\Documents\New project\docs\audits\v0.99\screenshots\visual-smoke-initial\v0.31-gdi-capture.bmp
+[00:23:52] [info] Sandbox layer detached.
+[00:23:52] [info] GDI fallback renderer shutdown.
+[00:23:52] [info] Shutting down engine.
+gdi: 1280x720, 3686454 bytes, colors=82, lumaRange=221, warm/green/cool/neutral=0/2045/0/6538, text=6026
+Running: C:\Users\Marcin\Documents\New project\build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --ui-mode playtest --scene C:\Users\Marcin\Documents\New project\data\scenes\ferry_office.scene.json --frames 6 --free-cursor --capture-frame C:\Users\Marcin\Documents\New project\docs\audits\v0.99\screenshots\visual-smoke-initial\v0.31-dx11-capture.bmp
+[00:23:57] [info] Initializing engine v0.23.0
+[00:23:57] [info] App: Tidebreak Prototype
+[00:23:57] [info] Win32 window created.
+[00:23:57] [warn] Hardware DX11 device failed; trying WARP.
+[00:23:57] [info] DirectX 11 renderer initialized.
+[00:23:57] [info] Runtime started with renderer: dx11
+[00:23:57] [info] Sandbox layer attached.
+[00:23:58] [info] Loaded runtime scene data: ferry-office from C:\Users\Marcin\Documents\New project\data\scenes\ferry_office.scene.json
+[00:23:58] [info] Loaded static mesh asset: unit-box-mesh from assets/models/unit_box.gltf
+[00:23:58] [info] Loaded static mesh asset: service-road-sign-mesh from assets/models/service_road_sign.gltf
+[00:23:58] [info] Loaded static mesh asset: road-edge-post-mesh from assets/models/road_edge_post.gltf
+[00:23:58] [info] Loaded static mesh asset: service-barrier-mesh from assets/models/service_barrier.gltf
+[00:23:58] [info] Loaded static mesh asset: utility-box-mesh from assets/models/utility_box.gltf
+[00:23:58] [info] Loaded static mesh asset: ferry-notice-board-mesh from assets/models/ferry_notice_board.gltf
+[00:23:58] [info] Loaded static mesh asset: clearance-tag-mesh from assets/models/clearance_tag.gltf
+[00:23:58] [info] Loaded static mesh asset: blender-ferry-notice-board-mesh from assets/models/blender_ferry_notice_board.gltf
+[00:23:58] [info] Loaded static mesh asset: blender-cable-reel-mesh from assets/models/blender_cable_reel.gltf
+[00:23:58] [info] Loaded static mesh asset: blender-wet-road-surface-mesh from assets/models/blender_wet_road_surface.gltf
+[00:23:58] [info] Loaded static mesh asset: blender-harbor-backdrop-mesh from assets/models/blender_harbor_backdrop.gltf
+[00:23:58] [info] Loaded static mesh asset: blender-harbor-water-surface-mesh from assets/models/blender_harbor_water_surface.gltf
+[00:23:58] [info] Loaded static mesh asset: ferry-office-canopy-mesh from assets/models/ferry_office_canopy.gltf
+[00:23:58] [info] Loaded static mesh asset: ferry-office-service-gate-mesh from assets/models/ferry_office_service_gate.gltf
+[00:23:58] [info] Loaded static mesh asset: ferry-office-facade-frame-mesh from assets/models/ferry_office_facade_frame.gltf
+[00:23:58] [info] Loaded static mesh asset: ferry-office-sign-panel-mesh from assets/models/ferry_office_sign_panel.gltf
+[00:23:58] [info] Loaded static mesh asset: ferry-office-service-panel-mesh from assets/models/ferry_office_service_panel.gltf
+[00:23:58] [info] Loaded static mesh asset: service-yard-cart-body-mesh from assets/models/service_yard_cart_body.gltf
+[00:23:58] [info] Loaded static mesh asset: service-yard-cart-cabin-mesh from assets/models/service_yard_cart_cabin.gltf
+[00:23:58] [info] Loaded static mesh asset: service-yard-cart-wheel-mesh from assets/models/service_yard_cart_wheel.gltf
+[00:23:58] [info] Objective: Check the Ferry Manifest to start the Ferry Office service call.
+Prompt: Press E: Collect Ferry Manifest
+Job: Collect manifest | in progress | vehicle=later | checkpoint=later | confirm=later
+Status: service gate=closed | power=offline | mode=on foot
+F1: debug | Esc: quit
+[00:23:58] [info] Captured renderer frame to: C:\Users\Marcin\Documents\New project\docs\audits\v0.99\screenshots\visual-smoke-initial\v0.31-dx11-capture.bmp
+[00:23:58] [info] Sandbox layer detached.
+[00:23:58] [info] Shutting down engine.
+dx11: 1280x720, 3686454 bytes, colors=49, lumaRange=221, warm/green/cool/neutral=0/0/0/14511, text=12092
+Wrote visual smoke report: C:\Users\Marcin\Documents\New project\docs\audits\v0.99\raw\visual-smoke-initial-report.json
+Capture visual smoke passed.
+EXIT_CODE: 0

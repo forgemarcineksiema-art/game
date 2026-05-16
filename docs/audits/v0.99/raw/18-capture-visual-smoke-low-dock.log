@@ -1,0 +1,88 @@
+COMMAND: python tools/capture_visual_smoke.py --scenario low-dock-drain-access --output-dir docs\audits\v0.99\screenshots\visual-smoke-low-dock --report-json docs\audits\v0.99\raw\visual-smoke-low-dock-report.json
+START:
+2026-05-17T00:24:32.2326091+02:00
+Running: C:\Users\Marcin\Documents\New project\build\windows-vs2022-debug\Debug\EngineApp.exe --renderer gdi --ui-mode playtest --scene C:\Users\Marcin\Documents\New project\data\scenes\ferry_office.scene.json --frames 6 --free-cursor --capture-frame C:\Users\Marcin\Documents\New project\docs\audits\v0.99\screenshots\visual-smoke-low-dock\v0.95-low-dock-drain-access-gdi-capture.bmp --qa-capture-state low-dock-drain-access
+[00:24:32] [info] Initializing engine v0.23.0
+[00:24:32] [info] App: Tidebreak Prototype
+[00:24:32] [info] Win32 window created.
+[00:24:32] [info] GDI fallback renderer initialized.
+[00:24:32] [info] Runtime started with renderer: gdi-fallback
+[00:24:32] [info] Sandbox layer attached.
+[00:24:32] [info] Loaded runtime scene data: ferry-office from C:\Users\Marcin\Documents\New project\data\scenes\ferry_office.scene.json
+[00:24:32] [info] QA capture state applied: low-dock-drain-access.
+[00:24:32] [info] Loaded static mesh asset: unit-box-mesh from assets/models/unit_box.gltf
+[00:24:32] [info] Loaded static mesh asset: service-road-sign-mesh from assets/models/service_road_sign.gltf
+[00:24:32] [info] Loaded static mesh asset: road-edge-post-mesh from assets/models/road_edge_post.gltf
+[00:24:32] [info] Loaded static mesh asset: service-barrier-mesh from assets/models/service_barrier.gltf
+[00:24:32] [info] Loaded static mesh asset: utility-box-mesh from assets/models/utility_box.gltf
+[00:24:32] [info] Loaded static mesh asset: ferry-notice-board-mesh from assets/models/ferry_notice_board.gltf
+[00:24:32] [info] Loaded static mesh asset: clearance-tag-mesh from assets/models/clearance_tag.gltf
+[00:24:32] [info] Loaded static mesh asset: blender-ferry-notice-board-mesh from assets/models/blender_ferry_notice_board.gltf
+[00:24:32] [info] Loaded static mesh asset: blender-cable-reel-mesh from assets/models/blender_cable_reel.gltf
+[00:24:32] [info] Loaded static mesh asset: blender-wet-road-surface-mesh from assets/models/blender_wet_road_surface.gltf
+[00:24:32] [info] Loaded static mesh asset: blender-harbor-backdrop-mesh from assets/models/blender_harbor_backdrop.gltf
+[00:24:32] [info] Loaded static mesh asset: blender-harbor-water-surface-mesh from assets/models/blender_harbor_water_surface.gltf
+[00:24:32] [info] Loaded static mesh asset: ferry-office-canopy-mesh from assets/models/ferry_office_canopy.gltf
+[00:24:32] [info] Loaded static mesh asset: ferry-office-service-gate-mesh from assets/models/ferry_office_service_gate.gltf
+[00:24:32] [info] Loaded static mesh asset: ferry-office-facade-frame-mesh from assets/models/ferry_office_facade_frame.gltf
+[00:24:32] [info] Loaded static mesh asset: ferry-office-sign-panel-mesh from assets/models/ferry_office_sign_panel.gltf
+[00:24:32] [info] Loaded static mesh asset: ferry-office-service-panel-mesh from assets/models/ferry_office_service_panel.gltf
+[00:24:32] [info] Loaded static mesh asset: service-yard-cart-body-mesh from assets/models/service_yard_cart_body.gltf
+[00:24:32] [info] Loaded static mesh asset: service-yard-cart-cabin-mesh from assets/models/service_yard_cart_cabin.gltf
+[00:24:32] [info] Loaded static mesh asset: service-yard-cart-wheel-mesh from assets/models/service_yard_cart_wheel.gltf
+[00:24:32] [info] Objective: Tag the low dock drain clear beside the service-run marker.
+Prompt: Press E: Tag Low Dock Drain Clear
+Job: Complete | complete | vehicle=used | checkpoint=reached | confirm=done
+Status: service gate=open | power=restored | mode=on foot
+Follow-up: relay=reset | log=signed | road=clear | parts=delivered | board=updated | handoff=filed | pump=closed | drain=later | logbook=later
+Next: Tag the low dock drain clear beside the service-run marker.
+F1: debug | Esc: quit
+[00:24:32] [info] Captured renderer frame to: C:\Users\Marcin\Documents\New project\docs\audits\v0.99\screenshots\visual-smoke-low-dock\v0.95-low-dock-drain-access-gdi-capture.bmp
+[00:24:33] [info] Sandbox layer detached.
+[00:24:33] [info] GDI fallback renderer shutdown.
+[00:24:33] [info] Shutting down engine.
+gdi: 1280x720, 3686454 bytes, colors=77, lumaRange=221, warm/green/cool/neutral=0/3278/2408/10632, text=9906
+Running: C:\Users\Marcin\Documents\New project\build\windows-vs2022-debug\Debug\EngineApp.exe --renderer dx11 --ui-mode playtest --scene C:\Users\Marcin\Documents\New project\data\scenes\ferry_office.scene.json --frames 6 --free-cursor --capture-frame C:\Users\Marcin\Documents\New project\docs\audits\v0.99\screenshots\visual-smoke-low-dock\v0.95-low-dock-drain-access-dx11-capture.bmp --qa-capture-state low-dock-drain-access
+[00:24:38] [info] Initializing engine v0.23.0
+[00:24:38] [info] App: Tidebreak Prototype
+[00:24:38] [info] Win32 window created.
+[00:24:38] [warn] Hardware DX11 device failed; trying WARP.
+[00:24:38] [info] DirectX 11 renderer initialized.
+[00:24:38] [info] Runtime started with renderer: dx11
+[00:24:38] [info] Sandbox layer attached.
+[00:24:38] [info] Loaded runtime scene data: ferry-office from C:\Users\Marcin\Documents\New project\data\scenes\ferry_office.scene.json
+[00:24:38] [info] QA capture state applied: low-dock-drain-access.
+[00:24:38] [info] Loaded static mesh asset: unit-box-mesh from assets/models/unit_box.gltf
+[00:24:38] [info] Loaded static mesh asset: service-road-sign-mesh from assets/models/service_road_sign.gltf
+[00:24:38] [info] Loaded static mesh asset: road-edge-post-mesh from assets/models/road_edge_post.gltf
+[00:24:38] [info] Loaded static mesh asset: service-barrier-mesh from assets/models/service_barrier.gltf
+[00:24:38] [info] Loaded static mesh asset: utility-box-mesh from assets/models/utility_box.gltf
+[00:24:38] [info] Loaded static mesh asset: ferry-notice-board-mesh from assets/models/ferry_notice_board.gltf
+[00:24:38] [info] Loaded static mesh asset: clearance-tag-mesh from assets/models/clearance_tag.gltf
+[00:24:38] [info] Loaded static mesh asset: blender-ferry-notice-board-mesh from assets/models/blender_ferry_notice_board.gltf
+[00:24:38] [info] Loaded static mesh asset: blender-cable-reel-mesh from assets/models/blender_cable_reel.gltf
+[00:24:38] [info] Loaded static mesh asset: blender-wet-road-surface-mesh from assets/models/blender_wet_road_surface.gltf
+[00:24:38] [info] Loaded static mesh asset: blender-harbor-backdrop-mesh from assets/models/blender_harbor_backdrop.gltf
+[00:24:38] [info] Loaded static mesh asset: blender-harbor-water-surface-mesh from assets/models/blender_harbor_water_surface.gltf
+[00:24:38] [info] Loaded static mesh asset: ferry-office-canopy-mesh from assets/models/ferry_office_canopy.gltf
+[00:24:38] [info] Loaded static mesh asset: ferry-office-service-gate-mesh from assets/models/ferry_office_service_gate.gltf
+[00:24:38] [info] Loaded static mesh asset: ferry-office-facade-frame-mesh from assets/models/ferry_office_facade_frame.gltf
+[00:24:38] [info] Loaded static mesh asset: ferry-office-sign-panel-mesh from assets/models/ferry_office_sign_panel.gltf
+[00:24:38] [info] Loaded static mesh asset: ferry-office-service-panel-mesh from assets/models/ferry_office_service_panel.gltf
+[00:24:38] [info] Loaded static mesh asset: service-yard-cart-body-mesh from assets/models/service_yard_cart_body.gltf
+[00:24:38] [info] Loaded static mesh asset: service-yard-cart-cabin-mesh from assets/models/service_yard_cart_cabin.gltf
+[00:24:38] [info] Loaded static mesh asset: service-yard-cart-wheel-mesh from assets/models/service_yard_cart_wheel.gltf
+[00:24:38] [info] Objective: Tag the low dock drain clear beside the service-run marker.
+Prompt: Press E: Tag Low Dock Drain Clear
+Job: Complete | complete | vehicle=used | checkpoint=reached | confirm=done
+Status: service gate=open | power=restored | mode=on foot
+Follow-up: relay=reset | log=signed | road=clear | parts=delivered | board=updated | handoff=filed | pump=closed | drain=later | logbook=later
+Next: Tag the low dock drain clear beside the service-run marker.
+F1: debug | Esc: quit
+[00:24:38] [info] Captured renderer frame to: C:\Users\Marcin\Documents\New project\docs\audits\v0.99\screenshots\visual-smoke-low-dock\v0.95-low-dock-drain-access-dx11-capture.bmp
+[00:24:39] [info] Sandbox layer detached.
+[00:24:39] [info] Shutting down engine.
+dx11: 1280x720, 3686454 bytes, colors=58, lumaRange=221, warm/green/cool/neutral=154/6833/681/28190, text=20760
+Wrote visual smoke report: C:\Users\Marcin\Documents\New project\docs\audits\v0.99\raw\visual-smoke-low-dock-report.json
+Capture visual smoke passed.
+EXIT_CODE: 0

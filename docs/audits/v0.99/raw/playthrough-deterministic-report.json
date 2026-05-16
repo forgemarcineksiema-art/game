@@ -1,0 +1,316 @@
+{
+  "error": "",
+  "final": {
+    "eventCount": 21,
+    "events": [
+      {
+        "flag": "ferryOfficeJobStarted",
+        "id": 1,
+        "name": "ferryOfficeJobStarted=true",
+        "source": "Ferry Manifest",
+        "value": true
+      },
+      {
+        "flag": "manifestCollected",
+        "id": 2,
+        "name": "manifestCollected=true",
+        "source": "Ferry Manifest",
+        "value": true
+      },
+      {
+        "flag": "serviceRouteUsed",
+        "id": 3,
+        "name": "serviceRouteUsed=true",
+        "source": "Service Barrier Vault",
+        "value": true
+      },
+      {
+        "flag": "maintenanceBoxInspected",
+        "id": 4,
+        "name": "maintenanceBoxInspected=true",
+        "source": "Maintenance Box",
+        "value": true
+      },
+      {
+        "flag": "powerRestored",
+        "id": 5,
+        "name": "powerRestored=true",
+        "source": "Maintenance Box",
+        "value": true
+      },
+      {
+        "flag": "routeOpened",
+        "id": 6,
+        "name": "routeOpened=true",
+        "source": "Wall Button",
+        "value": true
+      },
+      {
+        "flag": "serviceVehicleUsed",
+        "id": 7,
+        "name": "serviceVehicleUsed=true",
+        "source": "Service Yard Vehicle",
+        "value": true
+      },
+      {
+        "flag": "dockRoadReached",
+        "id": 8,
+        "name": "dockRoadReached=true",
+        "source": "Service Run Checkpoint",
+        "value": true
+      },
+      {
+        "flag": "serviceRunConfirmed",
+        "id": 9,
+        "name": "serviceRunConfirmed=true",
+        "source": "Service Run Marker",
+        "value": true
+      },
+      {
+        "flag": "ferryOfficeJobComplete",
+        "id": 10,
+        "name": "ferryOfficeJobComplete=true",
+        "source": "Ferry Office Service Call",
+        "value": true
+      },
+      {
+        "flag": "dockRoadRelayReset",
+        "id": 11,
+        "name": "dockRoadRelayReset=true",
+        "source": "Dock Road Relay",
+        "value": true
+      },
+      {
+        "flag": "dockRoadRelayLogged",
+        "id": 12,
+        "name": "dockRoadRelayLogged=true",
+        "source": "Relay Service Log",
+        "value": true
+      },
+      {
+        "flag": "dockRoadClearanceTagged",
+        "id": 13,
+        "name": "dockRoadClearanceTagged=true",
+        "source": "Dock Road Clearance Tag",
+        "value": true
+      },
+      {
+        "flag": "harborPartsPickedUp",
+        "id": 14,
+        "name": "harborPartsPickedUp=true",
+        "source": "Harbor Parts Crate",
+        "value": true
+      },
+      {
+        "flag": "harborPartsDelivered",
+        "id": 15,
+        "name": "harborPartsDelivered=true",
+        "source": "Ferry Office Parts Shelf",
+        "value": true
+      },
+      {
+        "flag": "ferryOfficeBoardUpdated",
+        "id": 16,
+        "name": "ferryOfficeBoardUpdated=true",
+        "source": "Ferry Office Work Board",
+        "value": true
+      },
+      {
+        "flag": "ferryOfficeHandoffFiled",
+        "id": 17,
+        "name": "ferryOfficeHandoffFiled=true",
+        "source": "Ferry Office Handoff Note",
+        "value": true
+      },
+      {
+        "flag": "stormPumpReset",
+        "id": 18,
+        "name": "stormPumpReset=true",
+        "source": "Storm Pump Switch",
+        "value": true
+      },
+      {
+        "flag": "stormPumpTicketClosed",
+        "id": 19,
+        "name": "stormPumpTicketClosed=true",
+        "source": "Storm Pump Ticket",
+        "value": true
+      },
+      {
+        "flag": "lowDockDrainCleared",
+        "id": 20,
+        "name": "lowDockDrainCleared=true",
+        "source": "Low Dock Drain Marker",
+        "value": true
+      },
+      {
+        "flag": "lowDockDrainLogged",
+        "id": 21,
+        "name": "lowDockDrainLogged=true",
+        "source": "Ferry Office Drain Log",
+        "value": true
+      }
+    ],
+    "flags": {
+      "dockRoadClearanceTagged": true,
+      "dockRoadReached": true,
+      "dockRoadRelayLogged": true,
+      "dockRoadRelayReset": true,
+      "ferryOfficeBoardUpdated": true,
+      "ferryOfficeHandoffFiled": true,
+      "ferryOfficeJobComplete": true,
+      "ferryOfficeJobStarted": true,
+      "harborPartsDelivered": true,
+      "harborPartsPickedUp": true,
+      "lowDockDrainCleared": true,
+      "lowDockDrainLogged": true,
+      "maintenanceBoxInspected": true,
+      "manifestCollected": true,
+      "powerRestored": true,
+      "routeOpened": true,
+      "serviceRouteUsed": true,
+      "serviceRunConfirmed": true,
+      "serviceVehicleUsed": true,
+      "stormPumpReset": true,
+      "stormPumpTicketClosed": true
+    },
+    "phase": "complete",
+    "worldSummary": "powerRestored=true manifestCollected=true serviceRouteUsed=true maintenanceBoxInspected=true routeOpened=true exitReached=false ferryOfficeJobStarted=true serviceVehicleUsed=true dockRoadReached=true serviceRunConfirmed=true ferryOfficeJobComplete=true dockRoadRelayReset=true dockRoadRelayLogged=true dockRoadClearanceTagged=true harborPartsPickedUp=true harborPartsDelivered=true ferryOfficeBoardUpdated=true ferryOfficeHandoffFiled=true stormPumpReset=true stormPumpTicketClosed=true lowDockDrainCleared=true lowDockDrainLogged=true eventCount=21 lastEvent=\"#21 lowDockDrainLogged=true from Ferry Office Drain Log\""
+  },
+  "passed": true,
+  "scenario": "ferry-office-service-call",
+  "scene": {
+    "id": "ferry-office",
+    "path": "C:/Users/Marcin/Documents/New project/data/scenes/ferry_office.scene.json"
+  },
+  "schema": "v0.32-ferry-office-playthrough-qa",
+  "steps": [
+    {
+      "message": "Collected Ferry Manifest.",
+      "name": "collectManifest",
+      "passed": true,
+      "phase": "useServiceRoute"
+    },
+    {
+      "message": "Service Barrier Vault completed.",
+      "name": "serviceRoute",
+      "passed": true,
+      "phase": "restorePower"
+    },
+    {
+      "message": "Maintenance box inspected: local power restored.",
+      "name": "maintenancePower",
+      "passed": true,
+      "phase": "openServiceGate"
+    },
+    {
+      "message": "Service gate opened.",
+      "name": "openServiceGate",
+      "passed": true,
+      "phase": "useServiceVehicle"
+    },
+    {
+      "message": "Runtime input entered the service vehicle.",
+      "name": "serviceVehicleRuntime",
+      "passed": true,
+      "phase": "reachDockRoad"
+    },
+    {
+      "message": "Runtime deterministic vehicle reached the dock-road checkpoint in 139 frames.",
+      "name": "dockRoadRuntimeCheckpoint",
+      "passed": true,
+      "phase": "confirmServiceRun"
+    },
+    {
+      "message": "Runtime input exited the service vehicle at a clear position.",
+      "name": "serviceVehicleRuntimeExit",
+      "passed": true,
+      "phase": "confirmServiceRun"
+    },
+    {
+      "message": "Service run marker checked. Complete the service route and vehicle checkpoint before final confirmation.",
+      "name": "confirmServiceRun",
+      "passed": true,
+      "phase": "complete"
+    },
+    {
+      "message": "Dock road relay reset: service-yard lights are back on.",
+      "name": "dockRoadRelayReset",
+      "passed": true,
+      "phase": "complete"
+    },
+    {
+      "message": "Relay reset logged for the Ferry Office service board.",
+      "name": "dockRoadRelayLogged",
+      "passed": true,
+      "phase": "complete"
+    },
+    {
+      "message": "Dock road tagged clear for the next ferry run.",
+      "name": "dockRoadClearanceTagged",
+      "passed": true,
+      "phase": "complete"
+    },
+    {
+      "message": "Harbor parts crate picked up for the Ferry Office shelf.",
+      "name": "harborPartsPickedUp",
+      "passed": true,
+      "phase": "complete"
+    },
+    {
+      "message": "Harbor parts delivered to the Ferry Office shelf.",
+      "name": "harborPartsDelivered",
+      "passed": true,
+      "phase": "complete"
+    },
+    {
+      "message": "Ferry Office work board updated with the Harbor Parts return.",
+      "name": "ferryOfficeBoardUpdated",
+      "passed": true,
+      "phase": "complete"
+    },
+    {
+      "message": "Ferry Office handoff note filed for the next ferry crew.",
+      "name": "ferryOfficeHandoffFiled",
+      "passed": true,
+      "phase": "complete"
+    },
+    {
+      "message": "Storm pump reset for the low dock drain.",
+      "name": "stormPumpReset",
+      "passed": true,
+      "phase": "complete"
+    },
+    {
+      "message": "Storm pump ticket closed on the Ferry Office board.",
+      "name": "stormPumpTicketClosed",
+      "passed": true,
+      "phase": "complete"
+    },
+    {
+      "message": "Low dock drain tagged clear after the pump reset.",
+      "name": "lowDockDrainCleared",
+      "passed": true,
+      "phase": "complete"
+    },
+    {
+      "message": "Low dock drain closeout logged at the Ferry Office.",
+      "name": "lowDockDrainLogged",
+      "passed": true,
+      "phase": "complete"
+    }
+  ],
+  "vehicleRuntime": {
+    "backend": "deterministic",
+    "fallbackUsed": false,
+    "finalPosition": {
+      "x": 17.62083625793457,
+      "y": 0.0,
+      "z": -1.8011748790740967
+    },
+    "finalYawDegrees": 88.00000762939453,
+    "framesToCheckpoint": 139,
+    "hitBounds": false,
+    "requested": "deterministic"
+  }
+}

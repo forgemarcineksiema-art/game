@@ -1,0 +1,118 @@
+{
+  "backend": "jolt",
+  "error": "",
+  "final": {
+    "position": [
+      8.837357521057129,
+      0.715068519115448,
+      -1.810296893119812
+    ],
+    "speed": 1.6276925802230835,
+    "yawDegrees": -98.93869018554688
+  },
+  "inputFrameCount": 250,
+  "passed": true,
+  "recommendation": "promote",
+  "recommendationReason": "The opt-in Jolt wheeled-vehicle constraint stayed stable enough to promote to a narrower runtime adapter spike.",
+  "samples": [
+    {
+      "maxPitchDegrees": 0.0,
+      "maxRollDegrees": 0.0,
+      "message": "Jolt wheeled vehicle sample stayed stable.",
+      "name": "settle",
+      "outOfBounds": false,
+      "passed": true,
+      "position": [
+        6.199999809265137,
+        0.7174654006958008,
+        -2.200000047683716
+      ],
+      "speed": 0.033312343060970306,
+      "wheelContactCount": 4,
+      "yawDegrees": 88.00000762939453
+    },
+    {
+      "maxPitchDegrees": 1.2031015157699585,
+      "maxRollDegrees": 2.4463672161800787e-05,
+      "message": "Jolt wheeled vehicle sample stayed stable.",
+      "name": "accelerate",
+      "outOfBounds": false,
+      "passed": true,
+      "position": [
+        6.760383605957031,
+        0.7152816653251648,
+        -2.1804311275482178
+      ],
+      "speed": 1.3930110931396484,
+      "wheelContactCount": 4,
+      "yawDegrees": 87.99996185302734
+    },
+    {
+      "maxPitchDegrees": 6.567584991455078,
+      "maxRollDegrees": 5.458380222320557,
+      "message": "Jolt wheeled vehicle sample stayed stable.",
+      "name": "steer",
+      "outOfBounds": false,
+      "passed": true,
+      "position": [
+        8.058711051940918,
+        0.7151944041252136,
+        -1.9776010513305664
+      ],
+      "speed": 2.5252578258514404,
+      "wheelContactCount": 4,
+      "yawDegrees": 77.03474426269531
+    },
+    {
+      "maxPitchDegrees": 1.0104037523269653,
+      "maxRollDegrees": 0.26888221502304077,
+      "message": "Jolt wheeled vehicle sample stayed stable.",
+      "name": "brake",
+      "outOfBounds": false,
+      "passed": true,
+      "position": [
+        9.373316764831543,
+        0.7152080535888672,
+        -1.7357449531555176
+      ],
+      "speed": 0.10293865203857422,
+      "wheelContactCount": 4,
+      "yawDegrees": -99.33308410644531
+    },
+    {
+      "maxPitchDegrees": 1.5116031169891357,
+      "maxRollDegrees": 0.2649732828140259,
+      "message": "Jolt wheeled vehicle sample stayed stable.",
+      "name": "reverse",
+      "outOfBounds": false,
+      "passed": true,
+      "position": [
+        8.837357521057129,
+        0.715068519115448,
+        -1.810296893119812
+      ],
+      "speed": 1.6276925802230835,
+      "wheelContactCount": 4,
+      "yawDegrees": -98.93869018554688
+    }
+  ],
+  "scenario": "ferry-office-vehicle-feasibility",
+  "scene": {
+    "id": "ferry-office",
+    "path": "C:/Users/Marcin/Documents/New project/data/scenes/ferry_office.scene.json"
+  },
+  "schema": "v0.35-ferry-office-vehicle-feasibility",
+  "vehicle": {
+    "id": "service-yard-vehicle",
+    "proxyHalfExtents": [
+      0.5799999833106995,
+      0.5299999713897705,
+      0.9200000166893005
+    ],
+    "spawnPosition": [
+      6.199999809265137,
+      0.0,
+      -2.200000047683716
+    ]
+  }
+}

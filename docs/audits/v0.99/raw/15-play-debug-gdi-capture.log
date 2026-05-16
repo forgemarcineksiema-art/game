@@ -1,0 +1,50 @@
+COMMAND: scripts/play.ps1 -DebugUi -Frames 5 -CaptureDir docs\audits\v0.99\screenshots\play-debug-gdi
+START:
+2026-05-17T00:23:39.8030602+02:00
+Tidebreak playable build launch:
+"C:\Users\Marcin\Documents\New project\build\windows-vs2022-debug\Debug\EngineApp.exe" --renderer gdi --ui-mode debug -
+-scene data\scenes\ferry_office.scene.json --vehicle-runtime preferred --frames 5 --capture-dir docs\audits\v0.99\scree
+nshots\play-debug-gdi
+[00:23:40] [info] Initializing engine v0.23.0
+[00:23:40] [info] App: Tidebreak Prototype
+[00:23:40] [info] Win32 window created.
+[00:23:40] [info] Cursor captured for windowed play.
+[00:23:40] [info] GDI fallback renderer initialized.
+[00:23:40] [info] Runtime started with renderer: gdi-fallback
+[00:23:40] [info] Sandbox layer attached.
+[00:23:40] [info] Loaded runtime scene data: ferry-office from data\scenes\ferry_office.scene.json
+[00:23:40] [info] Loaded static mesh asset: unit-box-mesh from assets/models/unit_box.gltf
+[00:23:40] [info] Loaded static mesh asset: service-road-sign-mesh from assets/models/service_road_sign.gltf
+[00:23:40] [info] Loaded static mesh asset: road-edge-post-mesh from assets/models/road_edge_post.gltf
+[00:23:40] [info] Loaded static mesh asset: service-barrier-mesh from assets/models/service_barrier.gltf
+[00:23:40] [info] Loaded static mesh asset: utility-box-mesh from assets/models/utility_box.gltf
+[00:23:40] [info] Loaded static mesh asset: ferry-notice-board-mesh from assets/models/ferry_notice_board.gltf
+[00:23:40] [info] Loaded static mesh asset: clearance-tag-mesh from assets/models/clearance_tag.gltf
+[00:23:40] [info] Loaded static mesh asset: blender-ferry-notice-board-mesh from assets/models/blender_ferry_notice_board.gltf
+[00:23:40] [info] Loaded static mesh asset: blender-cable-reel-mesh from assets/models/blender_cable_reel.gltf
+[00:23:40] [info] Loaded static mesh asset: blender-wet-road-surface-mesh from assets/models/blender_wet_road_surface.gltf
+[00:23:40] [info] Loaded static mesh asset: blender-harbor-backdrop-mesh from assets/models/blender_harbor_backdrop.gltf
+[00:23:40] [info] Loaded static mesh asset: blender-harbor-water-surface-mesh from assets/models/blender_harbor_water_surface.gltf
+[00:23:40] [info] Loaded static mesh asset: ferry-office-canopy-mesh from assets/models/ferry_office_canopy.gltf
+[00:23:40] [info] Loaded static mesh asset: ferry-office-service-gate-mesh from assets/models/ferry_office_service_gate.gltf
+[00:23:40] [info] Loaded static mesh asset: ferry-office-facade-frame-mesh from assets/models/ferry_office_facade_frame.gltf
+[00:23:40] [info] Loaded static mesh asset: ferry-office-sign-panel-mesh from assets/models/ferry_office_sign_panel.gltf
+[00:23:40] [info] Loaded static mesh asset: ferry-office-service-panel-mesh from assets/models/ferry_office_service_panel.gltf
+[00:23:40] [info] Loaded static mesh asset: service-yard-cart-body-mesh from assets/models/service_yard_cart_body.gltf
+[00:23:40] [info] Loaded static mesh asset: service-yard-cart-cabin-mesh from assets/models/service_yard_cart_cabin.gltf
+[00:23:40] [info] Loaded static mesh asset: service-yard-cart-wheel-mesh from assets/models/service_yard_cart_wheel.gltf
+[00:23:40] [info] objective="Collect the Ferry Manifest at the dock-side office approach." readyForExit=no sliceComplete=no
+jobObjective="Check the Ferry Manifest to start the Ferry Office service call." jobPhase=collectManifest jobStarted=no serviceVehicleUsed=no dockRoadReached=no serviceRunConfirmed=no jobComplete=no
+focus=Ferry Manifest prompt="Press E: Collect Ferry Manifest" travFocus=none
+player=(-0.45,0.00,-0.10) playerYaw=-8.00 speed=0.00 walk grounded hits=0 colliders=10 interactables=17 cameraMode=on-foot camera yaw=-8.00 pitch=22.00 dist=6.00
+vehicle=(6.20,0.00,-2.20) empty speed=0.00 throttle=0.00 brake=0.00 steer=0.00 focus=no exitClear=yes exitBlocked=no boundsHit=no scene=ferry-office loaded=yes roadSegment=dock-road roadBounds=(3.35,-5.05)-(19.45,0.95) physics=simple vehicleRuntime=deterministic
+interactPressed=no worldChanged=no traversal=normal travProgress=0.00 travStart=fixed travLanded=no travPressed=no
+lastInteraction="none" lastVehicle="none" lastWorldEvent="none"
+worldState={powerRestored=false manifestCollected=false serviceRouteUsed=false maintenanceBoxInspected=false routeOpened=false exitReached=false ferryOfficeJobStarted=false serviceVehicleUsed=false dockRoadReached=false serviceRunConfirmed=false ferryOfficeJobComplete=false dockRoadRelayReset=false dockRoadRelayLogged=false dockRoadClearanceTagged=false harborPartsPickedUp=false harborPartsDelivered=false ferryOfficeBoardUpdated=false ferryOfficeHandoffFiled=false stormPumpReset=false stormPumpTicketClosed=false lowDockDrainCleared=false lowDockDrainLogged=false eventCount=0 lastEvent="none"}
+slice={complete=false readyForExit=false manifest=false serviceRoute=false maintenance=false power=false routeOpen=false exit=false}
+[00:23:40] [info] Captured renderer frame to: docs\audits\v0.99\screenshots\play-debug-gdi\capture-gdi-fallback.bmp
+[00:23:40] [info] Sandbox layer detached.
+[00:23:40] [info] GDI fallback renderer shutdown.
+[00:23:40] [info] Cursor released.
+[00:23:40] [info] Shutting down engine.
+EXIT_CODE: 0

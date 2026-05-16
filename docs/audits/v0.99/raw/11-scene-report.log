@@ -1,0 +1,134 @@
+COMMAND: python tools/scene_report.py
+START:
+2026-05-17T00:23:24.0348212+02:00
+Tidebreak scene report
+scene: ferry-office (The Ferry Office)
+path: C:\Users\Marcin\Documents\New project\data\scenes\ferry_office.scene.json
+units: meter | up=Y forward=Z
+floor: 0.00
+
+counts:
+  sceneMaterials: 25
+  colliders: 10
+  visualPlaceholders: 32
+  meshAssets: 20
+  meshInstances: 66
+  interactables: 17
+  traversalAffordances: 1
+  vehicles: 1
+  routeMarkers: 17
+  objectiveMarkers: 16
+
+starts:
+  player: player-start-dock at (-0.45, 0.00, -0.10) yaw=-8.0
+  vehicle: service-yard-vehicle at (6.20, 0.00, -2.20) yaw=88.0 bounds=[3.35, -5.05]..[19.45, 0.95]
+
+meshes:
+  asset: unit-box-mesh path=assets/models/unit_box.gltf format=gltf uses=25
+  asset: service-road-sign-mesh path=assets/models/service_road_sign.gltf format=gltf uses=2
+  asset: road-edge-post-mesh path=assets/models/road_edge_post.gltf format=gltf uses=7
+  asset: service-barrier-mesh path=assets/models/service_barrier.gltf format=gltf uses=2
+  asset: utility-box-mesh path=assets/models/utility_box.gltf format=gltf uses=2
+  asset: ferry-notice-board-mesh path=assets/models/ferry_notice_board.gltf format=gltf uses=2
+  asset: clearance-tag-mesh path=assets/models/clearance_tag.gltf format=gltf uses=1
+  asset: blender-ferry-notice-board-mesh path=assets/models/blender_ferry_notice_board.gltf format=gltf uses=2
+  asset: blender-cable-reel-mesh path=assets/models/blender_cable_reel.gltf format=gltf uses=2
+  asset: blender-wet-road-surface-mesh path=assets/models/blender_wet_road_surface.gltf format=gltf uses=3
+  asset: blender-harbor-backdrop-mesh path=assets/models/blender_harbor_backdrop.gltf format=gltf uses=4
+  asset: blender-harbor-water-surface-mesh path=assets/models/blender_harbor_water_surface.gltf format=gltf uses=3
+  asset: ferry-office-canopy-mesh path=assets/models/ferry_office_canopy.gltf format=gltf uses=1
+  asset: ferry-office-service-gate-mesh path=assets/models/ferry_office_service_gate.gltf format=gltf uses=1
+  asset: ferry-office-facade-frame-mesh path=assets/models/ferry_office_facade_frame.gltf format=gltf uses=1
+  asset: ferry-office-sign-panel-mesh path=assets/models/ferry_office_sign_panel.gltf format=gltf uses=1
+  asset: ferry-office-service-panel-mesh path=assets/models/ferry_office_service_panel.gltf format=gltf uses=1
+  asset: service-yard-cart-body-mesh path=assets/models/service_yard_cart_body.gltf format=gltf uses=1
+  asset: service-yard-cart-cabin-mesh path=assets/models/service_yard_cart_cabin.gltf format=gltf uses=1
+  asset: service-yard-cart-wheel-mesh path=assets/models/service_yard_cart_wheel.gltf format=gltf uses=4
+  instance: mesh-ferry-office-roof-cap asset=ferry-office-canopy-mesh pos=(0.00, 1.50, 2.02) yaw=0.0 scale=[1.0, 1.0, 1.0]
+  instance: mesh-ferry-office-left-roof-downpost asset=unit-box-mesh pos=(-2.42, 1.25, 2.03) yaw=0.0 scale=[0.12, 0.74, 0.1]
+  instance: mesh-ferry-office-right-roof-downpost asset=unit-box-mesh pos=(2.42, 1.25, 2.03) yaw=0.0 scale=[0.12, 0.74, 0.1]
+  instance: mesh-ferry-office-distant-shoreline asset=blender-harbor-backdrop-mesh pos=(0.00, 1.82, 6.35) yaw=180.0 scale=[6.4, 0.85, 1.0]
+  instance: mesh-ferry-office-facade-panel asset=ferry-office-facade-frame-mesh pos=(0.00, 0.00, 2.12) yaw=0.0 scale=[1.0, 1.0, 1.0]
+  instance: mesh-ferry-office-sign-board asset=ferry-office-sign-panel-mesh pos=(0.00, 1.24, 1.98) yaw=0.0 scale=[1.0, 1.0, 1.0]
+  instance: mesh-service-gate asset=ferry-office-service-gate-mesh pos=(0.00, 0.00, 2.35) yaw=0.0 scale=[1.0, 1.0, 1.0]
+  instance: mesh-maintenance-box asset=unit-box-mesh pos=(2.80, 0.65, 1.90) yaw=0.0 scale=[0.48, 0.48, 0.48]
+  instance: mesh-manifest-counter-shelf asset=unit-box-mesh pos=(-0.08, 0.50, 1.18) yaw=0.0 scale=[1.15, 0.18, 0.42]
+  instance: mesh-manifest-paper-stack asset=unit-box-mesh pos=(0.28, 0.66, 1.04) yaw=-6.0 scale=[0.36, 0.08, 0.24]
+  instance: mesh-office-side-service-panel asset=ferry-office-service-panel-mesh pos=(-1.08, 0.00, 2.06) yaw=8.0 scale=[0.82, 0.82, 0.82]
+  instance: mesh-dock-bollard-left asset=unit-box-mesh pos=(-1.25, 0.32, -1.65) yaw=0.0 scale=[0.2, 0.64, 0.2]
+  instance: mesh-dock-bollard-right asset=unit-box-mesh pos=(1.25, 0.32, -1.65) yaw=0.0 scale=[0.2, 0.64, 0.2]
+  instance: mesh-dock-cleat-left asset=unit-box-mesh pos=(-1.90, 0.10, -1.95) yaw=14.0 scale=[0.46, 0.2, 0.18]
+  instance: mesh-dock-cleat-right asset=unit-box-mesh pos=(1.90, 0.10, -1.95) yaw=-14.0 scale=[0.46, 0.2, 0.18]
+  instance: mesh-dock-board-seam-left-outer asset=unit-box-mesh pos=(-2.85, 0.03, -1.00) yaw=0.0 scale=[0.055, 0.05, 3.55]
+  instance: mesh-dock-board-seam-left-inner asset=unit-box-mesh pos=(-1.05, 0.03, -1.00) yaw=0.0 scale=[0.055, 0.05, 3.55]
+  instance: mesh-dock-board-seam-right-inner asset=unit-box-mesh pos=(1.05, 0.03, -1.00) yaw=0.0 scale=[0.055, 0.05, 3.55]
+  instance: mesh-dock-board-seam-right-outer asset=unit-box-mesh pos=(2.85, 0.03, -1.00) yaw=0.0 scale=[0.055, 0.05, 3.55]
+  instance: mesh-service-yard-crate asset=unit-box-mesh pos=(8.15, 0.45, 0.45) yaw=0.0 scale=[1.1, 0.9, 0.9]
+  instance: mesh-service-yard-tool-crate asset=unit-box-mesh pos=(7.28, 0.26, -0.08) yaw=-12.0 scale=[0.62, 0.52, 0.48]
+  instance: mesh-service-yard-cable-reel asset=blender-cable-reel-mesh pos=(7.02, 0.00, 0.48) yaw=18.0 scale=[1.0, 1.0, 1.0]
+  instance: mesh-service-yard-vehicle-bay-near-stripe asset=unit-box-mesh pos=(6.20, 0.04, -1.02) yaw=0.0 scale=[2.25, 0.05, 0.08]
+  instance: mesh-service-yard-vehicle-bay-front-stop asset=unit-box-mesh pos=(6.95, 0.11, -1.18) yaw=0.0 scale=[0.52, 0.16, 0.18]
+  instance: mesh-service-yard-vehicle-bay-rear-stop asset=unit-box-mesh pos=(5.45, 0.11, -1.18) yaw=0.0 scale=[0.52, 0.16, 0.18]
+  instance: mesh-service-yard-vehicle-body asset=service-yard-cart-body-mesh pos=(6.20, 0.00, -2.20) yaw=88.0 scale=[1.0, 1.0, 1.0]
+  instance: mesh-service-yard-vehicle-cabin asset=service-yard-cart-cabin-mesh pos=(6.20, 0.00, -2.20) yaw=88.0 scale=[1.0, 1.0, 1.0]
+  instance: mesh-service-yard-vehicle-visible-side-stripe asset=unit-box-mesh pos=(6.17, 0.62, -1.48) yaw=88.0 scale=[0.1, 0.1, 0.82]
+  instance: mesh-service-yard-vehicle-roof-beacon asset=unit-box-mesh pos=(6.20, 1.16, -2.20) yaw=88.0 scale=[0.3, 0.12, 0.3]
+  instance: mesh-service-yard-vehicle-front-left-wheel asset=service-yard-cart-wheel-mesh pos=(6.80, 0.00, -1.42) yaw=88.0 scale=[1.0, 1.0, 1.0]
+  instance: mesh-service-yard-vehicle-rear-left-wheel asset=service-yard-cart-wheel-mesh pos=(5.54, 0.00, -1.47) yaw=88.0 scale=[1.0, 1.0, 1.0]
+  instance: mesh-service-yard-vehicle-front-right-wheel asset=service-yard-cart-wheel-mesh pos=(6.82, 0.00, -2.98) yaw=88.0 scale=[1.0, 1.0, 1.0]
+  instance: mesh-service-yard-vehicle-rear-right-wheel asset=service-yard-cart-wheel-mesh pos=(5.56, 0.00, -3.02) yaw=88.0 scale=[1.0, 1.0, 1.0]
+  instance: mesh-service-road-sign asset=service-road-sign-mesh pos=(10.05, 0.00, -0.55) yaw=90.0 scale=[1.0, 1.0, 1.0]
+  instance: mesh-ferry-notice-board asset=ferry-notice-board-mesh pos=(-1.75, 0.00, 1.75) yaw=25.0 scale=[1.0, 1.0, 1.0]
+  instance: mesh-blender-ferry-notice-board asset=blender-ferry-notice-board-mesh pos=(-2.15, 0.00, 2.85) yaw=18.0 scale=[1.0, 1.0, 1.0]
+  instance: mesh-ferry-office-approach-notice-board asset=blender-ferry-notice-board-mesh pos=(1.55, 0.00, 0.95) yaw=-22.0 scale=[1.0, 1.0, 1.0]
+  instance: mesh-ferry-office-approach-sign-upper-rule asset=unit-box-mesh pos=(1.55, 1.08, 0.78) yaw=-22.0 scale=[0.72, 0.06, 0.05]
+  instance: mesh-ferry-office-approach-sign-lower-rule asset=unit-box-mesh pos=(1.55, 0.92, 0.78) yaw=-22.0 scale=[0.52, 0.06, 0.05]
+  instance: mesh-dock-road-edge-post-a asset=road-edge-post-mesh pos=(11.15, 0.00, -3.45) yaw=0.0 scale=[1.0, 1.0, 1.0]
+  instance: mesh-dock-road-edge-post-b asset=road-edge-post-mesh pos=(15.80, 0.00, -3.45) yaw=0.0 scale=[1.0, 1.0, 1.0]
+  instance: mesh-service-yard-entry-post-a asset=road-edge-post-mesh pos=(9.70, 0.00, -0.95) yaw=0.0 scale=[1.0, 1.0, 1.0]
+  instance: mesh-service-yard-entry-post-b asset=road-edge-post-mesh pos=(9.70, 0.00, -3.45) yaw=0.0 scale=[1.0, 1.0, 1.0]
+  instance: mesh-service-yard-dock-road-threshold-crossbar asset=unit-box-mesh pos=(9.55, 0.04, -2.20) yaw=0.0 scale=[0.1, 0.05, 2.18]
+  instance: mesh-service-yard-dock-road-north-edge-cap asset=unit-box-mesh pos=(9.92, 0.06, -0.92) yaw=0.0 scale=[0.7, 0.08, 0.12]
+  instance: mesh-service-yard-dock-road-south-edge-cap asset=unit-box-mesh pos=(9.92, 0.06, -3.48) yaw=0.0 scale=[0.7, 0.08, 0.12]
+  instance: mesh-dock-road-edge-post-c asset=road-edge-post-mesh pos=(18.25, 0.00, -3.45) yaw=0.0 scale=[1.0, 1.0, 1.0]
+  instance: mesh-service-yard-barrier-cue asset=service-barrier-mesh pos=(9.35, 0.00, -4.10) yaw=90.0 scale=[1.0, 1.0, 1.0]
+  instance: mesh-maintenance-utility-box asset=utility-box-mesh pos=(3.45, 0.00, 1.25) yaw=0.0 scale=[1.0, 1.0, 1.0]
+  instance: mesh-service-run-confirm-sign asset=service-road-sign-mesh pos=(18.40, 0.00, -0.25) yaw=-25.0 scale=[1.0, 1.0, 1.0]
+  instance: mesh-service-run-review-board asset=ferry-notice-board-mesh pos=(17.55, 0.00, 0.46) yaw=-34.0 scale=[0.9, 0.9, 0.9]
+  instance: mesh-dock-road-clearance-tag asset=clearance-tag-mesh pos=(17.10, 0.00, 0.08) yaw=-18.0 scale=[1.0, 1.0, 1.0]
+  instance: mesh-dock-road-storm-post-near asset=road-edge-post-mesh pos=(12.95, 0.00, -3.45) yaw=0.0 scale=[0.95, 0.95, 0.95]
+  instance: mesh-dock-road-storm-post-far asset=road-edge-post-mesh pos=(17.05, 0.00, -3.45) yaw=0.0 scale=[0.95, 0.95, 0.95]
+  instance: mesh-dock-road-storm-barrier asset=service-barrier-mesh pos=(15.95, 0.00, -3.18) yaw=0.0 scale=[0.9, 0.9, 0.9]
+  instance: mesh-dock-road-maintenance-cabinet asset=utility-box-mesh pos=(16.70, 0.00, -0.62) yaw=-18.0 scale=[0.85, 0.85, 0.85]
+  instance: mesh-service-run-cable-reel asset=blender-cable-reel-mesh pos=(18.15, 0.00, 0.38) yaw=-28.0 scale=[0.85, 0.85, 0.85]
+  instance: mesh-service-yard-wet-surface asset=blender-wet-road-surface-mesh pos=(6.30, -0.04, -2.20) yaw=0.0 scale=[6.1, 1.0, 5.9]
+  instance: mesh-dock-road-wet-surface asset=blender-wet-road-surface-mesh pos=(13.35, -0.04, -2.20) yaw=90.0 scale=[2.6, 1.0, 8.5]
+  instance: mesh-dock-road-turnaround-wet-surface asset=blender-wet-road-surface-mesh pos=(17.80, -0.04, -2.20) yaw=0.0 scale=[3.6, 1.0, 3.6]
+  instance: mesh-dock-road-harbor-backdrop asset=blender-harbor-backdrop-mesh pos=(13.80, -0.02, -4.95) yaw=0.0 scale=[8.8, 1.0, 1.35]
+  instance: mesh-dock-start-left-harbor-backdrop asset=blender-harbor-backdrop-mesh pos=(-4.95, -0.02, -0.65) yaw=90.0 scale=[5.8, 1.0, 1.2]
+  instance: mesh-dock-start-right-harbor-backdrop asset=blender-harbor-backdrop-mesh pos=(4.95, -0.02, -0.65) yaw=-90.0 scale=[5.8, 1.0, 1.2]
+  instance: mesh-water-left-surface asset=blender-harbor-water-surface-mesh pos=(-4.85, -0.12, -0.70) yaw=0.0 scale=[0.7, 1.0, 6.5]
+  instance: mesh-water-right-surface asset=blender-harbor-water-surface-mesh pos=(4.85, -0.12, -0.70) yaw=0.0 scale=[0.7, 1.0, 6.5]
+  instance: mesh-dock-road-water-surface asset=blender-harbor-water-surface-mesh pos=(13.70, -0.12, -4.15) yaw=90.0 scale=[0.9, 1.0, 11.4]
+
+route:
+  route-manifest-to-vault: ferry-manifest -> service-barrier-vault
+  route-vault-to-maintenance: service-barrier-vault -> maintenance-box
+  route-maintenance-to-button: maintenance-box -> wall-button
+  route-button-to-exit: wall-button -> exit-summary-marker
+  route-service-yard-to-dock-road: service-yard-vehicle -> dock-road-end-marker
+  route-dock-road-to-service-confirm: dock-road-marker -> service-run-confirm-marker
+  route-service-confirm-to-relay: service-run-confirm-marker -> dock-road-relay
+  route-relay-to-service-log: dock-road-relay -> relay-service-log
+  route-service-log-to-clearance-tag: relay-service-log -> dock-road-clearance-tag
+  route-clearance-tag-to-harbor-parts: dock-road-clearance-tag -> harbor-parts-crate
+  route-harbor-parts-to-office-shelf: harbor-parts-crate -> ferry-office-parts-shelf
+  route-parts-shelf-to-work-board: ferry-office-parts-shelf -> ferry-office-work-board
+  route-work-board-to-handoff-note: ferry-office-work-board -> ferry-office-handoff-note
+  route-handoff-note-to-storm-pump: ferry-office-handoff-note -> storm-pump-switch
+  route-storm-pump-to-ticket: storm-pump-switch -> storm-pump-ticket
+  route-storm-ticket-to-low-dock-drain: storm-pump-ticket -> low-dock-drain-marker
+  route-low-dock-drain-to-office-log: low-dock-drain-marker -> ferry-office-drain-log
+
+validation: 0 error(s), 0 warning(s)
+EXIT_CODE: 0

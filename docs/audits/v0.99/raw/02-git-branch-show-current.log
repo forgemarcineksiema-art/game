@@ -1,0 +1,5 @@
+COMMAND: git branch --show-current
+START:
+2026-05-17T00:21:10.3988971+02:00
+main
+EXIT_CODE: 0

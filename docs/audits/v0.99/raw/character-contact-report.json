@@ -1,0 +1,258 @@
+{
+  "backend": "jolt",
+  "error": "",
+  "passed": true,
+  "probes": [
+    {
+      "gateOpen": false,
+      "message": "Character contact probe matched PrototypeWorld resolve.",
+      "name": "dock-floor-grounding",
+      "passed": true,
+      "physicsContacts": [],
+      "physicsGrounded": true,
+      "physicsHitCount": 0,
+      "physicsPosition": [
+        0.0,
+        0.0,
+        -1.0
+      ],
+      "previousPosition": [
+        0.0,
+        0.20000000298023224,
+        -1.0
+      ],
+      "prototypeContacts": [],
+      "prototypeGrounded": true,
+      "prototypeHitCount": 0,
+      "prototypePosition": [
+        0.0,
+        0.0,
+        -1.0
+      ],
+      "requestedPosition": [
+        0.0,
+        -0.20000000298023224,
+        -1.0
+      ]
+    },
+    {
+      "gateOpen": false,
+      "message": "Character contact probe matched PrototypeWorld resolve.",
+      "name": "office-back-wall-blocked",
+      "passed": true,
+      "physicsContacts": [
+        "ferry-office-back-wall"
+      ],
+      "physicsGrounded": true,
+      "physicsHitCount": 1,
+      "physicsPosition": [
+        0.0,
+        0.0,
+        4.800000190734863
+      ],
+      "previousPosition": [
+        0.0,
+        0.0,
+        4.349999904632568
+      ],
+      "prototypeContacts": [
+        "ferry-office-back-wall"
+      ],
+      "prototypeGrounded": true,
+      "prototypeHitCount": 1,
+      "prototypePosition": [
+        0.0,
+        0.0,
+        4.800000190734863
+      ],
+      "requestedPosition": [
+        0.0,
+        0.0,
+        5.199999809265137
+      ]
+    },
+    {
+      "gateOpen": false,
+      "message": "Character contact probe matched PrototypeWorld resolve.",
+      "name": "service-gate-blocked",
+      "passed": true,
+      "physicsContacts": [
+        "service-gate"
+      ],
+      "physicsGrounded": true,
+      "physicsHitCount": 1,
+      "physicsPosition": [
+        0.0,
+        0.0,
+        1.8399999141693115
+      ],
+      "previousPosition": [
+        0.0,
+        0.0,
+        1.4500000476837158
+      ],
+      "prototypeContacts": [
+        "service-gate"
+      ],
+      "prototypeGrounded": true,
+      "prototypeHitCount": 1,
+      "prototypePosition": [
+        0.0,
+        0.0,
+        1.8399999141693115
+      ],
+      "requestedPosition": [
+        0.0,
+        0.0,
+        2.3499999046325684
+      ]
+    },
+    {
+      "gateOpen": false,
+      "message": "Character contact probe matched PrototypeWorld resolve.",
+      "name": "service-barrier-blocked",
+      "passed": true,
+      "physicsContacts": [
+        "maintenance-crate",
+        "service-barrier"
+      ],
+      "physicsGrounded": true,
+      "physicsHitCount": 2,
+      "physicsPosition": [
+        2.799999952316284,
+        0.0,
+        -0.24999994039535522
+      ],
+      "previousPosition": [
+        2.799999952316284,
+        0.0,
+        -0.8500000238418579
+      ],
+      "prototypeContacts": [
+        "maintenance-crate",
+        "service-barrier"
+      ],
+      "prototypeGrounded": true,
+      "prototypeHitCount": 2,
+      "prototypePosition": [
+        2.799999952316284,
+        0.0,
+        -0.24999994039535522
+      ],
+      "requestedPosition": [
+        2.799999952316284,
+        0.0,
+        0.25
+      ]
+    },
+    {
+      "gateOpen": false,
+      "message": "Character contact probe matched PrototypeWorld resolve.",
+      "name": "dock-lane-clear",
+      "passed": true,
+      "physicsContacts": [],
+      "physicsGrounded": true,
+      "physicsHitCount": 0,
+      "physicsPosition": [
+        0.0,
+        0.0,
+        -1.0
+      ],
+      "previousPosition": [
+        0.0,
+        0.0,
+        -1.5
+      ],
+      "prototypeContacts": [],
+      "prototypeGrounded": true,
+      "prototypeHitCount": 0,
+      "prototypePosition": [
+        0.0,
+        0.0,
+        -1.0
+      ],
+      "requestedPosition": [
+        0.0,
+        0.0,
+        -1.0
+      ]
+    },
+    {
+      "gateOpen": false,
+      "message": "Character contact probe matched PrototypeWorld resolve.",
+      "name": "office-corner-pushout",
+      "passed": true,
+      "physicsContacts": [
+        "ferry-office-back-wall",
+        "ferry-office-left-wall"
+      ],
+      "physicsGrounded": true,
+      "physicsHitCount": 2,
+      "physicsPosition": [
+        -2.1999998092651367,
+        0.0,
+        4.800000190734863
+      ],
+      "previousPosition": [
+        -2.200000047683716,
+        0.0,
+        4.349999904632568
+      ],
+      "prototypeContacts": [
+        "ferry-office-back-wall",
+        "ferry-office-left-wall"
+      ],
+      "prototypeGrounded": true,
+      "prototypeHitCount": 2,
+      "prototypePosition": [
+        -2.1999998092651367,
+        0.0,
+        4.800000190734863
+      ],
+      "requestedPosition": [
+        -2.799999952316284,
+        0.0,
+        5.199999809265137
+      ]
+    },
+    {
+      "gateOpen": true,
+      "message": "Character contact probe matched PrototypeWorld resolve.",
+      "name": "opened-gate-clear",
+      "passed": true,
+      "physicsContacts": [],
+      "physicsGrounded": true,
+      "physicsHitCount": 0,
+      "physicsPosition": [
+        0.0,
+        0.0,
+        2.3499999046325684
+      ],
+      "previousPosition": [
+        0.0,
+        0.0,
+        1.4500000476837158
+      ],
+      "prototypeContacts": [],
+      "prototypeGrounded": true,
+      "prototypeHitCount": 0,
+      "prototypePosition": [
+        0.0,
+        0.0,
+        2.3499999046325684
+      ],
+      "requestedPosition": [
+        0.0,
+        0.0,
+        2.3499999046325684
+      ]
+    }
+  ],
+  "scenario": "ferry-office-character-contact",
+  "scene": {
+    "id": "ferry-office",
+    "path": "C:/Users/Marcin/Documents/New project/data/scenes/ferry_office.scene.json"
+  },
+  "schema": "v0.34-ferry-office-character-contact",
+  "staticColliderCount": 10
+}

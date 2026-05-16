@@ -1,0 +1,8 @@
+COMMAND: python tools/validate_assets.py
+START:
+2026-05-17T00:24:57.2702927+02:00
+Asset validation: ferry-office
+modelsDir: C:\Users\Marcin\Documents\New project\assets\models
+modelFiles: 20
+Asset validation passed.
+EXIT_CODE: 0

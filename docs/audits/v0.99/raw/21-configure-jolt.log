@@ -1,0 +1,9 @@
+COMMAND: cmake --preset windows-vs2022-debug-jolt
+START:
+2026-05-17T00:25:12.5086055+02:00
+-- Selecting Windows SDK version 10.0.26100.0 to target Windows 10.0.26200.
+-- Using the multi-header code from C:/Users/Marcin/Documents/New project/build/windows-vs2022-debug-jolt/_deps/nlohmann_json-src/include/
+-- Configuring done (5.6s)
+-- Generating done (1.0s)
+-- Build files have been written to: C:/Users/Marcin/Documents/New project/build/windows-vs2022-debug-jolt
+EXIT_CODE: 0

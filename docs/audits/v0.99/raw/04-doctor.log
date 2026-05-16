@@ -1,0 +1,81 @@
+COMMAND: scripts/doctor.ps1
+START:
+2026-05-17T00:21:21.7912551+02:00
+AI-Native Engine Foundation doctor
+Root: C:\Users\Marcin\Documents\New project
+
+[ok] git -> C:\Program Files\Git\cmd\git.exe
+[ok] cmake -> C:\Program Files\CMake\bin\cmake.exe
+[ok] python -> C:\Users\Marcin\AppData\Local\Programs\Python\Python311\python.exe
+
+[ok] AGENTS.md
+[ok] CMakeLists.txt
+[ok] CMakePresets.json
+[ok] docs\RUNBOOK.md
+[ok] docs\ARCHITECTURE.md
+[ok] docs\ROADMAP.md
+[ok] docs\STATUS.md
+[ok] docs\DECISIONS.md
+[ok] docs\AI_WORKFLOW.md
+[ok] docs\CONTEXT_MAP.md
+[ok] docs\GAME_DIRECTION.md
+[ok] docs\GAMEPLAY_REVIEW.md
+[ok] docs\VERTICAL_SLICE.md
+[ok] docs\TECH_DEBT.md
+[ok] docs\MANUAL_TEST_CHECKLIST.md
+[ok] docs\PHYSICS_DECISION.md
+[ok] docs\ASSET_GUIDE.md
+[ok] docs\SCENE_AUTHORING.md
+[ok] docs\ART_DIRECTION.md
+[ok] docs\MESH_RENDERING.md
+[ok] docs\ASSET_PIPELINE_DECISION.md
+[ok] docs\BLENDER_WORKFLOW.md
+[ok] data\scenes\ferry_office.scene.json
+[ok] assets\models\unit_box.gltf
+[ok] assets\models\ferry_notice_board.gltf
+[ok] assets\models\blender_ferry_notice_board.gltf
+[ok] src\engine
+[ok] src\game
+[ok] tests
+[ok] assets
+[ok] tools\status_report.py
+[ok] tools\scene_data.py
+[ok] tools\scene_report.py
+[ok] tools\validate_scene.py
+[ok] tools\validate_assets.py
+[ok] tools\scale_audit.py
+[ok] tools\mesh_report.py
+[ok] tools\capture_visual_smoke.py
+[ok] tools\playthrough_qa.py
+[ok] tools\physics_parity_qa.py
+[ok] tools\character_contact_qa.py
+[ok] tools\vehicle_physics_qa.py
+[ok] tools\vehicle_runtime_qa.py
+[ok] tools\check_blender.py
+[ok] tools\create_simple_prop_gltf.py
+[ok] tools\blender\create_tidebreak_notice_board.py
+[ok] scripts\play.ps1
+
+CMake version:
+cmake version 4.3.2
+
+CMake suite maintained and supported by Kitware (kitware.com/cmake).
+
+CMake presets:
+Available configure presets:
+
+  "windows-vs2022-debug"      - Windows VS 2022 Debug
+  "windows-vs2022-debug-jolt" - Windows VS 2022 Debug + Jolt
+  "windows-vs2026-debug"      - Windows VS 2026 Debug
+  "ninja-debug"               - Ninja Debug
+
+Warnings:
+  - cl was not found in PATH.
+  - clang++ was not found in PATH.
+  - g++ was not found in PATH.
+  - msbuild was not found in PATH.
+  - ninja was not found in PATH.
+  - vcpkg was not found in PATH.
+
+Doctor completed.
+EXIT_CODE: 0
