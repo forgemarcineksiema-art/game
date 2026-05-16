@@ -2,6 +2,66 @@
 
 Last updated: 2026-05-16
 
+## v0.65 Collision-backed Vehicle Obstacle Replay (2026-05-16)
+
+Selected milestone:
+
+- Add collision-backed obstacle evidence to the existing deterministic-vs-Jolt vehicle runtime comparison QA.
+
+Candidate milestone triage:
+
+- Collision-backed vehicle obstacle replay: impact high because it answers the clearest remaining vehicle-promotion evidence gap; risk medium because it touches opt-in physics QA; validation path is default tests plus Jolt configure/build/CTest and physics QA wrappers.
+- Another compact authored content beat: impact high for playable content, but v0.63 and v0.64 were already consecutive content milestones.
+- `SandboxLayer` helper extraction: impact medium for maintainability, but less urgent than turning the manual/Jolt obstacle question into automated evidence.
+
+Decision:
+
+- Chose QA-only collision-backed obstacle replay. This keeps deterministic vehicle gameplay as the default while improving the evidence for whether the opt-in Jolt runtime should keep moving toward promotion.
+
+Implementation notes:
+
+- `FerryOfficeVehicleRuntimeComparisonResult::ObstacleCheck` now records `collisionBacked`, `obstacleCollisionClear`, `obstacleOverlapFrames`, and `minCollisionClearance`.
+- The deterministic and selected runtime obstacle checks now build a small engine-physics trigger obstacle and query a compact vehicle path probe against it every frame.
+- The Python `tools\vehicle_runtime_qa.py` wrapper now rejects stale obstacle reports without collision-backed clearance telemetry or with any obstacle overlap frames.
+- Existing camera-aware obstacle telemetry and progress-delta checks remain in place.
+- No live vehicle collision, default Jolt promotion, scene data, gameplay content, or vendor type exposure was added.
+
+Automated evidence:
+
+- `python tools\vehicle_runtime_qa.py`: passed with backend `jolt`, 5 paired samples, 4 control checks, 2 route checks, 2 obstacle checks, `maxPositionDelta=1.49`, and recommendation `promote`.
+- Collision-backed obstacle replay evidence from the generated report:
+  - deterministic: `collisionBacked=true`, `obstacleCollisionClear=true`, `obstacleOverlapFrames=0`, `minCollisionClearance=0.535`, `maxLateralOffset=1.959`.
+  - Jolt: `collisionBacked=true`, `obstacleCollisionClear=true`, `obstacleOverlapFrames=0`, `minCollisionClearance=0.622`, `maxLateralOffset=0.944`.
+
+Commands and results:
+
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: passed.
+- `python tests\test_vehicle_runtime_qa.py`: passed, 9 tests.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 15/15.
+- `python tools\vehicle_runtime_qa.py`: passed with the collision-backed obstacle evidence above.
+- `python tools\physics_parity_qa.py`: passed; backend `jolt`, floor=4, raycast=4, overlap=4.
+- `python tools\character_contact_qa.py`: passed; backend `jolt`, probes=7.
+- `python tools\vehicle_physics_qa.py`: passed; backend `jolt`, samples=5, recommendation `promote`.
+- `scripts\verify.ps1`: passed; doctor completed with known PATH warnings, configure/build succeeded, CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null smoke loaded the v0.65 scene.
+- `git diff --check`: passed with only expected CRLF normalization warnings for touched text files.
+
+Remaining limitations:
+
+- This is still QA-only obstacle replay evidence, not live collision-backed vehicle gameplay.
+- The obstacle uses a compact overlap probe rather than a full oriented vehicle body, tire contact, damage model, or road-edge collision system.
+- Jolt remains opt-in; default replacement should wait for a deliberate promotion milestone.
+
+Commit/push status:
+
+- Committed locally as `v0.65 collision-backed vehicle obstacle replay`; push pending at the time of this status edit.
+
+Next direction:
+
+- After v0.65 commit/push, a reasonable next autonomous step is either an explicit opt-in Jolt promotion decision doc/playtest switch hardening pass, or one small live collision/readability follow-up if the promotion milestone still feels premature.
+
 ## v0.64 Ferry Office Handoff Note Beat (2026-05-16)
 
 Selected milestone:
@@ -75,7 +135,7 @@ Remaining limitations:
 
 Commit/push status:
 
-- Pending at the time of this status edit.
+- Committed and pushed as `ac15082` (`v0.64 ferry office handoff note`) to `origin/main`.
 
 Next direction:
 

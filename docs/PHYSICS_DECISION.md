@@ -214,13 +214,14 @@ Validated so far:
 - v0.48 added deterministic first-job runtime playthrough evidence: the QA path enters the authored service vehicle through runtime input, reaches the dock-road checkpoint in 139 frames, exits at a clear position, and confirms the service run.
 - v0.49 added the same first-job runtime playthrough path for the opt-in Jolt adapter: it reaches the dock-road checkpoint in 213 frames, exits at a clear position, confirms the service run, and reports no fallback or bounds hit.
 - v0.59 tightens obstacle-proxy validation and tunes the opt-in Jolt adapter: Jolt now reaches the checkpoint in 212 frames, keeps the obstacle final-X progress gap to about 2.91 units, and `tools\vehicle_runtime_qa.py` reports recommendation `promote` for continued opt-in comparison evidence.
+- v0.65 adds collision-backed obstacle replay telemetry to the runtime comparison: deterministic and Jolt obstacle replays both clear a QA-only overlap probe with zero overlap frames, while preserving the existing controls, route, camera, and progress checks.
 - `rg -n "Jolt|JPH::|<Jolt/|JPH/" src\game` returns no matches; Jolt types remain private to engine-owned physics code.
 
 Important limits:
 
 - This is still a QA/runtime comparison switch, not a normal play-mode replacement.
 - The deterministic `VehicleController` remains the live gameplay fallback.
-- The Jolt runtime adapter is proven against compact controls checks, a straight service-run route proxy, the same first-job enter-drive-exit-confirm playthrough loop as the deterministic controller, and a camera-aware obstacle proxy. It still needs collision-backed obstacle replay evidence before it becomes the default vehicle path.
+- The Jolt runtime adapter is proven against compact controls checks, a straight service-run route proxy, the same first-job enter-drive-exit-confirm playthrough loop as the deterministic controller, a camera-aware obstacle proxy, and a QA-only collision-backed obstacle replay. A default vehicle-path replacement should still happen only through a deliberate promotion milestone.
 
 ## v0.37 Live Opt-in Vehicle Runtime Switch Result
 
@@ -270,4 +271,4 @@ v0.10 used the physics foundation without promoting full Jolt vehicle constraint
 - Tests scan `src/game` to prevent accidental `Jolt` / `JPH::*` vendor references.
 - The opt-in `windows-vs2022-debug-jolt` preset remains the proof that the Jolt backend still configures, builds, and tests through the engine API.
 
-Next recommendation: keep deterministic vehicle gameplay as the default and use the now-stronger v0.59 opt-in Jolt evidence to either begin a compact Job #2 beat or build a collision-backed obstacle replay before default Jolt promotion. The v0.59 Jolt run validates enter, drive, checkpoint, exit, service-run confirmation, camera-aware obstacle progress, and controls checks, but Jolt has not yet proven collision-backed obstacle behavior or broad live-driving feel.
+Next recommendation: keep deterministic vehicle gameplay as the default until a deliberate promotion milestone weighs the accumulated Jolt evidence. The v0.65 Jolt path validates enter, drive, checkpoint, exit, service-run confirmation, camera-aware obstacle progress, controls checks, and collision-backed obstacle replay telemetry, but it still has not become broad live vehicle collision, road-edge collision, damage, traffic, or full production vehicle feel.

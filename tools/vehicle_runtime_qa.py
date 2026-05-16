@@ -117,11 +117,16 @@ def _require_obstacle_checks(report: dict[str, Any]) -> list[dict[str, Any]]:
             raise ValueError(f"Vehicle runtime obstacle check failed: {check}")
         if check.get("hitBounds") is True:
             raise ValueError(f"Vehicle runtime obstacle check hit authored bounds: {check}")
+        if check.get("collisionBacked") is not True or check.get("obstacleCollisionClear") is not True:
+            raise ValueError(f"Vehicle runtime obstacle check is missing collision-backed clearance: {check}")
+        if int(check.get("obstacleOverlapFrames", -1)) != 0:
+            raise ValueError(f"Vehicle runtime obstacle check overlapped the collision probe: {check}")
         if int(check.get("frameCount", -1)) <= 0:
             raise ValueError(f"Vehicle runtime obstacle check is missing frame count: {check}")
         if (
             "maxLateralOffset" not in check
             or "minDistanceToObstacle" not in check
+            or "minCollisionClearance" not in check
             or "finalPosition" not in check
             or "maxCameraYawDeltaDegrees" not in check
             or "finalCameraYawDegrees" not in check

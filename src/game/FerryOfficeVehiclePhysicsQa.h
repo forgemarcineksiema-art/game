@@ -64,6 +64,10 @@ struct FerryOfficeVehicleRuntimeComparisonResult {
         int frameCount = 0;
         float maxLateralOffset = 0.0f;
         float minDistanceToObstacle = 0.0f;
+        bool collisionBacked = false;
+        bool obstacleCollisionClear = false;
+        int obstacleOverlapFrames = 0;
+        float minCollisionClearance = 0.0f;
         float maxCameraYawDeltaDegrees = 0.0f;
         float finalCameraYawRadians = 0.0f;
         engine::Vec3 finalPosition;

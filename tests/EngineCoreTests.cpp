@@ -4422,6 +4422,9 @@ void TestFerryOfficeVehicleRuntimeComparisonQaWritesReport()
         Expect(check.passed && check.clearedObstacleProxy,
             "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
             check.message);
+        Expect(check.collisionBacked && check.obstacleCollisionClear && check.obstacleOverlapFrames == 0,
+            "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+            "Runtime comparison obstacle checks should clear an overlap-backed obstacle probe.");
         Expect(check.maxCameraYawDeltaDegrees >= 0.0f,
             "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
             "Runtime comparison obstacle checks should include camera-follow yaw stability telemetry.");
@@ -4457,6 +4460,12 @@ void TestFerryOfficeVehicleRuntimeComparisonQaWritesReport()
     Expect(report["obstacleChecks"].size() == 2,
         "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
         "Runtime comparison report should include obstacle-proxy steering checks.");
+    Expect(report["obstacleChecks"][0].contains("collisionBacked")
+            && report["obstacleChecks"][0].contains("obstacleCollisionClear")
+            && report["obstacleChecks"][0].contains("obstacleOverlapFrames")
+            && report["obstacleChecks"][0].contains("minCollisionClearance"),
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Runtime comparison report should expose collision-backed obstacle telemetry.");
     Expect(report["obstacleChecks"][0].contains("maxCameraYawDeltaDegrees")
             && report["obstacleChecks"][0].contains("finalCameraYawDegrees"),
         "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",

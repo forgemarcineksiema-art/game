@@ -4,6 +4,7 @@
 #include "game/SceneLoader.h"
 #include "game/ThirdPersonCamera.h"
 #include "game/VehicleController.h"
+#include "engine/physics/PhysicsWorld.h"
 
 #include <algorithm>
 #include <cmath>
@@ -33,6 +34,8 @@ constexpr float ObstacleProxyX = 12.8f;
 constexpr float ObstacleProxyZ = -2.2f;
 constexpr float ObstacleRequiredLateralOffset = 0.05f;
 constexpr float ObstacleRequiredXProgress = 4.5f;
+constexpr engine::Vec3 ObstacleCollisionHalfExtents {0.30f, 0.45f, 0.12f};
+constexpr engine::Vec3 ObstacleCollisionProbeHalfExtents {0.18f, 0.35f, 0.12f};
 
 nlohmann::json Vec3Json(engine::Vec3 value)
 {
@@ -91,6 +94,10 @@ nlohmann::json ObstacleCheckJson(const FerryOfficeVehicleRuntimeComparisonResult
         {"frameCount", check.frameCount},
         {"maxLateralOffset", check.maxLateralOffset},
         {"minDistanceToObstacle", check.minDistanceToObstacle},
+        {"collisionBacked", check.collisionBacked},
+        {"obstacleCollisionClear", check.obstacleCollisionClear},
+        {"obstacleOverlapFrames", check.obstacleOverlapFrames},
+        {"minCollisionClearance", check.minCollisionClearance},
         {"maxCameraYawDeltaDegrees", check.maxCameraYawDeltaDegrees},
         {"finalCameraYawDegrees", engine::Degrees(check.finalCameraYawRadians)},
         {"finalPosition", Vec3Json(check.finalPosition)},
@@ -456,16 +463,76 @@ void UpdateObstacleCameraTelemetry(
         AbsYawDeltaDegrees(vehicleYawRadians, camera.state().yawRadians));
 }
 
+std::unique_ptr<engine::physics::IPhysicsWorld> BuildObstaclePhysicsWorld(engine::physics::PhysicsBackend backend)
+{
+    std::unique_ptr<engine::physics::IPhysicsWorld> world = engine::physics::CreatePhysicsWorld(backend);
+    if (!world) {
+        return nullptr;
+    }
+
+    engine::physics::PhysicsConfig config;
+    config.backend = backend;
+    if (!world->initialize(config)) {
+        return nullptr;
+    }
+
+    engine::physics::BoxColliderDesc obstacle;
+    obstacle.name = "qa-service-road-obstacle";
+    obstacle.center = {ObstacleProxyX, ObstacleCollisionHalfExtents.y, ObstacleProxyZ};
+    obstacle.halfExtents = ObstacleCollisionHalfExtents;
+    obstacle.isTrigger = true;
+    if (!world->addTriggerBox(obstacle).isValid()) {
+        world->shutdown();
+        return nullptr;
+    }
+    return world;
+}
+
+float CollisionProbeClearance(engine::Vec3 position)
+{
+    const float separatedX = std::abs(position.x - ObstacleProxyX)
+        - (ObstacleCollisionHalfExtents.x + ObstacleCollisionProbeHalfExtents.x);
+    const float separatedZ = std::abs(position.z - ObstacleProxyZ)
+        - (ObstacleCollisionHalfExtents.z + ObstacleCollisionProbeHalfExtents.z);
+    return std::max(separatedX, separatedZ);
+}
+
+void UpdateObstacleCollisionTelemetry(
+    FerryOfficeVehicleRuntimeComparisonResult::ObstacleCheck& check,
+    const std::unique_ptr<engine::physics::IPhysicsWorld>& world,
+    engine::Vec3 vehiclePosition)
+{
+    if (!world) {
+        return;
+    }
+
+    check.collisionBacked = true;
+    const engine::Vec3 probeCenter {
+        vehiclePosition.x,
+        ObstacleCollisionProbeHalfExtents.y,
+        vehiclePosition.z,
+    };
+    const std::vector<engine::physics::OverlapResult> overlaps =
+        world->overlapBox(probeCenter, ObstacleCollisionProbeHalfExtents);
+    if (!overlaps.empty()) {
+        check.obstacleOverlapFrames += 1;
+    }
+    check.minCollisionClearance = std::min(check.minCollisionClearance, CollisionProbeClearance(vehiclePosition));
+}
+
 FerryOfficeVehicleRuntimeComparisonResult::ObstacleCheck RunDeterministicObstacleCheck(const SceneVehicleDefinition& vehicle)
 {
     FerryOfficeVehicleRuntimeComparisonResult::ObstacleCheck check;
     check.backendName = "deterministic";
     check.minDistanceToObstacle = std::numeric_limits<float>::max();
+    check.minCollisionClearance = std::numeric_limits<float>::max();
     check.finalPosition = vehicle.spawnPosition;
     check.finalYawRadians = vehicle.spawnYawRadians;
 
     VehicleController controller = BuildDeterministicVehicle(vehicle);
     ThirdPersonCamera camera = BuildObstacleCamera(vehicle.spawnYawRadians);
+    std::unique_ptr<engine::physics::IPhysicsWorld> obstacleWorld =
+        BuildObstaclePhysicsWorld(engine::physics::PhysicsBackend::Simple);
     for (int frame = 0; frame < ObstacleCheckMaxFrames; ++frame) {
         engine::InputState input;
         input.moveForward = ObstacleCheckThrottle;
@@ -480,16 +547,21 @@ FerryOfficeVehicleRuntimeComparisonResult::ObstacleCheck RunDeterministicObstacl
         check.hitBounds = check.hitBounds || state.hitBoundsThisFrame;
         check.maxLateralOffset = std::max(check.maxLateralOffset, std::abs(state.position.z - ObstacleLaneCenterZ));
         check.minDistanceToObstacle = std::min(check.minDistanceToObstacle, HorizontalDistance(state.position, {ObstacleProxyX, 0.0f, ObstacleProxyZ}));
+        UpdateObstacleCollisionTelemetry(check, obstacleWorld, state.position);
         UpdateObstacleCameraTelemetry(check, camera, state.position, state.yawRadians, 1.0f / 60.0f);
+    }
+    if (obstacleWorld) {
+        obstacleWorld->shutdown();
     }
 
     check.clearedObstacleProxy =
         (check.finalPosition.x - vehicle.spawnPosition.x) >= ObstacleRequiredXProgress
         && check.maxLateralOffset >= ObstacleRequiredLateralOffset;
-    check.passed = check.clearedObstacleProxy && !check.hitBounds;
+    check.obstacleCollisionClear = check.collisionBacked && check.obstacleOverlapFrames == 0;
+    check.passed = check.clearedObstacleProxy && check.obstacleCollisionClear && !check.hitBounds;
     check.message = check.passed
-        ? "Deterministic steering produced a bounded lateral obstacle-proxy lane offset."
-        : "Deterministic steering did not produce the expected obstacle-proxy lane offset.";
+        ? "Deterministic steering cleared the overlap-backed obstacle probe."
+        : "Deterministic steering did not cleanly clear the overlap-backed obstacle probe.";
     return check;
 }
 
@@ -500,9 +572,11 @@ FerryOfficeVehicleRuntimeComparisonResult::ObstacleCheck RunAdapterObstacleCheck
     FerryOfficeVehicleRuntimeComparisonResult::ObstacleCheck check;
     check.backendName = "unavailable";
     check.minDistanceToObstacle = std::numeric_limits<float>::max();
+    check.minCollisionClearance = std::numeric_limits<float>::max();
     check.finalPosition = config.spawnPosition;
     check.finalYawRadians = config.spawnYawRadians;
     ThirdPersonCamera camera = BuildObstacleCamera(config.spawnYawRadians);
+    std::unique_ptr<engine::physics::IPhysicsWorld> obstacleWorld = BuildObstaclePhysicsWorld(backend);
 
     std::unique_ptr<engine::physics::IVehicleRuntimeAdapter> adapter =
         engine::physics::CreateVehicleRuntimeAdapter(backend);
@@ -521,20 +595,25 @@ FerryOfficeVehicleRuntimeComparisonResult::ObstacleCheck RunAdapterObstacleCheck
         check.hitBounds = check.hitBounds || state.outOfBounds;
         check.maxLateralOffset = std::max(check.maxLateralOffset, std::abs(state.position.z - ObstacleLaneCenterZ));
         check.minDistanceToObstacle = std::min(check.minDistanceToObstacle, HorizontalDistance(state.position, {ObstacleProxyX, 0.0f, ObstacleProxyZ}));
+        UpdateObstacleCollisionTelemetry(check, obstacleWorld, state.position);
         UpdateObstacleCameraTelemetry(check, camera, state.position, state.yawRadians, config.fixedStepSeconds);
         if (!stepped || state.wheelContactCount < 2) {
             break;
         }
     }
     adapter->shutdown();
+    if (obstacleWorld) {
+        obstacleWorld->shutdown();
+    }
 
     check.clearedObstacleProxy =
         (check.finalPosition.x - config.spawnPosition.x) >= ObstacleRequiredXProgress
         && check.maxLateralOffset >= ObstacleRequiredLateralOffset;
-    check.passed = check.clearedObstacleProxy && !check.hitBounds;
+    check.obstacleCollisionClear = check.collisionBacked && check.obstacleOverlapFrames == 0;
+    check.passed = check.clearedObstacleProxy && check.obstacleCollisionClear && !check.hitBounds;
     check.message = check.passed
-        ? "Runtime adapter steering produced a bounded lateral obstacle-proxy lane offset."
-        : "Runtime adapter steering did not produce the expected obstacle-proxy lane offset.";
+        ? "Runtime adapter steering cleared the overlap-backed obstacle probe."
+        : "Runtime adapter steering did not cleanly clear the overlap-backed obstacle probe.";
     return check;
 }
 
@@ -903,7 +982,7 @@ FerryOfficeVehicleRuntimeComparisonResult RunFerryOfficeVehicleRuntimeComparison
     result.recommendation = result.passed && obstacleProgressAligned ? "promote" : "defer";
     if (result.passed && obstacleProgressAligned) {
         result.recommendationReason =
-            "The selected vehicle runtime adapter stayed stable, close enough to compare, passed compact control checks, reached the authored service-run checkpoint, and kept obstacle-proxy progress aligned.";
+            "The selected vehicle runtime adapter stayed stable, close enough to compare, passed compact control checks, reached the authored service-run checkpoint, and cleared the overlap-backed obstacle replay with aligned progress.";
     } else if (result.passed) {
         result.recommendationReason =
             "The selected vehicle runtime adapter stayed stable and camera-readable, but obstacle-proxy progress still diverges enough to keep it opt-in.";

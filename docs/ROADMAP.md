@@ -711,6 +711,16 @@ Status: implemented and validated. Scene data now has 12 interactables, 12 route
 
 Status: implemented and validated. Scene data now has 13 interactables, 13 route markers, and 12 objective markers; deterministic playthrough QA completes the 17-event chain through Ferry Office handoff filing.
 
+## v0.65 - Collision-backed Vehicle Obstacle Replay
+
+- Extend the deterministic-vs-Jolt vehicle runtime comparison with overlap-backed obstacle clearance telemetry.
+- Require deterministic and opt-in Jolt obstacle replays to clear a QA-only physics trigger probe with zero overlap frames.
+- Preserve existing controls, route, camera-aware obstacle, and progress-alignment evidence.
+- Keep deterministic vehicle gameplay as the default and keep Jolt behind the explicit opt-in runtime path.
+- Avoid live vehicle collision migration, default Jolt promotion, damage, traffic, road-edge collision, or vendor leakage into `src/game`.
+
+Status: implemented and validated. The generated Jolt runtime comparison report now records collision-backed obstacle clearance for deterministic and Jolt replays, both with `obstacleOverlapFrames=0`; `tools\vehicle_runtime_qa.py` reports backend `jolt`, `maxPositionDelta=1.49`, and recommendation `promote` for continued opt-in evidence.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.64, the next useful future milestone should usually add collision-backed Jolt obstacle replay before default vehicle-runtime promotion. Another compact authored content beat remains possible, but vehicle promotion evidence is now the clearer gap.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.65, the next useful future milestone can make a provisional Jolt vehicle-runtime direction decision from the accumulated route/control/playthrough/obstacle evidence, or add one live opt-in hardening pass if a default-promotion decision still needs stronger evidence.
