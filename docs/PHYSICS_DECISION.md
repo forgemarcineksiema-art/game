@@ -8,7 +8,7 @@ Choose Jolt Physics as Tidebreak's default production physics candidate unless a
 
 Keep PhysX as the backup candidate. Do not choose Bullet for the main engine path unless a future, narrow test gives a strong reason.
 
-This decision does not mean every current gameplay collision path should be rewritten immediately. v0.9.2 adds a vendor-safe `src/engine/physics` boundary and an opt-in Jolt backend spike. v0.33 adds a QA-only Ferry Office static-collision parity bridge, v0.34 adds a player-proxy contact probe, and v0.35 adds a wheeled vehicle feasibility probe. Existing Ferry Office gameplay still uses the tested prototype paths until a later goal migrates one behavior at a time. v0.49 adds opt-in Jolt runtime enter-drive-exit-confirm playthrough evidence for the first service job, v0.68 promotes Jolt from exploratory option to preferred vehicle-runtime candidate, v0.70 begins a controlled preferred-runtime trial through the play wrapper, and v0.96 makes vehicle-feel decisions Jolt-first with deterministic kept as baseline/fallback. Direct app and QA defaults remain deterministic unless a runtime is explicitly requested.
+This decision does not mean every current gameplay collision path should be rewritten immediately. v0.9.2 adds a vendor-safe `src/engine/physics` boundary and an opt-in Jolt backend spike. v0.33 adds a QA-only Ferry Office static-collision parity bridge, v0.34 adds a player-proxy contact probe, and v0.35 adds a wheeled vehicle feasibility probe. Existing Ferry Office gameplay still uses the tested prototype paths until a later goal migrates one behavior at a time. v0.49 adds opt-in Jolt runtime enter-drive-exit-confirm playthrough evidence for the first service job, v0.68 promotes Jolt from exploratory option to preferred vehicle-runtime candidate, v0.70 begins a controlled preferred-runtime trial through the play wrapper, v0.96 makes vehicle-feel decisions Jolt-first with deterministic kept as baseline/fallback, and v0.99 narrows Jolt route pace with a conservative straight-drive assist while preserving reverse, obstacle, and camera checks. Direct app and QA defaults remain deterministic unless a runtime is explicitly requested.
 
 ## Why Decide Now
 
@@ -219,6 +219,7 @@ Validated so far:
 - v0.96 adds explicit driving-feel checks to the runtime comparison. The report now requires deterministic and Jolt results for route time, route lateral deviation, brake stop distance, reverse distance, steering yaw response, and camera yaw lag before the wrapper accepts a Jolt promote recommendation.
 - v0.97 tightens the shared vehicle camera follow and the runtime-QA camera-lag thresholds: deterministic yaw lag is now 4.52 degrees and Jolt yaw lag is 12.24 degrees, while Jolt still completes the service-run checkpoint in 212 frames.
 - v0.98 adds route-pace sensitivity probes. Jolt reaches the same checkpoint in 212 frames at throttle 0.72, 0.86, and 1.0, so the route-pace gap is not explained by conservative scripted throttle.
+- v0.99 adds a conservative straight-drive assist inside the Jolt vehicle runtime. Jolt now reaches the same checkpoint in 169 frames at the normal 0.72 route throttle, with route-pace probes at 169, 163, and 158 frames for throttle 0.72, 0.86, and 1.0. Deterministic remains the baseline at 139 frames.
 - `rg -n "Jolt|JPH::|<Jolt/|JPH/" src\game` returns no matches; Jolt types remain private to engine-owned physics code.
 
 Important limits:
@@ -354,6 +355,34 @@ Decision:
 Revisit when:
 
 - The Jolt vehicle runtime exposes tunable drivetrain parameters or the service route expands beyond the current straight checkpoint probe.
+
+## v0.99 Controlled Jolt Straight-Drive Assist
+
+v0.99 narrows the preferred Jolt runtime route-pace gap without treating deterministic vehicle feel as the product target.
+
+Validated:
+
+- Default `EngineCoreTests.exe` passed.
+- Jolt preset build passed.
+- Jolt CTest passed 15/15.
+- `tools\vehicle_runtime_qa.py` passed with backend `jolt`: controlChecks=4, routeChecks=2, obstacleChecks=2, drivingFeelChecks=12, routePaceProbes=3, `maxPositionDelta=1.08`, recommendation=`promote`.
+- Jolt playthrough QA completed the 21-event service-call chain with `framesToCheckpoint=169`, no fallback, and no bounds hit.
+
+Evidence:
+
+- A stronger assist reduced route time more aggressively but hit bounds in the obstacle replay, so it was rejected.
+- The shipped assist applies only to forward throttle with nearly straight steering.
+- Jolt route pace improved from 212 to 169 frames at the normal 0.72 throttle script.
+- Route-pace probes now complete in 169 frames at throttle 0.72, 163 at 0.86, and 158 at 1.0.
+- Jolt still passes route lateral deviation, brake stop, reverse distance, steering yaw response, camera yaw lag, and obstacle replay checks.
+
+Decision:
+
+- Keep Jolt as the production vehicle-runtime candidate and keep deterministic as the dependency-free baseline/fallback. The straight-drive assist is acceptable as a narrow service-route tuning aid, but it is not a final drivetrain or tire model.
+
+Revisit when:
+
+- Vehicle controls/camera feel is tuned, a broader road route is authored, road-edge collision is added, or Jolt becomes the direct-app default runtime.
 
 Important implementation choices:
 

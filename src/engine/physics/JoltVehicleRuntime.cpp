@@ -372,6 +372,7 @@ public:
             m_physicsSystem->GetBodyInterface().ActivateBody(m_bodyId);
         }
         m_physicsSystem->Update(Clamp(deltaSeconds, 0.0f, 0.1f), 1, m_tempAllocator.get(), m_jobSystem.get());
+        applyStraightDriveAssist(forward, right, Clamp(deltaSeconds, 0.0f, 0.1f));
         applySteeringDriveAssist(forward, right, Clamp(deltaSeconds, 0.0f, 0.1f));
         applyManualDamping(forward, brake, Clamp(deltaSeconds, 0.0f, 0.1f));
         readState();
@@ -419,6 +420,25 @@ private:
         const JPH::Vec3 forward = rotation * m_constraint->GetLocalForward();
         const JPH::Vec3 velocity = bodyInterface.GetLinearVelocity(m_bodyId);
         const float assist = throttle * std::abs(steer) * 22.0f * deltaSeconds;
+        bodyInterface.SetLinearVelocity(m_bodyId, velocity + forward * assist);
+    }
+
+    void applyStraightDriveAssist(float throttle, float steer, float deltaSeconds)
+    {
+        if (throttle <= 0.001f) {
+            return;
+        }
+
+        const float absSteer = std::abs(steer);
+        if (absSteer > 0.05f) {
+            return;
+        }
+
+        JPH::BodyInterface& bodyInterface = m_physicsSystem->GetBodyInterface();
+        const JPH::Quat rotation = bodyInterface.GetRotation(m_bodyId);
+        const JPH::Vec3 forward = rotation * m_constraint->GetLocalForward();
+        const JPH::Vec3 velocity = bodyInterface.GetLinearVelocity(m_bodyId);
+        const float assist = throttle * 1.8f * deltaSeconds;
         bodyInterface.SetLinearVelocity(m_bodyId, velocity + forward * assist);
     }
 

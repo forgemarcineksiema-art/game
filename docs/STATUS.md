@@ -2,6 +2,79 @@
 
 Last updated: 2026-05-16
 
+## v0.99 Controlled Jolt Straight-Drive Assist (2026-05-16)
+
+Selected milestone:
+
+- Tune the preferred Jolt vehicle runtime's straight service-run route pace without regressing reverse contact, obstacle stability, camera lag, or the first-job playthrough.
+
+Candidate milestone triage:
+
+- Controlled Jolt route-pace tuning: impact high because Jolt is the production vehicle-runtime candidate and v0.98 proved the 212-frame route was not a scripted-throttle issue; risk medium because it changes live Jolt velocity behavior; validation path = default/Jolt builds, C++ tests, vehicle runtime QA, Jolt playthrough QA, Jolt CTest, `scripts\verify.ps1`.
+- Vehicle controls/camera pass: impact high, risk medium; deferred until the already-started Jolt route-pace gap was closed enough to make the next controls/camera pass work from a better target runtime.
+- New content/world-consequence beat: impact high, risk medium; deferred because the current dirty worktree already contained a coherent vehicle-runtime change that needed validation or rejection first.
+
+Why selected:
+
+- v0.96-v0.98 made the product direction clear: tune Jolt first, keep deterministic as baseline/fallback. Route pace was the sharpest remaining Jolt gap, and v0.98 showed that raising scripted throttle from 0.72 to 1.0 did not improve the 212-frame checkpoint result.
+
+What changed:
+
+- Added a conservative Jolt-only straight-drive assist after the Jolt vehicle step.
+- The assist applies only under forward throttle and nearly straight steering (`abs(steer) <= 0.05`), leaving steering assist, braking, reverse, and manual damping behavior separate.
+- Tightened the Jolt service-run route budget from 240 to 190 frames in C++ QA and the Python wrapper.
+- Updated Python wrapper fixtures for the improved Jolt route pace and route-pace probes.
+
+Rejected attempt:
+
+- A stronger assist (`3.0`) with broad steering participation reduced route time to 151 frames but failed obstacle stability by hitting bounds. It was rejected instead of shipped.
+
+Files changed:
+
+- `src\engine\physics\JoltVehicleRuntime.cpp`
+- `src\game\FerryOfficeVehiclePhysicsQa.cpp`
+- `tools\vehicle_runtime_qa.py`
+- `tests\test_vehicle_runtime_qa.py`
+
+Validation so far:
+
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests EngineApp`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt --target EngineApp EngineCoreTests`: passed.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `python tests\test_vehicle_runtime_qa.py`: passed, 11 tests.
+- `python tools\vehicle_runtime_qa.py --exe build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --report-json build\physics\v099-jolt-straight-assist-report.json`: passed; backend=jolt, samples=5, controlChecks=4, routeChecks=2, obstacleChecks=2, drivingFeelChecks=12, routePaceProbes=3, maxPositionDelta=1.08, recommendation=promote.
+- `python tools\playthrough_qa.py --exe build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --vehicle-runtime jolt --report-json build\playthroughs\ferry-office-service-call-v099-jolt-report.json`: passed; phase=complete, events=21, vehicleRuntime=jolt, framesToCheckpoint=169.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed 15/15.
+
+Automated evidence generated:
+
+- `build\physics\v099-jolt-straight-assist-report.json`.
+- `build\playthroughs\ferry-office-service-call-v099-jolt-report.json`.
+- Deterministic route remains 139 frames.
+- Jolt route improved from 212 to 169 frames under the normal 0.72 throttle script.
+- Jolt route-pace probes now complete in 169 frames at throttle 0.72, 163 frames at 0.86, and 158 frames at 1.0.
+- Jolt driving-feel checks pass: routeFramesToCheckpoint=169/190, routeMaxLateralDeviation=0.400m, brakeStopDistance=0.384m, reverseDistance=2.552m, steeringYawResponse=41.215 degrees, cameraYawLag=12.241/15 degrees.
+- Jolt obstacle replay still reports no bounds hit and zero obstacle overlap frames.
+
+Provisional decision:
+
+- Keep the conservative straight-drive assist as a temporary Jolt route-pace improvement. Jolt remains the production vehicle-runtime target; deterministic remains the dependency-free baseline and fallback, not the path to polish in isolation.
+
+Remaining limitations:
+
+- The route gap is reduced, not eliminated: Jolt is now 169 frames versus deterministic at 139 on the current service-run route.
+- The assist is a compact service-route tuning aid, not a final drivetrain, tire, suspension, road-edge collision, damage, traffic, cargo, or production vehicle model.
+- The next vehicle-facing milestone should address player-facing controls/camera feel around the Jolt runtime, with automated proxies instead of manual comparison as the required gate.
+
+Final validation:
+
+- `scripts\verify.ps1`: passed; doctor/configure/build succeeded, 11/11 default CTest tests passed, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke completed.
+- `git diff --check`: passed with expected CRLF normalization warnings only.
+
+Next direction:
+
+- Per user instruction, stop the active goal after this v0.99 commit and push instead of starting the next autonomous milestone. The next goal should be Jolt-first vehicle controls and camera: reset/follow behavior, reverse readability, and input-scripted camera/control evidence, with deterministic retained as the comparison baseline.
+
 ## v0.98 Jolt Route-Pace Sensitivity Evidence (2026-05-16)
 
 Selected milestone:

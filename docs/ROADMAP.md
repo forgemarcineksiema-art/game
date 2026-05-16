@@ -995,10 +995,19 @@ Status: implemented and validated. Vehicle camera follow strength is now `5.0`; 
 
 Status: implemented and validated. Jolt route pace remains 212 frames at throttle 0.72, 0.86, and 1.0, with final speed about 6.12 and no bounds hit; this points away from the scripted throttle and toward drivetrain/force/gearing/drag tuning as the next vehicle gap. `scripts\verify.ps1` passes.
 
+## v0.99 - Controlled Jolt Straight-Drive Assist
+
+- Improve the preferred Jolt runtime's authored service-run pace without switching the project back to deterministic vehicle feel.
+- Keep the assist narrowly scoped to forward, nearly straight driving so steering, reverse, braking, and obstacle stability remain independently validated.
+- Tighten the Jolt route budget from 240 to 190 frames and keep deterministic as baseline/fallback.
+- Preserve the engine-owned Jolt boundary and avoid exposing vendor types to game code.
+
+Status: implemented and validated. Jolt now reaches the service-run checkpoint in 169 frames at the normal 0.72 throttle script, with route-pace probes at 169/163/158 frames for throttle 0.72/0.86/1.0. The runtime QA still passes obstacle, reverse, braking, steering, and camera-lag checks, and the Jolt playthrough completes the 21-event chain without fallback or bounds hit.
+
 ## Recommended Next Goal
 
 Read `docs\GAMEPLAY_REVIEW.md` before choosing the next milestone. Use `python tools\capture_visual_smoke.py`, `python tools\capture_visual_smoke.py --scenario relay-to-service-log --report-json build\captures\capture_visual_smoke_midchain_report.json`, `python tools\capture_visual_smoke.py --scenario low-dock-drain-access --report-json build\captures\capture_visual_smoke_low_dock_report.json`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play.
 
-After v0.98, the remaining vehicle gap is Jolt drivetrain/pace tuning rather than scripted throttle. Either run a controlled Jolt drivetrain route-pace tuning pass that preserves reverse contact and obstacle stability, or pivot to a player-facing content/world-consequence step before spending another iteration only on vehicle QA.
+After v0.99, the route-pace gap is narrower but not fully gone: Jolt reaches the current checkpoint in 169 frames versus deterministic at 139. The next vehicle milestone should be Jolt-first controls and camera feel: reset/follow behavior, reverse readability, and input-scripted camera/control evidence, while keeping deterministic as the comparison baseline and fallback.
 
 If the new Low Dock Drain access consequence exposes route/objective readability issues during capture review, choose a bounded readability pass instead, but do not add another administrative endpoint by default.

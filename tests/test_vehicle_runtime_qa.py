@@ -66,7 +66,7 @@ DRIVING_FEEL_CHECKS = [
     }
     for backend in ("deterministic", "jolt")
     for name, value, min_value, max_value, units in (
-        ("routeFramesToCheckpoint", 139.0 if backend == "deterministic" else 212.0, 1.0, 240.0, "frames"),
+        ("routeFramesToCheckpoint", 139.0 if backend == "deterministic" else 169.0, 1.0, 190.0, "frames"),
         ("routeMaxLateralDeviation", 0.08, 0.0, 0.85, "meters"),
         ("brakeStopDistance", 2.1, 0.0, 4.5, "meters"),
         ("reverseDistance", 1.2, 0.35, 6.0, "meters"),
@@ -91,7 +91,7 @@ ROUTE_PACE_PROBES = [
         "hitBounds": False,
         "message": "Jolt route-pace probe passed.",
     }
-    for throttle, frames in ((0.72, 212), (0.86, 212), (1.0, 212))
+    for throttle, frames in ((0.72, 169), (0.86, 163), (1.0, 158))
 ]
 
 
@@ -423,7 +423,7 @@ class VehicleRuntimeQaTests(unittest.TestCase):
                     "backend": "jolt",
                     "passed": True,
                     "checkpointReached": True,
-                    "framesToCheckpoint": 213,
+                    "framesToCheckpoint": 169,
                     "minDistanceToCheckpoint": 1.8,
                     "finalPosition": [17.6, 1.1, -1.8],
                     "finalYawDegrees": 88.0,
@@ -481,7 +481,7 @@ class VehicleRuntimeQaTests(unittest.TestCase):
                     "backend": "jolt",
                     "passed": True,
                     "checkpointReached": True,
-                    "framesToCheckpoint": 213,
+                    "framesToCheckpoint": 169,
                     "minDistanceToCheckpoint": 1.8,
                     "finalPosition": [17.6, 1.1, -1.8],
                     "finalYawDegrees": 88.0,
@@ -543,7 +543,7 @@ class VehicleRuntimeQaTests(unittest.TestCase):
                                 "backend": "jolt",
                                 "passed": True,
                                 "checkpointReached": True,
-                                "framesToCheckpoint": 213,
+                                "framesToCheckpoint": 169,
                                 "minDistanceToCheckpoint": 1.8,
                                 "finalPosition": [17.6, 1.1, -1.8],
                                 "finalYawDegrees": 88.0,
@@ -735,7 +735,7 @@ class VehicleRuntimeQaTests(unittest.TestCase):
                                 "backend": "jolt",
                                 "passed": True,
                                 "checkpointReached": True,
-                                "framesToCheckpoint": 213,
+                                "framesToCheckpoint": 169,
                                 "minDistanceToCheckpoint": 1.8,
                                 "finalPosition": [17.6, 1.1, -1.8],
                                 "finalYawDegrees": 88.0,

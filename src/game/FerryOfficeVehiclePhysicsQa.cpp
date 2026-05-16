@@ -26,7 +26,7 @@ constexpr std::string_view ServiceRunConfirmMarkerId = "service-run-confirm-mark
 constexpr float RuntimePositionDeltaLimit = 4.0f;
 constexpr float RuntimeYawDeltaLimitDegrees = 130.0f;
 constexpr float RuntimeSpeedDeltaLimit = 5.0f;
-constexpr int RouteCheckMaxFrames = 240;
+constexpr int RouteCheckMaxFrames = 190;
 constexpr float RouteCheckThrottle = 0.72f;
 constexpr int ObstacleCheckMaxFrames = 150;
 constexpr float ObstacleCheckThrottle = 0.72f;
@@ -844,7 +844,7 @@ std::vector<FerryOfficeVehicleRuntimeComparisonResult::DrivingFeelCheck> RunAdap
     {
         adapter = engine::physics::CreateVehicleRuntimeAdapter(backend);
         if (!adapter || !adapter->initialize(config)) {
-            checks.push_back(MakeDrivingFeelCheck(backendName, "routeFramesToCheckpoint", false, -1.0f, 1.0f, 240.0f, "frames", "Adapter route check could not initialize."));
+            checks.push_back(MakeDrivingFeelCheck(backendName, "routeFramesToCheckpoint", false, -1.0f, 1.0f, static_cast<float>(RouteCheckMaxFrames), "frames", "Adapter route check could not initialize."));
             return checks;
         }
         int framesToCheckpoint = -1;
