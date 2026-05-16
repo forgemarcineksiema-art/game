@@ -868,6 +868,14 @@ Status: implemented and validated. The default background now uses a restrained 
 
 Status: implemented and validated. The service-yard exit now has a worn crossbar and paired edge caps that clarify the route/material handoff without adding route clutter; `scripts/verify.ps1`, scene/asset/mesh/scale checks, and GDI/DX11 visual smoke pass.
 
+## v0.84 - Service Vehicle Proxy Mesh Pass
+
+- Replace the high-visibility service vehicle unit-box body/cabin/wheel cluster with small original cart meshes.
+- Keep the authored vehicle collider, spawn, bounds, runtime controls, prompts, and service-run route behavior unchanged.
+- Use only the current embedded-buffer `.gltf` static mesh subset, scene material palette, and validation tools.
+
+Status: implemented and validated. The service-yard vehicle now uses a tapered cart body, sloped cab, and rounded wheel mesh while retaining the existing linked vehicle transform; `scripts/verify.ps1`, scene/asset/mesh/scale checks, playthrough QA, and GDI/DX11 visual smoke pass.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.83, the next useful future milestone should either replace another high-visibility repeated unit-box cue with a purposeful original mesh, improve facade material hierarchy, add an automated route-walking proxy for the longer Ferry Office follow-up chain, or use preferred-runtime evidence to harden Jolt road-edge/live-control behavior.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.84, the next useful future milestone should either improve facade material hierarchy, replace another high-visibility repeated unit-box cue with a purposeful original mesh, add an automated route-walking proxy for the longer Ferry Office follow-up chain, or use preferred-runtime evidence to harden Jolt road-edge/live-control behavior.

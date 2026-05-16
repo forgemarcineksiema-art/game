@@ -1,0 +1,90 @@
+{
+  "asset": {
+    "version": "2.0",
+    "generator": "Tidebreak tools/create_simple_prop_gltf.py v0.84 service yard cart wheel fallback helper",
+    "extras": {
+      "tidebreakSource": "project-original fallback geometry",
+      "notBlenderExport": true
+    }
+  },
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "mesh": 0,
+      "name": "service_yard_cart_wheel"
+    }
+  ],
+  "meshes": [
+    {
+      "name": "service_yard_cart_wheel",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0
+          },
+          "indices": 1,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 600,
+      "uri": "data:application/octet-stream;base64,uB4Fvt21hD5xPYo+uB4FvpXUyT5PcG8+uB4FvgRu/D5xPQo+uB4Fvqd5Bz/PfJgjuB4FvgRu/D5xPQq+uB4FvpXUyT5PcG++uB4Fvt21hD5xPYq+uB4FvpJc/j1PcG++uB4FvlXbzzxxPQq+uB4FvnzyMLw3u2SkuB4FvlXbzzxxPQo+uB4FvpJc/j1PcG8+uB4FPt21hD5xPYo+uB4FPpXUyT5PcG8+uB4FPgRu/D5xPQo+uB4FPqd5Bz/PfJgjuB4FPgRu/D5xPQq+uB4FPpXUyT5PcG++uB4FPt21hD5xPYq+uB4FPpJc/j1PcG++uB4FPlXbzzxxPQq+uB4FPnzyMLw3u2SkuB4FPlXbzzxxPQo+uB4FPpJc/j1PcG8+uB4Fvt21hD4AAAAAuB4FPt21hD4AAAAAAAAMAA0AAAANAAEAGAABAAAAGQAMAA0AAQANAA4AAQAOAAIAGAACAAEAGQANAA4AAgAOAA8AAgAPAAMAGAADAAIAGQAOAA8AAwAPABAAAwAQAAQAGAAEAAMAGQAPABAABAAQABEABAARAAUAGAAFAAQAGQAQABEABQARABIABQASAAYAGAAGAAUAGQARABIABgASABMABgATAAcAGAAHAAYAGQASABMABwATABQABwAUAAgAGAAIAAcAGQATABQACAAUABUACAAVAAkAGAAJAAgAGQAUABUACQAVABYACQAWAAoAGAAKAAkAGQAVABYACgAWABcACgAXAAsAGAALAAoAGQAWABcACwAXAAwACwAMAAAAGAAAAAsAGQAXAAwA"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 312,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 312,
+      "byteLength": 288,
+      "target": 34963
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 26,
+      "type": "VEC3",
+      "min": [
+        -0.13,
+        -0.0108,
+        -0.27
+      ],
+      "max": [
+        0.13,
+        0.5292,
+        0.27
+      ]
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 0,
+      "componentType": 5123,
+      "count": 144,
+      "type": "SCALAR",
+      "min": [
+        0
+      ],
+      "max": [
+        25
+      ]
+    }
+  ]
+}

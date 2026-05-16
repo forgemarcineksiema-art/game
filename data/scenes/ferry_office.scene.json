@@ -569,6 +569,39 @@
       "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v0.81 fallback Ferry Office canopy because the roofline is a high-visibility first-frame silhouette; not a Blender export.",
       "authoringBoundsHalfExtents": [2.95, 0.18, 1.85],
       "notes": "Small original sloped canopy mesh for Ferry Office first-impression readability. No textures, logos, readable text, collision, or final architectural art."
+    },
+    {
+      "id": "service-yard-cart-body-mesh",
+      "path": "assets/models/service_yard_cart_body.gltf",
+      "format": "gltf",
+      "units": "meter",
+      "upAxis": "Y",
+      "license": "project-original",
+      "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v0.84 fallback service-yard cart body because the vehicle proxy was a high-visibility unit-box cluster; not a Blender export.",
+      "authoringBoundsHalfExtents": [0.58, 0.45, 0.96],
+      "notes": "Original low-poly tapered service cart body for the authored vehicle proxy. No brand marks, textures, readable text, collision import, or final vehicle art."
+    },
+    {
+      "id": "service-yard-cart-cabin-mesh",
+      "path": "assets/models/service_yard_cart_cabin.gltf",
+      "format": "gltf",
+      "units": "meter",
+      "upAxis": "Y",
+      "license": "project-original",
+      "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v0.84 fallback service-yard cart cabin because the vehicle proxy was a high-visibility unit-box cluster; not a Blender export.",
+      "authoringBoundsHalfExtents": [0.38, 0.29, 0.46],
+      "notes": "Original sloped cab silhouette for the service-yard vehicle proxy. Presentation mesh only; no interior, animation, physics, logos, or final vehicle art."
+    },
+    {
+      "id": "service-yard-cart-wheel-mesh",
+      "path": "assets/models/service_yard_cart_wheel.gltf",
+      "format": "gltf",
+      "units": "meter",
+      "upAxis": "Y",
+      "license": "project-original",
+      "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v0.84 fallback rounded wheel because the old vehicle wheels were unit boxes; not a Blender export.",
+      "authoringBoundsHalfExtents": [0.13, 0.27, 0.27],
+      "notes": "Original low-poly wheel mesh for the service-yard vehicle proxy. Visual only; gameplay vehicle collision remains authored by the service-yard vehicle proxy extents."
     }
   ],
   "meshInstances": [
@@ -845,21 +878,23 @@
     },
     {
       "id": "mesh-service-yard-vehicle-body",
-      "assetId": "unit-box-mesh",
-      "position": [6.2, 0.42, -2.2],
+      "assetId": "service-yard-cart-body-mesh",
+      "position": [6.2, 0.0, -2.2],
       "yawDegrees": 88.0,
-      "scale": [1.16, 0.68, 1.84],
+      "scale": [1.0, 1.0, 1.0],
       "colorKey": "service-vehicle-placeholder",
-      "linkedColliderId": "service-yard-vehicle"
+      "linkedColliderId": "service-yard-vehicle",
+      "notes": "v0.84 original tapered cart body replaces the largest service-vehicle unit box while preserving the authored vehicle collider and runtime behavior."
     },
     {
       "id": "mesh-service-yard-vehicle-cabin",
-      "assetId": "unit-box-mesh",
-      "position": [6.2, 0.86, -2.2],
+      "assetId": "service-yard-cart-cabin-mesh",
+      "position": [6.2, 0.0, -2.2],
       "yawDegrees": 88.0,
-      "scale": [0.84, 0.40, 0.92],
+      "scale": [1.0, 1.0, 1.0],
       "colorKey": "service-vehicle-cabin-placeholder",
-      "linkedColliderId": "service-yard-vehicle"
+      "linkedColliderId": "service-yard-vehicle",
+      "notes": "v0.84 sloped cab mesh replaces the old stacked cabin block; visual only and linked to the existing service-yard vehicle transform."
     },
     {
       "id": "mesh-service-yard-vehicle-visible-side-stripe",
@@ -883,43 +918,43 @@
     },
     {
       "id": "mesh-service-yard-vehicle-front-left-wheel",
-      "assetId": "unit-box-mesh",
-      "position": [6.80, 0.25, -1.42],
+      "assetId": "service-yard-cart-wheel-mesh",
+      "position": [6.80, 0.0, -1.42],
       "yawDegrees": 88.0,
-      "scale": [0.26, 0.32, 0.32],
+      "scale": [1.0, 1.0, 1.0],
       "colorKey": "dark-service-asphalt",
       "linkedColliderId": "service-yard-vehicle",
-      "notes": "v0.79 visual-only wheel block for readable service-vehicle scale; no physics or collision behavior."
+      "notes": "v0.84 rounded visual-only wheel mesh for readable service-vehicle scale; no physics or collision behavior."
     },
     {
       "id": "mesh-service-yard-vehicle-rear-left-wheel",
-      "assetId": "unit-box-mesh",
-      "position": [5.54, 0.25, -1.47],
+      "assetId": "service-yard-cart-wheel-mesh",
+      "position": [5.54, 0.0, -1.47],
       "yawDegrees": 88.0,
-      "scale": [0.26, 0.32, 0.32],
+      "scale": [1.0, 1.0, 1.0],
       "colorKey": "dark-service-asphalt",
       "linkedColliderId": "service-yard-vehicle",
-      "notes": "v0.79 visual-only wheel block on the camera-facing side of the service vehicle."
+      "notes": "v0.84 rounded visual-only wheel mesh on the camera-facing side of the service vehicle."
     },
     {
       "id": "mesh-service-yard-vehicle-front-right-wheel",
-      "assetId": "unit-box-mesh",
-      "position": [6.82, 0.25, -2.98],
+      "assetId": "service-yard-cart-wheel-mesh",
+      "position": [6.82, 0.0, -2.98],
       "yawDegrees": 88.0,
-      "scale": [0.26, 0.32, 0.32],
+      "scale": [1.0, 1.0, 1.0],
       "colorKey": "dark-service-asphalt",
       "linkedColliderId": "service-yard-vehicle",
-      "notes": "v0.79 far-side visual-only service-vehicle wheel block; keeps the proxy coherent from other angles."
+      "notes": "v0.84 far-side rounded service-vehicle wheel mesh; keeps the proxy coherent from other angles."
     },
     {
       "id": "mesh-service-yard-vehicle-rear-right-wheel",
-      "assetId": "unit-box-mesh",
-      "position": [5.56, 0.25, -3.02],
+      "assetId": "service-yard-cart-wheel-mesh",
+      "position": [5.56, 0.0, -3.02],
       "yawDegrees": 88.0,
-      "scale": [0.26, 0.32, 0.32],
+      "scale": [1.0, 1.0, 1.0],
       "colorKey": "dark-service-asphalt",
       "linkedColliderId": "service-yard-vehicle",
-      "notes": "v0.79 paired far-side visual-only wheel block; presentation only."
+      "notes": "v0.84 paired far-side rounded wheel mesh; presentation only."
     },
     {
       "id": "mesh-service-road-sign",

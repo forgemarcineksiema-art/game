@@ -2,6 +2,66 @@
 
 Last updated: 2026-05-16
 
+## v0.84 Service Vehicle Proxy Mesh Pass (2026-05-16)
+
+Selected target:
+
+- Replace the service-yard vehicle proxy's high-visibility unit-box body/cabin/wheel cluster with purposeful original low-poly cart meshes.
+
+Why selected:
+
+- The v0.83 route threshold improved the yard exit, but current visual smoke still showed the service vehicle area as one of the most obvious remaining blockout clusters in the default Ferry Office frame. Replacing it improves first impression and scene identity without touching vehicle gameplay, collision, route flow, prompts, or renderer behavior.
+
+Implementation notes:
+
+- Added three fallback-generated project-original `.gltf` meshes: tapered cart body, sloped cab, and rounded wheel.
+- Extended `tools\create_simple_prop_gltf.py` with `service-yard-cart-body`, `service-yard-cart-cabin`, and `service-yard-cart-wheel` generator kinds.
+- Kept stable vehicle mesh instance ids while swapping body/cabin/wheel instances to the new assets.
+- Preserved the authored `service-yard-vehicle` spawn, proxy half extents, bounds, linked transform behavior, enter radius, controls, and deterministic service-run route.
+- Reduced current `unit-box-mesh` scene usage from 39 to 33.
+
+Files changed:
+
+- `assets\models\service_yard_cart_body.gltf`
+- `assets\models\service_yard_cart_cabin.gltf`
+- `assets\models\service_yard_cart_wheel.gltf`
+- `data\scenes\ferry_office.scene.json`
+- `tools\create_simple_prop_gltf.py`
+- `tests\test_scene_tools.py`
+- `docs\ASSET_GUIDE.md`
+- `docs\MESH_RENDERING.md`
+- `docs\SCENE_AUTHORING.md`
+- `docs\ROADMAP.md`
+- `docs\STATUS.md`
+
+Validation:
+
+- `python tools\validate_scene.py`: passed.
+- `python tools\validate_assets.py`: passed; 16 model files.
+- `python tools\mesh_report.py`: passed; 16 mesh assets, 71 mesh instances, 16 referenced model files.
+- `python tools\scene_report.py`: passed; 24 scene materials, 30 visual placeholders, 16 mesh assets, 71 mesh instances, 16 interactables, 16 route markers, and 15 objective markers.
+- `python tools\scale_audit.py`: passed.
+- `python tests\test_scene_tools.py`: passed; 45 tests.
+- `python tools\playthrough_qa.py`: passed; deterministic service-call playthrough completed 20 events.
+- `scripts\verify.ps1`: passed; doctor completed with known plain-PATH tool warnings, configure/build succeeded, default CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke completed.
+- `python tools\capture_visual_smoke.py`: passed; GDI colors=75/lumaRange=221, DX11 colors=43/lumaRange=221 with WARP fallback in this environment.
+- `git diff --check`: passed with only expected CRLF normalization warnings for touched files.
+
+Automated evidence generated:
+
+- `build\captures\v0.31-gdi-capture.bmp`
+- `build\captures\v0.31-dx11-capture.bmp`
+- `build\captures\capture_visual_smoke_report.json`
+- `build\playthroughs\ferry-office-service-call-report.json`
+
+Remaining visual weakness:
+
+- The Ferry Office facade and dock/service-yard still contain many useful but primitive unit-box composition placeholders. The next visual pass should either strengthen facade material hierarchy or replace another large repeated placeholder cluster with an original authored mesh.
+
+Commit/push:
+
+- Included in the `v0.84 service vehicle proxy mesh pass` commit/push step.
+
 ## v0.83 Service Yard Route Threshold Pass (2026-05-16)
 
 Selected milestone:

@@ -17,7 +17,7 @@ This guide defines Tidebreak's early asset and scale conventions. v0.44 still do
 
 - Player height: `1.8m`.
 - Player radius: `0.35m`.
-- Current placeholder service vehicle visual size: about `1.16m` wide, `1.84m` long, `1.06m` high.
+- Current placeholder service vehicle visual size: about `1.16m` wide, `1.92m` long, `1.20m` high.
 - Minimum comfortable on-foot path: about `1.2m`.
 - Minimum vehicle test lane: about `3.0m`.
 - Ferry Office door/gate openings should be at least `1.1m` wide unless intentionally blocked.
@@ -78,6 +78,7 @@ v0.12-v0.18 supports a tiny static `.gltf` subset through `src/engine/assets/Sta
 - v0.20 adds `ferry_notice_board.gltf` through `tools/create_simple_prop_gltf.py` because Blender was unavailable during that run. This asset is project-original fallback geometry, not Blender export.
 - v0.58 adds `clearance_tag.gltf` through the same fallback helper because the endpoint cue is tiny and does not justify Blender yet.
 - v0.81 adds `ferry_office_canopy.gltf` through the same fallback helper because the Ferry Office roofline is a high-visibility first-frame silhouette and benefits from one cohesive authored mesh.
+- v0.84 adds `service_yard_cart_body.gltf`, `service_yard_cart_cabin.gltf`, and `service_yard_cart_wheel.gltf` through the same fallback helper because the service vehicle was still a high-visibility unit-box cluster in the playable slice.
 - v0.20.1 adds `blender_ferry_notice_board.gltf` through `tools/blender/create_tidebreak_notice_board.py`. v0.27 adds `blender_cable_reel.gltf` through `tools/blender/create_tidebreak_cable_reel.py`. v0.42 adds `blender_wet_road_surface.gltf` through `tools/blender/create_tidebreak_wet_road_surface.py`. v0.43 adds `blender_harbor_backdrop.gltf` through `tools/blender/create_tidebreak_harbor_backdrop.py`. v0.44 adds `blender_harbor_water_surface.gltf` through `tools/blender/create_tidebreak_harbor_water_surface.py`. These scripts author in Tidebreak coordinates, map to Blender's Z-up space, export with Blender 5.1.1, and post-embed the buffer for the current loader subset.
 - Use meters, Y-up, +Z forward.
 - Keep placeholder meshes small, original, and clearly documented.

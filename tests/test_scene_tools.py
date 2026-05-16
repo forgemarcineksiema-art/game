@@ -372,6 +372,36 @@ class SceneToolTests(unittest.TestCase):
         self.assertEqual("dock-road-clearance-state", mesh_instances["mesh-dock-road-clearance-tag"]["colorKey"])
         self.assertEqual("dock-road-clearance-status-tag", mesh_instances["mesh-dock-road-clearance-tag"]["replacesVisualPlaceholderId"])
 
+    def test_v084_service_vehicle_cart_meshes_replace_box_cluster(self) -> None:
+        ids = scene_data.collect_ids(self.scene)
+        mesh_assets = {asset["id"]: asset for asset in self.scene["meshAssets"]}
+        mesh_instances = {instance["id"]: instance for instance in self.scene["meshInstances"]}
+
+        expected_assets = {
+            "service-yard-cart-body-mesh": "assets/models/service_yard_cart_body.gltf",
+            "service-yard-cart-cabin-mesh": "assets/models/service_yard_cart_cabin.gltf",
+            "service-yard-cart-wheel-mesh": "assets/models/service_yard_cart_wheel.gltf",
+        }
+        for asset_id, path in expected_assets.items():
+            self.assertIn(asset_id, mesh_assets)
+            self.assertEqual(path, mesh_assets[asset_id]["path"])
+            self.assertIn("v0.84", mesh_assets[asset_id]["provenance"])
+            self.assertIn("not a blender export", mesh_assets[asset_id]["provenance"].lower())
+
+        expected_instances = {
+            "mesh-service-yard-vehicle-body": "service-yard-cart-body-mesh",
+            "mesh-service-yard-vehicle-cabin": "service-yard-cart-cabin-mesh",
+            "mesh-service-yard-vehicle-front-left-wheel": "service-yard-cart-wheel-mesh",
+            "mesh-service-yard-vehicle-rear-left-wheel": "service-yard-cart-wheel-mesh",
+            "mesh-service-yard-vehicle-front-right-wheel": "service-yard-cart-wheel-mesh",
+            "mesh-service-yard-vehicle-rear-right-wheel": "service-yard-cart-wheel-mesh",
+        }
+        for instance_id, asset_id in expected_instances.items():
+            self.assertIn(instance_id, ids)
+            self.assertEqual(asset_id, mesh_instances[instance_id]["assetId"])
+            self.assertEqual("service-yard-vehicle", mesh_instances[instance_id]["linkedColliderId"])
+            self.assertIn("v0.84", mesh_instances[instance_id]["notes"])
+
     def test_duplicate_mesh_replacement_links_are_reported(self) -> None:
         scene = copy.deepcopy(self.scene)
         first = copy.deepcopy(scene["meshInstances"][0])

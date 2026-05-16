@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import base64
 import json
+import math
 import pathlib
 import struct
 import sys
@@ -74,6 +75,86 @@ def write_ferry_office_canopy(output_path: pathlib.Path, overwrite: bool = True)
         indices=indices,
         name="ferry_office_canopy",
         generator="Tidebreak tools/create_simple_prop_gltf.py v0.81 ferry office canopy fallback helper",
+    )
+
+
+def write_service_yard_cart_body(output_path: pathlib.Path, overwrite: bool = True) -> None:
+    if output_path.exists() and not overwrite:
+        raise FileExistsError(f"{output_path} already exists; pass --overwrite to replace it")
+
+    vertices: list[tuple[float, float, float]] = []
+    indices: list[int] = []
+    _append_tapered_box(
+        vertices,
+        indices,
+        y_min=0.18,
+        y_max=0.62,
+        lower_half_extents=(0.58, 0.96),
+        upper_half_extents=(0.48, 0.84),
+    )
+    _append_tapered_box(
+        vertices,
+        indices,
+        y_min=0.54,
+        y_max=0.78,
+        lower_half_extents=(0.44, 0.50),
+        upper_half_extents=(0.36, 0.42),
+        z_offset=0.38,
+    )
+    _append_box(vertices, indices, center=(-0.52, 0.78, -0.18), half_extents=(0.055, 0.12, 0.62))
+    _append_box(vertices, indices, center=(0.52, 0.78, -0.18), half_extents=(0.055, 0.12, 0.62))
+    _append_box(vertices, indices, center=(0.0, 0.78, -0.76), half_extents=(0.52, 0.12, 0.055))
+
+    _write_embedded_gltf(
+        output_path=output_path,
+        vertices=vertices,
+        indices=indices,
+        name="service_yard_cart_body",
+        generator="Tidebreak tools/create_simple_prop_gltf.py v0.84 service yard cart body fallback helper",
+    )
+
+
+def write_service_yard_cart_cabin(output_path: pathlib.Path, overwrite: bool = True) -> None:
+    if output_path.exists() and not overwrite:
+        raise FileExistsError(f"{output_path} already exists; pass --overwrite to replace it")
+
+    vertices: list[tuple[float, float, float]] = []
+    indices: list[int] = []
+    _append_tapered_box(
+        vertices,
+        indices,
+        y_min=0.62,
+        y_max=1.08,
+        lower_half_extents=(0.38, 0.36),
+        upper_half_extents=(0.30, 0.28),
+        z_offset=-0.18,
+        upper_z_offset=-0.08,
+    )
+    _append_box(vertices, indices, center=(0.0, 1.14, -0.10), half_extents=(0.36, 0.055, 0.34))
+
+    _write_embedded_gltf(
+        output_path=output_path,
+        vertices=vertices,
+        indices=indices,
+        name="service_yard_cart_cabin",
+        generator="Tidebreak tools/create_simple_prop_gltf.py v0.84 service yard cart cabin fallback helper",
+    )
+
+
+def write_service_yard_cart_wheel(output_path: pathlib.Path, overwrite: bool = True) -> None:
+    if output_path.exists() and not overwrite:
+        raise FileExistsError(f"{output_path} already exists; pass --overwrite to replace it")
+
+    vertices: list[tuple[float, float, float]] = []
+    indices: list[int] = []
+    _append_wheel_cylinder(vertices, indices, radius=0.27, half_width=0.13, segments=12)
+
+    _write_embedded_gltf(
+        output_path=output_path,
+        vertices=vertices,
+        indices=indices,
+        name="service_yard_cart_wheel",
+        generator="Tidebreak tools/create_simple_prop_gltf.py v0.84 service yard cart wheel fallback helper",
     )
 
 
@@ -165,7 +246,14 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Create a tiny original Tidebreak fallback prop glTF.")
     parser.add_argument(
         "--kind",
-        choices=("ferry-notice-board", "clearance-tag", "ferry-office-canopy"),
+        choices=(
+            "ferry-notice-board",
+            "clearance-tag",
+            "ferry-office-canopy",
+            "service-yard-cart-body",
+            "service-yard-cart-cabin",
+            "service-yard-cart-wheel",
+        ),
         default="ferry-notice-board",
         help="Prop kind to generate.",
     )
@@ -182,6 +270,12 @@ def main() -> int:
             write_clearance_tag(output_path, overwrite=args.overwrite)
         elif args.kind == "ferry-office-canopy":
             write_ferry_office_canopy(output_path, overwrite=args.overwrite)
+        elif args.kind == "service-yard-cart-body":
+            write_service_yard_cart_body(output_path, overwrite=args.overwrite)
+        elif args.kind == "service-yard-cart-cabin":
+            write_service_yard_cart_cabin(output_path, overwrite=args.overwrite)
+        elif args.kind == "service-yard-cart-wheel":
+            write_service_yard_cart_wheel(output_path, overwrite=args.overwrite)
         else:
             write_ferry_notice_board(output_path, overwrite=args.overwrite)
     except FileExistsError as exc:
@@ -251,6 +345,73 @@ def _append_roof_canopy(
     ]
     for face in face_indices:
         indices.extend(base_index + index for index in face)
+
+
+def _append_tapered_box(
+    vertices: list[tuple[float, float, float]],
+    indices: list[int],
+    y_min: float,
+    y_max: float,
+    lower_half_extents: tuple[float, float],
+    upper_half_extents: tuple[float, float],
+    z_offset: float = 0.0,
+    upper_z_offset: float | None = None,
+) -> None:
+    lower_x, lower_z = lower_half_extents
+    upper_x, upper_z = upper_half_extents
+    top_z_offset = z_offset if upper_z_offset is None else upper_z_offset
+    base_index = len(vertices)
+    vertices.extend(
+        [
+            (-lower_x, y_min, z_offset - lower_z),
+            (lower_x, y_min, z_offset - lower_z),
+            (lower_x, y_min, z_offset + lower_z),
+            (-lower_x, y_min, z_offset + lower_z),
+            (-upper_x, y_max, top_z_offset - upper_z),
+            (upper_x, y_max, top_z_offset - upper_z),
+            (upper_x, y_max, top_z_offset + upper_z),
+            (-upper_x, y_max, top_z_offset + upper_z),
+        ]
+    )
+    face_indices = [
+        (0, 1, 2, 0, 2, 3),
+        (4, 7, 6, 4, 6, 5),
+        (0, 4, 5, 0, 5, 1),
+        (1, 5, 6, 1, 6, 2),
+        (2, 6, 7, 2, 7, 3),
+        (3, 7, 4, 3, 4, 0),
+    ]
+    for face in face_indices:
+        indices.extend(base_index + index for index in face)
+
+
+def _append_wheel_cylinder(
+    vertices: list[tuple[float, float, float]],
+    indices: list[int],
+    radius: float,
+    half_width: float,
+    segments: int,
+) -> None:
+    base_index = len(vertices)
+    for x in (-half_width, half_width):
+        for segment in range(segments):
+            angle = (segment / segments) * math.tau
+            vertices.append((x, radius * 0.96 + radius * math.sin(angle), radius * math.cos(angle)))
+
+    left_center = len(vertices)
+    vertices.append((-half_width, radius * 0.96, 0.0))
+    right_center = len(vertices)
+    vertices.append((half_width, radius * 0.96, 0.0))
+
+    for segment in range(segments):
+        next_segment = (segment + 1) % segments
+        left_a = base_index + segment
+        left_b = base_index + next_segment
+        right_a = base_index + segments + segment
+        right_b = base_index + segments + next_segment
+        indices.extend([left_a, right_a, right_b, left_a, right_b, left_b])
+        indices.extend([left_center, left_b, left_a])
+        indices.extend([right_center, right_a, right_b])
 
 
 def _align4(value: int) -> int:

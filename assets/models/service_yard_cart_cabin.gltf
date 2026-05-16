@@ -1,0 +1,90 @@
+{
+  "asset": {
+    "version": "2.0",
+    "generator": "Tidebreak tools/create_simple_prop_gltf.py v0.84 service yard cart cabin fallback helper",
+    "extras": {
+      "tidebreakSource": "project-original fallback geometry",
+      "notBlenderExport": true
+    }
+  },
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "mesh": 0,
+      "name": "service_yard_cart_cabin"
+    }
+  ],
+  "meshes": [
+    {
+      "name": "service_yard_cart_cabin",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0
+          },
+          "indices": 1,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 336,
+      "uri": "data:application/octet-stream;base64,XI/CvlK4Hj9xPQq/XI/CPlK4Hj9xPQq/XI/CPlK4Hj/sUTg+XI/CvlK4Hj/sUTg+mpmZvnE9ij/sUbi+mpmZPnE9ij/sUbi+mpmZPnE9ij/NzEw+mpmZvnE9ij/NzEw+7FG4vkjhij+uR+G+7FG4Pkjhij+uR+G+7FG4PsP1mD+uR+G+7FG4vsP1mD+uR+G+7FG4vkjhij+PwnU+7FG4Pkjhij+PwnU+7FG4PsP1mD+PwnU+7FG4vsP1mD+PwnU+AAABAAIAAAACAAMABAAHAAYABAAGAAUAAAAEAAUAAAAFAAEAAQAFAAYAAQAGAAIAAgAGAAcAAgAHAAMAAwAHAAQAAwAEAAAACAAJAAoACAAKAAsADQAMAA8ADQAPAA4ADAAIAAsADAALAA8ACQANAA4ACQAOAAoACwAKAA4ACwAOAA8ADAANAAkADAAJAAgA"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 192,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 192,
+      "byteLength": 144,
+      "target": 34963
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 16,
+      "type": "VEC3",
+      "min": [
+        -0.38,
+        0.62,
+        -0.54
+      ],
+      "max": [
+        0.38,
+        1.195,
+        0.24
+      ]
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 0,
+      "componentType": 5123,
+      "count": 72,
+      "type": "SCALAR",
+      "min": [
+        0
+      ],
+      "max": [
+        15
+      ]
+    }
+  ]
+}

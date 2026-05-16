@@ -1,0 +1,90 @@
+{
+  "asset": {
+    "version": "2.0",
+    "generator": "Tidebreak tools/create_simple_prop_gltf.py v0.84 service yard cart body fallback helper",
+    "extras": {
+      "tidebreakSource": "project-original fallback geometry",
+      "notBlenderExport": true
+    }
+  },
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "mesh": 0,
+      "name": "service_yard_cart_body"
+    }
+  ],
+  "meshes": [
+    {
+      "name": "service_yard_cart_body",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0
+          },
+          "indices": 1,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 840,
+      "uri": "data:application/octet-stream;base64,4XoUv+xROD6PwnW/4XoUP+xROD6PwnW/4XoUP+xROD6PwnU/4XoUv+xROD6PwnU/j8L1vlK4Hj89Cle/j8L1PlK4Hj89Cle/j8L1PlK4Hj89Clc/j8L1vlK4Hj89Clc/rkfhvnE9Cj+PwvW9rkfhPnE9Cj+PwvW9rkfhPnE9Cj+uR2E/rkfhvnE9Cj+uR2E/7FG4vhSuRz8K1yO97FG4PhSuRz8K1yO97FG4PhSuRz/NzEw/7FG4vhSuRz/NzEw/MzMTv8P1KD/NzEy/exTuvsP1KD/NzEy/exTuvmZmZj/NzEy/MzMTv2ZmZj/NzEy/MzMTv8P1KD+uR+E+exTuvsP1KD+uR+E+exTuvmZmZj+uR+E+MzMTv2ZmZj+uR+E+exTuPsP1KD/NzEy/MzMTP8P1KD/NzEy/MzMTP2ZmZj/NzEy/exTuPmZmZj/NzEy/exTuPsP1KD+uR+E+MzMTP8P1KD+uR+E+MzMTP2ZmZj+uR+E+exTuPmZmZj+uR+E+uB4Fv8P1KD/Xo1C/uB4FP8P1KD/Xo1C/uB4FP2ZmZj/Xo1C/uB4Fv2ZmZj/Xo1C/uB4Fv8P1KD/hejS/uB4FP8P1KD/hejS/uB4FP2ZmZj/hejS/uB4Fv2ZmZj/hejS/AAABAAIAAAACAAMABAAHAAYABAAGAAUAAAAEAAUAAAAFAAEAAQAFAAYAAQAGAAIAAgAGAAcAAgAHAAMAAwAHAAQAAwAEAAAACAAJAAoACAAKAAsADAAPAA4ADAAOAA0ACAAMAA0ACAANAAkACQANAA4ACQAOAAoACgAOAA8ACgAPAAsACwAPAAwACwAMAAgAEAARABIAEAASABMAFQAUABcAFQAXABYAFAAQABMAFAATABcAEQAVABYAEQAWABIAEwASABYAEwAWABcAFAAVABEAFAARABAAGAAZABoAGAAaABsAHQAcAB8AHQAfAB4AHAAYABsAHAAbAB8AGQAdAB4AGQAeABoAGwAaAB4AGwAeAB8AHAAdABkAHAAZABgAIAAhACIAIAAiACMAJQAkACcAJQAnACYAJAAgACMAJAAjACcAIQAlACYAIQAmACIAIwAiACYAIwAmACcAJAAlACEAJAAhACAA"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 480,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 480,
+      "byteLength": 360,
+      "target": 34963
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 40,
+      "type": "VEC3",
+      "min": [
+        -0.58,
+        0.18,
+        -0.96
+      ],
+      "max": [
+        0.58,
+        0.9,
+        0.96
+      ]
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 0,
+      "componentType": 5123,
+      "count": 180,
+      "type": "SCALAR",
+      "min": [
+        0
+      ],
+      "max": [
+        39
+      ]
+    }
+  ]
+}
