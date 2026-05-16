@@ -165,6 +165,71 @@ Next direction:
 
 - Return to camera-aware Jolt obstacle route/tuning if vehicle promotion is the priority, or add a small visual prop/cue for the clearance tag if endpoint presentation still feels too abstract.
 
+## v0.56 Camera-aware Vehicle Obstacle Evidence (2026-05-16)
+
+Selected milestone:
+
+- Extend the deterministic-vs-Jolt vehicle runtime comparison with camera-aware obstacle telemetry and use it to make a provisional default-runtime decision.
+
+Candidate triage:
+
+- Camera-aware Jolt obstacle route: high vehicle-decision impact, medium risk, validates through Python report tests, C++ QA tests, Jolt CTest, vehicle runtime QA, and `scripts\verify.ps1`.
+- Clearance-tag visual cue: lower risk, but mostly presentation polish after v0.55 already improved readability.
+- Another content beat: medium content impact, but vehicle promotion evidence was the clearer roadmap gap after two content/readability milestones.
+
+Why selected:
+
+- v0.53 showed Jolt and deterministic steering both stayed in bounds but produced very different obstacle-proxy paths.
+- v0.55 made the new content chain readable, so it was safe to return to the vehicle evidence gap without stacking another player-facing-only change.
+
+Definition of Done:
+
+- `ferry-office-vehicle-runtime-comparison` reports camera-follow yaw stability telemetry for each obstacle check.
+- `tools\vehicle_runtime_qa.py` rejects stale obstacle reports missing camera telemetry.
+- Jolt vehicle runtime QA passes but can still recommend `defer` when obstacle progress diverges.
+- Default `scripts\verify.ps1`, Jolt CTest, and `git diff --check` pass.
+
+Implementation notes:
+
+- Added `maxCameraYawDeltaDegrees` and `finalCameraYawDegrees` to obstacle checks.
+- The obstacle QA now simulates the same vehicle-follow camera tuning used by live playtest mode during the scripted obstacle route.
+- Tightened the runtime comparison recommendation: a stable report can pass while still recommending `defer` when deterministic and Jolt obstacle forward progress diverge.
+- Added Python validation coverage for stale obstacle reports that lack camera telemetry.
+
+Commands and results:
+
+- `python tests\test_vehicle_runtime_qa.py`: passed, 7 tests.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: failed as expected before implementation because `ObstacleCheck::maxCameraYawDeltaDegrees` did not exist.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: passed after implementation.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt --target EngineApp`: passed.
+- `python tools\vehicle_runtime_qa.py`: passed; backend=`jolt`, samples=5, controlChecks=4, routeChecks=2, obstacleChecks=2, maxPositionDelta=1.75, recommendation=`defer`.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: initially failed because the Jolt `EngineCoreTests.exe` target was stale from before v0.54 and expected the old scene interactable count.
+- `cmake --build --preset windows-vs2022-debug-jolt --target EngineCoreTests`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 15/15 tests.
+- `python tools\vehicle_runtime_qa.py`: passed again after the Jolt test rebuild; recommendation remained `defer`.
+- `scripts\verify.ps1`: passed; doctor, configure, build, CTest 11/11, scene validation, asset validation, mesh report, and smoke run completed.
+
+Automated evidence generated:
+
+- `build\physics\ferry-office-vehicle-runtime-comparison-report.json` now includes camera-aware obstacle telemetry.
+- Deterministic obstacle proxy: frameCount=150, maxLateralOffset=1.96, minDistanceToObstacle=1.02, finalPosition approximately `(18.82, -0.24)`, finalYaw=84.0 degrees, maxCameraYawDelta=4.8 degrees, finalCameraYaw=82.8 degrees.
+- Jolt obstacle proxy: frameCount=150, maxLateralOffset=0.29, minDistanceToObstacle=0.86, finalPosition approximately `(11.97, -2.41)`, finalYaw=89.3 degrees, maxCameraYawDelta=2.9 degrees, finalCameraYaw=88.3 degrees.
+
+Provisional decision:
+
+- Keep deterministic as the default vehicle runtime.
+- Keep Jolt available as opt-in because it is stable, route-capable, and camera-readable, but do not promote it to default while the obstacle proxy still shows much lower forward progress than deterministic.
+
+Remaining limitations:
+
+- The obstacle route is still an automated proxy, not physical cones, collision against authored obstacles, camera obstruction, or a full human driving feel test.
+- The report validates camera yaw stability, not camera framing, occlusion, nausea, or readability under arbitrary player look input.
+
+Next direction:
+
+- Tune Jolt steering/acceleration for obstacle-route forward progress, or add a collision-backed obstacle route before revisiting default promotion.
+
 ## v0.49 Opt-in Jolt Live-loop Playthrough QA (2026-05-16)
 
 Selected milestone:

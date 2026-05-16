@@ -2,6 +2,7 @@
 
 #include "game/SceneDefinition.h"
 #include "game/SceneLoader.h"
+#include "game/ThirdPersonCamera.h"
 #include "game/VehicleController.h"
 
 #include <algorithm>
@@ -90,6 +91,8 @@ nlohmann::json ObstacleCheckJson(const FerryOfficeVehicleRuntimeComparisonResult
         {"frameCount", check.frameCount},
         {"maxLateralOffset", check.maxLateralOffset},
         {"minDistanceToObstacle", check.minDistanceToObstacle},
+        {"maxCameraYawDeltaDegrees", check.maxCameraYawDeltaDegrees},
+        {"finalCameraYawDegrees", engine::Degrees(check.finalCameraYawRadians)},
         {"finalPosition", Vec3Json(check.finalPosition)},
         {"finalYawDegrees", engine::Degrees(check.finalYawRadians)},
         {"hitBounds", check.hitBounds},
@@ -422,6 +425,37 @@ float ObstacleSteerForFrame(int frame)
     return 0.0f;
 }
 
+ThirdPersonCamera BuildObstacleCamera(float yawRadians)
+{
+    ThirdPersonCamera camera;
+    ThirdPersonCameraSettings settings;
+    settings.distance = 6.75f;
+    settings.heightOffset = 1.95f;
+    settings.smoothing = 9.0f;
+    settings.targetYawFollowStrength = 3.5f;
+    camera.setSettings(settings);
+    camera.setYawRadians(yawRadians);
+    return camera;
+}
+
+void UpdateObstacleCameraTelemetry(
+    FerryOfficeVehicleRuntimeComparisonResult::ObstacleCheck& check,
+    ThirdPersonCamera& camera,
+    engine::Vec3 vehiclePosition,
+    float vehicleYawRadians,
+    float dt)
+{
+    CameraTarget target;
+    target.position = vehiclePosition;
+    target.yawRadians = vehicleYawRadians;
+    engine::InputState cameraInput;
+    camera.update(dt, cameraInput, target);
+    check.finalCameraYawRadians = camera.state().yawRadians;
+    check.maxCameraYawDeltaDegrees = std::max(
+        check.maxCameraYawDeltaDegrees,
+        AbsYawDeltaDegrees(vehicleYawRadians, camera.state().yawRadians));
+}
+
 FerryOfficeVehicleRuntimeComparisonResult::ObstacleCheck RunDeterministicObstacleCheck(const SceneVehicleDefinition& vehicle)
 {
     FerryOfficeVehicleRuntimeComparisonResult::ObstacleCheck check;
@@ -431,6 +465,7 @@ FerryOfficeVehicleRuntimeComparisonResult::ObstacleCheck RunDeterministicObstacl
     check.finalYawRadians = vehicle.spawnYawRadians;
 
     VehicleController controller = BuildDeterministicVehicle(vehicle);
+    ThirdPersonCamera camera = BuildObstacleCamera(vehicle.spawnYawRadians);
     for (int frame = 0; frame < ObstacleCheckMaxFrames; ++frame) {
         engine::InputState input;
         input.moveForward = ObstacleCheckThrottle;
@@ -445,6 +480,7 @@ FerryOfficeVehicleRuntimeComparisonResult::ObstacleCheck RunDeterministicObstacl
         check.hitBounds = check.hitBounds || state.hitBoundsThisFrame;
         check.maxLateralOffset = std::max(check.maxLateralOffset, std::abs(state.position.z - ObstacleLaneCenterZ));
         check.minDistanceToObstacle = std::min(check.minDistanceToObstacle, HorizontalDistance(state.position, {ObstacleProxyX, 0.0f, ObstacleProxyZ}));
+        UpdateObstacleCameraTelemetry(check, camera, state.position, state.yawRadians, 1.0f / 60.0f);
     }
 
     check.clearedObstacleProxy =
@@ -466,6 +502,7 @@ FerryOfficeVehicleRuntimeComparisonResult::ObstacleCheck RunAdapterObstacleCheck
     check.minDistanceToObstacle = std::numeric_limits<float>::max();
     check.finalPosition = config.spawnPosition;
     check.finalYawRadians = config.spawnYawRadians;
+    ThirdPersonCamera camera = BuildObstacleCamera(config.spawnYawRadians);
 
     std::unique_ptr<engine::physics::IVehicleRuntimeAdapter> adapter =
         engine::physics::CreateVehicleRuntimeAdapter(backend);
@@ -484,6 +521,7 @@ FerryOfficeVehicleRuntimeComparisonResult::ObstacleCheck RunAdapterObstacleCheck
         check.hitBounds = check.hitBounds || state.outOfBounds;
         check.maxLateralOffset = std::max(check.maxLateralOffset, std::abs(state.position.z - ObstacleLaneCenterZ));
         check.minDistanceToObstacle = std::min(check.minDistanceToObstacle, HorizontalDistance(state.position, {ObstacleProxyX, 0.0f, ObstacleProxyZ}));
+        UpdateObstacleCameraTelemetry(check, camera, state.position, state.yawRadians, config.fixedStepSeconds);
         if (!stepped || state.wheelContactCount < 2) {
             break;
         }
@@ -855,11 +893,23 @@ FerryOfficeVehicleRuntimeComparisonResult RunFerryOfficeVehicleRuntimeComparison
         && std::all_of(result.obstacleChecks.begin(), result.obstacleChecks.end(), [](const auto& check) {
                return check.passed;
            });
+    float obstacleProgressDelta = 0.0f;
+    if (result.obstacleChecks.size() == 2) {
+        obstacleProgressDelta =
+            std::abs(result.obstacleChecks[0].finalPosition.x - result.obstacleChecks[1].finalPosition.x);
+    }
     result.passed = deterministicStable && adapterStable && closeEnough && controlsStable && routeStable && obstacleStable && !result.deterministicSamples.empty();
-    result.recommendation = result.passed ? "promote" : "defer";
-    result.recommendationReason = result.passed
-        ? "The selected vehicle runtime adapter stayed stable, close enough to compare, passed compact control checks, reached the authored service-run checkpoint, and passed the obstacle-proxy steering check."
-        : "The selected vehicle runtime adapter needs more work before live switch promotion.";
+    const bool obstacleProgressAligned = obstacleProgressDelta <= 4.0f;
+    result.recommendation = result.passed && obstacleProgressAligned ? "promote" : "defer";
+    if (result.passed && obstacleProgressAligned) {
+        result.recommendationReason =
+            "The selected vehicle runtime adapter stayed stable, close enough to compare, passed compact control checks, reached the authored service-run checkpoint, and kept obstacle-proxy progress aligned.";
+    } else if (result.passed) {
+        result.recommendationReason =
+            "The selected vehicle runtime adapter stayed stable and camera-readable, but obstacle-proxy progress still diverges enough to keep it opt-in.";
+    } else {
+        result.recommendationReason = "The selected vehicle runtime adapter needs more work before live switch promotion.";
+    }
     if (!result.passed) {
         result.error = "Vehicle runtime comparison did not meet stability or comparison thresholds.";
     }

@@ -3996,6 +3996,9 @@ void TestFerryOfficeVehicleRuntimeComparisonQaWritesReport()
         Expect(check.passed && check.clearedObstacleProxy,
             "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
             check.message);
+        Expect(check.maxCameraYawDeltaDegrees >= 0.0f,
+            "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+            "Runtime comparison obstacle checks should include camera-follow yaw stability telemetry.");
     }
     Expect(result.maxPositionDelta <= 0.75f,
         "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
@@ -4028,6 +4031,10 @@ void TestFerryOfficeVehicleRuntimeComparisonQaWritesReport()
     Expect(report["obstacleChecks"].size() == 2,
         "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
         "Runtime comparison report should include obstacle-proxy steering checks.");
+    Expect(report["obstacleChecks"][0].contains("maxCameraYawDeltaDegrees")
+            && report["obstacleChecks"][0].contains("finalCameraYawDegrees"),
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Runtime comparison report should expose camera-aware obstacle telemetry.");
 
     std::filesystem::remove(reportPath);
 }

@@ -118,7 +118,13 @@ def _require_obstacle_checks(report: dict[str, Any]) -> list[dict[str, Any]]:
             raise ValueError(f"Vehicle runtime obstacle check hit authored bounds: {check}")
         if int(check.get("frameCount", -1)) <= 0:
             raise ValueError(f"Vehicle runtime obstacle check is missing frame count: {check}")
-        if "maxLateralOffset" not in check or "minDistanceToObstacle" not in check or "finalPosition" not in check:
+        if (
+            "maxLateralOffset" not in check
+            or "minDistanceToObstacle" not in check
+            or "finalPosition" not in check
+            or "maxCameraYawDeltaDegrees" not in check
+            or "finalCameraYawDegrees" not in check
+        ):
             raise ValueError(f"Vehicle runtime obstacle check is missing telemetry: {check}")
 
     if "deterministic" not in backends or "jolt" not in backends:

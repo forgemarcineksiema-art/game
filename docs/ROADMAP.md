@@ -630,6 +630,14 @@ Status: implemented as a small remembered world-state consequence. Scene data no
 
 Status: implemented and validated. Playtest mode now adds `Follow-up: relay=... | log=... | road=...` for the Dock Road endpoint chain; focused tests, deterministic playthrough QA, and GDI/DX11 visual smoke pass.
 
+## v0.56 - Camera-aware Vehicle Obstacle Evidence
+
+- Extend `ferry-office-vehicle-runtime-comparison` obstacle checks with camera-follow yaw telemetry.
+- Validate deterministic and Jolt obstacle-proxy steering under the same scripted input.
+- Allow the QA report to pass while recommending `defer` if Jolt remains stable but obstacle-route progress diverges too much for default promotion.
+
+Status: implemented and validated. Both deterministic and Jolt obstacle checks stay camera-readable, with max camera yaw deltas of 4.8 and 2.9 degrees respectively, but Jolt still finishes much earlier on the route proxy (`x=11.97` versus deterministic `x=18.82`), so deterministic remains default and Jolt remains opt-in.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. With v0.55 making the longer endpoint chain more readable, the next useful milestone should either return to vehicle evidence with a camera-aware Jolt obstacle route/tuning pass or add a small visual prop/cue for the clearance tag if endpoint presentation still feels too abstract.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. With v0.56 proving Jolt is camera-readable but still under-progresses in the obstacle proxy, the next useful vehicle milestone is Jolt steering/acceleration tuning or a collision-backed obstacle route. If staying content-facing, add a small visual cue for the clearance tag rather than extending the chain again.
