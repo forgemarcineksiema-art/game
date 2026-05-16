@@ -2,6 +2,88 @@
 
 Last updated: 2026-05-16
 
+## v0.69 Storm Pump State Cues (2026-05-16)
+
+Selected milestone:
+
+- Add visible authored state cues for the storm pump job seed.
+
+Candidate milestone triage:
+
+- Storm pump state cues: impact = makes the new v0.67 job seed visibly remembered in the world; risk = low, follows the existing dynamic scene-color pattern; validation path = scene/tool tests, playthrough QA, visual smoke, `scripts\verify.ps1`.
+- Jolt live hardening/default-promotion trial: impact = high technical leverage; risk = higher and best started from a clean validated state after the content cue is not invisible.
+- Input-scripted route QA: impact = closes a known validation gap; risk = larger app/input plumbing.
+
+Why selected:
+
+- v0.67 added the storm pump job seed, and v0.68 made the vehicle direction decision. The smallest player-facing gap left by the new content was visibility: the pump and ticket changed world state but did not yet leave a local authored visual cue.
+
+Implementation notes:
+
+- Added `storm-pump-state` and `storm-pump-ticket-state` scene material keys.
+- Added `storm-pump-status-light` and `storm-pump-ticket-status-light` visual placeholders.
+- Extended `ScenePresentationState` with `stormPumpReset` and `stormPumpTicketClosed`.
+- Wired `SandboxLayer` presentation state from the new world flags.
+- Added dynamic palette tests for pump reset and ticket closeout state.
+- Updated scene tool known color keys and authored scene counts.
+
+Files changed:
+
+- `data\scenes\ferry_office.scene.json`
+- `src\game\ScenePresentation.h`
+- `src\game\ScenePresentation.cpp`
+- `src\game\SandboxLayer.cpp`
+- `tools\scene_data.py`
+- `tests\EngineCoreTests.cpp`
+- `tests\test_scene_tools.py`
+- `docs\STATUS.md`
+- `docs\ROADMAP.md`
+- `docs\CONTEXT_MAP.md`
+
+Focused validation:
+
+- `python tools\validate_scene.py`: passed.
+- `python tests\test_scene_tools.py`: passed, 44 tests.
+- `cmake --build --preset windows-vs2022-debug --target EngineApp EngineCoreTests`: passed.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `python tools\playthrough_qa.py`: passed; phase `complete`, 19 events, deterministic runtime, 139 frames to checkpoint.
+- `python tools\scene_report.py`: passed; now reports 23 scene materials and 29 visual placeholders.
+- `python tools\capture_visual_smoke.py`: passed; GDI colors=65/lumaRange=221, DX11 colors=44/lumaRange=221 with WARP fallback in this environment.
+- `python tools\scale_audit.py`: passed.
+- `python tools\mesh_report.py`: passed.
+- `python tools\validate_assets.py`: passed.
+
+Automated evidence generated:
+
+- `build\playthroughs\ferry-office-service-call-report.json`
+- `build\captures\capture_visual_smoke_report.json`
+
+Decision note:
+
+- Decision made: represent storm pump reset and ticket closeout with compact scene-authored status lights, not bespoke mesh assets yet.
+- Alternatives considered: leave the job seed text-only, build a custom pump asset, or start Jolt default-promotion work immediately.
+- Evidence used: existing relay/clearance/handoff dynamic palette pattern, green scene validation, green playthrough QA, and green visual smoke.
+- Why this helps Tidebreak: the new second job seed now produces visible local state changes, keeping the authored place readable while staying cheap to validate.
+- Revisit when: storm pump work becomes a fuller job with bespoke assets, animation, save/load, or stronger route-walking QA.
+
+Remaining limitations:
+
+- The cues are placeholder lights, not a pump animation or custom ticket-board prop.
+- Visual smoke proves renderer health and color diversity, not exact cue salience from every player camera angle.
+
+Final validation:
+
+- `scripts\verify.ps1`: passed; doctor, configure, build, CTest, scene validation, asset validation, mesh report, and null-renderer smoke all completed successfully.
+- `git diff --check`: passed with only expected CRLF normalization warnings.
+
+Commit/push:
+
+- Pending at status edit time.
+
+Next direction:
+
+- The next high-leverage technical milestone is Jolt live hardening/default-promotion evidence, now that the current content seed has basic visible state.
+
 ## v0.68 Provisional Jolt Vehicle Runtime Direction (2026-05-16)
 
 Selected milestone:

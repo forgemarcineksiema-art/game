@@ -746,6 +746,14 @@ Status: implemented and validated. Scene data now has 15 interactables, 15 route
 
 Status: implemented and validated. Jolt CTest passes 15/15, physics parity/contact/vehicle feasibility/runtime QA all pass after rebuilding the stale Jolt executable, and Jolt is now the preferred vehicle-runtime candidate for the next live hardening/default-promotion milestone while deterministic remains the default runtime.
 
+## v0.69 - Storm Pump State Cues
+
+- Add compact authored visual state cues for the storm pump reset and Ferry Office pump ticket closeout.
+- Drive them from `stormPumpReset` and `stormPumpTicketClosed` through the existing dynamic scene-palette path.
+- Keep the work placeholder-level and validation-friendly, not a bespoke mesh/animation asset pass.
+
+Status: implemented and validated. Scene data now has 23 authored scene materials and 29 visual placeholders; the storm pump cue shifts from warning orange to active blue, and the ticket cue shifts from pending amber to closed green.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.68, the next useful future milestone should either harden the opt-in Jolt live runtime toward a controlled default-promotion trial, or add a small storm pump visible-state cue if content readability is the higher leverage gap.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.69, the next useful future milestone should harden the opt-in Jolt live runtime toward a controlled default-promotion trial.

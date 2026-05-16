@@ -1138,10 +1138,10 @@ void TestSceneLoaderLoadsDefaultFerryOfficeScene()
     Expect(result.scene.colliders.size() == 9,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored static colliders.");
-    Expect(result.scene.visualPlaceholders.size() == 27,
+    Expect(result.scene.visualPlaceholders.size() == 29,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored visual placeholders.");
-    Expect(result.scene.sceneMaterials.size() == 21,
+    Expect(result.scene.sceneMaterials.size() == 23,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored presentation materials for every current scene color key.");
     Expect(result.scene.meshInstances.size() >= 15,
@@ -2170,6 +2170,10 @@ void TestScenePresentationDynamicPaletteStatesRemainDistinct()
     clearanceTaggedState.dockRoadClearanceTagged = true;
     ScenePresentationState handoffFiledState;
     handoffFiledState.ferryOfficeHandoffFiled = true;
+    ScenePresentationState stormPumpResetState;
+    stormPumpResetState.stormPumpReset = true;
+    ScenePresentationState stormPumpTicketClosedState;
+    stormPumpTicketClosedState.stormPumpTicketClosed = true;
 
     const engine::Color closedGate = SceneColorForKey("service-gate-state", {});
     const engine::Color openGate = SceneColorForKey("service-gate-state", openGateState);
@@ -2183,6 +2187,10 @@ void TestScenePresentationDynamicPaletteStatesRemainDistinct()
     const engine::Color clearanceTagged = SceneColorForKey("dock-road-clearance-state", clearanceTaggedState);
     const engine::Color handoffPending = SceneColorForKey("ferry-office-handoff-state", {});
     const engine::Color handoffFiled = SceneColorForKey("ferry-office-handoff-state", handoffFiledState);
+    const engine::Color stormPumpPending = SceneColorForKey("storm-pump-state", {});
+    const engine::Color stormPumpReset = SceneColorForKey("storm-pump-state", stormPumpResetState);
+    const engine::Color stormTicketPending = SceneColorForKey("storm-pump-ticket-state", {});
+    const engine::Color stormTicketClosed = SceneColorForKey("storm-pump-ticket-state", stormPumpTicketClosedState);
 
     Expect(!ColorNear(closedGate, openGate),
         "TestScenePresentationDynamicPaletteStatesRemainDistinct",
@@ -2202,6 +2210,12 @@ void TestScenePresentationDynamicPaletteStatesRemainDistinct()
     Expect(handoffFiled.g > handoffPending.g && handoffFiled.r < handoffPending.r,
         "TestScenePresentationDynamicPaletteStatesRemainDistinct",
         "Ferry Office handoff palette should shift from pending amber toward filed green after filing.");
+    Expect(stormPumpReset.b > stormPumpPending.b && stormPumpReset.g > stormPumpPending.g,
+        "TestScenePresentationDynamicPaletteStatesRemainDistinct",
+        "Storm pump palette should shift from warning orange toward active blue after reset.");
+    Expect(stormTicketClosed.g > stormTicketPending.g && stormTicketClosed.r < stormTicketPending.r,
+        "TestScenePresentationDynamicPaletteStatesRemainDistinct",
+        "Storm pump ticket palette should shift from pending amber toward closed green.");
 }
 
 void TestScenePresentationMaterialPresetsStayBoundedForAuthoredKeys()

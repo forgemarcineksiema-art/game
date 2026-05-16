@@ -47,6 +47,8 @@ KNOWN_COLOR_KEYS = {
     "service-gate-state",
     "service-vehicle-cabin-placeholder",
     "service-vehicle-placeholder",
+    "storm-pump-state",
+    "storm-pump-ticket-state",
     "warning-service-orange",
     "weathered-yard-rail",
     "wet-timber",

@@ -20,7 +20,7 @@ Recent history forms a clear arc:
 - v0.32: deterministic Ferry Office playthrough QA.
 - v0.33: Jolt static scene-query parity QA.
 - v0.34: Jolt character/contact probe QA.
-- v0.45-v0.68: Jolt vehicle runtime controls, service-run route proxy, route-pace tuning, deterministic service-vehicle runtime playthrough QA, opt-in Jolt first-job live-loop QA, the Dock Road Relay follow-up beat, relay/log/clearance endpoint consequences, compact playtest follow-up text, camera-aware obstacle-proxy vehicle steering evidence, a clearance-tag visual cue, a tiny original clearance-tag mesh prop, Jolt obstacle-progress tuning, a compact Harbor Parts return micro-slice, a follow-up next-step readability line, scene-authored action bindings for simple/gated flag beats, a Ferry Office Work Board signoff endpoint, a Ferry Office handoff note endpoint, collision-backed obstacle replay telemetry in vehicle runtime QA, a dynamic handoff-filed visual state cue, a storm pump job seed, and a provisional Jolt vehicle-runtime direction decision.
+- v0.45-v0.69: Jolt vehicle runtime controls, service-run route proxy, route-pace tuning, deterministic service-vehicle runtime playthrough QA, opt-in Jolt first-job live-loop QA, the Dock Road Relay follow-up beat, relay/log/clearance endpoint consequences, compact playtest follow-up text, camera-aware obstacle-proxy vehicle steering evidence, a clearance-tag visual cue, a tiny original clearance-tag mesh prop, Jolt obstacle-progress tuning, a compact Harbor Parts return micro-slice, a follow-up next-step readability line, scene-authored action bindings for simple/gated flag beats, a Ferry Office Work Board signoff endpoint, a Ferry Office handoff note endpoint, collision-backed obstacle replay telemetry in vehicle runtime QA, a dynamic handoff-filed visual state cue, a storm pump job seed, a provisional Jolt vehicle-runtime direction decision, and visible storm pump/ticket state cues.
 
 ## Architecture Map
 
@@ -85,7 +85,7 @@ Recent history forms a clear arc:
 
 `data/scenes/ferry_office.scene.json`
 
-- Current source of truth for Ferry Office layout and presentation intent: player start, scene materials, colliders, visual placeholders, mesh assets/instances, interactables, traversal, vehicle, route markers, objective markers. After v0.67 it includes 21 scene materials, 27 visual placeholders, 15 interactables, 15 route markers, and 14 objective markers, including the handoff-filed status cue and storm pump job seed.
+- Current source of truth for Ferry Office layout and presentation intent: player start, scene materials, colliders, visual placeholders, mesh assets/instances, interactables, traversal, vehicle, route markers, objective markers. After v0.69 it includes 23 scene materials, 29 visual placeholders, 15 interactables, 15 route markers, and 14 objective markers, including the handoff-filed status cue, storm pump job seed, and storm pump/ticket state cues.
 
 `src/game/PrototypeWorld.*`
 
@@ -367,7 +367,7 @@ Validation:
 
 ## Recommendation
 
-Best next move: harden the opt-in Jolt live runtime toward a controlled default-promotion trial; if content readability is the priority, add a tiny visible state cue for the storm pump job seed.
+Best next move: harden the opt-in Jolt live runtime toward a controlled default-promotion trial.
 
 Reason: v0.35 proved Jolt vehicle feasibility, v0.36 proved a frame-stepped runtime adapter comparison, v0.37 exposed that adapter through `--vehicle-runtime jolt`, v0.45 hardened tap/brake/reverse/coast checks, v0.46 added automated service-run route checks, v0.47 tuned Jolt route pace under a 240-frame budget, v0.48 proved the deterministic first-job vehicle beat can enter, drive, checkpoint, exit, and confirm through runtime controller behavior, v0.49 proved the same beat through the opt-in Jolt path, v0.59 closes the camera-aware obstacle proxy progress gap, v0.65 adds collision-backed obstacle replay evidence, and v0.68 makes Jolt the preferred vehicle-runtime candidate for the next hardening/default-promotion milestone. Deterministic remains default until that milestone proves live play risk is acceptable.
 

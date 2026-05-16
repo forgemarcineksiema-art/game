@@ -882,6 +882,8 @@ void SandboxLayer::drawSceneVisualPlaceholders(engine::IRenderer& renderer)
         m_scene.worldState().isFlagSet(WorldFlag::DockRoadRelayReset),
         m_scene.worldState().isFlagSet(WorldFlag::DockRoadClearanceTagged),
         m_scene.worldState().isFlagSet(WorldFlag::FerryOfficeHandoffFiled),
+        m_scene.worldState().isFlagSet(WorldFlag::StormPumpReset),
+        m_scene.worldState().isFlagSet(WorldFlag::StormPumpTicketClosed),
     };
     const bool fullDebug = m_uiMode == engine::UiMode::Debug;
 
@@ -1125,6 +1127,8 @@ void SandboxLayer::drawStaticMeshDebug(engine::IRenderer& renderer)
         m_scene.worldState().isFlagSet(WorldFlag::DockRoadRelayReset),
         m_scene.worldState().isFlagSet(WorldFlag::DockRoadClearanceTagged),
         m_scene.worldState().isFlagSet(WorldFlag::FerryOfficeHandoffFiled),
+        m_scene.worldState().isFlagSet(WorldFlag::StormPumpReset),
+        m_scene.worldState().isFlagSet(WorldFlag::StormPumpTicketClosed),
     };
 
     for (const SceneMeshInstanceDefinition& authored : m_sceneDefinition.meshInstances) {
