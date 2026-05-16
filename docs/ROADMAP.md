@@ -509,6 +509,16 @@ Status: implemented as a data-ownership step after v0.40. The current presentati
 
 Status: implemented as a focused visual surface pass. The Ferry Office scene now references 9 mesh assets and 40 mesh instances, including `blender_wet_road_surface.gltf` used three times to make the service-yard and dock-road slabs read less like flat debug plates while keeping all gameplay collision and vehicle behavior unchanged.
 
+## v0.43 - Harbor Backdrop / Island Silhouette Pass
+
+- Add one controlled Blender-authored harbor backdrop mesh for distant low shoreline and harbor-utility silhouettes.
+- Use it around the existing dock-start and dock-road water-edge bands so the Ferry Office scene reads more like an island pier and less like a road floating in empty space.
+- Add a small scene-authored material key for misty island ground/backdrop silhouettes.
+- Preserve current gameplay, collision, vehicle bounds, road surfaces, scene validation, asset validation, DX11 visual smoke, and playthrough QA.
+- Avoid terrain, water simulation, road splines, streaming world, city expansion, textures/materials/PBR, collision import, or map-boundary behavior.
+
+Status: implemented as a background composition pass. The Ferry Office scene now references 10 mesh assets and 43 mesh instances, including `blender_harbor_backdrop.gltf` used three times around the existing water-edge cues while keeping all gameplay and collision unchanged.
+
 ## Recommended Next Goal
 
 Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. The next vehicle decision should be a short human comparison pass between normal deterministic driving and `--vehicle-runtime jolt`, then either defer Jolt vehicle promotion with concrete feel issues or promote one narrow follow-up to improve the switched path. Avoid Job #2 until the first job is automatically validated, comfortable by hand, and no longer blocked by core movement/vehicle confidence.

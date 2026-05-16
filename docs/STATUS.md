@@ -5581,6 +5581,40 @@ Remaining limitations:
 - There are still no texture maps, UVs, normal input in the renderer, shader material files, PBR terms, authored lights, terrain, or production mesh resources.
 - The next visual slice should either add a data-authored material preset table or use this preset model while replacing another high-value placeholder cluster with better geometry.
 
+## v0.43 Harbor Backdrop / Island Silhouette Pass (2026-05-16)
+
+Goal:
+
+- Make the Ferry Office dock-road and starting pier read less like isolated debug platforms by adding a quiet island/harbor backdrop around existing water-edge bands.
+- Keep this strictly visual: no terrain, no world streaming, no water simulation, no collision, no map boundary behavior, no vehicle physics change, no Job #2, and no city/map expansion.
+- Preserve scene-data validation, asset provenance, DX11 visual smoke, playthrough QA, and the normal `scripts\verify.ps1` gate.
+
+Implementation notes:
+
+- Added `tools\blender\create_tidebreak_harbor_backdrop.py`, a controlled headless Blender 5.1.1 script that authors a low Tidebreak-coordinate distant shore/harbor silhouette, exports `GLTF_SEPARATE`, post-embeds the buffer, and writes `assets\models\blender_harbor_backdrop.gltf`.
+- Added scene material `misty-island-ground` and wired it through `ScenePresentation` and `tools\scene_data.py`.
+- Added scene mesh asset `blender-harbor-backdrop-mesh` with project-original license/provenance and authored bounds.
+- Added three visual-only mesh instances:
+  - `mesh-dock-road-harbor-backdrop`
+  - `mesh-dock-start-left-harbor-backdrop`
+  - `mesh-dock-start-right-harbor-backdrop`
+- Scene now reports 18 scene materials, 10 mesh assets, 43 mesh instances, and 10 referenced model files.
+- Added Python scene-tool coverage for the v0.43 asset path/provenance, material key, and three backdrop instances.
+- Updated asset, Blender, mesh rendering, scene authoring, roadmap, decision, context-map, manual-test, and art-direction docs.
+
+Validation:
+
+- `blender --background --python tools\blender\create_tidebreak_harbor_backdrop.py`: passed and exported `assets\models\blender_harbor_backdrop.gltf`.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests; build\windows-vs2022-debug\Debug\EngineCoreTests.exe; python tests\test_scene_tools.py; python tools\validate_scene.py; python tools\validate_assets.py; python tools\mesh_report.py; python tools\scale_audit.py`: passed after adding `misty-island-ground` to the Python scene validator; mesh report shows `blender_harbor_backdrop.gltf` has 240 vertices, 360 indices, 3 uses, and referenced=yes.
+- `cmake --build --preset windows-vs2022-debug --target EngineApp; python tools\capture_visual_smoke.py; python tools\playthrough_qa.py`: passed; GDI and DX11 captures were nonblank, DX11 still used WARP fallback, playthrough phase=`complete`, events=10.
+- `scripts\verify.ps1`: passed; doctor completed with known PATH warnings, configure/build succeeded, CTest passed 11/11, scene validation passed, asset validation passed, mesh report found 10 model files and 43 mesh instances, and null smoke loaded all 10 static mesh assets.
+- `git diff --check`: passed with expected CRLF normalization warnings only.
+
+Remaining limitations:
+
+- The new backdrop is presentation geometry only. It is not terrain, water, streaming map content, collision, a skyline system, or a production environment asset.
+- The larger visual goal still needs real materials/textures, richer authored environment geometry, water/shoreline treatment, lighting/weather, and eventually a stronger renderer path.
+
 ## v0.42 Wet Road Surface Geometry Pass (2026-05-16)
 
 Goal:

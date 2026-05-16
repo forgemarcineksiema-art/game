@@ -47,6 +47,11 @@
       "baseColor": [0.05, 0.13, 0.22, 1.0]
     },
     {
+      "key": "misty-island-ground",
+      "response": "matte",
+      "baseColor": [0.20, 0.28, 0.24, 1.0]
+    },
+    {
       "key": "rusted-roof-trim",
       "response": "matte",
       "baseColor": [0.44, 0.24, 0.15, 1.0]
@@ -448,6 +453,17 @@
       "provenance": "Authored procedurally by tools/blender/create_tidebreak_wet_road_surface.py and exported headlessly by Blender 5.1.1 during v0.42.",
       "authoringBoundsHalfExtents": [0.52, 0.02, 0.50],
       "notes": "Low wet-road surface mesh with subtle longitudinal seams and edge lips. It is untextured presentation geometry for service-yard and dock-road slabs, not terrain or collision."
+    },
+    {
+      "id": "blender-harbor-backdrop-mesh",
+      "path": "assets/models/blender_harbor_backdrop.gltf",
+      "format": "gltf",
+      "units": "meter",
+      "upAxis": "Y",
+      "license": "project-original",
+      "provenance": "Authored procedurally by tools/blender/create_tidebreak_harbor_backdrop.py and exported headlessly by Blender 5.1.1 during v0.43.",
+      "authoringBoundsHalfExtents": [0.56, 0.40, 0.10],
+      "notes": "Low distant-shore and harbor-utility silhouette mesh for visual backdrop composition. It is untextured presentation geometry only, not terrain, collision, or a map boundary."
     }
   ],
   "meshInstances": [
@@ -816,6 +832,33 @@
       "colorKey": "dark-service-asphalt",
       "replacesVisualPlaceholderId": "dock-road-turnaround-pad",
       "notes": "v0.42 wet turnaround surface overlay at the service-run endpoint."
+    },
+    {
+      "id": "mesh-dock-road-harbor-backdrop",
+      "assetId": "blender-harbor-backdrop-mesh",
+      "position": [13.8, -0.02, -4.95],
+      "yawDegrees": 0.0,
+      "scale": [8.8, 1.0, 1.35],
+      "colorKey": "misty-island-ground",
+      "notes": "v0.43 distant low shoreline silhouette behind the dock-road water edge; visual only, no collision or map boundary."
+    },
+    {
+      "id": "mesh-dock-start-left-harbor-backdrop",
+      "assetId": "blender-harbor-backdrop-mesh",
+      "position": [-4.95, -0.02, -0.65],
+      "yawDegrees": 90.0,
+      "scale": [5.8, 1.0, 1.2],
+      "colorKey": "misty-island-ground",
+      "notes": "v0.43 left dock-edge harbor silhouette so the start area reads as an island pier instead of empty space."
+    },
+    {
+      "id": "mesh-dock-start-right-harbor-backdrop",
+      "assetId": "blender-harbor-backdrop-mesh",
+      "position": [4.95, -0.02, -0.65],
+      "yawDegrees": -90.0,
+      "scale": [5.8, 1.0, 1.2],
+      "colorKey": "misty-island-ground",
+      "notes": "v0.43 right dock-edge harbor silhouette paired with the existing water band; visual only."
     }
   ],
   "interactables": [

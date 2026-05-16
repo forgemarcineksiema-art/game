@@ -143,3 +143,7 @@ v0.38 makes the default playtest view less like a debug editor: raw route lines,
 ## v0.42 Wet Road Surface Observation
 
 v0.42 replaces the biggest flat service-yard and dock-road visual slabs with a shallow Blender-authored wet-road surface mesh. The surface is still untextured placeholder geometry, but longitudinal seams and low edge lips give the vehicle route a more intentional road/service-pad read under the current overcast material shading. The remaining risk is still asset and renderer maturity: this is not terrain, tire physics, road splines, real materials, textures, puddles, decals, or lighting.
+
+## v0.43 Harbor Backdrop Observation
+
+v0.43 adds a low distant-shore/harbor silhouette around the dock-road and dock-start water bands. This is the first small step from a self-contained debug yard toward a place that hints at Veyra Reach beyond the immediate route. The backdrop should stay quiet and misty: it supports the island setting without becoming a fake open-world promise, terrain system, collision boundary, city block, or final skyline.

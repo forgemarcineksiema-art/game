@@ -1098,7 +1098,7 @@ void TestSceneLoaderLoadsDefaultFerryOfficeScene()
     Expect(result.scene.visualPlaceholders.size() == 24,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored visual placeholders.");
-    Expect(result.scene.sceneMaterials.size() == 17,
+    Expect(result.scene.sceneMaterials.size() == 18,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored presentation materials for every current scene color key.");
     Expect(result.scene.meshInstances.size() >= 15,

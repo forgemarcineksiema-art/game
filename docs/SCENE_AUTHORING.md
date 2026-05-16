@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-16
 
-v0.11 introduced scene data for Codex-friendly inspection and validation. v0.12 added mesh asset and mesh instance references. v0.12.1 expanded the Ferry Office mesh set for a focused prop/scale pass. v0.14 added the first dock road segment as authored placeholders and route markers. v0.15 makes `data/scenes/ferry_office.scene.json` the runtime source of truth for current layout data while keeping Tidebreak-specific behavior in C++. v0.18 adds the first original service-road prop-kit meshes and keeps them scene-authored. v0.20 adds one fallback-generated ferry notice board because Blender was unavailable; its provenance must stay explicit. v0.20.1 adds one real Blender-exported notice-board prop and keeps it scene-authored too. v0.42 adds a Blender-authored wet-road surface mesh for the service-yard, dock-road, and turn-around presentation slabs.
+v0.11 introduced scene data for Codex-friendly inspection and validation. v0.12 added mesh asset and mesh instance references. v0.12.1 expanded the Ferry Office mesh set for a focused prop/scale pass. v0.14 added the first dock road segment as authored placeholders and route markers. v0.15 makes `data/scenes/ferry_office.scene.json` the runtime source of truth for current layout data while keeping Tidebreak-specific behavior in C++. v0.18 adds the first original service-road prop-kit meshes and keeps them scene-authored. v0.20 adds one fallback-generated ferry notice board because Blender was unavailable; its provenance must stay explicit. v0.20.1 adds one real Blender-exported notice-board prop and keeps it scene-authored too. v0.42 adds a Blender-authored wet-road surface mesh for the service-yard, dock-road, and turn-around presentation slabs. v0.43 adds a Blender-authored harbor backdrop mesh around existing water-edge bands.
 
 ## Scene Data Location
 
@@ -165,7 +165,7 @@ Optional fields can link the instance to existing debug data:
 - `linkedColliderId`,
 - `colorKey`.
 
-v0.12-v0.42 supports only tiny original `.gltf` placeholder assets through the static mesh spike. The current Ferry Office prop/surface set uses `unit_box.gltf`, the v0.18 service-road prop kit (`service_road_sign.gltf`, `road_edge_post.gltf`, `service_barrier.gltf`, `utility_box.gltf`), the v0.20 fallback-generated `ferry_notice_board.gltf`, the v0.20.1 Blender-exported `blender_ferry_notice_board.gltf`, the v0.27 Blender-exported `blender_cable_reel.gltf`, and the v0.42 Blender-exported `blender_wet_road_surface.gltf`. Do not add `.glb`, external buffers, materials, textures, animation, mesh collision, or imported third-party art through this scene format yet.
+v0.12-v0.43 supports only tiny original `.gltf` placeholder assets through the static mesh spike. The current Ferry Office prop/surface/backdrop set uses `unit_box.gltf`, the v0.18 service-road prop kit (`service_road_sign.gltf`, `road_edge_post.gltf`, `service_barrier.gltf`, `utility_box.gltf`), the v0.20 fallback-generated `ferry_notice_board.gltf`, the v0.20.1 Blender-exported `blender_ferry_notice_board.gltf`, the v0.27 Blender-exported `blender_cable_reel.gltf`, the v0.42 Blender-exported `blender_wet_road_surface.gltf`, and the v0.43 Blender-exported `blender_harbor_backdrop.gltf`. Do not add `.glb`, external buffers, materials, textures, animation, mesh collision, or imported third-party art through this scene format yet.
 
 Asset workflow validation now expects every committed `.gltf` under `assets/models` to be referenced by scene data and documented with license/provenance. Use `python tools/validate_assets.py` before and after adding mesh files.
 
@@ -256,6 +256,14 @@ v0.42 adds three wet-road surface overlays on top of the largest road/pad placeh
 - `mesh-dock-road-turnaround-wet-surface` replaces `dock-road-turnaround-pad` visually.
 
 These are shallow visual surface meshes only. They do not replace colliders, vehicle bounds, road physics, terrain, or material/texture systems.
+
+v0.43 adds three harbor backdrop overlays:
+
+- `mesh-dock-road-harbor-backdrop` behind the dock-road water edge.
+- `mesh-dock-start-left-harbor-backdrop` along the left dock-start water band.
+- `mesh-dock-start-right-harbor-backdrop` along the right dock-start water band.
+
+These are distant composition silhouettes only. They do not replace water, terrain, colliders, vehicle bounds, streaming map content, or world boundaries.
 
 ## Avoiding Layout Drift
 

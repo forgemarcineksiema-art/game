@@ -47,6 +47,14 @@ blender --background --python tools\blender\create_tidebreak_wet_road_surface.py
 
 It creates `assets/models/blender_wet_road_surface.gltf`, a low project-original procedural wet-road surface used as visual presentation geometry for the service yard, dock road, and turn-around pads. It is not collision, terrain, or road physics.
 
+v0.43 adds a fourth controlled Blender script:
+
+```powershell
+blender --background --python tools\blender\create_tidebreak_harbor_backdrop.py
+```
+
+It creates `assets/models/blender_harbor_backdrop.gltf`, a low project-original distant shoreline/harbor silhouette used as backdrop composition around the existing water-edge bands. It is not terrain, collision, streaming world, or a map boundary.
+
 ## Check Blender
 
 Run:
@@ -96,6 +104,12 @@ The current surface-piece command is:
 
 ```powershell
 blender --background --python tools\blender\create_tidebreak_wet_road_surface.py
+```
+
+The current backdrop command is:
+
+```powershell
+blender --background --python tools\blender\create_tidebreak_harbor_backdrop.py
 ```
 
 Blender 5.1.1 does not expose direct `GLTF_EMBEDDED` export in this environment. The script uses `GLTF_SEPARATE`, embeds the generated `.bin` buffer into the `.gltf`, and deletes the temporary `.bin`. Keep that post-export step small and deterministic; move to cgltf/tinygltf if broader Blender output is needed.

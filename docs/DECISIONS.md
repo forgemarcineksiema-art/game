@@ -597,3 +597,11 @@ Decision: Add one Blender-authored shallow wet-road surface mesh and use it as v
 Reason: The largest flat road/service-yard slabs were making the clean playtest view still read as debug plates. A single controlled surface mesh gives those areas scale, seams, and edge lips that catch the existing overcast/material shading while staying inside the current tiny embedded-buffer `.gltf` subset and scene-data validation path.
 
 Dependency impact: no new dependency, asset format, renderer feature, texture path, material system, collision source, or gameplay system was added. Blender remains an optional authoring tool, and the generated `.gltf` is committed as the runtime asset.
+
+## v0.43 Harbor Backdrop Before Terrain Or Map Expansion
+
+Decision: Add one small Blender-authored harbor backdrop mesh and a `misty-island-ground` scene material key before attempting terrain, shoreline systems, road splines, or broad island/city expansion.
+
+Reason: After v0.42, the road and service-yard surfaces read better, but the scene still had hard water-edge bands opening into empty space. A low distant-shore silhouette gives the Ferry Office a stronger Veyra Reach context while staying inside authored scene data and the current tiny static-mesh subset.
+
+Dependency impact: no new dependency, asset format, renderer feature, texture path, material system, collision source, terrain system, or gameplay system was added. Blender remains an optional authoring tool, and the generated `.gltf` is committed as the runtime asset.

@@ -103,6 +103,7 @@ bool IsKnownSceneColorKey(std::string_view key)
         || key == "office-muted-concrete"
         || key == "damp-service-concrete"
         || key == "deep-harbor-blue"
+        || key == "misty-island-ground"
         || key == "rusted-roof-trim"
         || key == "wet-timber"
         || key == "oxidized-service-green"
@@ -131,6 +132,9 @@ SceneMaterial SceneMaterialForKey(std::string_view key, ScenePresentationState s
     }
     if (key == "deep-harbor-blue") {
         return WetMaterial({0.05f, 0.13f, 0.22f, 1.0f});
+    }
+    if (key == "misty-island-ground") {
+        return MatteMaterial({0.20f, 0.28f, 0.24f, 1.0f});
     }
     if (key == "rusted-roof-trim") {
         return MatteMaterial({0.44f, 0.24f, 0.15f, 1.0f});

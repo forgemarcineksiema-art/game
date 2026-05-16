@@ -70,7 +70,7 @@ class SceneToolTests(unittest.TestCase):
         summary = scene_data.build_summary(self.scene)
 
         self.assertEqual("ferry-office", summary.scene_id)
-        self.assertEqual(17, summary.material_count)
+        self.assertEqual(18, summary.material_count)
         self.assertGreaterEqual(summary.collider_count, 9)
         self.assertEqual(6, summary.interactable_count)
         self.assertEqual(1, summary.traversal_count)
@@ -272,6 +272,28 @@ class SceneToolTests(unittest.TestCase):
             self.assertEqual("blender-wet-road-surface-mesh", mesh_instances[instance_id]["assetId"])
             self.assertEqual("dark-service-asphalt", mesh_instances[instance_id]["colorKey"])
             self.assertEqual(placeholder_id, mesh_instances[instance_id]["replacesVisualPlaceholderId"])
+
+    def test_v043_harbor_backdrop_asset_and_instances_exist(self) -> None:
+        ids = scene_data.collect_ids(self.scene)
+        material_keys = {material["key"] for material in self.scene["sceneMaterials"]}
+        mesh_assets = {asset["id"]: asset for asset in self.scene["meshAssets"]}
+        mesh_instances = {instance["id"]: instance for instance in self.scene["meshInstances"]}
+
+        self.assertIn("misty-island-ground", material_keys)
+        self.assertIn("blender-harbor-backdrop-mesh", mesh_assets)
+        self.assertEqual("assets/models/blender_harbor_backdrop.gltf", mesh_assets["blender-harbor-backdrop-mesh"]["path"])
+        self.assertIn("Blender 5.1.1", mesh_assets["blender-harbor-backdrop-mesh"]["provenance"])
+
+        expected_instances = [
+            "mesh-dock-road-harbor-backdrop",
+            "mesh-dock-start-left-harbor-backdrop",
+            "mesh-dock-start-right-harbor-backdrop",
+        ]
+        for instance_id in expected_instances:
+            self.assertIn(instance_id, ids)
+            self.assertEqual("blender-harbor-backdrop-mesh", mesh_instances[instance_id]["assetId"])
+            self.assertEqual("misty-island-ground", mesh_instances[instance_id]["colorKey"])
+            self.assertIn("v0.43", mesh_instances[instance_id]["notes"])
 
     def test_duplicate_mesh_replacement_links_are_reported(self) -> None:
         scene = copy.deepcopy(self.scene)

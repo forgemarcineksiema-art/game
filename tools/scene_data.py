@@ -35,6 +35,7 @@ KNOWN_COLOR_KEYS = {
     "dock-muted-sign-yellow",
     "dock-weathered-wood",
     "ferry-route-sign-blue",
+    "misty-island-ground",
     "mossy-service-crate",
     "office-muted-concrete",
     "oxidized-service-green",
