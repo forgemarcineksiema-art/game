@@ -3343,6 +3343,9 @@ void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
     Expect(result.finalPhase == FerryOfficeJobPhase::Complete,
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "The automated playthrough should finish in the complete job phase.");
+    Expect(result.vehicleRuntimeBackend == "deterministic",
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "The default playthrough QA should record deterministic vehicle runtime evidence.");
 
     const WorldState& state = result.finalWorldState;
     Expect(state.isFlagSet(WorldFlag::ManifestCollected),
@@ -3402,6 +3405,12 @@ void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
         Expect(report["final"]["flags"]["ferryOfficeJobComplete"] == true,
             "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
             "QA playthrough report should expose final job completion.");
+        Expect(report["vehicleRuntime"]["backend"] == "deterministic",
+            "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+            "QA playthrough report should expose the vehicle runtime backend.");
+        Expect(report["vehicleRuntime"]["framesToCheckpoint"] > 0,
+            "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+            "QA playthrough report should expose vehicle checkpoint timing.");
     }
 
     std::filesystem::remove(reportPath);

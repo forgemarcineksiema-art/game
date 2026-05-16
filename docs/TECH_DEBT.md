@@ -14,13 +14,13 @@ This file lists known foundation issues during the current playable-build phase.
 ### Fix Soon
 
 1. Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded visual/behavioral/physics evidence before asking for a manual pass. The playthrough QA now rejects reports missing runtime service-vehicle enter, dock-road checkpoint, and exit steps; the vehicle runtime QA rejects reports missing tap/brake/reverse/coast control checks, service-run route completion checks, or a Jolt route that misses the 240-frame route budget.
-2. The live opt-in Jolt vehicle switch now exists and has stronger automated controls plus route evidence. Deterministic reaches the service-run checkpoint in 139 frames through the v0.48 runtime playthrough; Jolt reaches the route proxy in 213 frames under the 240-frame budget. Keep deterministic default, keep Jolt opt-in, and make the next vehicle/physics pass a direct opt-in Jolt live-loop replay comparison before default promotion.
+2. The live opt-in Jolt vehicle switch now has comparable first-job live-loop evidence. Deterministic reaches the service-run checkpoint in 139 frames through the runtime playthrough; Jolt reaches it in 213 frames through the same enter-drive-checkpoint-exit-confirm QA with no fallback or bounds hit. Keep deterministic default, keep Jolt opt-in, and require a narrower steering/obstacle/camera replay before any default promotion.
 3. Keep the Blender/static mesh path narrow and honest. v0.27 adds one controlled original Blender prop; avoid more quantity until visual evidence proves prop language, not renderer readability or vehicle feel, is the blocker.
 
 ### Acceptable For Now
 
-1. No broad Job #2 yet. v0.48 makes a small second beat less risky, but new content should stay compact and extend playthrough QA instead of bypassing it.
-2. Deterministic vehicle movement remains the default live fallback after v0.48. Jolt VehicleConstraint now has feasibility, runtime-comparison, opt-in live-switch, controls-focused runtime QA, and 240-frame service-run route evidence, but it still should not replace default gameplay until the same enter-drive-exit-confirm loop is validated through the opt-in live path.
+1. No broad Job #2 yet. v0.49 makes a small second beat less risky, but new content should stay compact and extend playthrough QA instead of bypassing it.
+2. Deterministic vehicle movement remains the default live fallback after v0.49. Jolt VehicleConstraint now has feasibility, runtime-comparison, opt-in live-switch, controls-focused runtime QA, 240-frame service-run route evidence, and the same first-job enter-drive-exit-confirm playthrough evidence, but it still should not replace default gameplay until narrower steering, obstacle, camera, and collision replay evidence exists.
 3. `WorldState` and `FerryOfficeJob` remain explicit in-memory prototype systems, not a save/load or mission framework.
 4. The tiny custom `.gltf` subset remains acceptable while assets are simple embedded-buffer static props.
 5. GDI remains the most battle-tested visual/playtest renderer, but DX11 now has a tiny renderer-owned bitmap debug text overlay and can be used for bounded playtest checks. DX11 still often falls back to WARP on this laptop.
@@ -89,7 +89,7 @@ This file lists known foundation issues during the current playable-build phase.
 - v0.33 mirrors the authored Ferry Office static boxes plus a flat scene-floor body into the opt-in Jolt path and validates floor/raycast/overlap parity against `PrototypeWorld` through `tools\physics_parity_qa.py`.
 - v0.34 adds `tools\character_contact_qa.py`, which compares the current player proxy against opt-in physics contact candidates for floor grounding, walls, the service gate, service barrier, a clear lane, a corner pushout, and an opened-gate case.
 - v0.35 adds `tools\vehicle_physics_qa.py`, which validates an opt-in Jolt wheeled-vehicle feasibility script for the authored Ferry Office service vehicle and emits a promote/defer report.
-- v0.36 adds `tools\vehicle_runtime_qa.py`, which compares a frame-stepped opt-in Jolt vehicle runtime adapter against the deterministic `VehicleController` fallback on the authored Ferry Office service vehicle. v0.47 now enforces a 240-frame Jolt service-run route budget and records a 213-frame Jolt route pass. v0.48 adds deterministic enter-drive-exit-confirm runtime playthrough evidence for the first service job.
+- v0.36 adds `tools\vehicle_runtime_qa.py`, which compares a frame-stepped opt-in Jolt vehicle runtime adapter against the deterministic `VehicleController` fallback on the authored Ferry Office service vehicle. v0.47 now enforces a 240-frame Jolt service-run route budget and records a 213-frame Jolt route pass. v0.48 adds deterministic enter-drive-exit-confirm runtime playthrough evidence for the first service job, and v0.49 runs that same playthrough vehicle segment through the opt-in Jolt runtime in 213 frames.
 - v0.37 exposes that runtime adapter through `--vehicle-runtime jolt` and `scripts\play.ps1 -VehicleRuntime jolt` for manual playtest only.
 - No live player, traversal, service-gate, dynamic collider toggling, or default production vehicle behavior has been migrated to Jolt yet. v0.10 uses a deterministic vehicle controller and only uses `engine::physics` for a small service-yard validation/debug world; v0.37 proves a live opt-in vehicle switch, not default replacement.
 
@@ -102,7 +102,7 @@ This file lists known foundation issues during the current playable-build phase.
 - Vehicle camera uses the existing third-person camera with alternate settings. v0.13 retunes distance/height/smoothing for the small yard, but there is no camera collision, chase-camera lag tuning, or reset-behind-vehicle command.
 - The service-yard and v0.14 dock road segment are debug geometry only, not final art or a real road/terrain system.
 - The v0.14 road extends vehicle bounds for a compact out-and-back route, but vehicle collision is still a finite bounds clamp rather than road-edge collision against all debug rails/curbs.
-- Full default Jolt vehicle integration remains deferred until fuller automated live-loop replay and a bounded manual comparison prove the switched path is worth promoting. v0.37 proves opt-in live selection for the authored service vehicle, v0.37.1 fixes the first obvious tap/coast/reverse control bug, v0.47 closes the straight-route pace gap, and v0.48 proves the deterministic first-job runtime vehicle beat. This is still not default Jolt replacement, full gameplay collision, complete tuning, or a complete road model.
+- Full default Jolt vehicle integration remains deferred until fuller steering/obstacle/camera replay evidence proves the switched path is worth promoting. v0.37 proves opt-in live selection for the authored service vehicle, v0.37.1 fixes the first obvious tap/coast/reverse control bug, v0.47 closes the straight-route pace gap, v0.48 proves the deterministic first-job runtime vehicle beat, and v0.49 proves the same beat through opt-in Jolt. This is still not default Jolt replacement, full gameplay collision, complete tuning, or a complete road model.
 
 ## Interaction
 
@@ -123,7 +123,7 @@ This file lists known foundation issues during the current playable-build phase.
 - There is no mission graph, quest scripting, dialogue integration, global event bus, or persistence layer.
 - Slice completion is a scene helper, not a mission/objective scripting system.
 - Job completion is also a scene helper. It proves one driver/fixer loop, but should not be generalized until more job types prove the real data shape.
-- The v0.48 playthrough QA runner now exercises the service-vehicle enter, drive, dock-road checkpoint, exit, and confirm beat through runtime controller behavior. It still does not simulate full keyboard/mouse navigation, camera movement, obstacle avoidance, opt-in Jolt live driving, or human-readable feel.
+- The v0.49 playthrough QA runner now exercises the service-vehicle enter, drive, dock-road checkpoint, exit, and confirm beat through deterministic and opt-in Jolt runtime behavior. It still does not simulate full keyboard/mouse navigation, camera movement, obstacle avoidance, or human-readable feel.
 
 ## Traversal
 

@@ -568,6 +568,15 @@ Status: implemented as an opt-in Jolt vehicle runtime tuning pass. Deterministic
 
 Status: implemented as a stronger first-job behavioral QA pass. The default playthrough report now records `serviceVehicleRuntime`, `dockRoadRuntimeCheckpoint`, and `serviceVehicleRuntimeExit`; the service vehicle reaches the dock-road checkpoint in 139 frames and the job completes with 10 world events.
 
+## v0.49 - Opt-in Jolt Live-loop Playthrough QA
+
+- Extend the Ferry Office Service Call playthrough QA so the vehicle beat can use the selected runtime backend.
+- Record requested vehicle runtime, actual backend, fallback use, bounds hit, checkpoint timing, final position, and final yaw in the playthrough report.
+- Let `tools\playthrough_qa.py --vehicle-runtime jolt` validate the first service job through a Jolt-enabled build.
+- Preserve deterministic default gameplay and keep vendor-specific Jolt details behind `src\engine\physics`.
+
+Status: implemented as comparable first-job vehicle evidence for the opt-in Jolt path. The deterministic playthrough still reaches the dock-road checkpoint in 139 frames; the Jolt playthrough reaches it in 213 frames, exits at a clear position, confirms the service run, and reports no fallback or bounds hit. Jolt remains opt-in rather than default.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. The next vehicle decision should compare the opt-in Jolt live path through the same enter-drive-checkpoint-exit-confirm loop that v0.48 now covers for the deterministic controller. If the next milestone prioritizes playable content instead, Job #2 is now less risky than before, but keep it small and backed by playthrough QA.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. With v0.49 comparable first-job vehicle evidence in place, the next useful milestone is either a very small Job #2 beat backed by playthrough QA or a narrower deterministic-vs-Jolt steering/obstacle replay before any default vehicle-runtime promotion.

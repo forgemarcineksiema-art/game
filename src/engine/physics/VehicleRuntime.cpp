@@ -112,6 +112,17 @@ std::unique_ptr<IVehicleRuntimeAdapter> CreateVehicleRuntimeAdapter(PhysicsBacke
     return CreateJoltVehicleRuntimeAdapterIfAvailable();
 }
 
+std::string_view VehicleRuntimeRequestName(PhysicsBackend backend, bool adapterEnabled)
+{
+    if (!adapterEnabled || backend == PhysicsBackend::Simple) {
+        return "deterministic";
+    }
+    if (backend == PhysicsBackend::Jolt) {
+        return "jolt";
+    }
+    return "unknown";
+}
+
 #if !ENGINE_WITH_JOLT
 std::unique_ptr<IVehicleRuntimeAdapter> CreateJoltVehicleRuntimeAdapterIfAvailable()
 {

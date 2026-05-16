@@ -49,5 +49,6 @@ public:
 };
 
 std::unique_ptr<IVehicleRuntimeAdapter> CreateVehicleRuntimeAdapter(PhysicsBackend backend);
+std::string_view VehicleRuntimeRequestName(PhysicsBackend backend, bool adapterEnabled);
 
 } // namespace engine::physics

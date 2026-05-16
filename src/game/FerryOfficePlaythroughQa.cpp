@@ -13,6 +13,7 @@
 #include <filesystem>
 #include <fstream>
 #include <initializer_list>
+#include <memory>
 #include <nlohmann/json.hpp>
 #include <string_view>
 #include <utility>
@@ -173,8 +174,13 @@ struct RuntimeVehicleLoopResult {
     bool exitClear = false;
     bool vehicleExited = false;
     bool hitBounds = false;
+    bool adapterStepFailed = false;
+    bool adapterUnavailable = false;
     int framesToCheckpoint = -1;
     engine::Vec3 finalVehiclePosition;
+    float finalVehicleYawRadians = 0.0f;
+    std::string backend = "deterministic";
+    std::string error;
 };
 
 void AddStep(FerryOfficePlaythroughQaResult& result, PrototypeScene& scene, FerryOfficePlaythroughQaStep step)
@@ -228,6 +234,21 @@ nlohmann::json EventsJson(const WorldState& state)
     return events;
 }
 
+engine::physics::VehicleRuntimeConfig BuildRuntimeAdapterConfig(
+    const SceneVehicleDefinition& vehicle,
+    const VehicleController& controller)
+{
+    const VehicleControllerSettings& settings = controller.settings();
+    engine::physics::VehicleRuntimeConfig config;
+    config.vehicleId = vehicle.id;
+    config.spawnPosition = controller.state().position;
+    config.spawnYawRadians = controller.state().yawRadians;
+    config.halfExtents = vehicle.proxyHalfExtents;
+    config.boundsMin = {settings.boundsMinX, settings.boundsMinZ};
+    config.boundsMax = {settings.boundsMaxX, settings.boundsMaxZ};
+    return config;
+}
+
 bool WriteReport(const FerryOfficePlaythroughQaResult& result)
 {
     if (result.reportPath.empty()) {
@@ -255,6 +276,21 @@ bool WriteReport(const FerryOfficePlaythroughQaResult& result)
         {"scenario", result.scenario},
         {"passed", result.passed},
         {"scene", {{"id", result.sceneId}, {"path", result.scenePath.generic_string()}}},
+        {"vehicleRuntime",
+            {
+                {"requested", result.requestedVehicleRuntime},
+                {"backend", result.vehicleRuntimeBackend},
+                {"fallbackUsed", result.vehicleRuntimeFallbackUsed},
+                {"framesToCheckpoint", result.vehicleRuntimeFramesToCheckpoint},
+                {"hitBounds", result.vehicleRuntimeHitBounds},
+                {"finalPosition",
+                    {
+                        {"x", result.vehicleRuntimeFinalPosition.x},
+                        {"y", result.vehicleRuntimeFinalPosition.y},
+                        {"z", result.vehicleRuntimeFinalPosition.z},
+                    }},
+                {"finalYawDegrees", engine::Degrees(result.vehicleRuntimeFinalYawRadians)},
+            }},
         {"steps", steps},
         {"final",
             {
@@ -284,12 +320,16 @@ std::filesystem::path DefaultFerryOfficePlaythroughQaReportPath()
 
 FerryOfficePlaythroughQaResult RunFerryOfficeServiceCallPlaythroughQa(
     const std::filesystem::path& scenePath,
-    const std::filesystem::path& requestedReportPath)
+    const std::filesystem::path& requestedReportPath,
+    engine::physics::PhysicsBackend vehicleRuntimeBackend,
+    bool vehicleRuntimeAdapterEnabled)
 {
     FerryOfficePlaythroughQaResult result;
     result.scenario = std::string(ScenarioName);
     result.scenePath = scenePath;
     result.reportPath = requestedReportPath.empty() ? DefaultFerryOfficePlaythroughQaReportPath() : requestedReportPath;
+    result.requestedVehicleRuntime =
+        std::string(engine::physics::VehicleRuntimeRequestName(vehicleRuntimeBackend, vehicleRuntimeAdapterEnabled));
 
     const SceneLoadResult loadedScene = LoadSceneDefinition(scenePath);
     if (!loadedScene.ok()) {
@@ -329,9 +369,11 @@ FerryOfficePlaythroughQaResult RunFerryOfficeServiceCallPlaythroughQa(
     PlayerController runtimePlayer;
     runtimePlayer.setWorld(&scene.world());
     VehicleController runtimeVehicleController;
+    std::unique_ptr<engine::physics::IVehicleRuntimeAdapter> runtimeAdapter;
     if (serviceVehicle) {
         runtimeVehicleController = BuildRuntimeVehicle(*serviceVehicle);
         runtimeVehicle.finalVehiclePosition = runtimeVehicleController.state().position;
+        runtimeVehicle.finalVehicleYawRadians = runtimeVehicleController.state().yawRadians;
 
         const engine::Vec3 entryPosition = runtimeVehicleController.state().position - runtimeVehicleController.forward();
         const engine::Vec3 entryFacing = engine::Normalize(runtimeVehicleController.state().position - entryPosition);
@@ -343,6 +385,27 @@ FerryOfficePlaythroughQaResult RunFerryOfficeServiceCallPlaythroughQa(
         if (runtimeVehicle.vehicleEntered) {
             scene.recordServiceVehicleUsed();
         }
+
+        if (runtimeVehicle.vehicleEntered && vehicleRuntimeAdapterEnabled) {
+            runtimeAdapter = engine::physics::CreateVehicleRuntimeAdapter(vehicleRuntimeBackend);
+            if (!runtimeAdapter) {
+                runtimeVehicle.adapterUnavailable = true;
+                runtimeVehicle.backend = "unavailable";
+                runtimeVehicle.error = "Requested vehicle runtime adapter is unavailable.";
+            } else {
+                if (runtimeAdapter->initialize(BuildRuntimeAdapterConfig(*serviceVehicle, runtimeVehicleController))) {
+                    runtimeVehicle.backend = std::string(runtimeAdapter->backendName());
+                } else {
+                    runtimeVehicle.adapterUnavailable = true;
+                    runtimeVehicle.backend = std::string(runtimeAdapter->backendName());
+                    runtimeVehicle.error = std::string(runtimeAdapter->error());
+                    if (runtimeVehicle.error.empty()) {
+                        runtimeVehicle.error = "Requested vehicle runtime adapter failed to initialize.";
+                    }
+                    runtimeAdapter.reset();
+                }
+            }
+        }
     }
 
     actionOk = serviceVehicle != nullptr && runtimeVehicle.vehicleEntered;
@@ -353,14 +416,38 @@ FerryOfficePlaythroughQaResult RunFerryOfficeServiceCallPlaythroughQa(
         actionOk,
         actionOk ? "Runtime input entered the service vehicle." : "Runtime input did not enter the service vehicle.");
 
-    if (serviceVehicle && runtimeVehicle.vehicleEntered) {
+    if (serviceVehicle && runtimeVehicle.vehicleEntered && !runtimeVehicle.adapterUnavailable) {
         for (int frame = 0; frame < RuntimeRouteBudgetFrames; ++frame) {
             runtimeVehicleController.beginFrame();
             engine::InputState driveInput;
             driveInput.moveForward = RuntimeRouteThrottle;
-            runtimeVehicleController.updateDriving(RuntimeFixedStepSeconds, driveInput);
+
+            if (runtimeAdapter) {
+                engine::physics::VehicleRuntimeInput adapterInput;
+                adapterInput.throttle = RuntimeRouteThrottle;
+                if (!runtimeAdapter->step(adapterInput, RuntimeFixedStepSeconds)) {
+                    runtimeVehicle.adapterStepFailed = true;
+                    runtimeVehicle.error = std::string(runtimeAdapter->error());
+                    if (runtimeVehicle.error.empty()) {
+                        runtimeVehicle.error = "Requested vehicle runtime adapter failed during the route step.";
+                    }
+                    break;
+                }
+                const engine::physics::VehicleRuntimeState adapterState = runtimeAdapter->state();
+                runtimeVehicleController.applyRuntimeState(
+                    adapterState.position,
+                    adapterState.yawRadians,
+                    adapterState.speed,
+                    adapterInput.throttle,
+                    adapterInput.brake,
+                    adapterInput.steer,
+                    adapterState.outOfBounds);
+            } else {
+                runtimeVehicleController.updateDriving(RuntimeFixedStepSeconds, driveInput);
+            }
             runtimeVehicle.hitBounds = runtimeVehicle.hitBounds || runtimeVehicleController.state().hitBoundsThisFrame;
             runtimeVehicle.finalVehiclePosition = runtimeVehicleController.state().position;
+            runtimeVehicle.finalVehicleYawRadians = runtimeVehicleController.state().yawRadians;
             if (scene.updateJobVehicleCheckpoint(
                     runtimeVehicleController.state().position,
                     runtimeVehicleController.state().occupied)) {
@@ -371,15 +458,26 @@ FerryOfficePlaythroughQaResult RunFerryOfficeServiceCallPlaythroughQa(
         }
     }
 
-    actionOk = serviceVehicle != nullptr && runtimeVehicle.checkpointReached && !runtimeVehicle.hitBounds;
+    result.vehicleRuntimeBackend = runtimeVehicle.backend;
+    result.vehicleRuntimeFallbackUsed = vehicleRuntimeAdapterEnabled && runtimeVehicle.backend != result.requestedVehicleRuntime;
+    result.vehicleRuntimeHitBounds = runtimeVehicle.hitBounds;
+    result.vehicleRuntimeFramesToCheckpoint = runtimeVehicle.framesToCheckpoint;
+    result.vehicleRuntimeFinalPosition = runtimeVehicle.finalVehiclePosition;
+    result.vehicleRuntimeFinalYawRadians = runtimeVehicle.finalVehicleYawRadians;
+
+    actionOk = serviceVehicle != nullptr
+        && runtimeVehicle.checkpointReached
+        && !runtimeVehicle.hitBounds
+        && !runtimeVehicle.adapterUnavailable
+        && !runtimeVehicle.adapterStepFailed;
     RecordActionStep(result,
         scene,
         "dockRoadRuntimeCheckpoint",
         {WorldFlag::DockRoadReached},
         actionOk,
         actionOk
-            ? "Runtime vehicle reached the dock-road checkpoint in " + std::to_string(runtimeVehicle.framesToCheckpoint) + " frames."
-            : "Runtime vehicle did not reach the dock-road checkpoint cleanly.");
+            ? "Runtime " + runtimeVehicle.backend + " vehicle reached the dock-road checkpoint in " + std::to_string(runtimeVehicle.framesToCheckpoint) + " frames."
+            : "Runtime vehicle did not reach the dock-road checkpoint cleanly. " + runtimeVehicle.error);
 
     if (serviceVehicle && runtimeVehicle.vehicleEntered) {
         runtimeVehicleController.beginFrame();

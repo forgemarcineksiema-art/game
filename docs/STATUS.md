@@ -33,6 +33,82 @@ Last updated: 2026-05-16
 6. Add PowerShell/Python workbench commands for doctor, configure/build, verify, and status reporting.
 7. Run the available validation commands, record exact results here, and keep any compiler/graphics blockers honest.
 
+## v0.49 Opt-in Jolt Live-loop Playthrough QA (2026-05-16)
+
+Selected milestone:
+
+- Extend the Ferry Office Service Call playthrough QA so the same enter, drive, checkpoint, exit, and confirm loop can run through the opt-in Jolt vehicle runtime path.
+
+Candidate triage:
+
+- Jolt live-loop playthrough QA: high impact, medium risk, validates with C++/Python playthrough tests, Jolt playthrough QA, Jolt vehicle QA, and `scripts\verify.ps1`.
+- Job #2 micro-beat: high playable-content impact, higher risk while the opt-in vehicle path still lacked comparable first-job evidence.
+- Visual prop/readability pass: medium impact, lower risk, but recent milestones already improved presentation and vehicle evidence was the clearer blocker.
+
+Why selected:
+
+- v0.48 proved the deterministic first-job service-vehicle loop through runtime input, but the Jolt path still only had controls and route-proxy evidence.
+- The next vehicle/default-promotion decision needed the same first-job live-loop evidence before starting broader content on top of asymmetric vehicle proof.
+
+Definition of Done:
+
+- Playthrough QA accepts a selected vehicle runtime and records requested/backend/fallback/bounds/checkpoint timing evidence.
+- `tools\playthrough_qa.py` can run and validate `--vehicle-runtime jolt` against a Jolt-enabled build.
+- Existing deterministic playthrough behavior remains green.
+- Game code keeps Jolt/vendor details behind `src\engine\physics`.
+- Default and opt-in Jolt validation pass, and docs record the provisional decision.
+
+Implementation notes:
+
+- Added `vehicleRuntime` evidence to the playthrough JSON report: requested runtime, actual backend, fallback use, bounds hit, frames to checkpoint, final position, and final yaw.
+- Added `engine::physics::VehicleRuntimeRequestName(...)` so game QA code can name runtime requests without referencing vendor-specific enum names directly.
+- Updated `RunFerryOfficeServiceCallPlaythroughQa(...)` and `main.cpp` so `--vehicle-runtime jolt` drives the playthrough vehicle segment through the existing engine-owned runtime adapter.
+- Updated `tools\playthrough_qa.py` to pass `--vehicle-runtime`, reject stale reports missing vehicle-runtime evidence, reject fallback/bounds-hit runs, and print checkpoint timing.
+- Updated C++ and Python tests to require the vehicle-runtime report block.
+
+Commands and results:
+
+- `python tests\test_playthrough_qa.py`: failed as expected before implementation because reports without `vehicleRuntime` were still accepted.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: failed as expected before implementation because `FerryOfficePlaythroughQaResult::vehicleRuntimeBackend` did not exist.
+- `python tests\test_playthrough_qa.py`: passed after implementation, 5 tests.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: passed.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: initially failed because `src\game\FerryOfficePlaythroughQa.cpp` referenced the vendor-specific `Jolt` enum name; fixed by moving runtime request naming into `src\engine\physics`.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed after the boundary fix.
+- `cmake --build --preset windows-vs2022-debug --target EngineApp`: passed.
+- `python tools\playthrough_qa.py`: passed; phase=`complete`, events=10, vehicleRuntime=`deterministic`, framesToCheckpoint=139.
+- `cmake --build --preset windows-vs2022-debug-jolt --target EngineApp`: passed.
+- `python tools\playthrough_qa.py --exe build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --vehicle-runtime jolt --report-json build\playthroughs\ferry-office-service-call-jolt-report.json`: passed; phase=`complete`, events=10, vehicleRuntime=`jolt`, framesToCheckpoint=213, fallbackUsed=false, hitBounds=false, finalPosition approximately `(17.69, 0.00, -1.80)`.
+- `rg -n "Jolt|JPH::|<Jolt/|JPH/" src\game`: returned no matches; no Jolt/vendor type leakage into game code.
+- `scripts\verify.ps1`: passed; doctor passed with known PATH warnings, configure/build succeeded, CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null smoke loaded the Ferry Office scene.
+- `cmake --preset windows-vs2022-debug-jolt; cmake --build --preset windows-vs2022-debug-jolt; ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed; Jolt opt-in CTest passed 15/15.
+- `python tools\physics_parity_qa.py`: passed; backend=`jolt`, floor=4, raycast=4, overlap=4.
+- `python tools\character_contact_qa.py`: passed; backend=`jolt`, probes=7.
+- `python tools\vehicle_physics_qa.py`: passed; backend=`jolt`, samples=5, recommendation=`promote`.
+- `python tools\vehicle_runtime_qa.py`: passed; backend=`jolt`, samples=5, controlChecks=4, routeChecks=2, maxPositionDelta=1.75, recommendation=`promote`.
+- Final `python tools\playthrough_qa.py`: passed; phase=`complete`, events=10, vehicleRuntime=`deterministic`, framesToCheckpoint=139.
+- Final `python tools\playthrough_qa.py --exe build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --vehicle-runtime jolt --report-json build\playthroughs\ferry-office-service-call-jolt-report.json`: passed; phase=`complete`, events=10, vehicleRuntime=`jolt`, framesToCheckpoint=213.
+- `git diff --check`: passed with expected CRLF normalization warnings only.
+
+Automated evidence generated:
+
+- `build\playthroughs\ferry-office-service-call-report.json`
+- `build\playthroughs\ferry-office-service-call-jolt-report.json`
+
+Provisional decision:
+
+- Keep deterministic vehicle gameplay as the default for now.
+- Keep Jolt as a viable opt-in live vehicle path: it now passes controls QA, route-proxy QA, and the first service job enter-drive-checkpoint-exit-confirm playthrough with no fallback or bounds hit.
+- Do not promote Jolt to default yet because deterministic still reaches the checkpoint faster in the same playthrough proxy (139 frames versus Jolt's 213), and the path still lacks broader steering, obstacle, camera, and collision evidence.
+
+Remaining limitations:
+
+- The playthrough route is still a compact scripted straight-line proxy, not a full keyboard/mouse navigation replay, obstacle avoidance test, camera comfort check, or human feel report.
+- Jolt remains limited to the opt-in service vehicle runtime; player collision, traversal, gate behavior, traffic, damage, audio, and production vehicle tuning remain unchanged.
+
+Next direction:
+
+- With comparable deterministic and opt-in Jolt first-job evidence in place, the next milestone can safely choose either a tiny Job #2 beat backed by playthrough QA or a narrower Jolt steering/obstacle replay before any default vehicle promotion.
+
 ## Commands Run
 
 ```powershell

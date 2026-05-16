@@ -44,7 +44,7 @@ def default_report_path(scenario: str = SCENARIO) -> pathlib.Path:
     return ROOT / "build" / "playthroughs" / f"{scenario}-report.json"
 
 
-def load_and_validate_report(report_path: pathlib.Path) -> dict[str, Any]:
+def load_and_validate_report(report_path: pathlib.Path, expected_vehicle_runtime: str | None = None) -> dict[str, Any]:
     if not report_path.exists():
         raise FileNotFoundError(f"Playthrough report was not created: {report_path}")
 
@@ -71,10 +71,33 @@ def load_and_validate_report(report_path: pathlib.Path) -> dict[str, Any]:
         if step_name not in step_names:
             raise ValueError(f"Playthrough report is missing required runtime vehicle step: {step_name}")
 
+    vehicle_runtime = report.get("vehicleRuntime")
+    if not isinstance(vehicle_runtime, dict):
+        raise ValueError("Playthrough report is missing vehicle runtime evidence.")
+    backend = vehicle_runtime.get("backend")
+    if backend not in {"deterministic", "jolt"}:
+        raise ValueError(f"Playthrough vehicle runtime backend is invalid: {backend}")
+    if expected_vehicle_runtime is not None and backend != expected_vehicle_runtime:
+        raise ValueError(
+            f"Playthrough vehicle runtime backend was {backend}, expected {expected_vehicle_runtime}."
+        )
+    if vehicle_runtime.get("fallbackUsed") is True:
+        raise ValueError(f"Playthrough vehicle runtime used fallback: {vehicle_runtime}")
+    if vehicle_runtime.get("hitBounds") is True:
+        raise ValueError(f"Playthrough vehicle runtime hit authored bounds: {vehicle_runtime}")
+    if int(vehicle_runtime.get("framesToCheckpoint", -1)) <= 0:
+        raise ValueError(f"Playthrough vehicle runtime is missing checkpoint timing: {vehicle_runtime}")
+
     return report
 
 
-def run_playthrough(exe: pathlib.Path, scene: pathlib.Path, report_path: pathlib.Path, scenario: str = SCENARIO) -> dict[str, Any]:
+def run_playthrough(
+    exe: pathlib.Path,
+    scene: pathlib.Path,
+    report_path: pathlib.Path,
+    scenario: str = SCENARIO,
+    vehicle_runtime: str = "deterministic",
+) -> dict[str, Any]:
     if not exe.exists():
         raise FileNotFoundError(f"EngineApp executable was not found: {exe}")
     if scenario != SCENARIO:
@@ -90,6 +113,8 @@ def run_playthrough(exe: pathlib.Path, scene: pathlib.Path, report_path: pathlib
         "--qa-playthrough-report",
         str(report_path),
     ]
+    if vehicle_runtime != "deterministic":
+        command.extend(["--vehicle-runtime", vehicle_runtime])
     print("Running:", " ".join(command))
     result = subprocess.run(
         command,
@@ -103,11 +128,14 @@ def run_playthrough(exe: pathlib.Path, scene: pathlib.Path, report_path: pathlib
     if result.returncode != 0:
         raise RuntimeError(f"Playthrough QA command failed with exit code {result.returncode}.")
 
-    report = load_and_validate_report(report_path)
+    report = load_and_validate_report(report_path, vehicle_runtime)
+    runtime = report["vehicleRuntime"]
     print(
         "Playthrough QA passed: "
         f"phase={report['final']['phase']}, "
         f"events={report['final']['eventCount']}, "
+        f"vehicleRuntime={runtime['backend']}, "
+        f"framesToCheckpoint={runtime['framesToCheckpoint']}, "
         f"report={report_path}"
     )
     return report
@@ -119,6 +147,12 @@ def main() -> int:
     parser.add_argument("--scene", default=str(default_scene_path()), help="Path to Ferry Office scene JSON.")
     parser.add_argument("--scenario", default=SCENARIO, help="QA playthrough scenario name.")
     parser.add_argument("--report-json", default=str(default_report_path()), help="Path for the JSON report.")
+    parser.add_argument(
+        "--vehicle-runtime",
+        choices=("deterministic", "jolt"),
+        default="deterministic",
+        help="Vehicle runtime to use for the scripted service-vehicle loop.",
+    )
     args = parser.parse_args()
 
     try:
@@ -127,6 +161,7 @@ def main() -> int:
             pathlib.Path(args.scene),
             pathlib.Path(args.report_json),
             args.scenario,
+            args.vehicle_runtime,
         )
     except Exception as exception:
         print(f"Playthrough QA failed: {exception}", file=sys.stderr)

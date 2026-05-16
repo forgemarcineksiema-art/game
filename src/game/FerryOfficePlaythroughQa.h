@@ -1,5 +1,6 @@
 #pragma once
 
+#include "engine/physics/VehicleRuntime.h"
 #include "game/FerryOfficeJob.h"
 #include "game/WorldState.h"
 
@@ -23,6 +24,13 @@ struct FerryOfficePlaythroughQaResult {
     std::vector<FerryOfficePlaythroughQaStep> steps;
     WorldState finalWorldState;
     FerryOfficeJobPhase finalPhase = FerryOfficeJobPhase::CollectManifest;
+    std::string requestedVehicleRuntime = "deterministic";
+    std::string vehicleRuntimeBackend = "deterministic";
+    bool vehicleRuntimeFallbackUsed = false;
+    bool vehicleRuntimeHitBounds = false;
+    int vehicleRuntimeFramesToCheckpoint = -1;
+    engine::Vec3 vehicleRuntimeFinalPosition;
+    float vehicleRuntimeFinalYawRadians = 0.0f;
     std::string error;
 };
 
@@ -30,4 +38,6 @@ std::filesystem::path DefaultFerryOfficePlaythroughQaReportPath();
 
 FerryOfficePlaythroughQaResult RunFerryOfficeServiceCallPlaythroughQa(
     const std::filesystem::path& scenePath,
-    const std::filesystem::path& reportPath = {});
+    const std::filesystem::path& reportPath = {},
+    engine::physics::PhysicsBackend vehicleRuntimeBackend = engine::physics::PhysicsBackend::Simple,
+    bool vehicleRuntimeAdapterEnabled = false);

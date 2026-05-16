@@ -30,7 +30,9 @@ int main(int argc, const char* const* argv)
     if (parseResult.config.qaPlaythroughRequested()) {
         const auto result = RunFerryOfficeServiceCallPlaythroughQa(
             parseResult.config.scenePath,
-            parseResult.config.qaPlaythroughReportPath);
+            parseResult.config.qaPlaythroughReportPath,
+            parseResult.config.vehicleRuntimeBackend,
+            parseResult.config.vehicleRuntimeAdapterEnabled);
         if (result.passed) {
             engine::Logger::info("QA playthrough passed: " + result.reportPath.string());
             return 0;
