@@ -39,6 +39,7 @@ class PlaythroughQaTests(unittest.TestCase):
                             {"name": "dockRoadRuntimeCheckpoint", "passed": True},
                             {"name": "serviceVehicleRuntimeExit", "passed": True},
                             {"name": "dockRoadRelayReset", "passed": True},
+                            {"name": "dockRoadRelayLogged", "passed": True},
                         ],
                         "vehicleRuntime": {
                             "requested": "deterministic",
@@ -60,6 +61,7 @@ class PlaythroughQaTests(unittest.TestCase):
                                 "serviceRunConfirmed": True,
                                 "ferryOfficeJobComplete": True,
                                 "dockRoadRelayReset": True,
+                                "dockRoadRelayLogged": True,
                             },
                         },
                     }
@@ -95,6 +97,7 @@ class PlaythroughQaTests(unittest.TestCase):
                                 "serviceRunConfirmed": True,
                                 "ferryOfficeJobComplete": False,
                                 "dockRoadRelayReset": False,
+                                "dockRoadRelayLogged": False,
                             },
                         },
                     }
@@ -134,6 +137,7 @@ class PlaythroughQaTests(unittest.TestCase):
                                 "serviceRunConfirmed": True,
                                 "ferryOfficeJobComplete": True,
                                 "dockRoadRelayReset": True,
+                                "dockRoadRelayLogged": True,
                             },
                         },
                     }
@@ -159,6 +163,7 @@ class PlaythroughQaTests(unittest.TestCase):
                             {"name": "dockRoadRuntimeCheckpoint", "passed": True},
                             {"name": "serviceVehicleRuntimeExit", "passed": True},
                             {"name": "dockRoadRelayReset", "passed": True},
+                            {"name": "dockRoadRelayLogged", "passed": True},
                         ],
                         "final": {
                             "phase": "complete",
@@ -173,6 +178,7 @@ class PlaythroughQaTests(unittest.TestCase):
                                 "serviceRunConfirmed": True,
                                 "ferryOfficeJobComplete": True,
                                 "dockRoadRelayReset": True,
+                                "dockRoadRelayLogged": True,
                             },
                         },
                     }

@@ -254,6 +254,78 @@ Next direction:
 
 - Commit and push this milestone if the repo remains clean, then re-check status before choosing the next milestone.
 
+## v0.52 Relay Service Log Follow-up Beat (2026-05-16)
+
+Selected milestone:
+
+- Add one tiny relay-dependent sign-off interaction at the service-run endpoint after the Dock Road Relay reset.
+
+Candidate triage:
+
+- Relay-dependent follow-up beat: high content impact, medium risk, validates through scene tests, C++ job tests, deterministic/Jolt playthrough QA, and `scripts\verify.ps1`.
+- Deterministic-vs-Jolt steering/obstacle replay: high technical leverage, medium risk, but would delay content growth after v0.51 gave the relay a visible local consequence.
+- Post-reset capture proxy: medium validation impact, low risk, but mostly tooling after a presentation milestone.
+
+Why selected:
+
+- v0.51 made the relay reset visible, and the next useful player-facing step was to make that remembered state feed a second local action rather than stop at a one-off toggle.
+- A small endpoint log beat extends the authored service-run loop without adding a broad mission framework, save/load, NPCs, economy, or new assets.
+
+Definition of Done:
+
+- Scene data contains a `Relay Service Log` interactable, route marker, and objective marker near the existing endpoint board.
+- World state records `dockRoadRelayLogged` only after `dockRoadRelayReset`.
+- Playthrough QA completes and requires the relay log step.
+- Scene tooling, C++ tests, default playthrough, and the main verification gate pass.
+
+Implementation notes:
+
+- Added `Relay Service Log` names, prompt, message, position, and radius to `FerryOfficeData`.
+- Added `WorldFlag::DockRoadRelayLogged` and exposed it through debug summaries and playthrough report flags.
+- `PrototypeScene::applyInteractionResult(...)` gates the log behind `dockRoadRelayReset`.
+- `PrototypeScene::currentJobObjectiveText()` now asks the player to log the relay reset after the reset, then acknowledges the follow-up completion.
+- Added scene-authored `relay-service-log`, `route-relay-to-service-log`, and `relay-service-log-marker` entries.
+- Extended C++ and Python playthrough tests and `tools\playthrough_qa.py` so stale reports missing `dockRoadRelayLogged` are rejected.
+
+Commands and results so far:
+
+- `python tests\test_scene_tools.py`: failed as expected before implementation because `relay-service-log`, `route-relay-to-service-log`, and `relay-service-log-marker` were missing.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: failed as expected before implementation because `WorldFlag::DockRoadRelayLogged` and `FerryOffice::Names::RelayServiceLog` did not exist.
+- `python tests\test_scene_tools.py`: passed after implementation, 40 tests.
+- `python tests\test_playthrough_qa.py`: passed, 5 tests.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: passed.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `python tools\validate_scene.py`: passed.
+- `python tools\scene_report.py`: passed; scene now reports 8 interactables, 8 route markers, and 7 objective markers.
+- `python tools\scale_audit.py`: passed; no suspicious scale issues.
+- `python tools\validate_assets.py`: passed; 11 model files.
+- `python tools\mesh_report.py`: passed; 11 mesh assets, 46 mesh instances, 11 model files.
+- `python tools\playthrough_qa.py`: initially failed after the report contract changed because the default `EngineApp` target had not been rebuilt yet; this was stale executable output, not source behavior.
+- `cmake --build --preset windows-vs2022-debug --target EngineApp`: passed.
+- `python tools\playthrough_qa.py`: passed after rebuilding `EngineApp`; phase=`complete`, events=12, vehicleRuntime=`deterministic`, framesToCheckpoint=139.
+- `scripts\verify.ps1`: passed; doctor passed with known PATH warnings, configure/build succeeded, CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null smoke loaded the Ferry Office scene.
+- `cmake --build --preset windows-vs2022-debug-jolt --target EngineApp`: passed.
+- `python tools\playthrough_qa.py --exe build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --vehicle-runtime jolt --report-json build\playthroughs\ferry-office-service-call-jolt-report.json`: passed; phase=`complete`, events=12, vehicleRuntime=`jolt`, framesToCheckpoint=213.
+- `git diff --check`: passed with expected CRLF normalization warnings only.
+
+Automated evidence generated:
+
+- `build\playthroughs\ferry-office-service-call-report.json` now completes with 12 events and requires `dockRoadRelayLogged=true`.
+
+Provisional decision:
+
+- Keep the relay service log as a compact local consequence rather than a generic Job #2 framework. The content is still explicit C++ behavior backed by scene-authored positions and QA steps.
+- Keep deterministic vehicle gameplay as the default; this beat does not change vehicle physics or the Jolt promotion decision.
+
+Remaining limitations:
+
+- The relay log is still in-memory prototype state, not persisted save data.
+- The beat reuses the existing endpoint board mesh and interaction system; it does not add UI paperwork, NPC acknowledgment, economy, or a larger second job arc.
+
+Next direction:
+
+- Commit and push this milestone if the repo remains clean, then re-check status before choosing the next milestone.
+
 ## Commands Run
 
 ```powershell

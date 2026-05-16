@@ -1104,7 +1104,7 @@ void TestSceneLoaderLoadsDefaultFerryOfficeScene()
     Expect(result.scene.meshInstances.size() >= 15,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored mesh instances, including the v0.18 prop style kit.");
-    Expect(result.scene.interactables.size() == 7,
+    Expect(result.scene.interactables.size() == 8,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored interactables.");
     Expect(result.scene.traversalAffordances.size() == 1,
@@ -3394,6 +3394,12 @@ void TestDockRoadRelayRequiresCompletedServiceCall()
             || scene.currentJobObjectiveText().find("Relay") != std::string::npos,
         "TestDockRoadRelayRequiresCompletedServiceCall",
         "The objective should acknowledge the relay follow-up beat.");
+
+    const bool relayLogged = scene.applyInteractionResult(
+        MakeSceneInteraction(std::string(FerryOffice::Names::RelayServiceLog), InteractableType::Info));
+    Expect(relayLogged && scene.worldState().isFlagSet(WorldFlag::DockRoadRelayLogged),
+        "TestDockRoadRelayRequiresCompletedServiceCall",
+        "The relay service log should complete only after the dock-road relay has been reset.");
 }
 
 void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
@@ -3440,6 +3446,9 @@ void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
     Expect(state.isFlagSet(WorldFlag::DockRoadRelayReset),
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should complete the second dock-road relay beat.");
+    Expect(state.isFlagSet(WorldFlag::DockRoadRelayLogged),
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "QA playthrough should log the relay reset as a follow-up consequence.");
     Expect(result.steps.size() >= 7,
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should report each major authored phase.");
@@ -3463,6 +3472,9 @@ void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
     Expect(hasStep("dockRoadRelayReset"),
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should record the second dock-road relay beat.");
+    Expect(hasStep("dockRoadRelayLogged"),
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "QA playthrough should record the relay reset log beat.");
     Expect(std::filesystem::exists(reportPath),
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should write a report artifact.");
@@ -3482,6 +3494,9 @@ void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
         Expect(report["final"]["flags"]["dockRoadRelayReset"] == true,
             "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
             "QA playthrough report should expose the dock-road relay reset.");
+        Expect(report["final"]["flags"]["dockRoadRelayLogged"] == true,
+            "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+            "QA playthrough report should expose the dock-road relay sign-off.");
         Expect(report["vehicleRuntime"]["backend"] == "deterministic",
             "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
             "QA playthrough report should expose the vehicle runtime backend.");

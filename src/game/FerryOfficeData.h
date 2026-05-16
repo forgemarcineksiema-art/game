@@ -16,6 +16,7 @@ inline constexpr std::string_view WallButton = "Wall Button";
 inline constexpr std::string_view ExitMarker = "Exit Summary Marker";
 inline constexpr std::string_view ServiceRunMarker = "Service Run Marker";
 inline constexpr std::string_view DockRoadRelay = "Dock Road Relay";
+inline constexpr std::string_view RelayServiceLog = "Relay Service Log";
 } // namespace Names
 
 namespace Prompts {
@@ -27,6 +28,7 @@ inline constexpr std::string_view WallButton = "Open Service Gate";
 inline constexpr std::string_view ExitMarker = "Review Ferry Office Summary";
 inline constexpr std::string_view ServiceRunMarker = "Review Service Run Marker";
 inline constexpr std::string_view DockRoadRelay = "Reset Dock Road Relay";
+inline constexpr std::string_view RelayServiceLog = "Log Relay Reset";
 } // namespace Prompts
 
 namespace Messages {
@@ -39,6 +41,7 @@ inline constexpr std::string_view ExitMarker = "Ferry Office summary marker reac
 inline constexpr std::string_view ServiceRunMarker =
     "Service run marker checked. Complete the service route and vehicle checkpoint before final confirmation.";
 inline constexpr std::string_view DockRoadRelay = "Dock road relay reset: service-yard lights are back on.";
+inline constexpr std::string_view RelayServiceLog = "Relay reset logged for the Ferry Office service board.";
 } // namespace Messages
 
 namespace Positions {
@@ -51,6 +54,7 @@ inline constexpr engine::Vec3 WallButton {-0.9f, 0.7f, 2.15f};
 inline constexpr engine::Vec3 ExitMarker {0.0f, 0.55f, 4.55f};
 inline constexpr engine::Vec3 ServiceRunMarker {18.6f, 0.55f, -0.55f};
 inline constexpr engine::Vec3 DockRoadRelay {18.05f, 0.65f, 0.25f};
+inline constexpr engine::Vec3 RelayServiceLog {17.55f, 0.55f, 0.46f};
 inline constexpr engine::Vec3 ServiceRunCheckpoint {19.35f, 0.08f, -2.2f};
 inline constexpr engine::Vec3 ServiceVaultStart {2.8f, 0.0f, -0.35f};
 inline constexpr engine::Vec3 ServiceVaultEnd {2.8f, 0.0f, 1.45f};
@@ -69,6 +73,7 @@ inline constexpr float WallButton = 1.7f;
 inline constexpr float ExitMarker = 1.8f;
 inline constexpr float ServiceRunMarker = 1.8f;
 inline constexpr float DockRoadRelay = 1.4f;
+inline constexpr float RelayServiceLog = 1.4f;
 inline constexpr float ServiceRunCheckpoint = 1.5f;
 } // namespace Radii
 

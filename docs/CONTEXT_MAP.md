@@ -20,7 +20,7 @@ Recent history forms a clear arc:
 - v0.32: deterministic Ferry Office playthrough QA.
 - v0.33: Jolt static scene-query parity QA.
 - v0.34: Jolt character/contact probe QA.
-- v0.45-v0.51: Jolt vehicle runtime controls, service-run route proxy, route-pace tuning, deterministic service-vehicle runtime playthrough QA, opt-in Jolt first-job live-loop QA, the Dock Road Relay follow-up beat, and the relay reset presentation cue.
+- v0.45-v0.52: Jolt vehicle runtime controls, service-run route proxy, route-pace tuning, deterministic service-vehicle runtime playthrough QA, opt-in Jolt first-job live-loop QA, the Dock Road Relay follow-up beat, the relay reset presentation cue, and the relay service log sign-off.
 
 ## Architecture Map
 
@@ -200,7 +200,7 @@ Commands run on 2026-05-16:
 - `python tools/validate_assets.py`: passed.
 - `python tools/scale_audit.py`: passed, no suspicious scale issues.
 - `python tools/mesh_report.py`: passed, 11 referenced model files.
-- `python tools/playthrough_qa.py`: passed; service-call phase `complete`, 11 events. After v0.51 this report is also expected to include vehicle runtime evidence, runtime service-vehicle enter, dock-road checkpoint, exit steps, the Dock Road Relay reset step, and the relay presentation state is tested separately through `ScenePresentation`.
+- `python tools/playthrough_qa.py`: passed; service-call phase `complete`, 12 events. After v0.52 this report is also expected to include vehicle runtime evidence, runtime service-vehicle enter, dock-road checkpoint, exit steps, the Dock Road Relay reset step, and the relay service log sign-off.
 - `python tools/capture_visual_smoke.py`: passed for GDI and DX11 captures; DX11 used WARP in this environment.
 - `python tools/physics_parity_qa.py`: passed with Jolt backend; floor=4, raycast=4, overlap=4.
 - `python tools/character_contact_qa.py`: passed with Jolt backend; probes=7.
@@ -367,7 +367,7 @@ Validation:
 
 ## Recommendation
 
-Best next move: add one more tiny follow-up step that depends on the relay flag, or build a narrower deterministic-vs-Jolt steering/obstacle replay if vehicle promotion is the priority.
+Best next move: build a narrower deterministic-vs-Jolt steering/obstacle replay if vehicle promotion is the priority, or add a small scene-authored consequence that changes route/readability after `dockRoadRelayLogged`.
 
 Reason: v0.35 proved Jolt vehicle feasibility, v0.36 proved a frame-stepped runtime adapter comparison, v0.37 exposed that adapter through `--vehicle-runtime jolt`, v0.45 hardened tap/brake/reverse/coast checks, v0.46 added automated service-run route checks, v0.47 tuned Jolt route pace under a 240-frame budget, v0.48 proved the deterministic first-job vehicle beat can enter, drive, checkpoint, exit, and confirm through runtime controller behavior, and v0.49 proved the same beat through the opt-in Jolt path in 213 frames with no fallback or bounds hit. That is enough for continued opt-in testing and small content growth, but not enough for default Jolt promotion until steering, obstacle, camera, and collision replay evidence exists.
 
@@ -392,7 +392,7 @@ Goal:
 Add one small scene-authored Job #2 beat if content progress is the priority, or build a deterministic-vs-Jolt steering/obstacle replay if vehicle promotion is the priority.
 
 Why now:
-The first service job now has runtime enter, drive, checkpoint, exit, and confirm evidence for both deterministic and opt-in Jolt vehicle paths, and v0.51 adds one compact Dock Road Relay follow-up with remembered state plus a visible reset cue. Content can now grow from a better-covered first job, while Jolt default promotion still needs narrower steering/obstacle/camera evidence.
+The first service job now has runtime enter, drive, checkpoint, exit, and confirm evidence for both deterministic and opt-in Jolt vehicle paths, and v0.52 adds a compact Dock Road Relay reset plus relay service log sign-off with remembered state. Content can now grow from a better-covered first job, while Jolt default promotion still needs narrower steering/obstacle/camera evidence.
 
 Scope:
 - Either extend the runtime QA path to run the opt-in Jolt vehicle switch through enter-drive-checkpoint-exit-confirm behavior, or add a single compact authored follow-up job with visible world-state change.

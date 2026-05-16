@@ -594,8 +594,17 @@ Status: implemented as a second compact service beat. The scene now has 7 intera
 - Turn the relay cue from warning orange to reset green when `dockRoadRelayReset` is true.
 - Keep this as a tiny world-state feedback cue, not a lighting system, save/load feature, new mesh asset, or broader job framework.
 
-Status: implemented pending final verification. Scene data now has 19 scene materials and 25 visual placeholders, and the deterministic playthrough still completes the 11-event service-call plus relay loop.
+Status: implemented and validated. Scene data now has 19 scene materials and 25 visual placeholders, and the deterministic playthrough still completes the 11-event service-call plus relay loop.
+
+## v0.52 - Relay Service Log Follow-up Beat
+
+- Add a second tiny endpoint interaction that depends on the Dock Road Relay reset.
+- Record `dockRoadRelayLogged` only after `dockRoadRelayReset`.
+- Place the sign-off on the existing service-run review board instead of adding a new mesh asset or mission framework.
+- Extend playthrough QA so the service-call follow-up chain now ends with the relay log.
+
+Status: implemented and validated. Scene data now has 8 interactables, 8 route markers, and 7 objective markers; deterministic and opt-in Jolt playthroughs both complete with 12 events, with checkpoint timing still 139 frames for deterministic and 213 frames for Jolt.
 
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. With v0.51 giving the first follow-up beat a visible local consequence, the next useful milestone is either one more tiny scene-authored content beat that depends on `dockRoadRelayReset`, or a narrower deterministic-vs-Jolt steering/obstacle replay before any default vehicle-runtime promotion.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. With v0.52 extending the first follow-up chain to a reset-and-log endpoint, the next useful milestone is either a narrow deterministic-vs-Jolt steering/obstacle replay before any default vehicle-runtime promotion, or a small scene-authored consequence that changes route/readability after `dockRoadRelayLogged`.

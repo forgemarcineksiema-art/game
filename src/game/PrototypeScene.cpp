@@ -237,6 +237,10 @@ bool PrototypeScene::applyInteractionResult(const InteractionResult& result)
         if (m_job.isComplete(m_worldState)) {
             changed |= m_worldState.setFlag(WorldFlag::DockRoadRelayReset, true, result.name);
         }
+    } else if (result.name == FerryOffice::Names::RelayServiceLog) {
+        if (m_worldState.isFlagSet(WorldFlag::DockRoadRelayReset)) {
+            changed |= m_worldState.setFlag(WorldFlag::DockRoadRelayLogged, true, result.name);
+        }
     }
 
     return changed;
@@ -317,8 +321,11 @@ std::string PrototypeScene::currentJobObjectiveText() const
     if (m_job.isComplete(m_worldState) && !m_worldState.isFlagSet(WorldFlag::DockRoadRelayReset)) {
         return "Reset the Dock Road Relay beside the service-run marker.";
     }
-    if (m_worldState.isFlagSet(WorldFlag::DockRoadRelayReset)) {
-        return "Dock Road Relay reset. Ferry Office follow-up complete.";
+    if (m_worldState.isFlagSet(WorldFlag::DockRoadRelayReset) && !m_worldState.isFlagSet(WorldFlag::DockRoadRelayLogged)) {
+        return "Log the relay reset on the service-run board.";
+    }
+    if (m_worldState.isFlagSet(WorldFlag::DockRoadRelayLogged)) {
+        return "Relay reset logged. Ferry Office follow-up complete.";
     }
     return m_job.currentObjectiveText(m_worldState);
 }

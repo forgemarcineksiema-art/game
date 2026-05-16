@@ -92,7 +92,7 @@ The slice still uses debug text and markers, not a real UI framework. Job #2 rem
 
 The first compact follow-up beat is `Dock Road Relay`.
 
-After the Ferry Office Service Call completes at the service-run marker, the player can reset a small relay at the dock-road endpoint. This records `dockRoadRelayReset=true` and flips a small endpoint status cue from warning orange to reset green, giving the service-run area a remembered visible consequence without adding a mission framework, NPC AI, economy, save/load, new vehicle physics, or broader map expansion.
+After the Ferry Office Service Call completes at the service-run marker, the player can reset a small relay at the dock-road endpoint. This records `dockRoadRelayReset=true` and flips a small endpoint status cue from warning orange to reset green. The player can then log the reset at the nearby service board, recording `dockRoadRelayLogged=true`. This gives the service-run area a remembered visible/sign-off consequence without adding a mission framework, NPC AI, economy, save/load, new vehicle physics, or broader map expansion.
 
 ## Systems Explicitly Deferred
 

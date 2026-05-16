@@ -19,7 +19,7 @@ This file lists known foundation issues during the current playable-build phase.
 
 ### Acceptable For Now
 
-1. No broad Job #2 framework yet. v0.51 keeps the small Dock Road Relay follow-up beat visible through one relay status cue, but new content should stay compact and extend playthrough QA instead of bypassing it.
+1. No broad Job #2 framework yet. v0.52 keeps the Dock Road Relay follow-up as a reset-and-log endpoint chain, but new content should stay compact and extend playthrough QA instead of bypassing it.
 2. Deterministic vehicle movement remains the default live fallback after v0.49. Jolt VehicleConstraint now has feasibility, runtime-comparison, opt-in live-switch, controls-focused runtime QA, 240-frame service-run route evidence, and the same first-job enter-drive-exit-confirm playthrough evidence, but it still should not replace default gameplay until narrower steering, obstacle, camera, and collision replay evidence exists.
 3. `WorldState` and `FerryOfficeJob` remain explicit in-memory prototype systems, not a save/load or mission framework.
 4. The tiny custom `.gltf` subset remains acceptable while assets are simple embedded-buffer static props.

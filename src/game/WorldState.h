@@ -19,6 +19,7 @@ enum class WorldFlag {
     ServiceRunConfirmed,
     FerryOfficeJobComplete,
     DockRoadRelayReset,
+    DockRoadRelayLogged,
     Count,
 };
 

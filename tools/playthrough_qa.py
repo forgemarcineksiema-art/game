@@ -25,12 +25,14 @@ REQUIRED_FLAGS = [
     "serviceRunConfirmed",
     "ferryOfficeJobComplete",
     "dockRoadRelayReset",
+    "dockRoadRelayLogged",
 ]
 REQUIRED_RUNTIME_STEPS = [
     "serviceVehicleRuntime",
     "dockRoadRuntimeCheckpoint",
     "serviceVehicleRuntimeExit",
     "dockRoadRelayReset",
+    "dockRoadRelayLogged",
 ]
 
 
