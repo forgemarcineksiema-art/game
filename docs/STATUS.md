@@ -2,6 +2,61 @@
 
 Last updated: 2026-05-16
 
+## v0.83 Service Yard Route Threshold Pass (2026-05-16)
+
+Selected milestone:
+
+- Make the service-yard-to-dock-road handoff read more like an authored route/material transition.
+
+Candidate visual pass triage:
+
+- Service Yard Route Threshold Pass: visible impact = medium because it clarifies a key vehicle route handoff; risk = low because it adds only visual-only low meshes near existing posts; validation/capture path = scene tools, GDI/DX11 visual smoke, `scripts\verify.ps1`.
+- Another original mesh replacement: visible impact = medium; risk = medium because it adds asset-generation scope.
+- Fog/horizon treatment: visible impact = high; risk = higher because it touches renderer behavior beyond the v0.82 clear-color lift.
+
+Why selected:
+
+- After v0.82, the default frame had better atmosphere, but the playable vehicle route from service yard to dock road still lacked a clear authored threshold. A worn crossbar and edge caps clarify the route/material handoff without adding prop clutter or blocking the lane.
+
+Implementation notes:
+
+- Added one low worn threshold crossbar at the service-yard exit.
+- Added paired low edge caps aligned with the existing yard exit posts.
+- Reused `unit-box-mesh`, `dock-muted-sign-yellow`, and `weathered-yard-rail`.
+- Preserved all collision, vehicle bounds, route flow, prompts, and gameplay behavior.
+
+Files changed:
+
+- `data\scenes\ferry_office.scene.json`
+- `docs\STATUS.md`
+- `docs\ROADMAP.md`
+
+Validation:
+
+- `python tools\validate_scene.py`: passed.
+- `python tools\validate_assets.py`: passed.
+- `python tools\mesh_report.py`: passed; 13 mesh assets, 71 mesh instances, 13 referenced model files.
+- `python tools\capture_visual_smoke.py --renderer gdi`: passed; GDI colors=75/lumaRange=221.
+- `scripts\verify.ps1`: passed; doctor completed with known plain-PATH tool warnings, configure/build succeeded, default CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke completed.
+- `python tools\capture_visual_smoke.py`: passed; GDI colors=75/lumaRange=221, DX11 colors=43/lumaRange=221 with WARP fallback in this environment.
+- `python tools\scene_report.py`: passed; 24 scene materials, 30 visual placeholders, 71 mesh instances, 16 interactables, 16 route markers, and 15 objective markers.
+- `python tools\scale_audit.py`: passed.
+- `git diff --check`: passed with only expected CRLF normalization warnings for touched files.
+
+Automated evidence generated:
+
+- `build\captures\v0.31-gdi-capture.bmp`
+- `build\captures\v0.31-dx11-capture.bmp`
+- `build\captures\capture_visual_smoke_report.json`
+
+Remaining visual weakness:
+
+- The service-yard/facade still relies on many primitive boxes. A future pass should replace another high-visibility repeated placeholder with a purposeful original mesh or improve facade material hierarchy.
+
+Commit/push:
+
+- Included in the `v0.83 service yard route threshold pass` commit/push step.
+
 ## v0.82 Overcast Sky Readability Pass (2026-05-16)
 
 Selected milestone:

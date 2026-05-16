@@ -1013,6 +1013,33 @@
       "notes": "v0.25 paired threshold cue for the service-yard to dock-road opening."
     },
     {
+      "id": "mesh-service-yard-dock-road-threshold-crossbar",
+      "assetId": "unit-box-mesh",
+      "position": [9.55, 0.035, -2.20],
+      "yawDegrees": 0.0,
+      "scale": [0.10, 0.05, 2.18],
+      "colorKey": "dock-muted-sign-yellow",
+      "notes": "v0.83 visual-only worn threshold stripe that makes the service-yard-to-dock-road handoff read as an authored route transition; no collision."
+    },
+    {
+      "id": "mesh-service-yard-dock-road-north-edge-cap",
+      "assetId": "unit-box-mesh",
+      "position": [9.92, 0.06, -0.92],
+      "yawDegrees": 0.0,
+      "scale": [0.70, 0.08, 0.12],
+      "colorKey": "weathered-yard-rail",
+      "notes": "v0.83 low visual-only edge cap aligned with the existing yard exit post; keeps the route edge readable without narrowing gameplay space."
+    },
+    {
+      "id": "mesh-service-yard-dock-road-south-edge-cap",
+      "assetId": "unit-box-mesh",
+      "position": [9.92, 0.06, -3.48],
+      "yawDegrees": 0.0,
+      "scale": [0.70, 0.08, 0.12],
+      "colorKey": "weathered-yard-rail",
+      "notes": "v0.83 paired visual-only edge cap for service-yard-to-dock-road material hierarchy; no collision or route blocking."
+    },
+    {
       "id": "mesh-dock-road-edge-post-c",
       "assetId": "road-edge-post-mesh",
       "position": [18.25, 0.0, -3.45],
