@@ -2,6 +2,72 @@
 
 Last updated: 2026-05-16
 
+## v0.91 Preferred Jolt Evidence Refresh (2026-05-16)
+
+Selected milestone:
+
+- Refresh the opt-in Jolt vehicle/runtime evidence stack against the current v0.90 Ferry Office scene.
+
+Candidate milestone triage:
+
+- Preferred Jolt evidence refresh: impact high because vehicle direction is the next technical decision after two player-facing content/readability milestones; risk low/medium because it should be evidence-only unless validation exposes drift; validation path = Jolt configure/build, Jolt CTest, physics/contact/vehicle/runtime QA, Jolt playthrough QA, preferred-runtime smoke checks.
+- Side service-panel/notice-board readability pass: impact medium and player-facing; risk low, but it would delay the already queued vehicle-direction evidence.
+- Route-marker readability pass for late follow-up chain: impact medium; risk medium because marker draw policy touches runtime guidance, better after the physics evidence refresh.
+
+Why selected:
+
+- v0.89 and v0.90 improved the authored follow-up chain and its visible consequence. The next highest-leverage non-busywork step is to verify whether the preferred Jolt runtime direction still holds after the scene and job chain changed.
+
+What changed:
+
+- No code changed. This milestone refreshed automated Jolt evidence and updated the decision/status docs.
+
+Files changed:
+
+- `docs\CONTEXT_MAP.md`
+- `docs\PHYSICS_DECISION.md`
+- `docs\ROADMAP.md`
+- `docs\STATUS.md`
+
+Validation so far:
+
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed; 15/15 tests.
+- `python tools\physics_parity_qa.py`: passed; backend=jolt, floor=4, raycast=4, overlap=4.
+- `python tools\character_contact_qa.py`: passed; backend=jolt, probes=7.
+- `python tools\vehicle_physics_qa.py`: passed; backend=jolt, samples=5, recommendation=promote.
+- `python tools\vehicle_runtime_qa.py`: passed; backend=jolt, samples=5, controlChecks=4, routeChecks=2, obstacleChecks=2, maxPositionDelta=1.49, maxYawDelta=29.10, maxSpeedDelta=2.25, recommendation=promote.
+- `python tools\playthrough_qa.py --exe build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --vehicle-runtime jolt --report-json build\playthroughs\ferry-office-service-call-jolt-report.json`: passed; 21-event chain complete, framesToCheckpoint=212, no fallback, no bounds hit.
+- `build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --smoke-test --vehicle-runtime preferred --frames 3 --debug-ui`: passed and reported `vehicleRuntime=jolt-live`.
+- `build\windows-vs2022-debug\Debug\EngineApp.exe --smoke-test --vehicle-runtime preferred --frames 3 --debug-ui`: passed and reported `vehicleRuntime=deterministic`.
+- `rg -n "Jolt|JPH::|<Jolt/|JPH/" src\game`: returned no matches.
+
+Automated evidence generated:
+
+- `build\physics\ferry-office-collision-parity-report.json`
+- `build\physics\ferry-office-character-contact-report.json`
+- `build\physics\ferry-office-vehicle-feasibility-report.json`
+- `build\physics\ferry-office-vehicle-runtime-comparison-report.json`
+- `build\playthroughs\ferry-office-service-call-jolt-report.json`
+
+Provisional decision:
+
+- Keep Jolt as the preferred production vehicle-runtime candidate and keep the wrapper `preferred` path intact: Jolt-enabled executables should enter `jolt-live`, while the default dependency-free executable should resolve safely to deterministic.
+
+Remaining limitations:
+
+- This is still automated evidence, not broad vehicle promotion. Player collision, traversal, dynamic objects, traffic, road-edge collision, damage, audio, and production vehicle feel remain outside this milestone.
+
+Final validation:
+
+- `scripts\verify.ps1`: passed; doctor completed with known plain-PATH tool warnings, configure/build succeeded, default CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke completed.
+- `git diff --check`: passed with only expected CRLF normalization warnings for touched files.
+
+Next direction:
+
+- If validation stays green, return to a player-facing slice improvement: late-chain route guidance/readability or the side service-panel/notice-board cluster.
+
 ## v0.90 Ferry Office Drain Log State Cue (2026-05-16)
 
 Selected milestone:

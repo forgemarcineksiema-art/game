@@ -927,6 +927,14 @@ Status: implemented and validated. Scene data now has 17 interactables, 17 route
 
 Status: implemented and validated. Scene data now has 25 authored scene materials and 31 visual placeholders; the drain-log cue shifts from pending amber to signed green after `lowDockDrainLogged`.
 
+## v0.91 - Preferred Jolt Evidence Refresh
+
+- Refresh the Jolt preset and vehicle/runtime QA stack against the current Ferry Office scene.
+- Verify the preferred-runtime wrapper behavior: Jolt-enabled executable resolves `preferred` to `jolt-live`, dependency-free executable resolves it to deterministic.
+- Keep this as evidence and decision documentation, not broad vehicle promotion.
+
+Status: implemented and validated. Jolt CTest passes 15/15; physics parity, character contact, vehicle feasibility, vehicle runtime comparison, and Jolt playthrough QA all pass. Runtime comparison reports `maxPositionDelta=1.49`, Jolt route completion in 212 frames versus 139 deterministic, zero obstacle overlap frames, and recommendation `promote`.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.90, the next useful future milestone should either build preferred-runtime/Jolt road-edge live-control evidence or improve the side service-panel/notice-board cluster as a coherent player-facing pass.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.91, return to a player-facing slice improvement: late-chain route guidance/readability or the side service-panel/notice-board cluster.

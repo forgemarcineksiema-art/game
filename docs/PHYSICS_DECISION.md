@@ -249,6 +249,30 @@ Important limits:
 - The switched vehicle uses the v0.36 runtime adapter state for live driving, but player collision, traversal, service-gate behavior, dynamic objects, traffic, damage, audio, and production vehicle tuning remain unchanged.
 - The next decision should come from preferred-runtime live evidence plus collision/route replay evidence, with human playtest as useful follow-up rather than the only gate.
 
+## v0.91 Preferred Runtime Evidence Refresh
+
+v0.91 refreshed the opt-in Jolt stack after the Ferry Office Drain Log content/readability changes.
+
+Validated:
+
+- `windows-vs2022-debug-jolt` configured and built.
+- Jolt CTest passed 15/15.
+- `tools\physics_parity_qa.py` passed with backend `jolt`: floor=4, raycast=4, overlap=4.
+- `tools\character_contact_qa.py` passed with backend `jolt`: probes=7.
+- `tools\vehicle_physics_qa.py` passed with backend `jolt`: samples=5, recommendation=`promote`.
+- `tools\vehicle_runtime_qa.py` passed with backend `jolt`: samples=5, controlChecks=4, routeChecks=2, obstacleChecks=2, `maxPositionDelta=1.49`, `maxYawDeltaDegrees=29.10`, `maxSpeedDelta=2.25`, recommendation=`promote`.
+- Jolt playthrough QA completed the 21-event Ferry Office chain with `framesToCheckpoint=212`, no fallback, and no bounds hit.
+- Preferred runtime smoke confirmed the Jolt-enabled executable reports `vehicleRuntime=jolt-live`; the dependency-free executable reports `vehicleRuntime=deterministic`.
+- `rg -n "Jolt|JPH::|<Jolt/|JPH/" src\game` returned no matches.
+
+Decision:
+
+- Keep Jolt as the preferred production vehicle-runtime candidate and keep the wrapper `preferred` behavior. The evidence still supports Jolt as the path to develop, while default dependency-free gameplay remains deterministic unless the executable supports the preferred backend.
+
+Revisit when:
+
+- Jolt road-edge collision, dynamic object contact, player collision migration, damage/traffic, or a broader authored driving route is added.
+
 Important implementation choices:
 
 - Jolt is opt-in for now. `scripts/verify.ps1` keeps using the default dependency-free preset.
@@ -275,4 +299,4 @@ v0.10 used the physics foundation without promoting full Jolt vehicle constraint
 - Tests scan `src/game` to prevent accidental `Jolt` / `JPH::*` vendor references.
 - The opt-in `windows-vs2022-debug-jolt` preset remains the proof that the Jolt backend still configures, builds, and tests through the engine API.
 
-Next recommendation: use the preferred-runtime trial to gather live evidence before broader migration. The v0.65/v0.68 Jolt path validates enter, drive, checkpoint, exit, service-run confirmation, camera-aware obstacle progress, controls checks, and collision-backed obstacle replay telemetry, but it still has not become broad live vehicle collision, road-edge collision, damage, traffic, or full production vehicle feel.
+Next recommendation: use the preferred-runtime trial as the default vehicle-candidate direction, but keep broader migration incremental. The v0.91 Jolt path validates enter, drive, checkpoint, exit, service-run confirmation, camera-aware obstacle progress, controls checks, collision-backed obstacle replay telemetry, and preferred-wrapper fallback behavior, but it still has not become broad live vehicle collision, road-edge collision, damage, traffic, or full production vehicle feel.
