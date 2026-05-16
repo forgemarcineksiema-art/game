@@ -85,6 +85,7 @@ foreach ($Path in @(
     "tools\mesh_report.py",
     "tools\capture_visual_smoke.py",
     "tools\playthrough_qa.py",
+    "tools\physics_parity_qa.py",
     "tools\check_blender.py",
     "tools\create_simple_prop_gltf.py",
     "tools\blender\create_tidebreak_notice_board.py",

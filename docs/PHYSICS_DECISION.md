@@ -1,6 +1,6 @@
 # Physics Decision
 
-Last updated: 2026-05-15
+Last updated: 2026-05-16
 
 ## Recommendation
 
@@ -8,7 +8,7 @@ Choose Jolt Physics as Tidebreak's default production physics candidate unless a
 
 Keep PhysX as the backup candidate. Do not choose Bullet for the main engine path unless a future, narrow test gives a strong reason.
 
-This decision does not mean every current gameplay collision path should be rewritten immediately. v0.9.2 adds a vendor-safe `src/engine/physics` boundary and an opt-in Jolt backend spike. The existing Ferry Office gameplay still uses the tested prototype collision path until a later goal migrates one behavior at a time.
+This decision does not mean every current gameplay collision path should be rewritten immediately. v0.9.2 adds a vendor-safe `src/engine/physics` boundary and an opt-in Jolt backend spike. v0.33 adds a QA-only Ferry Office static-collision parity bridge, but the existing Ferry Office gameplay still uses the tested prototype collision path until a later goal migrates one behavior at a time.
 
 ## Why Decide Now
 
@@ -126,6 +126,29 @@ Validated:
 - Jolt can create a static box and raycast it through the engine-owned API.
 - Game code does not include Jolt headers or expose Jolt types.
 
+## v0.33 Runtime Parity Bridge Result
+
+Added:
+
+- `IPhysicsWorld::overlapBox()` as a vendor-free overlap-style query.
+- `src/game/FerryOfficePhysicsParity.h/.cpp`, a QA-only runner that loads `data/scenes/ferry_office.scene.json`, builds the existing `PrototypeWorld`, mirrors authored static box colliders plus a simple scene-floor body into the requested engine physics backend, and compares deterministic probes.
+- `--qa-physics-parity ferry-office-collision` and `--qa-physics-report <path>` CLI flags.
+- `tools/physics_parity_qa.py`, which runs a Jolt-enabled `EngineApp.exe`, validates report schema `v0.33-ferry-office-physics-parity`, and checks floor, raycast, and overlap probe results.
+
+Validated:
+
+- Default dependency-free build still passes and still reports the opt-in backend unavailable when physics parity is requested without the Jolt preset.
+- Opt-in `windows-vs2022-debug-jolt` configure/build passes.
+- Opt-in CTest now includes `FerryOfficeJoltPhysicsParitySmoke` and passes.
+- The Ferry Office parity report validates 9 authored static colliders, 4 floor probes, 4 raycast probes, and 4 player-overlap-style probes against the current `PrototypeWorld` behavior.
+
+Important limits:
+
+- The parity bridge is off by default and does not open a window or run gameplay.
+- Live player movement, traversal landing, service-gate state changes, vehicle driving, and vehicle collision still use existing prototype systems.
+- The floor body is a bounded validation helper for scene-query parity, not terrain, slopes, stairs, ramps, or a full ground model.
+- Overlap parity currently validates static box overlap-style behavior through the engine physics API. It is not a character controller, sweep test, contact solver, dynamic rigid-body migration, or vehicle constraint.
+
 Important implementation choices:
 
 - Jolt is opt-in for now. `scripts/verify.ps1` keeps using the default dependency-free preset.
@@ -141,6 +164,7 @@ Important implementation choices:
 - Do not add physics scene serialization yet.
 - Do not require vcpkg until the dependency strategy is revisited.
 - Do not expose Jolt types to `src/game`.
+- Do not treat the v0.33 parity bridge as a gameplay migration.
 
 ## Next Recommendation
 
@@ -151,4 +175,4 @@ v0.10 used the physics foundation without promoting full Jolt vehicle constraint
 - Tests scan `src/game` to prevent accidental `Jolt` / `JPH::*` vendor references.
 - The opt-in `windows-vs2022-debug-jolt` preset remains the proof that the Jolt backend still configures, builds, and tests through the engine API.
 
-Next recommendation: run v0.10.1 Vehicle Feel Tuning + Service Yard Road Test Polish before deciding whether to promote any vehicle behavior to Jolt VehicleConstraint.
+Next recommendation: if the project wants vehicle feel "only with Jolt", do one more narrow migration step before wheel constraints: either a Jolt player/contact probe for the current static scene, or a contained Jolt vehicle feasibility spike that does not replace the live Service Call until its behavior is proven.

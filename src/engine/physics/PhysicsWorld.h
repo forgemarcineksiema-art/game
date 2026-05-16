@@ -54,6 +54,11 @@ struct RaycastResult {
     std::string bodyName;
 };
 
+struct OverlapResult {
+    BodyHandle body;
+    std::string bodyName;
+};
+
 struct PhysicsDebugLine {
     Vec3 from;
     Vec3 to;
@@ -76,10 +81,12 @@ public:
 
     virtual void step(float deltaSeconds) = 0;
     virtual RaycastResult raycast(Vec3 origin, Vec3 direction, float maxDistance) const = 0;
+    virtual std::vector<OverlapResult> overlapBox(Vec3 center, Vec3 halfExtents) const = 0;
     virtual std::vector<PhysicsDebugLine> debugLines() const = 0;
 };
 
 std::unique_ptr<IPhysicsWorld> CreatePhysicsWorld(PhysicsBackend backend);
+PhysicsBackend OptInPhysicsBackend();
 bool IsJoltPhysicsAvailable();
 
 } // namespace engine::physics

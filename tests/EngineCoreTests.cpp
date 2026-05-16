@@ -15,6 +15,7 @@
 #include "game/PlayerController.h"
 #include "game/FerryOfficeData.h"
 #include "game/FerryOfficeJob.h"
+#include "game/FerryOfficePhysicsParity.h"
 #include "game/FerryOfficePlaythroughQa.h"
 #include "game/PrototypeScene.h"
 #include "game/PrototypeWorld.h"
@@ -371,6 +372,50 @@ void TestHelpTextMentionsQaPlaythroughFlags()
     Expect(help.find("--qa-playthrough-report") != std::string::npos,
         "TestHelpTextMentionsQaPlaythroughFlags",
         "Help text should document the QA playthrough report flag.");
+}
+
+void TestQaPhysicsParityArgumentsSelectScenarioAndReportPath()
+{
+    const char* argv[] = {
+        "EngineApp",
+        "--qa-physics-parity",
+        "ferry-office-collision",
+        "--qa-physics-report",
+        "build/physics/ferry-office-collision-parity.json",
+    };
+    const auto result = engine::ParseArguments(5, argv);
+
+    Expect(result.errors.empty(),
+        "TestQaPhysicsParityArgumentsSelectScenarioAndReportPath",
+        "QA physics parity arguments should parse cleanly.");
+    Expect(result.config.qaPhysicsParity == "ferry-office-collision",
+        "TestQaPhysicsParityArgumentsSelectScenarioAndReportPath",
+        "Config should preserve the requested QA physics parity scenario.");
+    Expect(result.config.qaPhysicsReportPath.generic_string() == "build/physics/ferry-office-collision-parity.json",
+        "TestQaPhysicsParityArgumentsSelectScenarioAndReportPath",
+        "Config should preserve the requested QA physics parity report path.");
+}
+
+void TestQaPhysicsParityArgumentsRejectUnknownScenario()
+{
+    const char* argv[] = {"EngineApp", "--qa-physics-parity", "vehicle-constraint"};
+    const auto result = engine::ParseArguments(3, argv);
+
+    Expect(!result.errors.empty(),
+        "TestQaPhysicsParityArgumentsRejectUnknownScenario",
+        "Unknown QA physics parity scenarios should be rejected.");
+}
+
+void TestHelpTextMentionsQaPhysicsParityFlags()
+{
+    const std::string help = engine::BuildHelpText();
+
+    Expect(help.find("--qa-physics-parity") != std::string::npos,
+        "TestHelpTextMentionsQaPhysicsParityFlags",
+        "Help text should document the QA physics parity scenario flag.");
+    Expect(help.find("--qa-physics-report") != std::string::npos,
+        "TestHelpTextMentionsQaPhysicsParityFlags",
+        "Help text should document the QA physics parity report flag.");
 }
 
 void TestCursorCaptureArguments()
@@ -1184,6 +1229,31 @@ void TestPhysicsWorldDebugLinesExposeStaticBoxes()
         "TestPhysicsWorldDebugLinesExposeStaticBoxes",
         "A static box should expose at least twelve debug line segments.");
 
+    world->shutdown();
+}
+
+void TestPhysicsWorldOverlapBoxFindsStaticBox()
+{
+    auto world = engine::physics::CreatePhysicsWorld(engine::physics::PhysicsBackend::Simple);
+    engine::physics::PhysicsConfig config;
+    Expect(world->initialize(config), "TestPhysicsWorldOverlapBoxFindsStaticBox", "Simple physics world should initialize.");
+
+    engine::physics::BoxColliderDesc box;
+    box.name = "overlap-target";
+    box.center = {1.0f, 0.5f, 1.0f};
+    box.halfExtents = {0.5f, 0.5f, 0.5f};
+    world->addStaticBox(box);
+
+    const auto overlaps = world->overlapBox({1.25f, 0.5f, 1.25f}, {0.25f, 0.25f, 0.25f});
+
+    Expect(overlaps.size() == 1,
+        "TestPhysicsWorldOverlapBoxFindsStaticBox",
+        "Physics overlap box should report an intersecting static box.");
+    if (!overlaps.empty()) {
+        Expect(overlaps.front().bodyName == "overlap-target",
+            "TestPhysicsWorldOverlapBoxFindsStaticBox",
+            "Physics overlap result should preserve the body name.");
+    }
     world->shutdown();
 }
 
@@ -2965,6 +3035,74 @@ void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
     std::filesystem::remove(reportPath);
 }
 
+void TestFerryOfficePhysicsParityBuildsSceneStaticWorldAndWritesReport()
+{
+    const std::filesystem::path reportPath =
+        std::filesystem::temp_directory_path() / "tidebreak-v033-physics-parity-report.json";
+    std::filesystem::remove(reportPath);
+
+    const auto result = RunFerryOfficePhysicsParityQa(
+        DefaultScenePathForTests(),
+        reportPath,
+        engine::physics::PhysicsBackend::Simple);
+
+    Expect(result.passed,
+        "TestFerryOfficePhysicsParityBuildsSceneStaticWorldAndWritesReport",
+        result.error.empty() ? "Physics parity should pass against the engine simple backend." : result.error);
+    Expect(result.sceneId == "ferry-office",
+        "TestFerryOfficePhysicsParityBuildsSceneStaticWorldAndWritesReport",
+        "Physics parity should report the loaded Ferry Office scene.");
+    Expect(result.staticColliderCount == 9,
+        "TestFerryOfficePhysicsParityBuildsSceneStaticWorldAndWritesReport",
+        "Physics parity should mirror all authored static colliders.");
+    Expect(result.floorProbes.size() >= 3,
+        "TestFerryOfficePhysicsParityBuildsSceneStaticWorldAndWritesReport",
+        "Physics parity should include dock/office/road floor probes.");
+    Expect(result.raycastProbes.size() >= 4,
+        "TestFerryOfficePhysicsParityBuildsSceneStaticWorldAndWritesReport",
+        "Physics parity should include deterministic scene raycast probes.");
+    Expect(result.overlapProbes.size() >= 4,
+        "TestFerryOfficePhysicsParityBuildsSceneStaticWorldAndWritesReport",
+        "Physics parity should include deterministic player-overlap probes.");
+    Expect(std::filesystem::exists(reportPath),
+        "TestFerryOfficePhysicsParityBuildsSceneStaticWorldAndWritesReport",
+        "Physics parity should write the requested JSON report.");
+
+    std::ifstream input(reportPath);
+    const nlohmann::json report = nlohmann::json::parse(input);
+    input.close();
+    Expect(report["schema"] == "v0.33-ferry-office-physics-parity",
+        "TestFerryOfficePhysicsParityBuildsSceneStaticWorldAndWritesReport",
+        "Physics parity report should use the v0.33 schema.");
+    Expect(report["passed"] == true,
+        "TestFerryOfficePhysicsParityBuildsSceneStaticWorldAndWritesReport",
+        "Physics parity report should mark the simple-backend run as passed.");
+    Expect(report["backend"] == "simple",
+        "TestFerryOfficePhysicsParityBuildsSceneStaticWorldAndWritesReport",
+        "Physics parity report should include the tested backend name.");
+
+    std::filesystem::remove(reportPath);
+}
+
+void TestFerryOfficePhysicsParityHandlesUnavailableJoltExplicitly()
+{
+    if (engine::physics::IsJoltPhysicsAvailable()) {
+        return;
+    }
+
+    const auto result = RunFerryOfficePhysicsParityQa(
+        DefaultScenePathForTests(),
+        {},
+        engine::physics::PhysicsBackend::Jolt);
+
+    Expect(!result.passed,
+        "TestFerryOfficePhysicsParityHandlesUnavailableJoltExplicitly",
+        "Default builds should not pretend Jolt parity ran.");
+    Expect(!result.error.empty(),
+        "TestFerryOfficePhysicsParityHandlesUnavailableJoltExplicitly",
+        "Unavailable Jolt parity should explain the opt-in build requirement.");
+}
+
 void TestSandboxDebugTextUsesReadableSections()
 {
     SandboxLayer layer;
@@ -3286,6 +3424,9 @@ int main()
     TestQaPlaythroughArgumentsSelectScenarioAndReportPath();
     TestQaPlaythroughArgumentsRejectUnknownScenario();
     TestHelpTextMentionsQaPlaythroughFlags();
+    TestQaPhysicsParityArgumentsSelectScenarioAndReportPath();
+    TestQaPhysicsParityArgumentsRejectUnknownScenario();
+    TestHelpTextMentionsQaPhysicsParityFlags();
     TestCursorCaptureArguments();
     TestUiModeArguments();
     TestInputStateTracksDebugOverlayToggleEdge();
@@ -3316,6 +3457,7 @@ int main()
     TestPhysicsWorldCreatesAndShutsDownThroughVendorFreeInterface();
     TestPhysicsWorldRaycastHitsStaticBox();
     TestPhysicsWorldDebugLinesExposeStaticBoxes();
+    TestPhysicsWorldOverlapBoxFindsStaticBox();
     TestJoltBackendAvailabilityIsExplicit();
     TestVehicleControllerAcceleratesBrakesAndReversesDeterministically();
     TestVehicleControllerSteeringChangesYawWhileMoving();
@@ -3379,6 +3521,8 @@ int main()
     TestMaintenanceBoxIsNotFocusedBeforeServiceVault();
     TestFerryOfficeLoopCanCompleteThroughSceneSystems();
     TestFerryOfficePlaythroughQaCompletesJobAndWritesReport();
+    TestFerryOfficePhysicsParityBuildsSceneStaticWorldAndWritesReport();
+    TestFerryOfficePhysicsParityHandlesUnavailableJoltExplicitly();
     TestSandboxDebugTextUsesReadableSections();
     TestFerryOfficeOneShotManifestDoesNotDuplicateEvents();
     TestTraversalFocusSelectsAvailableAffordance();

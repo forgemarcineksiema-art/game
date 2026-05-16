@@ -120,6 +120,7 @@ endif()
 
 add_library(GamePrototype STATIC
     src/game/FerryOfficeJob.cpp
+    src/game/FerryOfficePhysicsParity.cpp
     src/game/FerryOfficePlaythroughQa.cpp
     src/game/InteractionSystem.cpp
     src/game/PlayerController.cpp
@@ -199,6 +200,22 @@ if(ENGINE_BUILD_TESTS)
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_playthrough_qa.py
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
+    add_test(
+        NAME PhysicsParityToolTests
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_physics_parity_tool.py
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+    if(ENGINE_ENABLE_JOLT_PHYSICS)
+        add_test(
+            NAME FerryOfficeJoltPhysicsParitySmoke
+            COMMAND
+                ${Python3_EXECUTABLE}
+                ${CMAKE_CURRENT_SOURCE_DIR}/tools/physics_parity_qa.py
+                --exe $<TARGET_FILE:EngineApp>
+                --report-json ${CMAKE_CURRENT_BINARY_DIR}/physics/ferry-office-collision-parity-report.json
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        )
+    endif()
     add_test(
         NAME FerryOfficePlaythroughQaSmoke
         COMMAND

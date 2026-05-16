@@ -4914,3 +4914,59 @@ Remaining limitations:
 - The playthrough QA runner is deterministic behavioral coverage, not human input automation.
 - It does not prove route readability, camera comfort, vehicle driving feel, collision feel, prompt ergonomics, visual composition quality, or complete end-to-end keyboard/mouse navigation.
 - The path is intentionally Ferry Office Service Call-specific and should not become a generic mission scripting system until more jobs prove a stable data shape.
+
+## v0.33 Jolt Runtime Physics Bridge / Ferry Office Collision Parity Spike (2026-05-16)
+
+Scope:
+
+- Built on the opt-in Jolt physics foundation without changing default gameplay.
+- Added a narrow QA-only Ferry Office static collision parity path so the authored scene can be mirrored into the engine physics API and compared against `PrototypeWorld`.
+- Kept the bridge off by default and avoided migrating player movement, traversal, service-gate behavior, vehicle driving, Jolt VehicleConstraint, Job #2, NPCs, save/load, mission scripting, or broad collision rewrites.
+
+Focused TDD result:
+
+- Added C++ tests for `--qa-physics-parity`, `--qa-physics-report`, physics `overlapBox()`, the Ferry Office parity runner, report writing, and the default-build unavailable-backend case before implementation.
+- Added `tests\test_physics_parity_tool.py` before implementation for report validation behavior.
+- `scripts\build.ps1` failed as expected before implementation because `game/FerryOfficePhysicsParity.h` was missing.
+- After implementation, default `EngineCoreTests` and the Python wrapper tests passed.
+- A first `EngineCoreTests` rerun exposed the existing `src/game` no-Jolt-reference architecture guard; the game code was adjusted to call a neutral engine-owned opt-in backend helper rather than spelling Jolt in game files.
+
+Implementation notes:
+
+- Added vendor-free `engine::physics::OverlapResult` and `IPhysicsWorld::overlapBox()` to the engine physics boundary, implemented by both the simple backend and the Jolt backend.
+- Added `engine::physics::OptInPhysicsBackend()` so game code can request the opt-in backend without vendor naming.
+- Added `src\game\FerryOfficePhysicsParity.h/.cpp`.
+- `RunFerryOfficePhysicsParityQa` loads `data\scenes\ferry_office.scene.json`, builds the current `PrototypeWorld`, mirrors the 9 authored static box colliders plus a validation floor body into the requested physics backend, and compares 4 floor probes, 4 raycast probes, and 4 player-overlap-style probes.
+- Added `--qa-physics-parity ferry-office-collision` and `--qa-physics-report <path>` to CLI parsing/help.
+- Added `tools\physics_parity_qa.py`, which runs a Jolt-enabled `EngineApp.exe`, validates schema `v0.33-ferry-office-physics-parity`, checks all probe groups, and writes/reads `build\physics\ferry-office-collision-parity-report.json` by default.
+- Added `PhysicsParityToolTests` to default CTest and `FerryOfficeJoltPhysicsParitySmoke` to the opt-in Jolt CTest preset.
+- Updated `docs\PHYSICS_DECISION.md`, `docs\RUNBOOK.md`, `docs\MANUAL_TEST_CHECKLIST.md`, `docs\TECH_DEBT.md`, and `docs\ROADMAP.md`.
+
+Validation so far:
+
+- `scripts\build.ps1`: failed as expected before implementation because `game/FerryOfficePhysicsParity.h` was missing.
+- `python tests\test_physics_parity_tool.py`: passed, 2 tests.
+- `build\windows-vs2022-debug\Debug\EngineApp.exe --qa-physics-parity ferry-office-collision --scene data\scenes\ferry_office.scene.json --qa-physics-report build\physics\default-jolt-unavailable-report.json`: failed as expected on the default build because the opt-in backend was unavailable.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: failed once because `src/game` contained direct `Jolt` text in the new parity files and `main.cpp`; fixed by routing through a neutral engine helper.
+- `scripts\build.ps1`: passed after implementation.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed after the architecture-boundary fix.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `python tools\physics_parity_qa.py --exe build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --report-json build\physics\ferry-office-collision-parity-report.json`: passed; backend `jolt`, floor=4, raycast=4, overlap=4.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 9/9 tests including `FerryOfficeJoltPhysicsParitySmoke`.
+- `scripts\doctor.ps1`: passed; expected warnings remain for compiler/tool binaries outside plain `PATH`, and the new `tools\physics_parity_qa.py` check passed.
+- `scripts\configure.ps1`: passed for `windows-vs2022-debug`.
+- `scripts\build.ps1`: passed after documentation updates.
+- `scripts\verify.ps1`: passed; CTest 8/8 passed including `PhysicsParityToolTests`, scene validation passed, asset validation passed, mesh report passed, and null smoke loaded all 8 static mesh assets.
+- `python tools\playthrough_qa.py`: passed after full verify; `phase=complete`, `eventCount=10`.
+- `python tools\capture_visual_smoke.py`: passed after full verify; GDI and DX11 captures stayed 1280x720 with expected scene and overlay text signals. DX11 hardware still fell back to WARP.
+- `python tools\physics_parity_qa.py`: passed after full verify using `build\windows-vs2022-debug-jolt\Debug\EngineApp.exe`; backend `jolt`, floor=4, raycast=4, overlap=4.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed again after docs/default verify, 9/9 tests.
+- `git diff --check`: passed; expected line-ending warnings remain on this Windows checkout.
+
+Remaining limitations:
+
+- The parity path is QA-only and does not run the normal update loop or open a window.
+- Live Ferry Office gameplay still uses `PrototypeWorld` collision.
+- The validation floor body is a flat helper, not terrain, slopes, stairs, ramps, or a production ground model.
+- Overlap parity validates static box overlap-style behavior through the engine API; it is not a swept capsule, character controller, dynamic contact solver, or vehicle physics migration.

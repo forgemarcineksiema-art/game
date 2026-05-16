@@ -1,6 +1,6 @@
 # Manual Test Checklist
 
-Last updated: 2026-05-15
+Last updated: 2026-05-16
 
 Use this after automated validation when a change affects player feel, camera, collision, renderer, or interactions.
 
@@ -64,6 +64,7 @@ Optional physics dependency spike:
 cmake --preset windows-vs2022-debug-jolt
 cmake --build --preset windows-vs2022-debug-jolt
 ctest --preset windows-vs2022-debug-jolt --output-on-failure
+python tools\physics_parity_qa.py
 ```
 
 Optional scene authoring checks:
@@ -129,6 +130,7 @@ python tools/mesh_report.py
 - [ ] Normal `scripts/verify.ps1` still passes without requiring Jolt.
 - [ ] `windows-vs2022-debug-jolt` configures and builds when intentionally testing physics dependency work.
 - [ ] Jolt tests pass through the engine-owned `IPhysicsWorld` API.
+- [ ] `python tools\physics_parity_qa.py` passes with a Jolt-enabled build and writes `build\physics\ferry-office-collision-parity-report.json`.
 - [ ] `src/game` has no direct `JPH::*` or Jolt header usage.
 - [ ] Ferry Office player/camera/collision behavior still feels unchanged after physics foundation work.
 

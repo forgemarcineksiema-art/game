@@ -82,6 +82,11 @@ bool AppConfig::qaPlaythroughRequested() const
     return !qaPlaythrough.empty();
 }
 
+bool AppConfig::qaPhysicsParityRequested() const
+{
+    return !qaPhysicsParity.empty();
+}
+
 ConfigParseResult ParseArguments(int argc, const char* const* argv)
 {
     ConfigParseResult result;
@@ -212,6 +217,24 @@ ConfigParseResult ParseArguments(int argc, const char* const* argv)
             continue;
         }
 
+        if (ReadValue(argc, argv, index, argument, "--qa-physics-parity", value)) {
+            if (value == "ferry-office-collision") {
+                result.config.qaPhysicsParity = value;
+            } else {
+                result.errors.push_back("--qa-physics-parity must be: ferry-office-collision.");
+            }
+            continue;
+        }
+
+        if (ReadValue(argc, argv, index, argument, "--qa-physics-report", value)) {
+            if (value.empty()) {
+                result.errors.push_back("--qa-physics-report requires a non-empty output path.");
+            } else {
+                result.config.qaPhysicsReportPath = value;
+            }
+            continue;
+        }
+
         result.errors.push_back("Unknown argument: " + std::string(argument));
     }
 
@@ -220,6 +243,9 @@ ConfigParseResult ParseArguments(int argc, const char* const* argv)
     }
     if (!result.config.qaPlaythroughReportPath.empty() && result.config.qaPlaythrough.empty()) {
         result.errors.push_back("--qa-playthrough-report requires --qa-playthrough.");
+    }
+    if (!result.config.qaPhysicsReportPath.empty() && result.config.qaPhysicsParity.empty()) {
+        result.errors.push_back("--qa-physics-report requires --qa-physics-parity.");
     }
 
     return result;
@@ -248,6 +274,8 @@ std::string BuildHelpText()
         << "  --capture-dir <path>  Write one renderer-owned BMP capture into the directory.\n"
         << "  --qa-playthrough <name> Run a QA-only automated playthrough. Supported: ferry-office-service-call.\n"
         << "  --qa-playthrough-report <path> Write the QA playthrough JSON report.\n"
+        << "  --qa-physics-parity <name> Run QA-only physics parity. Supported: ferry-office-collision.\n"
+        << "  --qa-physics-report <path> Write the QA physics parity JSON report.\n"
         << "  --help                Show this help.\n";
     return output.str();
 }

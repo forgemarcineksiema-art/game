@@ -188,6 +188,17 @@ Vec3 FromJoltRVec3(JPH::RVec3 value)
     };
 }
 
+bool OverlapsBox(Vec3 aCenter, Vec3 aHalfExtents, Vec3 bCenter, Vec3 bHalfExtents)
+{
+    const Vec3 aMin = aCenter - aHalfExtents;
+    const Vec3 aMax = aCenter + aHalfExtents;
+    const Vec3 bMin = bCenter - bHalfExtents;
+    const Vec3 bMax = bCenter + bHalfExtents;
+    return aMin.x <= bMax.x && aMax.x >= bMin.x
+        && aMin.y <= bMax.y && aMax.y >= bMin.y
+        && aMin.z <= bMax.z && aMax.z >= bMin.z;
+}
+
 class JoltPhysicsWorld final : public IPhysicsWorld {
 public:
     bool initialize(const PhysicsConfig& config) override
@@ -323,6 +334,26 @@ public:
         }
 
         return result;
+    }
+
+    std::vector<OverlapResult> overlapBox(Vec3 center, Vec3 halfExtents) const override
+    {
+        std::vector<OverlapResult> overlaps;
+        if (!m_initialized) {
+            return overlaps;
+        }
+
+        const Vec3 safeHalfExtents {
+            std::max(halfExtents.x, 0.001f),
+            std::max(halfExtents.y, 0.001f),
+            std::max(halfExtents.z, 0.001f),
+        };
+        for (const JoltBodyRecord& record : m_records) {
+            if (OverlapsBox(center, safeHalfExtents, record.center, record.halfExtents)) {
+                overlaps.push_back({record.handle, record.name});
+            }
+        }
+        return overlaps;
     }
 
     std::vector<PhysicsDebugLine> debugLines() const override

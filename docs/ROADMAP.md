@@ -403,6 +403,17 @@ Status: implemented as a narrow DX11 capture parity spike. DX11 now draws debug/
 
 Status: implemented as a bounded behavioral QA harness. `--qa-playthrough ferry-office-service-call` and `tools\playthrough_qa.py` run the authored Ferry Office Service Call state chain, assert all required flags through `ferryOfficeJobComplete`, and write `build\playthroughs\ferry-office-service-call-report.json`.
 
+## v0.33 - Jolt Runtime Physics Bridge / Ferry Office Collision Parity Spike
+
+- Keep default gameplay unchanged.
+- Promote the opt-in Jolt backend from an isolated spike toward a runtime candidate by validating the authored Ferry Office static collision scene through the engine physics API.
+- Add a QA-only `--qa-physics-parity ferry-office-collision` path and `tools\physics_parity_qa.py`.
+- Mirror scene-authored static AABB colliders plus a validation floor body into the requested physics backend and compare floor, raycast, and player-overlap-style probes against `PrototypeWorld`.
+- Preserve the simple backend and default verification path.
+- Avoid migrating player movement, traversal, service-gate behavior, vehicle driving, Jolt VehicleConstraint, Job #2, NPCs, save/load, mission scripting, or broad collision rewrites.
+
+Status: implemented as an opt-in static scene-query parity bridge. The Jolt-enabled path validates 9 Ferry Office static colliders, 4 floor probes, 4 raycast probes, and 4 overlap probes, writes `build\physics\ferry-office-collision-parity-report.json`, and keeps live gameplay on the existing prototype collision path.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py` and `python tools\playthrough_qa.py` as bounded evidence before asking for manual play. The next small goal should probably target the remaining gap those tools cannot prove: either a small input-scripted runtime pass, vehicle feel if driving still lacks confidence, or resize/text-quality renderer polish if capture reliability blocks validation. Avoid Job #2 until the first job is both automatically validated and comfortable by hand.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, and opt-in `python tools\physics_parity_qa.py` as bounded evidence before asking for manual play. The next small goal should probably target one remaining gap: a narrow Jolt player/contact migration probe, a contained Jolt vehicle feasibility spike, an input-scripted runtime pass, or resize/text-quality renderer polish if capture reliability blocks validation. Avoid Job #2 until the first job is both automatically validated and comfortable by hand.

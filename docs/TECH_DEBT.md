@@ -1,6 +1,6 @@
 # Technical Debt
 
-Last updated: 2026-05-15
+Last updated: 2026-05-16
 
 This file lists known foundation issues during the current playable-build phase. It is not a mandate to fix everything immediately. Future goals should pick the smallest debt item that blocks their milestone.
 
@@ -13,8 +13,8 @@ This file lists known foundation issues during the current playable-build phase.
 
 ### Fix Soon
 
-1. Use `python tools\capture_visual_smoke.py` plus `python tools\playthrough_qa.py` as the default bounded visual/behavioral evidence path before asking for a manual pass.
-2. Decide whether the next non-packaging pass should be a small vehicle-feel follow-up, a second renderer polish pass around resize/text quality, an input-scripted runtime pass, or one more tiny authored prop. Do not expand several at once.
+1. Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, and the opt-in `python tools\physics_parity_qa.py` Jolt path as bounded visual/behavioral/physics evidence before asking for a manual pass.
+2. Decide whether the next non-packaging pass should be a narrow Jolt player/contact migration spike, Jolt vehicle feasibility spike, a second renderer polish pass around resize/text quality, an input-scripted runtime pass, or one more tiny authored prop. Do not expand several at once.
 3. Keep the Blender/static mesh path narrow and honest. v0.27 adds one controlled original Blender prop; avoid more quantity until visual evidence proves prop language, not renderer readability or vehicle feel, is the blocker.
 
 ### Acceptable For Now
@@ -27,6 +27,7 @@ This file lists known foundation issues during the current playable-build phase.
 6. Scene data is the runtime source of truth for layout, while behavior mappings stay in C++ until more job types prove a stable data shape.
 7. v0.23 adds launch scripts, not release packaging, an installer, signing, updater, config UI, or save/settings persistence.
 8. v0.32 adds deterministic first-job QA coverage, not a replacement for human feel testing.
+9. v0.33 adds opt-in Jolt static-collision parity coverage for Ferry Office scene queries, not a migration of live player, traversal, gate, or vehicle behavior.
 
 ## Build / Toolchain
 
@@ -83,7 +84,8 @@ This file lists known foundation issues during the current playable-build phase.
 - The Jolt backend is validated through `windows-vs2022-debug-jolt`, not through `scripts/verify.ps1`.
 - Jolt integration currently uses pinned FetchContent, not vcpkg manifest mode. Revisit dependency management before making Jolt the default backend.
 - Jolt debug draw is exposed only as simple box debug lines for now. There is no full Jolt debug renderer bridge to `IRenderer`.
-- No player, traversal, service-gate, or production vehicle behavior has been migrated to Jolt yet. v0.10 uses a deterministic vehicle controller and only uses `engine::physics` for a small service-yard validation/debug world.
+- v0.33 mirrors the authored Ferry Office static boxes plus a flat scene-floor body into the opt-in Jolt path and validates floor/raycast/overlap parity against `PrototypeWorld` through `tools\physics_parity_qa.py`.
+- No player, traversal, service-gate, dynamic collider toggling, or production vehicle behavior has been migrated to Jolt yet. v0.10 uses a deterministic vehicle controller and only uses `engine::physics` for a small service-yard validation/debug world.
 
 ## Vehicle
 
@@ -94,7 +96,7 @@ This file lists known foundation issues during the current playable-build phase.
 - Vehicle camera uses the existing third-person camera with alternate settings. v0.13 retunes distance/height/smoothing for the small yard, but there is no camera collision, chase-camera lag tuning, or reset-behind-vehicle command.
 - The service-yard and v0.14 dock road segment are debug geometry only, not final art or a real road/terrain system.
 - The v0.14 road extends vehicle bounds for a compact out-and-back route, but vehicle collision is still a finite bounds clamp rather than road-edge collision against all debug rails/curbs.
-- Full Jolt vehicle integration is intentionally deferred until the placeholder feel is playtested. The next vehicle goal should still focus on manual feel/control polish rather than wheel physics.
+- Full Jolt vehicle integration remains deferred until a separate Jolt vehicle feasibility goal. v0.33 only proves static scene-query parity, not wheel constraints, suspension, tire friction, or vehicle collision.
 
 ## Interaction
 

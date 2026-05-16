@@ -31,6 +31,17 @@ Vec3 maxPoint(const SimpleBody& body)
     return body.center + body.halfExtents;
 }
 
+bool overlapsBox(Vec3 aCenter, Vec3 aHalfExtents, Vec3 bCenter, Vec3 bHalfExtents)
+{
+    const Vec3 aMin = aCenter - aHalfExtents;
+    const Vec3 aMax = aCenter + aHalfExtents;
+    const Vec3 bMin = bCenter - bHalfExtents;
+    const Vec3 bMax = bCenter + bHalfExtents;
+    return aMin.x <= bMax.x && aMax.x >= bMin.x
+        && aMin.y <= bMax.y && aMax.y >= bMin.y
+        && aMin.z <= bMax.z && aMax.z >= bMin.z;
+}
+
 class SimplePhysicsWorld final : public IPhysicsWorld {
 public:
     bool initialize(const PhysicsConfig& config) override
@@ -125,6 +136,26 @@ public:
         }
 
         return best;
+    }
+
+    std::vector<OverlapResult> overlapBox(Vec3 center, Vec3 halfExtents) const override
+    {
+        std::vector<OverlapResult> overlaps;
+        if (!m_initialized) {
+            return overlaps;
+        }
+
+        const Vec3 safeHalfExtents {
+            std::max(halfExtents.x, 0.001f),
+            std::max(halfExtents.y, 0.001f),
+            std::max(halfExtents.z, 0.001f),
+        };
+        for (const SimpleBody& body : m_bodies) {
+            if (overlapsBox(center, safeHalfExtents, body.center, body.halfExtents)) {
+                overlaps.push_back({body.handle, body.name});
+            }
+        }
+        return overlaps;
     }
 
     std::vector<PhysicsDebugLine> debugLines() const override
@@ -249,6 +280,11 @@ std::unique_ptr<IPhysicsWorld> CreatePhysicsWorld(PhysicsBackend backend)
     }
 
     return nullptr;
+}
+
+PhysicsBackend OptInPhysicsBackend()
+{
+    return PhysicsBackend::Jolt;
 }
 
 #if !ENGINE_WITH_JOLT
