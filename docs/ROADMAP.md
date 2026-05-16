@@ -943,6 +943,14 @@ Status: implemented and validated. Jolt CTest passes 15/15; physics parity, char
 
 Status: implemented and validated. Playtest mode now draws only the active route leg and a solid destination cue, while debug mode still draws every authored route marker. C++ tests cover the route sequence through the Ferry Office Drain Log follow-up.
 
+## v0.93 - Ferry Office Service Panel Mesh Pass
+
+- Replace the office-side service/control panel cue with a small original non-text service-panel mesh.
+- Preserve the wall-button interaction, service-gate state, collision, prompt copy, route space, and no-readable-text/no-branding rule.
+- Keep the asset inside the current embedded-buffer `.gltf` static mesh subset.
+
+Status: implemented and validated. The office-side service panel now uses `ferry_office_service_panel.gltf` instead of the generic utility-box mesh; scene tools, asset validation, and mesh report identify 20 referenced model files.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.92, prefer a small side service-panel/notice-board visual/readability pass or a stronger automated capture that exercises a mid-chain route state.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.93, prefer either a mid-chain route-state capture evidence pass or one small authored route-side cue for the next weak destination.

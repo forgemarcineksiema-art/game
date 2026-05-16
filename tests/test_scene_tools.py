@@ -251,7 +251,6 @@ class SceneToolTests(unittest.TestCase):
         expected_assets = {
             "mesh-manifest-counter-shelf": "unit-box-mesh",
             "mesh-manifest-paper-stack": "unit-box-mesh",
-            "mesh-office-side-service-panel": "utility-box-mesh",
             "mesh-dock-cleat-left": "unit-box-mesh",
             "mesh-dock-cleat-right": "unit-box-mesh",
             "mesh-service-yard-tool-crate": "unit-box-mesh",
@@ -472,6 +471,25 @@ class SceneToolTests(unittest.TestCase):
             visual_placeholders["ferry-office-drain-log-status-light"]["colorKey"],
         )
         self.assertIn("ferry-office-drain-log-state", material_keys)
+
+    def test_v093_office_service_panel_mesh_replaces_generic_utility_box(self) -> None:
+        ids = scene_data.collect_ids(self.scene)
+        mesh_assets = {asset["id"]: asset for asset in self.scene["meshAssets"]}
+        mesh_instances = {instance["id"]: instance for instance in self.scene["meshInstances"]}
+
+        self.assertIn("ferry-office-service-panel-mesh", mesh_assets)
+        self.assertEqual(
+            "assets/models/ferry_office_service_panel.gltf",
+            mesh_assets["ferry-office-service-panel-mesh"]["path"],
+        )
+        self.assertIn("v0.93", mesh_assets["ferry-office-service-panel-mesh"]["provenance"])
+        self.assertIn("not a blender export", mesh_assets["ferry-office-service-panel-mesh"]["provenance"].lower())
+        self.assertIn("mesh-office-side-service-panel", ids)
+        self.assertEqual(
+            "ferry-office-service-panel-mesh",
+            mesh_instances["mesh-office-side-service-panel"]["assetId"],
+        )
+        self.assertEqual("oxidized-service-green", mesh_instances["mesh-office-side-service-panel"]["colorKey"])
 
     def test_duplicate_mesh_replacement_links_are_reported(self) -> None:
         scene = copy.deepcopy(self.scene)

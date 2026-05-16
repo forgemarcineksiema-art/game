@@ -1,0 +1,90 @@
+{
+  "asset": {
+    "version": "2.0",
+    "generator": "Tidebreak tools/create_simple_prop_gltf.py v0.93 ferry office service panel fallback helper",
+    "extras": {
+      "tidebreakSource": "project-original fallback geometry",
+      "notBlenderExport": true
+    }
+  },
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "mesh": 0,
+      "name": "ferry_office_service_panel"
+    }
+  ],
+  "meshes": [
+    {
+      "name": "ferry_office_service_panel",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0
+          },
+          "indices": 1,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 1680,
+      "uri": "data:application/octet-stream;base64,XI/CvgAAAACuR2G9XI/CPgAAAACuR2G9XI/CPuF6lD+uR2G9XI/CvuF6lD+uR2G9XI/CvgAAAACuR2E9XI/CPgAAAACuR2E9XI/CPuF6lD+uR2E9XI/CvuF6lD+uR2E9exSuvj0Khz+uR+G9exSuPj0Khz+uR+G9exSuPlyPkj+uR+G9exSuvlyPkj+uR+G9exSuvj0Khz8AAAAAexSuPj0Khz8AAAAAexSuPlyPkj8AAAAAexSuvlyPkj8AAAAAexSuvilcDz2uR+G9exSuPilcDz2uR+G9exSuPgAAAD6uR+G9exSuvgAAAD6uR+G9exSuvilcDz0AAAAAexSuPilcDz0AAAAAexSuPgAAAD4AAAAAexSuvgAAAD4AAAAAuB7Fvs3MzD2uR+G9PQqXvs3MzD2uR+G9PQqXvhSuhz+uR+G9uB7FvhSuhz+uR+G9uB7Fvs3MzD0AAAAAPQqXvs3MzD0AAAAAPQqXvhSuhz8AAAAAuB7FvhSuhz8AAAAAPQqXPs3MzD2uR+G9uB7FPs3MzD2uR+G9uB7FPhSuhz+uR+G9PQqXPhSuhz+uR+G9PQqXPs3MzD0AAAAAuB7FPs3MzD0AAAAAuB7FPhSuhz8AAAAAPQqXPhSuhz8AAAAAFK5HvuF6FD+PwvW9exSuveF6FD+PwvW9exSuvUjhej+PwvW9FK5Hvkjhej+PwvW9FK5HvuF6FD/NzEy9exSuveF6FD/NzEy9exSuvUjhej/NzEy9FK5Hvkjhej/NzEy9j8J1vClcDz+PwvW9XI/CPSlcDz+PwvW9XI/CPa5HYT+PwvW9j8J1vK5HYT+PwvW9j8J1vClcDz/NzEy9XI/CPSlcDz/NzEy9XI/CPa5HYT/NzEy9j8J1vK5HYT/NzEy9cT0KPuxRuD6PwvW9FK6HPuxRuD6PwvW9FK6HPpqZGT+PwvW9cT0KPpqZGT+PwvW9cT0KPuxRuD7NzEy9FK6HPuxRuD7NzEy9FK6HPpqZGT/NzEy9cT0KPpqZGT/NzEy9KVyPvvYonD4AAAC+CtcjPvYonD4AAAC+CtcjPgAAwD4AAAC+KVyPvgAAwD4AAAC+KVyPvvYonD6uR2G9CtcjPvYonD6uR2G9CtcjPgAAwD6uR2G9KVyPvgAAwD6uR2G9zcyMvilcjz0AAAC+pHA9vilcjz0AAAC+pHA9vgAAgD4AAAC+zcyMvgAAgD4AAAC+zcyMvilcjz2uR2G9pHA9vilcjz2uR2G9pHA9vgAAgD6uR2G9zcyMvgAAgD6uR2G9AAABAAIAAAACAAMABQAEAAcABQAHAAYABAAAAAMABAADAAcAAQAFAAYAAQAGAAIAAwACAAYAAwAGAAcABAAFAAEABAABAAAACAAJAAoACAAKAAsADQAMAA8ADQAPAA4ADAAIAAsADAALAA8ACQANAA4ACQAOAAoACwAKAA4ACwAOAA8ADAANAAkADAAJAAgAEAARABIAEAASABMAFQAUABcAFQAXABYAFAAQABMAFAATABcAEQAVABYAEQAWABIAEwASABYAEwAWABcAFAAVABEAFAARABAAGAAZABoAGAAaABsAHQAcAB8AHQAfAB4AHAAYABsAHAAbAB8AGQAdAB4AGQAeABoAGwAaAB4AGwAeAB8AHAAdABkAHAAZABgAIAAhACIAIAAiACMAJQAkACcAJQAnACYAJAAgACMAJAAjACcAIQAlACYAIQAmACIAIwAiACYAIwAmACcAJAAlACEAJAAhACAAKAApACoAKAAqACsALQAsAC8ALQAvAC4ALAAoACsALAArAC8AKQAtAC4AKQAuACoAKwAqAC4AKwAuAC8ALAAtACkALAApACgAMAAxADIAMAAyADMANQA0ADcANQA3ADYANAAwADMANAAzADcAMQA1ADYAMQA2ADIAMwAyADYAMwA2ADcANAA1ADEANAAxADAAOAA5ADoAOAA6ADsAPQA8AD8APQA/AD4APAA4ADsAPAA7AD8AOQA9AD4AOQA+ADoAOwA6AD4AOwA+AD8APAA9ADkAPAA5ADgAQABBAEIAQABCAEMARQBEAEcARQBHAEYARABAAEMARABDAEcAQQBFAEYAQQBGAEIAQwBCAEYAQwBGAEcARABFAEEARABBAEAASABJAEoASABKAEsATQBMAE8ATQBPAE4ATABIAEsATABLAE8ASQBNAE4ASQBOAEoASwBKAE4ASwBOAE8ATABNAEkATABJAEgA"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 960,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 960,
+      "byteLength": 720,
+      "target": 34963
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 80,
+      "type": "VEC3",
+      "min": [
+        -0.385,
+        0.0,
+        -0.125
+      ],
+      "max": [
+        0.385,
+        1.16,
+        0.055
+      ]
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 0,
+      "componentType": 5123,
+      "count": 360,
+      "type": "SCALAR",
+      "min": [
+        0
+      ],
+      "max": [
+        79
+      ]
+    }
+  ]
+}

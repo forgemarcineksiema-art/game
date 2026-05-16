@@ -616,6 +616,17 @@
       "notes": "Original low-poly non-text sign panel with a raised frame and inset bands. Visual only; no readable text, texture, branding, collision, prompt logic, or final signage pipeline."
     },
     {
+      "id": "ferry-office-service-panel-mesh",
+      "path": "assets/models/ferry_office_service_panel.gltf",
+      "format": "gltf",
+      "units": "meter",
+      "upAxis": "Y",
+      "license": "project-original",
+      "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v0.93 fallback Ferry Office service panel because the office-side service/control cue was still a generic utility-box reuse; not a Blender export.",
+      "authoringBoundsHalfExtents": [0.385, 0.573, 0.09],
+      "notes": "Original low-poly non-text office service panel with a raised frame, breaker bars, and small conduit cue. Visual only; wall-button interaction, gate state, prompts, collision, and readable signage remain authored separately."
+    },
+    {
       "id": "service-yard-cart-body-mesh",
       "path": "assets/models/service_yard_cart_body.gltf",
       "format": "gltf",
@@ -744,12 +755,12 @@
     },
     {
       "id": "mesh-office-side-service-panel",
-      "assetId": "utility-box-mesh",
+      "assetId": "ferry-office-service-panel-mesh",
       "position": [-1.08, 0.0, 2.06],
       "yawDegrees": 8.0,
-      "scale": [0.72, 0.85, 0.72],
+      "scale": [0.82, 0.82, 0.82],
       "colorKey": "oxidized-service-green",
-      "notes": "v0.26 side-wall service panel cue near the gate controls; visual identity only."
+      "notes": "v0.93 side-wall service panel cue near the gate controls; replaces the generic utility-box reuse with a small purpose-built non-text panel mesh."
     },
     {
       "id": "mesh-dock-bollard-left",

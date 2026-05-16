@@ -2,6 +2,80 @@
 
 Last updated: 2026-05-16
 
+## v0.93 Ferry Office Service Panel Mesh Pass (2026-05-16)
+
+Selected milestone:
+
+- Replace the office-side service/control panel cue with a small purpose-built non-text mesh instead of the generic utility-box reuse.
+
+Candidate milestone triage:
+
+- Side service-panel readability pass: impact medium-high because v0.92 made the route easier to follow and this improves the office-side destination/readability cue; risk low/medium because it touches one fallback prop, scene data, tests, and docs; validation path = red/green scene-tool test, asset/mesh/scene tools, visual smoke, playthrough QA, `scripts\verify.ps1`.
+- Mid-chain route-state capture QA: impact medium because it would strengthen evidence for v0.92, but it is validation-only immediately after a readability infrastructure pass.
+- New follow-up content beat: impact high, but the current hub-side office visuals still benefit from one focused readability pass before adding another endpoint.
+
+Why selected:
+
+- The office/service-yard chain now has active route guidance, but the office-side service panel still reused the generic utility-box mesh while nearby facade, sign, gate, and vehicle cues have more specific silhouettes. A tiny authored panel improves place readability without changing gameplay scope.
+
+What changed:
+
+- Added `ferry_office_service_panel.gltf`, a project-original fallback mesh with a raised frame, breaker bars, and a small conduit cue.
+- Extended `tools\create_simple_prop_gltf.py` with a `ferry-office-service-panel` generator kind.
+- Added `ferry-office-service-panel-mesh` to scene mesh assets and retargeted `mesh-office-side-service-panel` from `utility-box-mesh` to the new panel mesh.
+- Added a scene-tool regression test proving the service panel is authored, referenced, and marked as non-Blender fallback geometry.
+- Updated docs to reflect the new current asset/scene truth.
+
+Files changed:
+
+- `assets\models\ferry_office_service_panel.gltf`
+- `data\scenes\ferry_office.scene.json`
+- `tools\create_simple_prop_gltf.py`
+- `tests\test_scene_tools.py`
+- `docs\ASSET_GUIDE.md`
+- `docs\ART_DIRECTION.md`
+- `docs\CONTEXT_MAP.md`
+- `docs\MESH_RENDERING.md`
+- `docs\ROADMAP.md`
+- `docs\SCENE_AUTHORING.md`
+- `docs\STATUS.md`
+
+Validation so far:
+
+- `python tests\test_scene_tools.py`: first failed as expected because `ferry-office-service-panel-mesh` did not exist; passed after implementation, 50 tests.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: passed.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `python tools\validate_scene.py`: passed.
+- `python tools\scene_report.py`: passed; sceneMaterials=25, visualPlaceholders=31, meshAssets=20, meshInstances=66, interactables=17, routeMarkers=17, objectiveMarkers=16.
+- `python tools\scale_audit.py`: passed; no suspicious scale issues.
+- `python tools\validate_assets.py`: passed; modelFiles=20.
+- `python tools\mesh_report.py`: passed; meshAssets=20, meshInstances=66, modelFiles=20, new panel referenced once.
+- `python tools\playthrough_qa.py`: passed; phase complete, events=21, deterministic vehicle runtime, framesToCheckpoint=139, report `build\playthroughs\ferry-office-service-call-report.json`.
+- `python tools\capture_visual_smoke.py`: passed; GDI colors=82/lumaRange=221 and DX11 colors=49/lumaRange=221 with WARP fallback, report `build\captures\capture_visual_smoke_report.json`.
+- `scripts\verify.ps1`: passed; configure/build, 11/11 CTest tests, scene validation, asset validation, mesh report, and smoke test completed.
+- `git diff --check`: passed with expected CRLF normalization warnings only.
+
+Automated evidence generated:
+
+- Scene-tool coverage proves the mesh asset path, provenance, scene instance id, asset binding, and color key.
+- Mesh report proves the new file is referenced and inside the supported embedded-buffer glTF subset.
+
+Provisional decision:
+
+- The office-side service/control cue should be a small purpose-built prop now; keep it non-text, visual-only, and separate from wall-button interaction/collision.
+
+Remaining limitations:
+
+- This is still fallback placeholder geometry, not a Blender export, final readable signage, texture/material work, collision, or an interactable UI panel.
+
+Final validation:
+
+- Passed.
+
+Next direction:
+
+- If validation stays green, prefer either a mid-chain route capture evidence pass or a small authored route-side cue for the next weak destination.
+
 ## v0.92 Late-chain Playtest Route Guidance (2026-05-16)
 
 Selected milestone:

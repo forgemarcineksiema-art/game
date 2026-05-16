@@ -152,6 +152,32 @@ def write_ferry_office_sign_panel(output_path: pathlib.Path, overwrite: bool = T
     )
 
 
+def write_ferry_office_service_panel(output_path: pathlib.Path, overwrite: bool = True) -> None:
+    if output_path.exists() and not overwrite:
+        raise FileExistsError(f"{output_path} already exists; pass --overwrite to replace it")
+
+    vertices: list[tuple[float, float, float]] = []
+    indices: list[int] = []
+    _append_box(vertices, indices, center=(0.0, 0.58, 0.0), half_extents=(0.38, 0.58, 0.055))
+    _append_box(vertices, indices, center=(0.0, 1.10, -0.055), half_extents=(0.34, 0.045, 0.055))
+    _append_box(vertices, indices, center=(0.0, 0.08, -0.055), half_extents=(0.34, 0.045, 0.055))
+    _append_box(vertices, indices, center=(-0.34, 0.58, -0.055), half_extents=(0.045, 0.48, 0.055))
+    _append_box(vertices, indices, center=(0.34, 0.58, -0.055), half_extents=(0.045, 0.48, 0.055))
+    _append_box(vertices, indices, center=(-0.14, 0.78, -0.085), half_extents=(0.055, 0.20, 0.035))
+    _append_box(vertices, indices, center=(0.04, 0.72, -0.085), half_extents=(0.055, 0.16, 0.035))
+    _append_box(vertices, indices, center=(0.20, 0.48, -0.085), half_extents=(0.065, 0.12, 0.035))
+    _append_box(vertices, indices, center=(-0.06, 0.34, -0.090), half_extents=(0.22, 0.035, 0.035))
+    _append_box(vertices, indices, center=(-0.23, 0.16, -0.090), half_extents=(0.045, 0.09, 0.035))
+
+    _write_embedded_gltf(
+        output_path=output_path,
+        vertices=vertices,
+        indices=indices,
+        name="ferry_office_service_panel",
+        generator="Tidebreak tools/create_simple_prop_gltf.py v0.93 ferry office service panel fallback helper",
+    )
+
+
 def write_service_yard_cart_body(output_path: pathlib.Path, overwrite: bool = True) -> None:
     if output_path.exists() and not overwrite:
         raise FileExistsError(f"{output_path} already exists; pass --overwrite to replace it")
@@ -327,6 +353,7 @@ def parse_args() -> argparse.Namespace:
             "ferry-office-service-gate",
             "ferry-office-facade-frame",
             "ferry-office-sign-panel",
+            "ferry-office-service-panel",
             "service-yard-cart-body",
             "service-yard-cart-cabin",
             "service-yard-cart-wheel",
@@ -353,6 +380,8 @@ def main() -> int:
             write_ferry_office_facade_frame(output_path, overwrite=args.overwrite)
         elif args.kind == "ferry-office-sign-panel":
             write_ferry_office_sign_panel(output_path, overwrite=args.overwrite)
+        elif args.kind == "ferry-office-service-panel":
+            write_ferry_office_service_panel(output_path, overwrite=args.overwrite)
         elif args.kind == "service-yard-cart-body":
             write_service_yard_cart_body(output_path, overwrite=args.overwrite)
         elif args.kind == "service-yard-cart-cabin":

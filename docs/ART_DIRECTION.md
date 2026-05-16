@@ -151,3 +151,7 @@ v0.43 adds a low distant-shore/harbor silhouette around the dock-road and dock-s
 ## v0.44 Harbor Water Surface Observation
 
 v0.44 gives the three existing water-edge bands a shallow static ripple surface mesh. This keeps the water treatment honest for the current renderer: more authored and less strip-like, but still flat-tinted, untextured, nontransparent placeholder geometry. It should support the damp coastal mood without pretending Tidebreak has water simulation, reflective shaders, shoreline terrain, foam, or weather yet.
+
+## v0.93 Ferry Office Service Panel Observation
+
+v0.93 replaces the office-side service/control panel's generic utility-box reuse with a small non-text panel mesh. It is still fallback placeholder geometry, but the raised frame, breaker bars, and conduit cue make the office controls read more like a practical service place while preserving the no-readable-text/no-branding rule.
