@@ -6,6 +6,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import pathlib
+import re
 import tempfile
 import unittest
 
@@ -24,6 +25,17 @@ class PlaythroughQaTests(unittest.TestCase):
         report_path = playthrough_qa.default_report_path("ferry-office-service-call")
 
         self.assertEqual(ROOT / "build" / "playthroughs" / "ferry-office-service-call-report.json", report_path)
+
+    def test_cmake_defines_explicit_jolt_playthrough_gate(self) -> None:
+        cmake = (ROOT / "CMakeLists.txt").read_text(encoding="utf-8")
+
+        self.assertRegex(
+            cmake,
+            re.compile(
+                r"NAME\s+FerryOfficeJoltPlaythroughQaSmoke.*?--vehicle-runtime\s+jolt",
+                re.DOTALL,
+            ),
+        )
 
     def test_validate_report_requires_completed_ferry_office_flags(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:

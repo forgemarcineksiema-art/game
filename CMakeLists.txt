@@ -264,6 +264,16 @@ if(ENGINE_BUILD_TESTS)
                 --report-json ${CMAKE_CURRENT_BINARY_DIR}/physics/ferry-office-vehicle-runtime-comparison-report.json
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         )
+        add_test(
+            NAME FerryOfficeJoltPlaythroughQaSmoke
+            COMMAND
+                ${Python3_EXECUTABLE}
+                ${CMAKE_CURRENT_SOURCE_DIR}/tools/playthrough_qa.py
+                --exe $<TARGET_FILE:EngineApp>
+                --vehicle-runtime jolt
+                --report-json ${CMAKE_CURRENT_BINARY_DIR}/playthroughs/ferry-office-service-call-jolt-report.json
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        )
     endif()
     add_test(
         NAME FerryOfficePlaythroughQaSmoke

@@ -2,6 +2,73 @@
 
 Last updated: 2026-05-17
 
+## Post-v0.99 Jolt Live Evidence Gate (2026-05-17)
+
+Goal:
+
+- Turn the v0.99 "Jolt passes QA" claim into a harder gameplay evidence gate: explicit Jolt playthrough, live-like service vehicle controls/camera runtime QA, and authored road-edge evidence for the Ferry Office route.
+
+Scope:
+
+- Added an explicit Jolt CTest playthrough gate that passes `--vehicle-runtime jolt`.
+- Extended Ferry Office vehicle runtime comparison reports with `roadEdgeChecks` for the authored dock-road edge probes `dock-road-south-rail` and `dock-road-north-curb`.
+- Added `scripts\verify_jolt.ps1` as an opt-in Jolt gameplay verification wrapper.
+- Added Python/C++ tests that reject missing Jolt playthrough wiring or missing road-edge evidence.
+- No new mission beat, map expansion, renderer rewrite, or Jolt default promotion.
+
+Pre-change commands:
+
+- `git status --short`: passed; clean before edits.
+- `git branch --show-current`: passed; branch `main`.
+- `scripts\doctor.ps1`: passed with expected PATH warnings for `cl`, `clang++`, `g++`, `msbuild`, `ninja`, and `vcpkg`.
+- `scripts\configure.ps1`: passed for `windows-vs2022-debug`.
+- `scripts\build.ps1`: passed.
+- `scripts\verify.ps1`: passed; 11/11 default CTest passed, scene/assets/mesh validation passed, null smoke passed.
+
+TDD evidence:
+
+- RED: `python tests\test_playthrough_qa.py` failed because `FerryOfficeJoltPlaythroughQaSmoke` was not defined.
+- RED: `python tests\test_vehicle_runtime_qa.py` failed because reports without `roadEdgeChecks` were accepted.
+- RED: `cmake --build --preset windows-vs2022-debug --target EngineCoreTests` failed while tests referenced the not-yet-existing `roadEdgeChecks` result field.
+- GREEN: `python tests\test_playthrough_qa.py` passed, 6 tests.
+- GREEN: `python tests\test_vehicle_runtime_qa.py` passed, 12 tests.
+- GREEN: `cmake --build --preset windows-vs2022-debug --target EngineCoreTests` passed.
+- GREEN: `build\windows-vs2022-debug\Debug\EngineCoreTests.exe` passed.
+
+Validation commands:
+
+- `scripts\build.ps1`: passed.
+- `scripts\verify.ps1`: passed; 11/11 default CTest passed, scene/assets/mesh validation passed, null smoke passed.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed; 16/16 tests.
+- `ctest --preset windows-vs2022-debug-jolt --show-only=json-v1`: passed; confirmed `FerryOfficeJoltPlaythroughQaSmoke` runs `tools\playthrough_qa.py` with `--vehicle-runtime jolt`.
+- `python tools\playthrough_qa.py --exe build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --vehicle-runtime jolt --report-json build\playthroughs\ferry-office-service-call-jolt-live-gate-report.json`: passed; 21 events, `vehicleRuntime=jolt`, checkpoint in 169 frames.
+- `python tools\vehicle_runtime_qa.py --exe build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --report-json build\physics\ferry-office-vehicle-runtime-jolt-road-edge-gate-report.json`: passed; backend `jolt`, samples=5, controlChecks=4, routeChecks=2, obstacleChecks=2, drivingFeelChecks=12, routePaceProbes=3, roadEdgeChecks=2, maxPositionDelta=1.08, recommendation=`promote`.
+- `scripts\verify_jolt.ps1`: passed; configured/built the Jolt preset, ran 16/16 Jolt CTest, explicit Jolt playthrough QA, and vehicle runtime QA with authored road-edge evidence.
+- `python tools\validate_scene.py`: passed.
+- `python tools\scale_audit.py`: passed; no suspicious scale issues.
+- `python tools\mesh_report.py`: passed; 20 mesh assets, 66 mesh instances, 20 model files.
+
+Confirmed evidence:
+
+- CONFIRMED: the Jolt CTest preset now contains `FerryOfficeJoltPlaythroughQaSmoke` and its command includes `--vehicle-runtime jolt`.
+- CONFIRMED: explicit Jolt playthrough completes the current 21-event Ferry Office service chain with checkpoint in 169 frames and no deterministic fallback.
+- CONFIRMED: live-like vehicle runtime QA reports deterministic and Jolt route checks, control checks, driving-feel checks, camera proxy checks, obstacle replay checks, route-pace probes, and road-edge checks separately from the scripted playthrough state chain.
+- CONFIRMED: road-edge evidence is backed by two authored dock-road edge ids. Deterministic: 139 frames, zero overlap frames, min clearance about 0.101m. Jolt: 169 frames, zero overlap frames, min clearance about 0.100m.
+
+Important limits:
+
+- CONFIRMED: this is stronger than v0.99 because the CTest gate cannot silently use deterministic runtime for the Jolt playthrough.
+- INFERRED: Jolt is more trustworthy for the current short service-run route than it was after v0.99 because route, camera, controls, obstacle, and authored-edge probes now agree in one opt-in gate.
+- UNVERIFIED: Jolt is not proven as the default vehicle runtime for broader manual play, curved roads, dynamic road-edge impact response, traffic, damage, or full player/world collision.
+- CONFIRMED: current `roadEdgeChecks` are clearance/overlap probes against authored dock-road edge volumes mirrored into the QA physics world. They are not a broad live vehicle collision-response migration.
+- CONFIRMED: camera evidence for the road-edge route is a straight-route stability proxy; the broader turning camera proxy still lives in `drivingFeelChecks`.
+
+Commit/push status:
+
+- Final `scripts\verify.ps1` and `scripts\verify_jolt.ps1` passed after code, tests, and docs were updated. Pending only final `git diff --check` and scoped worktree check before commit/push.
+
 ## v0.99 Whole-Project Audit (2026-05-17)
 
 Goal:

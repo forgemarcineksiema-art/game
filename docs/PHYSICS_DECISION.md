@@ -1,6 +1,6 @@
 # Physics Decision
 
-Last updated: 2026-05-16
+Last updated: 2026-05-17
 
 ## Recommendation
 
@@ -8,7 +8,7 @@ Choose Jolt Physics as Tidebreak's default production physics candidate unless a
 
 Keep PhysX as the backup candidate. Do not choose Bullet for the main engine path unless a future, narrow test gives a strong reason.
 
-This decision does not mean every current gameplay collision path should be rewritten immediately. v0.9.2 adds a vendor-safe `src/engine/physics` boundary and an opt-in Jolt backend spike. v0.33 adds a QA-only Ferry Office static-collision parity bridge, v0.34 adds a player-proxy contact probe, and v0.35 adds a wheeled vehicle feasibility probe. Existing Ferry Office gameplay still uses the tested prototype paths until a later goal migrates one behavior at a time. v0.49 adds opt-in Jolt runtime enter-drive-exit-confirm playthrough evidence for the first service job, v0.68 promotes Jolt from exploratory option to preferred vehicle-runtime candidate, v0.70 begins a controlled preferred-runtime trial through the play wrapper, v0.96 makes vehicle-feel decisions Jolt-first with deterministic kept as baseline/fallback, and v0.99 narrows Jolt route pace with a conservative straight-drive assist while preserving reverse, obstacle, and camera checks. Direct app and QA defaults remain deterministic unless a runtime is explicitly requested.
+This decision does not mean every current gameplay collision path should be rewritten immediately. v0.9.2 adds a vendor-safe `src/engine/physics` boundary and an opt-in Jolt backend spike. v0.33 adds a QA-only Ferry Office static-collision parity bridge, v0.34 adds a player-proxy contact probe, and v0.35 adds a wheeled vehicle feasibility probe. Existing Ferry Office gameplay still uses the tested prototype paths until a later goal migrates one behavior at a time. v0.49 adds opt-in Jolt runtime enter-drive-exit-confirm playthrough evidence for the first service job, v0.68 promotes Jolt from exploratory option to preferred vehicle-runtime candidate, v0.70 begins a controlled preferred-runtime trial through the play wrapper, v0.96 makes vehicle-feel decisions Jolt-first with deterministic kept as baseline/fallback, v0.99 narrows Jolt route pace with a conservative straight-drive assist while preserving reverse, obstacle, and camera checks, and the post-v0.99 evidence gate adds an explicit Jolt playthrough CTest plus authored dock-road edge clearance checks. Direct app and QA defaults remain deterministic unless a runtime is explicitly requested.
 
 ## Why Decide Now
 
@@ -383,6 +383,41 @@ Decision:
 Revisit when:
 
 - Vehicle controls/camera feel is tuned, a broader road route is authored, road-edge collision is added, or Jolt becomes the direct-app default runtime.
+
+## Post-v0.99 Jolt Live Evidence Gate
+
+The post-v0.99 gate closes the audit gap where Jolt could pass opt-in QA while the standard Jolt CTest playthrough still used deterministic vehicle runtime.
+
+Validated:
+
+- Default `scripts\verify.ps1` passed.
+- Jolt preset configured and built.
+- Jolt CTest passed 16/16, including `FerryOfficeJoltPlaythroughQaSmoke`.
+- `ctest --preset windows-vs2022-debug-jolt --show-only=json-v1` confirmed that `FerryOfficeJoltPlaythroughQaSmoke` runs `tools\playthrough_qa.py` with `--vehicle-runtime jolt`.
+- Explicit Jolt playthrough QA completed the 21-event Ferry Office service-call chain with checkpoint in 169 frames.
+- `tools\vehicle_runtime_qa.py` passed with backend `jolt`: samples=5, controlChecks=4, routeChecks=2, obstacleChecks=2, drivingFeelChecks=12, routePaceProbes=3, roadEdgeChecks=2, `maxPositionDelta=1.08`, recommendation=`promote`.
+- `scripts\verify_jolt.ps1` now runs the opt-in Jolt configure/build/CTest/playthrough/runtime evidence gate.
+
+Evidence:
+
+- The authored road-edge probes use `dock-road-south-rail` and `dock-road-north-curb` from the Ferry Office scene as the concrete edge ids.
+- Deterministic road-edge route: 139 frames, zero edge overlap frames, min clearance about 0.101m.
+- Jolt road-edge route: 169 frames, zero edge overlap frames, min clearance about 0.100m.
+- The report separates deterministic runtime, Jolt runtime, scripted playthrough, live-like input/control checks, driving-feel checks, route-pace probes, obstacle probes, and road-edge checks.
+
+Decision:
+
+- Keep Jolt as the production vehicle-runtime candidate and keep deterministic as dependency-free baseline/fallback.
+- Treat the new gate as stronger gameplay evidence than v0.99, not as default-runtime approval.
+- Keep `scripts\verify_jolt.ps1` opt-in so the normal default validation remains dependency-free and quick.
+
+Important limit:
+
+- `roadEdgeChecks` prove clearance and overlap behavior against authored edge volumes mirrored into the QA physics world. They do not yet prove broad vehicle collision response against every scene collider, dynamic object, curb, rail, or off-road failure mode.
+
+Revisit when:
+
+- A milestone adds real road-edge collision response, a broader authored driving route, curved-road camera/input evidence, manual playtest evidence, or default Jolt promotion.
 
 Important implementation choices:
 

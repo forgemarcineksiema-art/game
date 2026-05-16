@@ -37,6 +37,10 @@ constexpr float ObstacleRequiredLateralOffset = 0.05f;
 constexpr float ObstacleRequiredXProgress = 4.5f;
 constexpr engine::Vec3 ObstacleCollisionHalfExtents {0.30f, 0.45f, 0.12f};
 constexpr engine::Vec3 ObstacleCollisionProbeHalfExtents {0.18f, 0.35f, 0.12f};
+constexpr std::array<std::string_view, 2> RoadEdgeProbeIds {
+    "dock-road-south-rail",
+    "dock-road-north-curb",
+};
 
 nlohmann::json Vec3Json(engine::Vec3 value)
 {
@@ -138,6 +142,26 @@ nlohmann::json RoutePaceProbeJson(const FerryOfficeVehicleRuntimeComparisonResul
         {"finalSpeed", probe.finalSpeed},
         {"hitBounds", probe.hitBounds},
         {"message", probe.message},
+    };
+}
+
+nlohmann::json RoadEdgeCheckJson(const FerryOfficeVehicleRuntimeComparisonResult::RoadEdgeCheck& check)
+{
+    return {
+        {"backend", check.backendName},
+        {"passed", check.passed},
+        {"collisionBacked", check.collisionBacked},
+        {"roadEdgeClear", check.roadEdgeClear},
+        {"edgeOverlapFrames", check.edgeOverlapFrames},
+        {"frameCount", check.frameCount},
+        {"minCollisionClearance", check.minCollisionClearance},
+        {"maxCameraYawDeltaDegrees", check.maxCameraYawDeltaDegrees},
+        {"finalCameraYawDegrees", engine::Degrees(check.finalCameraYawRadians)},
+        {"authoredEdgeIds", check.authoredEdgeIds},
+        {"finalPosition", Vec3Json(check.finalPosition)},
+        {"finalYawDegrees", engine::Degrees(check.finalYawRadians)},
+        {"hitBounds", check.hitBounds},
+        {"message", check.message},
     };
 }
 
@@ -554,6 +578,136 @@ void UpdateObstacleCollisionTelemetry(
     check.minCollisionClearance = std::min(check.minCollisionClearance, CollisionProbeClearance(vehiclePosition));
 }
 
+struct RoadEdgeProbe {
+    std::string id;
+    engine::Vec3 center;
+    engine::Vec3 halfExtents;
+};
+
+std::vector<RoadEdgeProbe> RoadEdgeProbesFromScene(const SceneDefinition& scene)
+{
+    std::vector<RoadEdgeProbe> probes;
+    for (std::string_view requiredId : RoadEdgeProbeIds) {
+        const auto match = std::find_if(
+            scene.visualPlaceholders.begin(),
+            scene.visualPlaceholders.end(),
+            [requiredId](const SceneVisualPlaceholderDefinition& placeholder) {
+                return placeholder.id == requiredId;
+            });
+        if (match != scene.visualPlaceholders.end()) {
+            probes.push_back({match->id, match->center, match->halfExtents});
+        }
+    }
+    return probes;
+}
+
+std::vector<std::string> RoadEdgeIds(const std::vector<RoadEdgeProbe>& probes)
+{
+    std::vector<std::string> ids;
+    for (const RoadEdgeProbe& probe : probes) {
+        ids.push_back(probe.id);
+    }
+    return ids;
+}
+
+std::unique_ptr<engine::physics::IPhysicsWorld> BuildRoadEdgePhysicsWorld(
+    engine::physics::PhysicsBackend backend,
+    const std::vector<RoadEdgeProbe>& probes)
+{
+    if (probes.empty()) {
+        return nullptr;
+    }
+
+    std::unique_ptr<engine::physics::IPhysicsWorld> world = engine::physics::CreatePhysicsWorld(backend);
+    if (!world) {
+        return nullptr;
+    }
+
+    engine::physics::PhysicsConfig config;
+    config.backend = backend;
+    if (!world->initialize(config)) {
+        return nullptr;
+    }
+
+    for (const RoadEdgeProbe& probe : probes) {
+        engine::physics::BoxColliderDesc edge;
+        edge.name = probe.id;
+        edge.center = probe.center;
+        edge.halfExtents = probe.halfExtents;
+        edge.isTrigger = true;
+        if (!world->addTriggerBox(edge).isValid()) {
+            world->shutdown();
+            return nullptr;
+        }
+    }
+    return world;
+}
+
+float RoadEdgeProbeClearance(
+    engine::Vec3 position,
+    engine::Vec3 vehicleHalfExtents,
+    const std::vector<RoadEdgeProbe>& probes)
+{
+    float minClearance = std::numeric_limits<float>::max();
+    for (const RoadEdgeProbe& probe : probes) {
+        const float separatedX = std::abs(position.x - probe.center.x)
+            - (vehicleHalfExtents.x + probe.halfExtents.x);
+        const float separatedZ = std::abs(position.z - probe.center.z)
+            - (vehicleHalfExtents.z + probe.halfExtents.z);
+        minClearance = std::min(minClearance, std::max(separatedX, separatedZ));
+    }
+    return minClearance;
+}
+
+void UpdateRoadEdgeCameraTelemetry(
+    FerryOfficeVehicleRuntimeComparisonResult::RoadEdgeCheck& check,
+    ThirdPersonCamera& camera,
+    engine::Vec3 vehiclePosition,
+    float vehicleYawRadians,
+    float dt)
+{
+    CameraTarget target;
+    target.position = vehiclePosition + engine::ForwardFromYaw(vehicleYawRadians) * 0.85f;
+    target.yawRadians = vehicleYawRadians;
+    engine::InputState cameraInput;
+    camera.update(dt, cameraInput, target);
+    check.finalCameraYawRadians = camera.state().yawRadians;
+    check.maxCameraYawDeltaDegrees = std::max(
+        check.maxCameraYawDeltaDegrees,
+        AbsYawDeltaDegrees(vehicleYawRadians, camera.state().yawRadians));
+}
+
+void UpdateRoadEdgeCollisionTelemetry(
+    FerryOfficeVehicleRuntimeComparisonResult::RoadEdgeCheck& check,
+    const std::unique_ptr<engine::physics::IPhysicsWorld>& world,
+    const std::vector<RoadEdgeProbe>& probes,
+    engine::Vec3 vehiclePosition,
+    engine::Vec3 vehicleHalfExtents)
+{
+    if (!world || probes.empty()) {
+        return;
+    }
+
+    check.collisionBacked = true;
+    const engine::Vec3 probeCenter {
+        vehiclePosition.x,
+        vehicleHalfExtents.y,
+        vehiclePosition.z,
+    };
+    const engine::Vec3 probeHalfExtents {
+        vehicleHalfExtents.x,
+        vehicleHalfExtents.y,
+        vehicleHalfExtents.z,
+    };
+    const std::vector<engine::physics::OverlapResult> overlaps = world->overlapBox(probeCenter, probeHalfExtents);
+    if (!overlaps.empty()) {
+        check.edgeOverlapFrames += 1;
+    }
+    check.minCollisionClearance = std::min(
+        check.minCollisionClearance,
+        RoadEdgeProbeClearance(vehiclePosition, probeHalfExtents, probes));
+}
+
 FerryOfficeVehicleRuntimeComparisonResult::ObstacleCheck RunDeterministicObstacleCheck(const SceneVehicleDefinition& vehicle)
 {
     FerryOfficeVehicleRuntimeComparisonResult::ObstacleCheck check;
@@ -648,6 +802,124 @@ FerryOfficeVehicleRuntimeComparisonResult::ObstacleCheck RunAdapterObstacleCheck
     check.message = check.passed
         ? "Runtime adapter steering cleared the overlap-backed obstacle probe."
         : "Runtime adapter steering did not cleanly clear the overlap-backed obstacle probe.";
+    return check;
+}
+
+FerryOfficeVehicleRuntimeComparisonResult::RoadEdgeCheck RunDeterministicRoadEdgeCheck(
+    const SceneDefinition& scene,
+    const SceneVehicleDefinition& vehicle,
+    engine::Vec3 checkpointPosition,
+    float checkpointRadius)
+{
+    FerryOfficeVehicleRuntimeComparisonResult::RoadEdgeCheck check;
+    check.backendName = "deterministic";
+    check.minCollisionClearance = std::numeric_limits<float>::max();
+    check.finalPosition = vehicle.spawnPosition;
+    check.finalYawRadians = vehicle.spawnYawRadians;
+
+    const std::vector<RoadEdgeProbe> probes = RoadEdgeProbesFromScene(scene);
+    check.authoredEdgeIds = RoadEdgeIds(probes);
+    std::unique_ptr<engine::physics::IPhysicsWorld> edgeWorld =
+        BuildRoadEdgePhysicsWorld(engine::physics::PhysicsBackend::Simple, probes);
+    ThirdPersonCamera camera = BuildObstacleCamera(vehicle.spawnYawRadians);
+    VehicleController controller = BuildDeterministicVehicle(vehicle);
+
+    bool checkpointReached = false;
+    for (int frame = 0; frame < RouteCheckMaxFrames; ++frame) {
+        engine::InputState input;
+        input.moveForward = RouteCheckThrottle;
+        controller.beginFrame();
+        controller.updateDriving(1.0f / 60.0f, input);
+
+        const VehicleState& state = controller.state();
+        check.frameCount = frame + 1;
+        check.finalPosition = state.position;
+        check.finalYawRadians = state.yawRadians;
+        check.hitBounds = check.hitBounds || state.hitBoundsThisFrame;
+        UpdateRoadEdgeCollisionTelemetry(check, edgeWorld, probes, state.position, vehicle.proxyHalfExtents);
+        UpdateRoadEdgeCameraTelemetry(check, camera, state.position, state.yawRadians, 1.0f / 60.0f);
+        if (HorizontalDistance(state.position, checkpointPosition) <= checkpointRadius) {
+            checkpointReached = true;
+            break;
+        }
+    }
+    if (edgeWorld) {
+        edgeWorld->shutdown();
+    }
+
+    check.roadEdgeClear = check.collisionBacked
+        && check.edgeOverlapFrames == 0
+        && check.minCollisionClearance > 0.0f;
+    check.passed = checkpointReached
+        && check.roadEdgeClear
+        && !check.hitBounds
+        && check.authoredEdgeIds.size() == RoadEdgeProbeIds.size();
+    check.message = check.passed
+        ? "Deterministic service-run route stayed clear of authored dock-road edge probes."
+        : "Deterministic service-run route did not cleanly clear authored dock-road edge probes.";
+    return check;
+}
+
+FerryOfficeVehicleRuntimeComparisonResult::RoadEdgeCheck RunAdapterRoadEdgeCheck(
+    const SceneDefinition& scene,
+    const engine::physics::VehicleRuntimeConfig& config,
+    engine::physics::PhysicsBackend backend,
+    engine::Vec3 checkpointPosition,
+    float checkpointRadius)
+{
+    FerryOfficeVehicleRuntimeComparisonResult::RoadEdgeCheck check;
+    check.backendName = "unavailable";
+    check.minCollisionClearance = std::numeric_limits<float>::max();
+    check.finalPosition = config.spawnPosition;
+    check.finalYawRadians = config.spawnYawRadians;
+
+    const std::vector<RoadEdgeProbe> probes = RoadEdgeProbesFromScene(scene);
+    check.authoredEdgeIds = RoadEdgeIds(probes);
+    std::unique_ptr<engine::physics::IPhysicsWorld> edgeWorld = BuildRoadEdgePhysicsWorld(backend, probes);
+    ThirdPersonCamera camera = BuildObstacleCamera(config.spawnYawRadians);
+    std::unique_ptr<engine::physics::IVehicleRuntimeAdapter> adapter =
+        engine::physics::CreateVehicleRuntimeAdapter(backend);
+    if (!adapter || !adapter->initialize(config)) {
+        check.message = "Runtime adapter was unavailable for authored road-edge QA.";
+        return check;
+    }
+
+    check.backendName = std::string(adapter->backendName());
+    bool stable = true;
+    bool checkpointReached = false;
+    for (int frame = 0; frame < RouteCheckMaxFrames; ++frame) {
+        stable = stable && adapter->step({RouteCheckThrottle, 0.0f, 0.0f}, config.fixedStepSeconds);
+        const engine::physics::VehicleRuntimeState state = adapter->state();
+        check.frameCount = frame + 1;
+        check.finalPosition = state.position;
+        check.finalYawRadians = state.yawRadians;
+        check.hitBounds = check.hitBounds || state.outOfBounds;
+        UpdateRoadEdgeCollisionTelemetry(check, edgeWorld, probes, state.position, config.halfExtents);
+        UpdateRoadEdgeCameraTelemetry(check, camera, state.position, state.yawRadians, config.fixedStepSeconds);
+        if (HorizontalDistance(state.position, checkpointPosition) <= checkpointRadius) {
+            checkpointReached = true;
+            break;
+        }
+        if (!stable || state.wheelContactCount < 2 || state.outOfBounds) {
+            break;
+        }
+    }
+    adapter->shutdown();
+    if (edgeWorld) {
+        edgeWorld->shutdown();
+    }
+
+    check.roadEdgeClear = check.collisionBacked
+        && check.edgeOverlapFrames == 0
+        && check.minCollisionClearance > 0.0f;
+    check.passed = checkpointReached
+        && stable
+        && check.roadEdgeClear
+        && !check.hitBounds
+        && check.authoredEdgeIds.size() == RoadEdgeProbeIds.size();
+    check.message = check.passed
+        ? "Runtime adapter service-run route stayed clear of authored dock-road edge probes."
+        : "Runtime adapter service-run route did not cleanly clear authored dock-road edge probes.";
     return check;
 }
 
@@ -1209,6 +1481,11 @@ bool WriteReport(const FerryOfficeVehicleRuntimeComparisonResult& result)
         routePaceProbes.push_back(RoutePaceProbeJson(probe));
     }
 
+    nlohmann::json roadEdgeChecks = nlohmann::json::array();
+    for (const FerryOfficeVehicleRuntimeComparisonResult::RoadEdgeCheck& check : result.roadEdgeChecks) {
+        roadEdgeChecks.push_back(RoadEdgeCheckJson(check));
+    }
+
     const nlohmann::json report = {
         {"schema", "v0.36-ferry-office-vehicle-runtime-comparison"},
         {"scenario", result.scenario},
@@ -1229,6 +1506,7 @@ bool WriteReport(const FerryOfficeVehicleRuntimeComparisonResult& result)
         {"controlChecks", controlChecks},
         {"drivingFeelChecks", drivingFeelChecks},
         {"routePaceProbes", routePaceProbes},
+        {"roadEdgeChecks", roadEdgeChecks},
         {"comparison", {
             {"maxPositionDelta", result.maxPositionDelta},
             {"maxYawDeltaDegrees", result.maxYawDeltaDegrees},
@@ -1415,6 +1693,8 @@ FerryOfficeVehicleRuntimeComparisonResult RunFerryOfficeVehicleRuntimeComparison
         adapterDrivingFeelChecks.begin(),
         adapterDrivingFeelChecks.end());
     result.routePaceProbes = RunAdapterRoutePaceProbes(config, backend, checkpointPosition, checkpointRadius);
+    result.roadEdgeChecks.push_back(RunDeterministicRoadEdgeCheck(loadedScene.scene, *vehicle, checkpointPosition, checkpointRadius));
+    result.roadEdgeChecks.push_back(RunAdapterRoadEdgeCheck(loadedScene.scene, config, backend, checkpointPosition, checkpointRadius));
 
     const bool closeEnough = result.maxPositionDelta <= RuntimePositionDeltaLimit
         && result.maxYawDeltaDegrees <= RuntimeYawDeltaLimitDegrees
@@ -1439,6 +1719,10 @@ FerryOfficeVehicleRuntimeComparisonResult RunFerryOfficeVehicleRuntimeComparison
         && std::all_of(result.routePaceProbes.begin(), result.routePaceProbes.end(), [](const auto& probe) {
                return probe.passed;
            });
+    const bool roadEdgeStable = result.roadEdgeChecks.size() == 2
+        && std::all_of(result.roadEdgeChecks.begin(), result.roadEdgeChecks.end(), [](const auto& check) {
+               return check.passed;
+           });
     float obstacleProgressDelta = 0.0f;
     if (result.obstacleChecks.size() == 2) {
         obstacleProgressDelta =
@@ -1452,12 +1736,13 @@ FerryOfficeVehicleRuntimeComparisonResult RunFerryOfficeVehicleRuntimeComparison
         && obstacleStable
         && drivingFeelStable
         && routePaceStable
+        && roadEdgeStable
         && !result.deterministicSamples.empty();
     const bool obstacleProgressAligned = obstacleProgressDelta <= 4.0f;
     result.recommendation = result.passed && obstacleProgressAligned ? "promote" : "defer";
     if (result.passed && obstacleProgressAligned) {
         result.recommendationReason =
-            "The selected vehicle runtime adapter stayed stable, close enough to compare, passed compact control checks, reached the authored service-run checkpoint, and cleared the overlap-backed obstacle replay with aligned progress.";
+            "The selected vehicle runtime adapter stayed stable, close enough to compare, passed compact control checks, reached the authored service-run checkpoint, cleared the overlap-backed obstacle replay with aligned progress, and stayed clear of authored dock-road edge probes.";
     } else if (result.passed) {
         result.recommendationReason =
             "The selected vehicle runtime adapter stayed stable and camera-readable, but obstacle-proxy progress still diverges enough to keep it opt-in.";

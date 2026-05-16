@@ -100,11 +100,28 @@ struct FerryOfficeVehicleRuntimeComparisonResult {
         bool hitBounds = false;
         std::string message;
     };
+    struct RoadEdgeCheck {
+        std::string backendName;
+        bool passed = false;
+        bool collisionBacked = false;
+        bool roadEdgeClear = false;
+        int edgeOverlapFrames = 0;
+        int frameCount = 0;
+        float minCollisionClearance = 0.0f;
+        float maxCameraYawDeltaDegrees = 0.0f;
+        float finalCameraYawRadians = 0.0f;
+        std::vector<std::string> authoredEdgeIds;
+        engine::Vec3 finalPosition;
+        float finalYawRadians = 0.0f;
+        bool hitBounds = false;
+        std::string message;
+    };
     std::vector<ControlCheck> controlChecks;
     std::vector<RouteCheck> routeChecks;
     std::vector<ObstacleCheck> obstacleChecks;
     std::vector<DrivingFeelCheck> drivingFeelChecks;
     std::vector<RoutePaceProbe> routePaceProbes;
+    std::vector<RoadEdgeCheck> roadEdgeChecks;
     float maxPositionDelta = 0.0f;
     float maxYawDeltaDegrees = 0.0f;
     float maxSpeedDelta = 0.0f;

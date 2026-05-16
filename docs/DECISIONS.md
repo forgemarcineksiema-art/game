@@ -613,3 +613,13 @@ Decision: Add one Blender-authored static harbor water surface mesh for the exis
 Reason: The water cues were still flat debug strips even after the road and distant backdrop improved. A small surface mesh with subtle ridges lets current overcast wet shading catch the harbor water without introducing renderer features the engine cannot honestly support yet.
 
 Dependency impact: no new dependency, asset format, renderer feature, texture path, material system, collision source, water simulation, transparency path, or gameplay system was added. Blender remains an optional authoring tool, and the generated `.gltf` is committed as the runtime asset.
+
+## Post-v0.99 Jolt Evidence Gate, Not Default Promotion
+
+Decision: Add an opt-in Jolt gameplay evidence gate that explicitly runs `--vehicle-runtime jolt`, extends the vehicle runtime report with authored dock-road edge checks, and keeps deterministic as the dependency-free default/fallback.
+
+Reason: The v0.99 audit found a real evidence gap: Jolt had strong opt-in vehicle reports, but the Jolt CTest playthrough could still pass without forcing Jolt runtime, and road-edge/world-collision claims were too easy to overstate. The new gate makes the Jolt playthrough explicit, records live-like control/camera/runtime checks, and verifies clearance against the authored `dock-road-south-rail` and `dock-road-north-curb` edge ids.
+
+Dependency impact: no new dependency was added. Jolt remains behind the existing opt-in `windows-vs2022-debug-jolt` preset and `src\engine\physics` boundary. `scripts\verify_jolt.ps1` is an explicit development gate, not part of normal dependency-free `scripts\verify.ps1`.
+
+Limit: the road-edge evidence is clearance/overlap probing against authored edge volumes mirrored into QA, not full live vehicle collision response against every scene collider or a reason to promote Jolt as the default runtime.

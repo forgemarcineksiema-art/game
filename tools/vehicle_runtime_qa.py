@@ -205,6 +205,44 @@ def _require_route_pace_probes(report: dict[str, Any]) -> list[dict[str, Any]]:
     return probes
 
 
+def _require_road_edge_checks(report: dict[str, Any]) -> list[dict[str, Any]]:
+    checks = report.get("roadEdgeChecks")
+    if not isinstance(checks, list) or len(checks) < 2:
+        raise ValueError("Vehicle runtime report is missing authored road-edge checks.")
+
+    backends = set()
+    for check in checks:
+        if not isinstance(check, dict):
+            raise ValueError(f"Vehicle runtime road-edge check is invalid: {check}")
+        backends.add(str(check.get("backend", "")))
+        if check.get("passed") is not True:
+            raise ValueError(f"Vehicle runtime road-edge check failed: {check}")
+        if check.get("collisionBacked") is not True or check.get("roadEdgeClear") is not True:
+            raise ValueError(f"Vehicle runtime road-edge check is missing collision-backed clearance: {check}")
+        if int(check.get("edgeOverlapFrames", -1)) != 0:
+            raise ValueError(f"Vehicle runtime road-edge check overlapped an authored edge: {check}")
+        authored_edge_ids = check.get("authoredEdgeIds")
+        if not isinstance(authored_edge_ids, list) or len(authored_edge_ids) < 2:
+            raise ValueError(f"Vehicle runtime road-edge check is missing authored edge ids: {check}")
+        for key in (
+            "minCollisionClearance",
+            "finalPosition",
+            "finalYawDegrees",
+            "maxCameraYawDeltaDegrees",
+            "finalCameraYawDegrees",
+        ):
+            if key not in check:
+                raise ValueError(f"Vehicle runtime road-edge check is missing telemetry: {check}")
+        if float(check.get("minCollisionClearance", -1.0)) <= 0.0:
+            raise ValueError(f"Vehicle runtime road-edge check has no positive clearance: {check}")
+        if check.get("hitBounds") is True:
+            raise ValueError(f"Vehicle runtime road-edge check hit authored vehicle bounds: {check}")
+
+    if "deterministic" not in backends or "jolt" not in backends:
+        raise ValueError(f"Vehicle runtime road-edge checks must include deterministic and jolt backends: {sorted(backends)}")
+    return checks
+
+
 def load_and_validate_report(report_path: pathlib.Path) -> dict[str, Any]:
     if not report_path.exists():
         raise FileNotFoundError(f"Vehicle runtime comparison report was not created: {report_path}")
@@ -244,6 +282,7 @@ def load_and_validate_report(report_path: pathlib.Path) -> dict[str, Any]:
         raise ValueError(f"Vehicle runtime speed delta exceeded threshold: {comparison}")
     if comparison.get("recommendation") not in {"promote", "defer"}:
         raise ValueError(f"Vehicle runtime report has invalid recommendation: {comparison.get('recommendation')}")
+    _require_road_edge_checks(report)
     return report
 
 
@@ -287,6 +326,7 @@ def run_vehicle_runtime(exe: pathlib.Path, scene: pathlib.Path, report_path: pat
         f"obstacleChecks={len(report['obstacleChecks'])}, "
         f"drivingFeelChecks={len(report['drivingFeelChecks'])}, "
         f"routePaceProbes={len(report['routePaceProbes'])}, "
+        f"roadEdgeChecks={len(report['roadEdgeChecks'])}, "
         f"maxPositionDelta={comparison['maxPositionDelta']:.2f}, "
         f"recommendation={comparison['recommendation']}, "
         f"report={report_path}"

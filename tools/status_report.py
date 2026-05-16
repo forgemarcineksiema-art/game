@@ -68,6 +68,7 @@ def main() -> int:
         "scripts/configure.ps1",
         "scripts/build.ps1",
         "scripts/verify.ps1",
+        "scripts/verify_jolt.ps1",
         "scripts/play.ps1",
         "tools/scene_data.py",
         "tools/asset_data.py",

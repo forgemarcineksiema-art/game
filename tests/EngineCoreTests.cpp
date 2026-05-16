@@ -4886,6 +4886,17 @@ void TestFerryOfficeVehicleRuntimeComparisonQaWritesReport()
     Expect(foundFullThrottlePace,
         "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
         "Route-pace sensitivity should include a full-throttle adapter probe.");
+    Expect(result.roadEdgeChecks.size() == 2,
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Runtime comparison QA should include deterministic and adapter authored road-edge checks.");
+    for (const auto& check : result.roadEdgeChecks) {
+        Expect(check.passed && check.collisionBacked && check.roadEdgeClear && check.edgeOverlapFrames == 0,
+            "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+            check.message);
+        Expect(check.authoredEdgeIds.size() >= 2 && check.minCollisionClearance > 0.0f,
+            "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+            "Road-edge checks should name authored edge ids and expose positive clearance.");
+    }
     Expect(result.maxPositionDelta <= 0.75f,
         "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
         "Simple runtime adapter should stay close to the deterministic fallback path.");
@@ -4944,6 +4955,16 @@ void TestFerryOfficeVehicleRuntimeComparisonQaWritesReport()
             && report["routePaceProbes"][0].contains("finalSpeed"),
         "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
         "Route-pace probes should include input and completion telemetry.");
+    Expect(report["roadEdgeChecks"].size() == 2,
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Runtime comparison report should expose authored road-edge collision evidence.");
+    Expect(report["roadEdgeChecks"][0].contains("authoredEdgeIds")
+            && report["roadEdgeChecks"][0].contains("collisionBacked")
+            && report["roadEdgeChecks"][0].contains("roadEdgeClear")
+            && report["roadEdgeChecks"][0].contains("minCollisionClearance")
+            && report["roadEdgeChecks"][0].contains("maxCameraYawDeltaDegrees"),
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Road-edge checks should include authored ids, collision clearance, and camera telemetry.");
 
     std::filesystem::remove(reportPath);
 }

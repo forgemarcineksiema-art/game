@@ -1004,10 +1004,19 @@ Status: implemented and validated. Jolt route pace remains 212 frames at throttl
 
 Status: implemented and validated. Jolt now reaches the service-run checkpoint in 169 frames at the normal 0.72 throttle script, with route-pace probes at 169/163/158 frames for throttle 0.72/0.86/1.0. The runtime QA still passes obstacle, reverse, braking, steering, and camera-lag checks, and the Jolt playthrough completes the 21-event chain without fallback or bounds hit.
 
+## Post-v0.99 - Jolt Live Evidence Gate
+
+- Add an explicit Jolt CTest playthrough that cannot silently use deterministic vehicle runtime.
+- Add a compact opt-in Jolt verification wrapper for configure/build/CTest/playthrough/runtime evidence.
+- Extend the vehicle runtime report with authored road-edge checks for the Ferry Office dock-road edge ids.
+- Keep the gate evidence-focused: no new mission beat, map expansion, renderer rewrite, or default Jolt promotion.
+
+Status: implemented and validated. Jolt CTest now passes 16/16 including `FerryOfficeJoltPlaythroughQaSmoke`, and the show-only CTest metadata confirms `--vehicle-runtime jolt`. Explicit Jolt playthrough QA completes the 21-event service-call chain with checkpoint in 169 frames. Vehicle runtime QA reports 2 road-edge checks for `dock-road-south-rail` and `dock-road-north-curb`; deterministic and Jolt both keep zero edge overlap frames with about 0.10m minimum clearance. This is authored-edge clearance evidence, not broad vehicle collision-response migration.
+
 ## Recommended Next Goal
 
 Read `docs\GAMEPLAY_REVIEW.md` before choosing the next milestone. Use `python tools\capture_visual_smoke.py`, `python tools\capture_visual_smoke.py --scenario relay-to-service-log --report-json build\captures\capture_visual_smoke_midchain_report.json`, `python tools\capture_visual_smoke.py --scenario low-dock-drain-access --report-json build\captures\capture_visual_smoke_low_dock_report.json`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play.
 
-After v0.99, the route-pace gap is narrower but not fully gone: Jolt reaches the current checkpoint in 169 frames versus deterministic at 139. The next vehicle milestone should be Jolt-first controls and camera feel: reset/follow behavior, reverse readability, and input-scripted camera/control evidence, while keeping deterministic as the comparison baseline and fallback.
+After the post-v0.99 evidence gate, the next vehicle milestone should stop proving the same straight service-run again and should target the remaining real gap: actual authored road-edge collision response plus a broader live controls/camera route with at least one turn/reverse/readability case. Keep deterministic as comparison baseline and fallback, and do not promote Jolt as the default until that broader evidence exists.
 
 If the new Low Dock Drain access consequence exposes route/objective readability issues during capture review, choose a bounded readability pass instead, but do not add another administrative endpoint by default.
