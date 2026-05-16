@@ -78,6 +78,30 @@ def write_ferry_office_canopy(output_path: pathlib.Path, overwrite: bool = True)
     )
 
 
+def write_ferry_office_service_gate(output_path: pathlib.Path, overwrite: bool = True) -> None:
+    if output_path.exists() and not overwrite:
+        raise FileExistsError(f"{output_path} already exists; pass --overwrite to replace it")
+
+    vertices: list[tuple[float, float, float]] = []
+    indices: list[int] = []
+    _append_box(vertices, indices, center=(0.0, 0.75, 0.0), half_extents=(2.45, 0.72, 0.10))
+    _append_box(vertices, indices, center=(-1.22, 0.76, -0.12), half_extents=(1.08, 0.50, 0.055))
+    _append_box(vertices, indices, center=(1.22, 0.76, -0.12), half_extents=(1.08, 0.50, 0.055))
+    _append_box(vertices, indices, center=(0.0, 0.76, -0.18), half_extents=(0.055, 0.62, 0.08))
+    _append_box(vertices, indices, center=(0.0, 1.28, -0.18), half_extents=(2.28, 0.07, 0.08))
+    _append_box(vertices, indices, center=(0.0, 0.34, -0.18), half_extents=(2.28, 0.07, 0.08))
+    _append_box(vertices, indices, center=(-2.32, 0.74, -0.18), half_extents=(0.08, 0.70, 0.08))
+    _append_box(vertices, indices, center=(2.32, 0.74, -0.18), half_extents=(0.08, 0.70, 0.08))
+
+    _write_embedded_gltf(
+        output_path=output_path,
+        vertices=vertices,
+        indices=indices,
+        name="ferry_office_service_gate",
+        generator="Tidebreak tools/create_simple_prop_gltf.py v0.85 ferry office service gate fallback helper",
+    )
+
+
 def write_service_yard_cart_body(output_path: pathlib.Path, overwrite: bool = True) -> None:
     if output_path.exists() and not overwrite:
         raise FileExistsError(f"{output_path} already exists; pass --overwrite to replace it")
@@ -250,6 +274,7 @@ def parse_args() -> argparse.Namespace:
             "ferry-notice-board",
             "clearance-tag",
             "ferry-office-canopy",
+            "ferry-office-service-gate",
             "service-yard-cart-body",
             "service-yard-cart-cabin",
             "service-yard-cart-wheel",
@@ -270,6 +295,8 @@ def main() -> int:
             write_clearance_tag(output_path, overwrite=args.overwrite)
         elif args.kind == "ferry-office-canopy":
             write_ferry_office_canopy(output_path, overwrite=args.overwrite)
+        elif args.kind == "ferry-office-service-gate":
+            write_ferry_office_service_gate(output_path, overwrite=args.overwrite)
         elif args.kind == "service-yard-cart-body":
             write_service_yard_cart_body(output_path, overwrite=args.overwrite)
         elif args.kind == "service-yard-cart-cabin":

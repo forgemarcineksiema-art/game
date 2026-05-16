@@ -2,6 +2,58 @@
 
 Last updated: 2026-05-16
 
+## v0.85 Ferry Office Service Gate Mesh Pass (2026-05-16)
+
+What looked weak:
+
+- The Ferry Office service gate still read as a large flat debug slab with separate unit-box slats and a seam. It sat in the center of the first-frame facade, so it was a stronger target than adding another trim strip or repeating service-vehicle work.
+
+What changed:
+
+- Added one fallback-generated project-original `ferry_office_service_gate.gltf`.
+- Extended `tools\create_simple_prop_gltf.py` with a `ferry-office-service-gate` generator kind.
+- Kept the stable `mesh-service-gate` instance id, but changed it to the new gate mesh.
+- Removed the three old visual-only unit-box slat/seam mesh instances because the new mesh includes inset panels, rails, side posts, and a center split.
+- Preserved the authored `service-gate` collider, route behavior, dynamic `service-gate-state` color, prompts, and gameplay flow.
+
+Files changed:
+
+- `assets\models\ferry_office_service_gate.gltf`
+- `data\scenes\ferry_office.scene.json`
+- `tools\create_simple_prop_gltf.py`
+- `tests\test_scene_tools.py`
+- `docs\ASSET_GUIDE.md`
+- `docs\MESH_RENDERING.md`
+- `docs\SCENE_AUTHORING.md`
+- `docs\ROADMAP.md`
+- `docs\STATUS.md`
+
+Validation:
+
+- `python tools\validate_scene.py`: passed.
+- `python tools\validate_assets.py`: passed; 17 model files.
+- `python tools\mesh_report.py`: passed; 17 mesh assets, 68 mesh instances, 17 referenced model files, `unit-box-mesh` uses reduced to 29.
+- `python tools\capture_visual_smoke.py`: passed; GDI colors=75/lumaRange=221, DX11 colors=46/lumaRange=221 with WARP fallback in this environment.
+- `python tests\test_scene_tools.py`: passed; 46 tests.
+- `scripts\verify.ps1`: passed; doctor completed with known plain-PATH tool warnings, configure/build succeeded, default CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke completed.
+- `python tools\scene_report.py`: passed; 24 scene materials, 30 visual placeholders, 17 mesh assets, 68 mesh instances, 16 interactables, 16 route markers, and 15 objective markers.
+- `python tools\scale_audit.py`: passed.
+- `git diff --check`: passed with only expected CRLF normalization warnings for touched files.
+
+Automated evidence generated:
+
+- `build\captures\v0.31-gdi-capture.bmp`
+- `build\captures\v0.31-dx11-capture.bmp`
+- `build\captures\capture_visual_smoke_report.json`
+
+Remaining visual weakness:
+
+- The central player proxy is now the most obvious first-frame blockout element. The next pass should improve the player silhouette as one coherent presentation change, not by sprinkling more small box trims.
+
+Commit/push:
+
+- Included in the `v0.85 ferry office service gate mesh pass` commit/push step.
+
 ## v0.84 Service Vehicle Proxy Mesh Pass (2026-05-16)
 
 Selected target:

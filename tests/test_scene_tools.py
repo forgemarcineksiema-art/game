@@ -402,6 +402,23 @@ class SceneToolTests(unittest.TestCase):
             self.assertEqual("service-yard-vehicle", mesh_instances[instance_id]["linkedColliderId"])
             self.assertIn("v0.84", mesh_instances[instance_id]["notes"])
 
+    def test_v085_service_gate_mesh_replaces_box_cluster(self) -> None:
+        ids = scene_data.collect_ids(self.scene)
+        mesh_assets = {asset["id"]: asset for asset in self.scene["meshAssets"]}
+        mesh_instances = {instance["id"]: instance for instance in self.scene["meshInstances"]}
+
+        self.assertIn("ferry-office-service-gate-mesh", mesh_assets)
+        self.assertEqual("assets/models/ferry_office_service_gate.gltf", mesh_assets["ferry-office-service-gate-mesh"]["path"])
+        self.assertIn("v0.85", mesh_assets["ferry-office-service-gate-mesh"]["provenance"])
+        self.assertIn("not a blender export", mesh_assets["ferry-office-service-gate-mesh"]["provenance"].lower())
+        self.assertIn("mesh-service-gate", ids)
+        self.assertEqual("ferry-office-service-gate-mesh", mesh_instances["mesh-service-gate"]["assetId"])
+        self.assertEqual("service-gate", mesh_instances["mesh-service-gate"]["linkedColliderId"])
+        self.assertEqual("service-gate-state", mesh_instances["mesh-service-gate"]["colorKey"])
+        self.assertNotIn("mesh-service-gate-upper-slat", ids)
+        self.assertNotIn("mesh-service-gate-lower-slat", ids)
+        self.assertNotIn("mesh-service-gate-center-seam", ids)
+
     def test_duplicate_mesh_replacement_links_are_reported(self) -> None:
         scene = copy.deepcopy(self.scene)
         first = copy.deepcopy(scene["meshInstances"][0])
