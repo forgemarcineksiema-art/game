@@ -573,3 +573,11 @@ Decision: Move scene color-key mapping and fixed overcast face shading from `San
 Reason: `SandboxLayer` should not become the permanent home for palette, fake material, and lighting rules. A small scene-presentation boundary gives the next visual iterations a stable place to grow authored material presets, lighting inputs, or renderer handoff data while keeping the current renderer and scene format unchanged.
 
 Dependency impact: no new dependency, asset format, renderer feature, texture path, or material system was added.
+
+## v0.40 Tiny Scene Material Presets
+
+Decision: Let each scene color key resolve to a small `SceneMaterial` preset with a base color and conservative shading response terms, while keeping `SceneColorForKey` as a compatibility helper.
+
+Reason: The v0.39 boundary should immediately start carrying useful presentation meaning, not just move old code around. Wet asphalt, damp concrete, painted service props, and matte wood/concrete should not all react to the overcast shading pass in the same way. This creates a tiny material-language stepping stone without adding textures, normals, shader files, PBR, asset-format changes, or renderer-owned material resources.
+
+Dependency impact: no new dependency, asset file, asset format, renderer feature, shader pipeline, or texture path was added.

@@ -1892,6 +1892,51 @@ void TestScenePresentationDynamicPaletteStatesRemainDistinct()
         "Vehicle palette should still communicate empty versus occupied state.");
 }
 
+void TestScenePresentationMaterialPresetsStayBoundedForAuthoredKeys()
+{
+    const SceneLoadResult loadedScene = LoadSceneDefinition(DefaultScenePathForTests());
+    Expect(loadedScene.ok(),
+        "TestScenePresentationMaterialPresetsStayBoundedForAuthoredKeys",
+        "Default scene should load before checking presentation material presets.");
+    if (!loadedScene.ok()) {
+        return;
+    }
+
+    auto expectBoundedMaterial = [](std::string_view key) {
+        const SceneMaterial material = SceneMaterialForKey(key);
+        Expect(material.minShade > 0.0f && material.minShade <= material.maxShade && material.maxShade <= 1.25f,
+            "TestScenePresentationMaterialPresetsStayBoundedForAuthoredKeys",
+            "Scene material shade bounds should remain conservative for authored color keys.");
+        Expect(material.ambientShade > 0.0f && material.directionalShade >= 0.0f && material.topShade >= 0.0f && material.undersideShade >= 0.0f,
+            "TestScenePresentationMaterialPresetsStayBoundedForAuthoredKeys",
+            "Scene material shade terms should remain nonnegative and explicit.");
+    };
+
+    for (const SceneVisualPlaceholderDefinition& placeholder : loadedScene.scene.visualPlaceholders) {
+        expectBoundedMaterial(placeholder.colorKey);
+    }
+    for (const SceneMeshInstanceDefinition& instance : loadedScene.scene.meshInstances) {
+        expectBoundedMaterial(instance.colorKey);
+    }
+}
+
+void TestScenePresentationMaterialPresetsVarySurfaceResponse()
+{
+    const SceneMaterial wetAsphalt = SceneMaterialForKey("dark-service-asphalt");
+    const SceneMaterial mutedConcrete = SceneMaterialForKey("office-muted-concrete");
+    const SceneMaterial paintedPost = SceneMaterialForKey("salt-white-road-post");
+
+    Expect(wetAsphalt.maxShade > mutedConcrete.maxShade,
+        "TestScenePresentationMaterialPresetsVarySurfaceResponse",
+        "Wet asphalt should allow a stronger top-light response than matte concrete.");
+    Expect(wetAsphalt.minShade < mutedConcrete.minShade,
+        "TestScenePresentationMaterialPresetsVarySurfaceResponse",
+        "Wet asphalt should be allowed to fall darker than matte concrete.");
+    Expect(paintedPost.directionalShade > mutedConcrete.directionalShade,
+        "TestScenePresentationMaterialPresetsVarySurfaceResponse",
+        "Painted props should keep a clearer directional cue than matte concrete.");
+}
+
 void TestScenePresentationOvercastShadingAddsVolumeCue()
 {
     const engine::Color base {0.50f, 0.50f, 0.50f, 1.0f};
@@ -1915,7 +1960,7 @@ void TestScenePresentationShadedBoxSubmitsTwelveFaces()
 {
     CountingRenderer renderer;
     renderer.initialize({});
-    DrawSceneShadedBox(renderer, {0.0f, 0.5f, 0.0f}, {0.5f, 0.5f, 0.5f}, {0.50f, 0.50f, 0.50f, 1.0f});
+    DrawSceneShadedBox(renderer, {0.0f, 0.5f, 0.0f}, {0.5f, 0.5f, 0.5f}, engine::Color {0.50f, 0.50f, 0.50f, 1.0f});
 
     Expect(renderer.flatTriangleDrawCount == 12,
         "TestScenePresentationShadedBoxSubmitsTwelveFaces",
@@ -4070,6 +4115,8 @@ int main()
     TestSandboxLayerDebugTextIncludesDockRoadTelemetry();
     TestScenePresentationKnowsEveryAuthoredSceneColorKey();
     TestScenePresentationDynamicPaletteStatesRemainDistinct();
+    TestScenePresentationMaterialPresetsStayBoundedForAuthoredKeys();
+    TestScenePresentationMaterialPresetsVarySurfaceResponse();
     TestScenePresentationOvercastShadingAddsVolumeCue();
     TestScenePresentationShadedBoxSubmitsTwelveFaces();
     TestSandboxLayerDrawsEveryLoadedSceneMeshInstance();

@@ -79,7 +79,7 @@ Recent history forms a clear arc:
 
 `src/game/ScenePresentation.*`
 
-- Current game-layer presentation boundary for scene color keys, dynamic palette state, and fixed overcast face shading.
+- Current game-layer presentation boundary for scene color keys, tiny material-like presets, dynamic palette state, and fixed overcast face shading.
 - This is the staging point for future material or lighting handoff work before those rules belong in the renderer.
 
 `data/scenes/ferry_office.scene.json`

@@ -240,10 +240,14 @@ void DrawDockRoadBase(engine::IRenderer& renderer, float floor)
         {1.0f, 0.86f, 0.28f, 1.0f});
 }
 
-void DrawMeshInstance(engine::IRenderer& renderer, const engine::StaticMeshAsset& mesh, const engine::StaticMeshInstance& instance)
+void DrawMeshInstance(
+    engine::IRenderer& renderer,
+    const engine::StaticMeshAsset& mesh,
+    const engine::StaticMeshInstance& instance,
+    SceneMaterial material)
 {
     const std::vector<engine::Vec3> triangles = engine::BuildFlatTriangleList(mesh, instance);
-    DrawSceneShadedTriangleList(renderer, triangles, instance.tint);
+    DrawSceneShadedTriangleList(renderer, triangles, material);
 }
 
 } // namespace
@@ -868,8 +872,8 @@ void SandboxLayer::drawSceneVisualPlaceholders(engine::IRenderer& renderer)
     const bool fullDebug = m_uiMode == engine::UiMode::Debug;
 
     for (const SceneVisualPlaceholderDefinition& placeholder : m_sceneDefinition.visualPlaceholders) {
-        const engine::Color color = SceneColorForKey(placeholder.colorKey, presentationState);
-        DrawSceneShadedBox(renderer, placeholder.center, placeholder.halfExtents, color);
+        const SceneMaterial material = SceneMaterialForKey(placeholder.colorKey, presentationState);
+        DrawSceneShadedBox(renderer, placeholder.center, placeholder.halfExtents, material);
 
         if (fullDebug
             && (placeholder.role.find("pad") != std::string::npos
@@ -879,7 +883,7 @@ void SandboxLayer::drawSceneVisualPlaceholders(engine::IRenderer& renderer)
             renderer.drawDebugBox(
                 {placeholder.center.x, placeholder.center.y + 0.02f, placeholder.center.z},
                 {placeholder.halfExtents.x, std::max(placeholder.halfExtents.y, 0.02f), placeholder.halfExtents.z},
-                ScaleColor(color, 1.65f));
+                ScaleColor(material.baseColor, 1.65f));
         }
     }
 }
@@ -1116,7 +1120,8 @@ void SandboxLayer::drawStaticMeshDebug(engine::IRenderer& renderer)
         instance.assetId = authored.assetId;
         instance.position = authored.position;
         instance.scale = authored.scale;
-        instance.tint = SceneColorForKey(authored.colorKey, presentationState);
+        const SceneMaterial material = SceneMaterialForKey(authored.colorKey, presentationState);
+        instance.tint = material.baseColor;
         instance.yawRadians = authored.yawRadians;
 
         engine::Vec3 position = authored.position;
@@ -1129,7 +1134,7 @@ void SandboxLayer::drawStaticMeshDebug(engine::IRenderer& renderer)
         instance.position = position;
         instance.yawRadians = yawRadians;
 
-        DrawMeshInstance(renderer, meshIt->second, instance);
+        DrawMeshInstance(renderer, meshIt->second, instance, material);
     }
 }
 

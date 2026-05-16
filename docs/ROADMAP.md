@@ -478,6 +478,16 @@ Status: implemented as a first presentation upgrade toward a scene that reads li
 
 Status: implemented as a code-ownership step after v0.38. `SandboxLayer` now asks `ScenePresentation` for scene colors and shaded geometry submission, which gives later material/lighting work a clear game-layer staging point before any renderer-level material system exists.
 
+## v0.40 - Tiny Scene Material Presets
+
+- Let scene color keys resolve to `SceneMaterial` presets instead of only raw colors.
+- Give wet asphalt/damp surfaces, matte wood/concrete, and painted service props different conservative overcast shading responses.
+- Keep `SceneColorForKey` as a compatibility helper for tests and debug paths that only need the base palette.
+- Preserve scene JSON shape, asset formats, renderer interfaces, gameplay, collision, GDI/DX11 capture validation, and debug overlay behavior.
+- Avoid textures, UVs, normals in renderer input, PBR, shader files, production material resources, new model files, gameplay changes, or map expansion.
+
+Status: implemented as the first material-language step inside `ScenePresentation`. The current scene still renders through flat debug triangles, but the submitted colors now carry surface-specific overcast response terms instead of using one universal shade formula.
+
 ## Recommended Next Goal
 
 Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. The next vehicle decision should be a short human comparison pass between normal deterministic driving and `--vehicle-runtime jolt`, then either defer Jolt vehicle promotion with concrete feel issues or promote one narrow follow-up to improve the switched path. Avoid Job #2 until the first job is automatically validated, comfortable by hand, and no longer blocked by core movement/vehicle confidence.

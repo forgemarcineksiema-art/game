@@ -5545,6 +5545,42 @@ Remaining limitations:
 - There are still no textures, normals in renderer input, shader material presets, PBR, terrain, production static mesh resources, or authored light sources.
 - The next visual work should use this boundary to introduce a tiny material/preset data shape or move another obvious placeholder cluster toward authored geometry, depending on the latest capture evidence.
 
+## v0.40 Tiny Scene Material Presets (2026-05-16)
+
+Goal attempted:
+
+- Turn the v0.39 `ScenePresentation` boundary into a small material-language step rather than a pure code move.
+- Let authored scene color keys produce base colors plus conservative overcast shading response terms.
+- Preserve the current scene JSON shape, asset format, renderer interface, gameplay, and debug/playtest behavior.
+
+Implementation notes:
+
+- Added `SceneMaterial` and `SceneMaterialForKey(...)`.
+- Kept `SceneColorForKey(...)` as a base-color compatibility helper.
+- Added wet, matte, and painted preset helpers inside `ScenePresentation.cpp`.
+- `DrawSceneShadedBox` and `DrawSceneShadedTriangleList` now have `SceneMaterial` overloads.
+- `SandboxLayer` uses material presets for visual placeholders and mesh instances, while keeping mesh instance base tint populated for existing data flow.
+- Updated `docs\DECISIONS.md`, `docs\MESH_RENDERING.md`, `docs\ROADMAP.md`, and `docs\CONTEXT_MAP.md`.
+
+Focused test coverage:
+
+- `TestScenePresentationMaterialPresetsStayBoundedForAuthoredKeys` checks conservative material shade bounds for every authored scene color key.
+- `TestScenePresentationMaterialPresetsVarySurfaceResponse` checks that wet asphalt, matte concrete, and painted posts do not all share one identical shading response.
+- Existing v0.39 tests still cover authored color-key coverage, dynamic palette differences, overcast volume cue, and shaded box triangle count.
+
+Validation:
+
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests; build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `cmake --build --preset windows-vs2022-debug --target EngineApp; python tools\capture_visual_smoke.py`: passed; GDI and DX11 captures were nonblank, with DX11 still falling back to WARP on this laptop.
+- `python tools\playthrough_qa.py`: passed; phase=`complete`, events=10.
+- `scripts\verify.ps1`: passed; doctor completed with known PATH warnings, configure/build succeeded, CTest passed 11/11, scene validation passed, asset validation passed, mesh report found 8 model files and 37 mesh instances, and null smoke loaded the Ferry Office scene.
+
+Remaining limitations:
+
+- This is not a renderer material system.
+- There are still no texture maps, UVs, normal input in the renderer, shader material files, PBR terms, authored lights, terrain, or production mesh resources.
+- The next visual slice should either add a data-authored material preset table or use this preset model while replacing another high-value placeholder cluster with better geometry.
+
 ## v0.38 Clean Playtest Presentation / Overcast Scene Shading (2026-05-16)
 
 Goal:
