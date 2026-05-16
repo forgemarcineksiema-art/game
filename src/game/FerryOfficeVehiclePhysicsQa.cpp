@@ -7,6 +7,7 @@
 #include "engine/physics/PhysicsWorld.h"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <filesystem>
 #include <fstream>
@@ -118,6 +119,25 @@ nlohmann::json DrivingFeelCheckJson(const FerryOfficeVehicleRuntimeComparisonRes
         {"maxValue", check.maxValue},
         {"units", check.units},
         {"message", check.message},
+    };
+}
+
+nlohmann::json RoutePaceProbeJson(const FerryOfficeVehicleRuntimeComparisonResult::RoutePaceProbe& probe)
+{
+    return {
+        {"backend", probe.backendName},
+        {"name", probe.name},
+        {"throttle", probe.throttle},
+        {"passed", probe.passed},
+        {"checkpointReached", probe.checkpointReached},
+        {"stable", probe.stable},
+        {"framesToCheckpoint", probe.framesToCheckpoint},
+        {"minDistanceToCheckpoint", probe.minDistanceToCheckpoint},
+        {"finalPosition", {probe.finalPosition.x, probe.finalPosition.y, probe.finalPosition.z}},
+        {"finalYawDegrees", engine::Degrees(probe.finalYawRadians)},
+        {"finalSpeed", probe.finalSpeed},
+        {"hitBounds", probe.hitBounds},
+        {"message", probe.message},
     };
 }
 
@@ -1032,6 +1052,70 @@ engine::physics::VehicleProbeConfig ProbeConfigFromSceneVehicle(const SceneVehic
     return config;
 }
 
+FerryOfficeVehicleRuntimeComparisonResult::RoutePaceProbe RunAdapterRoutePaceProbe(
+    const engine::physics::VehicleRuntimeConfig& config,
+    engine::physics::PhysicsBackend backend,
+    engine::Vec3 checkpointPosition,
+    float checkpointRadius,
+    float throttle)
+{
+    FerryOfficeVehicleRuntimeComparisonResult::RoutePaceProbe probe;
+    probe.backendName = std::string(engine::physics::VehicleRuntimeRequestName(backend, true));
+    probe.name = "routePaceThrottle" + std::to_string(static_cast<int>(throttle * 100.0f + 0.5f));
+    probe.throttle = throttle;
+    probe.framesToCheckpoint = -1;
+    probe.minDistanceToCheckpoint = std::numeric_limits<float>::max();
+
+    std::unique_ptr<engine::physics::IVehicleRuntimeAdapter> adapter =
+        engine::physics::CreateVehicleRuntimeAdapter(backend);
+    if (!adapter || !adapter->initialize(config)) {
+        probe.message = "Runtime adapter was unavailable for route-pace sensitivity QA.";
+        return probe;
+    }
+    probe.backendName = std::string(adapter->backendName());
+
+    bool stable = true;
+    for (int frame = 0; frame < RouteCheckMaxFrames; ++frame) {
+        stable = stable && adapter->step({throttle, 0.0f, 0.0f}, config.fixedStepSeconds);
+        const engine::physics::VehicleRuntimeState state = adapter->state();
+        const float distance = HorizontalDistance(state.position, checkpointPosition);
+        probe.minDistanceToCheckpoint = std::min(probe.minDistanceToCheckpoint, distance);
+        probe.finalPosition = state.position;
+        probe.finalYawRadians = state.yawRadians;
+        probe.finalSpeed = state.speed;
+        probe.hitBounds = probe.hitBounds || state.outOfBounds;
+        if (distance <= checkpointRadius) {
+            probe.checkpointReached = true;
+            probe.framesToCheckpoint = frame + 1;
+            break;
+        }
+        if (!stable || state.wheelContactCount < 2 || state.outOfBounds) {
+            break;
+        }
+    }
+
+    adapter->shutdown();
+    probe.stable = stable;
+    probe.passed = probe.checkpointReached && stable && !probe.hitBounds;
+    probe.message = probe.passed
+        ? "Runtime adapter route-pace probe reached the authored service-run checkpoint."
+        : "Runtime adapter route-pace probe did not cleanly reach the authored service-run checkpoint.";
+    return probe;
+}
+
+std::vector<FerryOfficeVehicleRuntimeComparisonResult::RoutePaceProbe> RunAdapterRoutePaceProbes(
+    const engine::physics::VehicleRuntimeConfig& config,
+    engine::physics::PhysicsBackend backend,
+    engine::Vec3 checkpointPosition,
+    float checkpointRadius)
+{
+    std::vector<FerryOfficeVehicleRuntimeComparisonResult::RoutePaceProbe> probes;
+    for (float throttle : std::array {RouteCheckThrottle, 0.86f, 1.0f}) {
+        probes.push_back(RunAdapterRoutePaceProbe(config, backend, checkpointPosition, checkpointRadius, throttle));
+    }
+    return probes;
+}
+
 bool WriteReport(const FerryOfficeVehiclePhysicsQaResult& result)
 {
     if (result.reportPath.empty()) {
@@ -1120,6 +1204,11 @@ bool WriteReport(const FerryOfficeVehicleRuntimeComparisonResult& result)
         drivingFeelChecks.push_back(DrivingFeelCheckJson(check));
     }
 
+    nlohmann::json routePaceProbes = nlohmann::json::array();
+    for (const FerryOfficeVehicleRuntimeComparisonResult::RoutePaceProbe& probe : result.routePaceProbes) {
+        routePaceProbes.push_back(RoutePaceProbeJson(probe));
+    }
+
     const nlohmann::json report = {
         {"schema", "v0.36-ferry-office-vehicle-runtime-comparison"},
         {"scenario", result.scenario},
@@ -1139,6 +1228,7 @@ bool WriteReport(const FerryOfficeVehicleRuntimeComparisonResult& result)
         {"obstacleChecks", obstacleChecks},
         {"controlChecks", controlChecks},
         {"drivingFeelChecks", drivingFeelChecks},
+        {"routePaceProbes", routePaceProbes},
         {"comparison", {
             {"maxPositionDelta", result.maxPositionDelta},
             {"maxYawDeltaDegrees", result.maxYawDeltaDegrees},
@@ -1324,6 +1414,7 @@ FerryOfficeVehicleRuntimeComparisonResult RunFerryOfficeVehicleRuntimeComparison
         result.drivingFeelChecks.end(),
         adapterDrivingFeelChecks.begin(),
         adapterDrivingFeelChecks.end());
+    result.routePaceProbes = RunAdapterRoutePaceProbes(config, backend, checkpointPosition, checkpointRadius);
 
     const bool closeEnough = result.maxPositionDelta <= RuntimePositionDeltaLimit
         && result.maxYawDeltaDegrees <= RuntimeYawDeltaLimitDegrees
@@ -1344,6 +1435,10 @@ FerryOfficeVehicleRuntimeComparisonResult RunFerryOfficeVehicleRuntimeComparison
         && std::all_of(result.drivingFeelChecks.begin(), result.drivingFeelChecks.end(), [](const auto& check) {
                return check.passed;
            });
+    const bool routePaceStable = !result.routePaceProbes.empty()
+        && std::all_of(result.routePaceProbes.begin(), result.routePaceProbes.end(), [](const auto& probe) {
+               return probe.passed;
+           });
     float obstacleProgressDelta = 0.0f;
     if (result.obstacleChecks.size() == 2) {
         obstacleProgressDelta =
@@ -1356,6 +1451,7 @@ FerryOfficeVehicleRuntimeComparisonResult RunFerryOfficeVehicleRuntimeComparison
         && routeStable
         && obstacleStable
         && drivingFeelStable
+        && routePaceStable
         && !result.deterministicSamples.empty();
     const bool obstacleProgressAligned = obstacleProgressDelta <= 4.0f;
     result.recommendation = result.passed && obstacleProgressAligned ? "promote" : "defer";

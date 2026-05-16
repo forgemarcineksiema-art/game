@@ -986,10 +986,19 @@ Status: implemented and validated. `vehicle_runtime_qa.py` now requires 12 drivi
 
 Status: implemented and validated. Vehicle camera follow strength is now `5.0`; deterministic camera yaw lag is 4.52 degrees, Jolt camera yaw lag is 12.24 degrees, Jolt playthrough QA still completes in 212 frames, Jolt CTest passes 15/15, and `scripts\verify.ps1` passes.
 
+## v0.98 - Jolt Route-Pace Sensitivity Evidence
+
+- Add route-pace probes to the vehicle runtime report before changing Jolt drivetrain tuning.
+- Measure the same service-run checkpoint route at multiple Jolt throttle levels.
+- Require a passed Jolt full-throttle probe in `tools\vehicle_runtime_qa.py`.
+- Keep live vehicle speed unchanged until the drivetrain cause is clearer.
+
+Status: implemented and validated. Jolt route pace remains 212 frames at throttle 0.72, 0.86, and 1.0, with final speed about 6.12 and no bounds hit; this points away from the scripted throttle and toward drivetrain/force/gearing/drag tuning as the next vehicle gap. `scripts\verify.ps1` passes.
+
 ## Recommended Next Goal
 
 Read `docs\GAMEPLAY_REVIEW.md` before choosing the next milestone. Use `python tools\capture_visual_smoke.py`, `python tools\capture_visual_smoke.py --scenario relay-to-service-log --report-json build\captures\capture_visual_smoke_midchain_report.json`, `python tools\capture_visual_smoke.py --scenario low-dock-drain-access --report-json build\captures\capture_visual_smoke_low_dock_report.json`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play.
 
-After v0.97, the remaining vehicle gap is route pace, not camera follow. The next vehicle goal should use controlled A/B route-pace probes before changing Jolt mass, torque, or gearing; otherwise choose a playable content/world-consequence step instead of another pure QA step.
+After v0.98, the remaining vehicle gap is Jolt drivetrain/pace tuning rather than scripted throttle. Either run a controlled Jolt drivetrain route-pace tuning pass that preserves reverse contact and obstacle stability, or pivot to a player-facing content/world-consequence step before spending another iteration only on vehicle QA.
 
 If the new Low Dock Drain access consequence exposes route/objective readability issues during capture review, choose a bounded readability pass instead, but do not add another administrative endpoint by default.

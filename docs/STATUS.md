@@ -2,6 +2,76 @@
 
 Last updated: 2026-05-16
 
+## v0.98 Jolt Route-Pace Sensitivity Evidence (2026-05-16)
+
+Selected milestone:
+
+- Add route-pace sensitivity evidence before changing Jolt vehicle drivetrain, mass, torque, or gearing again.
+
+Candidate milestone triage:
+
+- Jolt route-pace sensitivity report: impact high because v0.96/v0.97 left route pace as the main vehicle gap; risk low/medium because it extends QA telemetry without changing live driving; validation path = C++/Python tests, Jolt runtime QA, Jolt CTest, `scripts\verify.ps1`.
+- Low Dock readability pass: impact medium, risk low; deferred because vehicle route pace is the sharper remaining Jolt decision.
+- New content beat: impact high but higher scope; deferred until vehicle target/fallback evidence is cleaner.
+
+Why selected:
+
+- v0.97 proved camera follow could be improved safely, but route pace stayed at 212 frames. A blind torque/mass/gearing change had already failed during exploration by worsening reverse wheel contact, so the next correct step was controlled route-pace sensitivity evidence.
+
+What changed:
+
+- Added `routePaceProbes` to the Ferry Office vehicle runtime comparison report.
+- The report now probes the selected runtime adapter at 0.72, 0.86, and 1.0 throttle on the authored service-run checkpoint route.
+- Updated `tools\vehicle_runtime_qa.py` to require a passed Jolt full-throttle route-pace probe with completion telemetry.
+- Updated C++ and Python tests for the new report section.
+
+Files changed:
+
+- `src\game\FerryOfficeVehiclePhysicsQa.h`
+- `src\game\FerryOfficeVehiclePhysicsQa.cpp`
+- `tools\vehicle_runtime_qa.py`
+- `tests\EngineCoreTests.cpp`
+- `tests\test_vehicle_runtime_qa.py`
+- `docs\STATUS.md`
+- `docs\ROADMAP.md`
+- `docs\PHYSICS_DECISION.md`
+- `docs\TECH_DEBT.md`
+- `docs\CONTEXT_MAP.md`
+
+Validation so far:
+
+- `python tests\test_vehicle_runtime_qa.py`: passed, 11 tests.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests EngineApp`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt --target EngineApp EngineCoreTests`: passed.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `python tools\vehicle_runtime_qa.py --exe build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --report-json build\physics\v098-jolt-route-pace-sensitivity-report.json`: passed; routePaceProbes=3, recommendation=promote.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed 15/15.
+
+Automated evidence generated:
+
+- `build\physics\v098-jolt-route-pace-sensitivity-report.json`.
+- Jolt route pace at throttle 0.72: 212 frames, finalSpeed=6.11, no bounds hit.
+- Jolt route pace at throttle 0.86: 212 frames, finalSpeed=6.12, no bounds hit.
+- Jolt route pace at throttle 1.0: 212 frames, finalSpeed=6.12, no bounds hit.
+
+Provisional decision:
+
+- The 212-frame route pace is not caused by a conservative scripted throttle. The next Jolt route-pace tuning should target drivetrain/force/gearing/drag behavior with reverse-contact and obstacle-stability checks kept in the loop.
+
+Remaining limitations:
+
+- v0.98 intentionally does not change live vehicle speed.
+- The probe covers the current straight service-run checkpoint route only, not broader roads, slopes, road-edge collision, cargo, traffic, or damage.
+
+Final validation:
+
+- `scripts\verify.ps1`: passed; doctor/configure/build succeeded, 11/11 default CTest tests passed, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke completed.
+- `git diff --check`: passed with expected CRLF normalization warnings only.
+
+Next direction:
+
+- Prefer either a controlled Jolt drivetrain route-pace tuning pass that preserves reverse contact, or pivot to a player-facing content/world-consequence milestone before spending another iteration only on vehicle QA.
+
 ## v0.97 Vehicle Camera Follow Tightening (2026-05-16)
 
 Selected milestone:

@@ -181,6 +181,30 @@ def _require_driving_feel_checks(report: dict[str, Any]) -> list[dict[str, Any]]
     return checks
 
 
+def _require_route_pace_probes(report: dict[str, Any]) -> list[dict[str, Any]]:
+    probes = report.get("routePaceProbes")
+    if not isinstance(probes, list) or not probes:
+        raise ValueError("Vehicle runtime report is missing route-pace sensitivity probes.")
+
+    found_full_throttle = False
+    for probe in probes:
+        if not isinstance(probe, dict):
+            raise ValueError(f"Vehicle runtime route-pace probe is invalid: {probe}")
+        if probe.get("backend") != "jolt":
+            continue
+        throttle = float(probe.get("throttle", 0.0))
+        found_full_throttle = found_full_throttle or throttle >= 0.99
+        if probe.get("passed") is not True or probe.get("checkpointReached") is not True:
+            raise ValueError(f"Vehicle runtime route-pace probe failed: {probe}")
+        for key in ("framesToCheckpoint", "minDistanceToCheckpoint", "finalPosition", "finalSpeed"):
+            if key not in probe:
+                raise ValueError(f"Vehicle runtime route-pace probe is missing telemetry: {probe}")
+
+    if not found_full_throttle:
+        raise ValueError("Vehicle runtime report is missing a Jolt full-throttle route-pace probe.")
+    return probes
+
+
 def load_and_validate_report(report_path: pathlib.Path) -> dict[str, Any]:
     if not report_path.exists():
         raise FileNotFoundError(f"Vehicle runtime comparison report was not created: {report_path}")
@@ -207,6 +231,7 @@ def load_and_validate_report(report_path: pathlib.Path) -> dict[str, Any]:
     _require_route_checks(report)
     _require_obstacle_checks(report)
     _require_driving_feel_checks(report)
+    _require_route_pace_probes(report)
 
     comparison = report.get("comparison")
     if not isinstance(comparison, dict):
@@ -261,6 +286,7 @@ def run_vehicle_runtime(exe: pathlib.Path, scene: pathlib.Path, report_path: pat
         f"routeChecks={len(report['routeChecks'])}, "
         f"obstacleChecks={len(report['obstacleChecks'])}, "
         f"drivingFeelChecks={len(report['drivingFeelChecks'])}, "
+        f"routePaceProbes={len(report['routePaceProbes'])}, "
         f"maxPositionDelta={comparison['maxPositionDelta']:.2f}, "
         f"recommendation={comparison['recommendation']}, "
         f"report={report_path}"

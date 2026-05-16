@@ -4873,6 +4873,19 @@ void TestFerryOfficeVehicleRuntimeComparisonQaWritesReport()
     Expect(foundDeterministicFeel && foundAdapterFeel,
         "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
         "Driving-feel checks should cover the deterministic baseline and selected runtime adapter.");
+    Expect(result.routePaceProbes.size() >= 3,
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Runtime comparison QA should include route-pace sensitivity probes for the selected adapter.");
+    bool foundFullThrottlePace = false;
+    for (const auto& probe : result.routePaceProbes) {
+        foundFullThrottlePace = foundFullThrottlePace || probe.throttle >= 0.99f;
+        Expect(probe.passed && probe.checkpointReached && !probe.hitBounds,
+            "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+            probe.message);
+    }
+    Expect(foundFullThrottlePace,
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Route-pace sensitivity should include a full-throttle adapter probe.");
     Expect(result.maxPositionDelta <= 0.75f,
         "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
         "Simple runtime adapter should stay close to the deterministic fallback path.");
@@ -4923,6 +4936,14 @@ void TestFerryOfficeVehicleRuntimeComparisonQaWritesReport()
             && report["drivingFeelChecks"][0].contains("maxValue"),
         "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
         "Runtime comparison driving-feel checks should include backend and threshold telemetry.");
+    Expect(report["routePaceProbes"].size() >= 3,
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Runtime comparison report should expose route-pace sensitivity telemetry.");
+    Expect(report["routePaceProbes"][0].contains("throttle")
+            && report["routePaceProbes"][0].contains("framesToCheckpoint")
+            && report["routePaceProbes"][0].contains("finalSpeed"),
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Route-pace probes should include input and completion telemetry.");
 
     std::filesystem::remove(reportPath);
 }

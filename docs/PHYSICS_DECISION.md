@@ -218,6 +218,7 @@ Validated so far:
 - v0.68 refreshes the Jolt preset after the storm pump scene-content expansion and reruns the evidence stack: Jolt CTest passes 15/15; `tools\physics_parity_qa.py`, `tools\character_contact_qa.py`, `tools\vehicle_physics_qa.py`, and `tools\vehicle_runtime_qa.py` all pass; runtime comparison still reports `maxPositionDelta=1.49`, route completion in 212 frames for Jolt versus 139 for deterministic, zero obstacle overlap frames, and recommendation `promote`.
 - v0.96 adds explicit driving-feel checks to the runtime comparison. The report now requires deterministic and Jolt results for route time, route lateral deviation, brake stop distance, reverse distance, steering yaw response, and camera yaw lag before the wrapper accepts a Jolt promote recommendation.
 - v0.97 tightens the shared vehicle camera follow and the runtime-QA camera-lag thresholds: deterministic yaw lag is now 4.52 degrees and Jolt yaw lag is 12.24 degrees, while Jolt still completes the service-run checkpoint in 212 frames.
+- v0.98 adds route-pace sensitivity probes. Jolt reaches the same checkpoint in 212 frames at throttle 0.72, 0.86, and 1.0, so the route-pace gap is not explained by conservative scripted throttle.
 - `rg -n "Jolt|JPH::|<Jolt/|JPH/" src\game` returns no matches; Jolt types remain private to engine-owned physics code.
 
 Important limits:
@@ -328,6 +329,31 @@ Decision:
 Revisit when:
 
 - Route-pace tuning changes Jolt mass, engine torque, gearing, throttle shaping, or drivetrain behavior.
+
+## v0.98 Jolt Route-Pace Sensitivity Evidence
+
+v0.98 adds route-pace probes before another drivetrain tuning attempt.
+
+Validated:
+
+- Default `EngineCoreTests.exe` passed.
+- Jolt preset build passed.
+- Jolt CTest passed 15/15.
+- `tools\vehicle_runtime_qa.py` passed with backend `jolt`: routePaceProbes=3, recommendation=`promote`.
+
+Evidence:
+
+- Jolt throttle 0.72: checkpoint in 212 frames, final speed 6.11, no bounds hit.
+- Jolt throttle 0.86: checkpoint in 212 frames, final speed 6.12, no bounds hit.
+- Jolt throttle 1.0: checkpoint in 212 frames, final speed 6.12, no bounds hit.
+
+Decision:
+
+- Do not treat the 212-frame route pace as a QA-script throttle issue. The next route-pace pass should tune drivetrain/force/gearing/drag behavior while preserving reverse contact and obstacle stability.
+
+Revisit when:
+
+- The Jolt vehicle runtime exposes tunable drivetrain parameters or the service route expands beyond the current straight checkpoint probe.
 
 Important implementation choices:
 
