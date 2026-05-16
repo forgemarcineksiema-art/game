@@ -49,6 +49,7 @@ def main() -> int:
         "docs/AI_WORKFLOW.md",
         "docs/CONTEXT_MAP.md",
         "docs/GAME_DIRECTION.md",
+        "docs/GAMEPLAY_REVIEW.md",
         "docs/VERTICAL_SLICE.md",
         "docs/TECH_DEBT.md",
         "docs/MANUAL_TEST_CHECKLIST.md",

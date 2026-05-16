@@ -2,6 +2,66 @@
 
 Last updated: 2026-05-16
 
+## v0.94.1 Gameplay Review Methodology Pass (2026-05-16)
+
+Selected milestone:
+
+- Pause the autonomous implementation loop and make the gameplay/milestone-selection methodology stricter before the next `goal resume`.
+
+Why selected:
+
+- The repo was green after v0.94, but the next-candidate instinct was drifting toward another small safe readability/prop step. A deeper review showed the larger risk: the Ferry Office chain is now long and validated, but too many beats are administrative `E` prompt sign-offs. Tidebreak needs stronger visible world consequence, driving feel, or objective readability without simply extending the checklist.
+
+What changed:
+
+- Added `docs\GAMEPLAY_REVIEW.md` with a current gameplay diagnosis, main risks, milestone selection rules, and stronger next-goal shapes.
+- Updated `docs\AI_WORKFLOW.md` so future milestone choice requires a gameplay diagnosis and explicitly guards against the "green test treadmill."
+- Updated `docs\CONTEXT_MAP.md` so the next resume sees `GAMEPLAY_REVIEW` as the post-v0.94 gameplay gate and gets a ready physical-world-consequence goal prompt.
+- Updated `docs\ROADMAP.md` to recommend `v0.95 Service Route Consequence / Physical World Change` over another small prop/sign-off, with `Driving Feel Road-Test Pass` as the main alternate.
+- Updated `docs\TECH_DEBT.md` so the top fix-soon debt names checklist growth as a game-design risk, not just a tooling or validation issue.
+- Updated `scripts\doctor.ps1` and `tools\status_report.py` so the new gameplay review doc is treated as a first-class project document.
+
+Files changed:
+
+- `docs\GAMEPLAY_REVIEW.md`
+- `docs\AI_WORKFLOW.md`
+- `docs\CONTEXT_MAP.md`
+- `docs\ROADMAP.md`
+- `docs\TECH_DEBT.md`
+- `docs\STATUS.md`
+- `scripts\doctor.ps1`
+- `tools\status_report.py`
+
+Validation so far:
+
+- `python tools\scene_report.py`: passed; sceneMaterials=25, colliders=9, visualPlaceholders=31, meshAssets=20, meshInstances=66, interactables=17, routeMarkers=17, objectiveMarkers=16.
+- `python tools\status_report.py`: passed and now reports `docs\GAMEPLAY_REVIEW.md: yes`.
+- `scripts\verify.ps1`: passed; doctor now checks `docs\GAMEPLAY_REVIEW.md`, configure/build succeeded, 11/11 CTest tests passed, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke completed.
+- `git diff --check`: passed with expected CRLF normalization warnings only.
+
+Automated evidence used:
+
+- `git status --short --branch`: repo was clean on `main...origin/main` before this methodology pass.
+- `python tools\scene_report.py`: current Ferry Office scene has 25 scene materials, 9 colliders, 31 visual placeholders, 20 mesh assets, 66 mesh instances, 17 interactables, 17 route markers, and 16 objective markers.
+- `build\playthroughs\ferry-office-service-call-report.json`: current deterministic playthrough reaches `complete`, records 21 events, and reaches the service checkpoint in 139 frames.
+- `build\captures\capture_visual_smoke_midchain_report.json`: current mid-chain capture proves GDI/DX11 Relay Service Log route-state frames are nonblank, but also shows the overlay still carries much of the objective understanding.
+
+Provisional decision:
+
+- The next autonomous implementation should not default to another small prop, log, tag, or sign-off. Prefer a visible physical world consequence, or choose driving-feel road-test evidence if vehicle quality is judged the sharper bottleneck during orientation.
+
+Remaining limitations:
+
+- This is a docs/methodology pass only. It does not implement the physical world consequence, driving-feel report, UI reduction, or content-boundary refactor.
+
+Final validation:
+
+- Passed.
+
+Next direction:
+
+- When the user runs `goal resume`, start from `docs\GAMEPLAY_REVIEW.md` and prefer `v0.95 Service Route Consequence / Physical World Change` unless fresh evidence shows driving feel is the higher-leverage bottleneck.
+
 ## v0.94 Mid-chain Route Capture Evidence (2026-05-16)
 
 Selected milestone:

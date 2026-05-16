@@ -20,6 +20,7 @@ Read:
 - `docs/ARCHITECTURE.md`
 - `docs/DECISIONS.md`
 - `docs/GAME_DIRECTION.md`
+- `docs/GAMEPLAY_REVIEW.md`
 - `docs/TECH_DEBT.md`
 
 For physics, vehicles, player collision, or world-query work, also read:
@@ -138,6 +139,33 @@ Use subagents:
 ## 3. Pick One Milestone
 
 Choose one goal that advances a real capability. Small is fine when it unlocks confidence. Powerful is preferred when it has clear boundaries, strong validation, and does not mix unrelated systems.
+
+Before choosing, run a short gameplay diagnosis. This is mandatory after any completed milestone in the autonomous development loop.
+
+Answer these in notes or `docs/STATUS.md`:
+
+- What did the last milestone improve for the player, not just for validation?
+- What is the weakest current layer: content, movement, camera, driving, presentation, world consequence, validation, or architecture?
+- Would the next candidate still matter if the debug overlay were hidden?
+- Does the candidate add a new player verb, improve feel, create a visible world consequence, clarify objective understanding, or unlock safer content growth?
+- Is the candidate merely another `E` prompt, flag, log, sign-off, or small prop?
+
+Milestone priority order after v0.94:
+
+1. Fix broken build, launch, validation, or hard repo trust first.
+2. Prefer a player-facing improvement with visible consequence, better feel, stronger driving, clearer route understanding, or more memorable authored place.
+3. Prefer a bounded automated evidence milestone only when it answers a decision that would otherwise require human playtest.
+4. Refactor only when it unblocks content or reduces concrete risk in `SandboxLayer`, `FerryOfficeJob`, scene data, or tests.
+5. Pick small prop polish only when capture evidence shows the current objective/destination is visually weak and the prop directly helps route or interaction clarity.
+
+Avoid the "green test treadmill":
+
+- A green milestone should not automatically lead to the smallest safe visual/data cleanup.
+- Do not add multiple consecutive administrative beats that only set flags through `E` prompts.
+- Do not let route chains grow just because playthrough QA can cover them.
+- If content is growing longer, ask whether the next goal should create a physical world change or a content boundary instead.
+
+For Tidebreak specifically, check `docs/GAMEPLAY_REVIEW.md` before selecting a content, presentation, route, movement, camera, or vehicle goal.
 
 ## 4. Inspect Before Editing
 

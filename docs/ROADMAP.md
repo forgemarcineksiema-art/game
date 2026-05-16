@@ -961,4 +961,8 @@ Status: implemented and validated. `tools\capture_visual_smoke.py --scenario rel
 
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\capture_visual_smoke.py --scenario relay-to-service-log --report-json build\captures\capture_visual_smoke_midchain_report.json`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.94, prefer one player-facing improvement: a small authored route-side cue, clearer destination presentation, or a compact content beat backed by the new mid-chain capture path.
+Read `docs\GAMEPLAY_REVIEW.md` before choosing the next milestone. Use `python tools\capture_visual_smoke.py`, `python tools\capture_visual_smoke.py --scenario relay-to-service-log --report-json build\captures\capture_visual_smoke_midchain_report.json`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play.
+
+After v0.94, the preferred next goal is `v0.95 Service Route Consequence / Physical World Change`: make one existing repaired state visibly alter a route, obstruction, work zone, or traversable/drivable space. This is stronger than another small prop or administrative sign-off because it advances the driver/fixer fantasy: the player fixes something, and the place changes.
+
+If vehicle quality is judged the sharper bottleneck during goal orientation, choose `v0.95 Driving Feel Road-Test Pass` instead and build measurable steering/braking/reverse/camera evidence before tuning.

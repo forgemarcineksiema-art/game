@@ -21,6 +21,7 @@ Recent history forms a clear arc:
 - v0.33: Jolt static scene-query parity QA.
 - v0.34: Jolt character/contact probe QA.
 - v0.45-v0.94: Jolt vehicle runtime controls, service-run route proxy, route-pace tuning, deterministic service-vehicle runtime playthrough QA, opt-in Jolt first-job live-loop QA, the Dock Road Relay follow-up beat, relay/log/clearance endpoint consequences, compact playtest follow-up text, camera-aware obstacle-proxy vehicle steering evidence, a clearance-tag visual cue, a tiny original clearance-tag mesh prop, Jolt obstacle-progress tuning, a compact Harbor Parts return micro-slice, a follow-up next-step readability line, scene-authored action bindings for simple/gated flag beats, a Ferry Office Work Board signoff endpoint, a Ferry Office handoff note endpoint, collision-backed obstacle replay telemetry in vehicle runtime QA, a dynamic handoff-filed visual state cue, a storm pump job seed, a provisional Jolt vehicle-runtime direction decision, visible storm pump/ticket state cues, a preferred play-wrapper runtime trial for Jolt-enabled executables, a Low Dock Drain clear-tag follow-up, a Ferry Office Drain Log closeout, a visible office-side Drain Log state cue, a refreshed preferred Jolt evidence decision, active late-chain route guidance in playtest mode, a purpose-built office-side service-panel mesh cue, and QA-only mid-chain route capture evidence for the Relay Service Log state.
+- Post-v0.94: `docs/GAMEPLAY_REVIEW.md` is the gameplay diagnosis gate. Before selecting another autonomous milestone, check whether the next change adds a player verb, stronger feel, visible world consequence, clearer objective understanding, or safer content growth. Do not default to another small prop or administrative sign-off just because validation is green.
 
 ## Architecture Map
 
@@ -235,7 +236,7 @@ Sources:
 Use this when time or token budget is tight:
 
 1. Start with `git status --short --branch` and `python tools/status_report.py`.
-2. Read this file, then only the domain docs needed for the task.
+2. Read this file, `docs/GAMEPLAY_REVIEW.md`, then only the other domain docs needed for the task.
 3. Start or continue one explicit Codex `/goal`.
 4. Pick one concrete capability or bug, not a bundle of several.
 5. Find the owner module with `rg`, then read headers before implementation files.
@@ -254,129 +255,123 @@ Use this when time or token budget is tight:
 - Small goals are valid when they remove uncertainty or create validation.
 - Powerful goals are preferred when they have a clear system boundary and acceptance criteria.
 - Repeated investment in a prototype area should trigger a promote/replace/stop decision.
+- After v0.94, every autonomous milestone choice should include a gameplay diagnosis from `docs/GAMEPLAY_REVIEW.md`; green validation alone is not a sufficient reason to pick the smallest safe visual/data cleanup.
 - Older roadmap/debt "do not do this yet" notes are context, not permanent vetoes. Re-check them against current evidence before choosing a goal.
 - When a prototype path has enough validation, prefer a target-system promotion goal over more placeholder tuning.
 - Every completed goal ends with validation, `docs/STATUS.md`, guarded commit/push when allowed by `AGENTS.md`, and a ready prompt for the next goal.
 
 ## 3-5 Strong Next Directions
 
-### 1. Jolt Vehicle Feasibility / Promotion Spike
+### 1. Service Route Consequence / Physical World Change
 
-Goal: build an opt-in Jolt vehicle feasibility path for the existing Ferry Office service vehicle and compare it against the deterministic vehicle controller.
+Goal: make an existing repaired state visibly and spatially change the Ferry Office/service-road world.
 
-Why it is strong now: vehicles are a long-term pillar, the project already has a deterministic baseline, and Jolt is already integrated behind an opt-in preset. Another placeholder vehicle-polish pass would not answer the bigger question: whether the project should promote vehicle work toward Jolt now, defer it with evidence, or change direction.
+Why it is strong now: the chain is long and validated, but too many beats are administrative sign-offs. A physical route/world consequence advances the driver/fixer fantasy more than another log, tag, or prop.
 
-Likely write areas:
+Likely shapes:
 
-- `src/engine/physics` for an engine-owned opt-in vehicle probe boundary.
-- `src/engine/physics/JoltPhysicsWorld.cpp` or adjacent Jolt-private implementation files.
-- `src/game/VehicleController.*` only as the deterministic baseline for comparison, not as another polish target.
-- `src/game/FerryOffice*Qa.*` or a new vehicle QA runner.
-- `tests/EngineCoreTests.cpp`
-- `tools/*vehicle*_qa.py`
-- CMake/Jolt preset wiring if the opt-in test needs it.
+- open a short service path,
+- remove or lower a small route obstruction,
+- expose a new turnaround or dock-side shortcut,
+- change a work zone from blocked to passable,
+- make the storm pump, low dock drain, or relay work alter traversable or drivable space.
 
 Validation:
 
-- focused C++ tests,
-- Python report validation,
-- default `scripts/verify.ps1`,
-- Jolt configure/build/CTest,
-- new vehicle QA report,
-- existing `python tools/physics_parity_qa.py` and `python tools/character_contact_qa.py` as adjacent safety evidence.
-
-### 2. Live Player Collision Migration Probe
-
-Goal: let live player collision optionally use the engine physics boundary for the already-probed Ferry Office cases, while preserving the current player feel contract.
-
-Why it is strong now: v0.33 and v0.34 created parity/contact evidence. The next small step is a controlled runtime switch or adapter, not a broad rewrite.
-
-Likely write areas:
-
-- `src/engine/physics/PhysicsWorld.*`
-- `src/game/PrototypeWorld.*`
-- `src/game/PlayerController.*`
-- `src/game/SandboxLayer.*`
-- `src/game/FerryOfficeCharacterContactQa.*`
-- tests around matching positions, grounding, gate state, and corner pushout.
-
-Validation:
-
-- default `scripts/verify.ps1`,
-- Jolt configure/build,
-- `python tools/physics_parity_qa.py`,
-- `python tools/character_contact_qa.py`,
-- opt-in Jolt CTest.
-
-### 3. Input-Scripted Runtime QA For Ferry Office
-
-Goal: add a runtime/input-driven QA path that drives the actual update loop with scripted input frames and asserts job progression.
-
-Why it is useful: current `playthrough_qa.py` proves scene/job systems, but it bypasses real keyboard-style input, camera/player update rhythm, and vehicle driving path. This is useful when live-loop regression coverage is the blocker, but it should not block stronger target-system promotion work by default.
-
-Likely write areas:
-
-- `src/engine/application` for a bounded scripted-input mode, if needed.
-- `src/game/SandboxLayer` for test seams or state snapshots, if needed.
-- `src/game/FerryOffice*Qa.*` or a new QA runner.
-- `tests/EngineCoreTests.cpp`
-- `tools/*_qa.py`
-
-Validation:
-
-- focused C++ tests,
-- new Python wrapper tests,
-- `scripts/verify.ps1`,
+- focused C++ tests for state-to-collider/route/presentation behavior,
 - `python tools/playthrough_qa.py`,
-- `python tools/capture_visual_smoke.py`.
+- `python tools/capture_visual_smoke.py`,
+- a named QA capture state if the changed world is mid-chain,
+- scene/asset/mesh/scale tools if scene data changes,
+- `scripts/verify.ps1`.
 
-### 4. Renderer Resize/Text Quality Pass
+### 2. Driving Feel Road-Test Pass
 
-Goal: improve confidence that GDI/DX11 presentation and debug/playtest text survive alternate window/capture dimensions.
+Goal: build or extend automated road-test metrics before tuning deterministic/Jolt vehicle feel.
 
-Why it is useful: capture QA is already mature at 1280x720. Resize and text layout are natural next confidence gaps before more visual complexity.
+Why it is strong now: driving is Tidebreak's most kinetic player verb, and the project already has deterministic and Jolt evidence. The next vehicle improvement should measure controllability, not rely on "feels better" guesses.
 
-Likely write areas:
+Metrics:
 
-- `src/engine/renderer`
-- `src/engine/application`
-- `tools/capture_visual_smoke.py`
-- `tests/test_capture_visual_smoke.py`
-- `tests/EngineCoreTests.cpp`
+- time to checkpoint,
+- steering response,
+- yaw overshoot,
+- stop distance,
+- reverse behavior,
+- route deviation,
+- bounds hits,
+- camera target stability.
 
 Validation:
 
-- capture smoke at multiple dimensions,
-- default verify,
-- focused renderer utility tests.
+- deterministic road-test report,
+- optional Jolt comparison through `windows-vs2022-debug-jolt`,
+- `python tools/vehicle_runtime_qa.py`,
+- `python tools/playthrough_qa.py`,
+- `scripts/verify.ps1`.
+
+### 3. Objective/Route Readability Without More Text
+
+Goal: reduce dependence on the top-left overlay by making an active destination readable in the world.
+
+Why it is useful: v0.92 and v0.94 prove active guidance and mid-chain capture, but the overlay still carries most objective understanding. This is valid when capture evidence shows a current objective/destination is visually weak.
+
+Improve:
+
+- active destination framing,
+- landmark placement,
+- prompt priority near clustered interactables,
+- in-world state cue scale/color,
+- route-side object composition.
+
+Avoid:
+
+- another top-left line,
+- a prop that does not help the active objective,
+- another administrative sign-off endpoint.
+
+### 4. Follow-up Content Boundary
+
+Goal: stop the follow-up chain from becoming a longer hardcoded checklist before adding another substantial job.
+
+Why it is useful: `FerryOfficeJob` now owns route/objective policy for a 21-event chain. If new content would extend that chain, first make one smaller data/helper boundary for follow-up beats.
+
+Likely write areas:
+
+- `src/game/FerryOfficeJob.*`,
+- `src/game/SceneDefinition.*`,
+- `src/game/SceneLoader.*`,
+- `data/scenes/ferry_office.scene.json`,
+- `tests/EngineCoreTests.cpp`,
+- `tools/validate_scene.py`.
+
+Validation:
+
+- red/green tests proving one migrated follow-up route/objective policy,
+- playthrough QA,
+- scene validation/report,
+- `scripts/verify.ps1`.
 
 ### 5. Runtime Surface Area Cleanup Around `SandboxLayer`
 
-Goal: extract one or two small collaborators from `SandboxLayer` where behavior is already stable: presentation text, guidance gating, or static mesh submission.
+Goal: extract a small collaborator only if it unlocks one of the player-facing goals above.
 
-Why it is useful: `SandboxLayer` is doing many jobs. A careful extraction would make future feature work cheaper, especially input-scripted QA and collision migration.
-
-Likely write areas:
-
-- new focused game-layer helper files,
-- `SandboxLayer.*`,
-- existing presentation/guidance/static mesh tests.
+Why it is useful: `SandboxLayer` is still the busiest integration point, but file size alone is not a game problem. Extract presentation text, guidance policy, or mesh submission only when a concrete next feature would otherwise make it worse.
 
 Validation:
 
-- default verify,
+- focused C++ tests,
 - playthrough QA,
-- capture visual smoke.
+- capture visual smoke,
+- `scripts/verify.ps1`.
 
 ## Recommendation
 
-Best next move: validate the preferred Jolt live runtime trial and then use that evidence to choose the next player-facing vehicle/content step.
+Best next move after v0.94: `Service Route Consequence / Physical World Change`.
 
-Reason: v0.35 proved Jolt vehicle feasibility, v0.36 proved a frame-stepped runtime adapter comparison, v0.37 exposed that adapter through `--vehicle-runtime jolt`, v0.45 hardened tap/brake/reverse/coast checks, v0.46 added automated service-run route checks, v0.47 tuned Jolt route pace under a 240-frame budget, v0.48 proved the deterministic first-job vehicle beat can enter, drive, checkpoint, exit, and confirm through runtime controller behavior, v0.49 proved the same beat through the opt-in Jolt path, v0.59 closes the camera-aware obstacle proxy progress gap, v0.65 adds collision-backed obstacle replay evidence, v0.68 makes Jolt the preferred vehicle-runtime candidate, and v0.70 starts a controlled play-wrapper trial. Direct app and QA defaults remain deterministic, but `scripts/play.ps1` now requests `preferred`, which resolves to Jolt when the selected executable supports it.
+Reason: the current 21-event chain is technically strong and validated, but the game needs stronger visible local consequence and more player-facing payoff, not another administrative endpoint. Pick driving-feel evidence instead if the next goal owner decides vehicle quality is the sharper bottleneck.
 
-Second-best: improve input-scripted runtime QA if the next authored beat would depend on behavior that `tools/playthrough_qa.py` still bypasses.
-
-Do not start broad map expansion, renderer polish, or a big asset pass. Prefer one compact playable job/content step, or a bounded Jolt direction decision, while keeping validation fast.
+Do not start broad map expansion, a generic mission framework, a big asset pass, or another small prop by default. A prop/readability pass is fine only when capture evidence proves an active objective is visually weak.
 
 Ready next-goal prompt:
 
@@ -385,58 +380,59 @@ Create a Codex goal for Tidebreak.
 
 Repository rules:
 - Follow AGENTS.md and docs/AI_WORKFLOW.md.
+- Read docs/GAMEPLAY_REVIEW.md before selecting the milestone.
 - Use docs/CONTEXT_MAP.md for orientation.
-- Avoid polish unless it blocks validation or a production decision.
+- Avoid polish unless it directly improves route/objective readability or blocks validation/a production decision.
 - Update docs/STATUS.md.
 - Run scripts/verify.ps1 before claiming success.
 - Commit and push only if validation passes and there are no unrelated user changes.
 
 Goal:
-Add another compact authored beat using scene action bindings if content progress is the priority, or build a deterministic-vs-Jolt collision-backed steering/obstacle replay if vehicle promotion is the priority.
+Make one existing Ferry Office repaired state produce a visible, spatial world consequence.
 
 Why now:
-The first service job now has runtime enter, drive, checkpoint, exit, and confirm evidence for both deterministic and opt-in Jolt vehicle paths, v0.54 adds a compact Dock Road Relay reset, relay service log sign-off, and dock-road clear-tag consequence with remembered state, v0.55 makes that chain readable in playtest text, v0.58 gives the clearance endpoint a small dynamic mesh prop, v0.59 closes the camera-aware obstacle proxy progress gap, v0.60 adds a Harbor Parts return micro-slice, and v0.63 closes that return loop with a Ferry Office Work Board signoff and a 16-event scripted playthrough. Content can keep growing from a better-covered first job, while Jolt default promotion still needs collision-backed obstacle evidence.
+The current Ferry Office chain is technically strong and validated, but several recent beats are administrative sign-offs. Tidebreak needs the player to see that fixing something changes the local world, not only the overlay or event ledger.
 
 Scope:
-- Either add a collision-backed obstacle route for Jolt/default-promotion evidence, or add one compact authored content beat that uses scene action bindings and extends playthrough QA.
-- Keep deterministic vehicle gameplay as the dependency-free direct-app and QA default/fallback.
-- Record whether Jolt should remain opt-in, get another tuning pass, or be considered for broader steering/obstacle testing; if adding content, extend playthrough QA to cover the new beat.
+- Choose one existing state such as `stormPumpReset`, `stormPumpTicketClosed`, `lowDockDrainCleared`, `lowDockDrainLogged`, or relay service work.
+- Make that state visibly alter a route, obstruction, work zone, or traversable/drivable space.
+- Prove the change through tests, playthrough QA, and visual capture.
+- Keep the change compact and authored in the current Ferry Office scene.
 
 Non-goals:
-- No broad new job arc if the chosen milestone is a Jolt steering/obstacle comparison or scene-action cleanup.
+- No broad new job arc.
 - No traffic, NPCs, damage, garage, economy, save/load, or multi-job framework.
-- No default vehicle replacement unless automated route/control/live-loop evidence clearly supports it and validation remains clean.
-- No extra deterministic vehicle polish unless it blocks a fair comparison.
+- No new administrative sign-off beat unless it is required by the physical consequence.
+- No generic mission framework.
+- No default vehicle replacement.
 - No Jolt vendor types leaking into game-facing APIs.
 
 Files/docs to read first:
 - AGENTS.md
 - docs/AI_WORKFLOW.md
+- docs/GAMEPLAY_REVIEW.md
 - docs/CONTEXT_MAP.md
 - docs/VERTICAL_SLICE.md
 - docs/TECH_DEBT.md
-- docs/PHYSICS_DECISION.md
 - docs/ROADMAP.md
-- src/engine/physics/VehicleRuntime.*
-- src/engine/physics/JoltVehicleRuntime.cpp
-- src/game/VehicleController.*
 - src/game/SandboxLayer.*
+- src/game/PrototypeWorld.*
 - tools/physics_parity_qa.py
-- tools/character_contact_qa.py
-- tools/vehicle_physics_qa.py
-- tools/vehicle_runtime_qa.py
+- src/game/FerryOfficeJob.*
+- src/game/SceneDefinition.*
+- src/game/SceneLoader.*
+- data/scenes/ferry_office.scene.json
 - tests/EngineCoreTests.cpp
 
 Validation:
 - scripts/verify.ps1
-- cmake --preset windows-vs2022-debug-jolt
-- cmake --build --preset windows-vs2022-debug-jolt
-- ctest --preset windows-vs2022-debug-jolt --output-on-failure
-- python tools/physics_parity_qa.py
-- python tools/character_contact_qa.py
-- python tools/vehicle_physics_qa.py
-- python tools/vehicle_runtime_qa.py
+- python tools/playthrough_qa.py
+- python tools/capture_visual_smoke.py
+- python tools/validate_scene.py
+- python tools/scene_report.py
+- python tools/scale_audit.py
+- python tools/mesh_report.py
 
 Use subagents:
-- Reviewer: check route/control evidence for scope creep, premature default-promotion, and missing validation evidence.
+- Reviewer: check that the result creates visible player-facing consequence rather than another checklist beat, and that validation proves the changed state.
 ```
