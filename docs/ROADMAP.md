@@ -772,6 +772,14 @@ Status: implemented and validated. `--vehicle-runtime preferred` resolves to det
 
 Status: implemented and validated. The deterministic and Jolt playthroughs now complete a 20-event Ferry Office chain including the low dock drain clear tag; scene/tool tests, visual smoke, vehicle runtime QA, Jolt CTest, and `scripts/verify.ps1` pass.
 
+## v0.72 - Default Camera Composition Pass
+
+- Improve the first playable frame by reducing empty background weight and showing more dock, office approach, and service-yard ground context.
+- Keep this as a presentation camera tweak, not a new scene layout, prop pass, renderer rewrite, or gameplay expansion.
+- Preserve existing player start, route guidance, scene data, and validation/capture tooling.
+
+Status: implemented and validated. The default third-person camera now starts at a 22 degree pitch, making the dock and Ferry Office approach occupy more of the GDI/DX11 visual smoke captures while `scripts/verify.ps1` and scene/asset/mesh/capture checks pass.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.71, the next useful future milestone should either add an automated route-walking proxy for the longer Ferry Office follow-up chain or use preferred-runtime evidence to harden Jolt road-edge/live-control behavior.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.72, the next useful future milestone should either improve the Ferry Office facade/closed-gate focal hierarchy from fresh capture evidence, add an automated route-walking proxy for the longer Ferry Office follow-up chain, or use preferred-runtime evidence to harden Jolt road-edge/live-control behavior.

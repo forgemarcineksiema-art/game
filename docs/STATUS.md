@@ -2,6 +2,60 @@
 
 Last updated: 2026-05-16
 
+## v0.72 Default Camera Composition Pass (2026-05-16)
+
+Selected milestone:
+
+- Improve the default playtest first impression by reducing empty sky weight and giving the dock/office approach more screen space.
+
+Candidate visual pass triage:
+
+- Default Camera Composition Pass: visible impact = stronger first read of the playable dock, Ferry Office approach, and service-yard context; risk = medium because it changes camera feel; validation/capture path = rebuild, GDI/DX11 capture smoke, `scripts\verify.ps1`.
+- Ferry Office Focal Hierarchy Pass: visible impact = medium; risk = low, but the entrance already has several boards/signs and more props could add clutter.
+- Material Contrast Pass: visible impact = medium; risk = low, but color-only tuning would not address the current oversized empty background in the first capture.
+
+Why selected:
+
+- Fresh GDI/DX11 captures showed the scene is already authored with wet road, harbor water/backdrop, and state cues, but the default on-foot camera still spent too much of the first frame on empty background. A modest pitch adjustment improves first impression without adding clutter or broad renderer work.
+
+Implementation notes:
+
+- Changed the default third-person camera pitch from 12 degrees to 22 degrees.
+- Kept player start, scene layout, guidance, markers, and renderer behavior unchanged.
+
+Files changed:
+
+- `src\game\ThirdPersonCamera.h`
+- `docs\STATUS.md`
+- `docs\ROADMAP.md`
+
+Focused validation:
+
+- `scripts\build.ps1`: passed.
+- `python tools\capture_visual_smoke.py --renderer gdi`: passed; GDI capture shows more dock/approach surface and less empty sky in the default first view.
+- `scripts\verify.ps1`: passed; doctor completed with known plain-PATH tool warnings, configure/build succeeded, default CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke completed.
+- `python tools\capture_visual_smoke.py`: passed; GDI colors=65/lumaRange=221, DX11 colors=39/lumaRange=221 with WARP fallback in this environment.
+- `python tools\validate_scene.py`: passed.
+- `python tools\validate_assets.py`: passed.
+- `python tools\mesh_report.py`: passed; 12 mesh assets, 47 mesh instances, 12 referenced model files.
+- `python tools\scene_report.py`: passed; 24 scene materials, 30 visual placeholders, 47 mesh instances, 16 interactables, 16 route markers, and 15 objective markers.
+- `python tools\scale_audit.py`: passed.
+- `git diff --check`: passed with only the expected CRLF normalization warning for the touched header.
+
+Automated evidence generated:
+
+- `build\captures\v0.31-gdi-capture.bmp`
+- `build\captures\v0.31-dx11-capture.bmp`
+- `build\captures\capture_visual_smoke_report.json`
+
+Remaining visual weakness:
+
+- The Ferry Office facade and closed service gate still read as a broad flat block in the default frame. The next visual pass should improve Ferry Office focal hierarchy/material contrast without adding random prop clutter.
+
+Commit/push:
+
+- Pending.
+
 ## v0.71 Low Dock Drain Clear Tag (2026-05-16)
 
 Selected milestone:

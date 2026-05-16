@@ -24,7 +24,7 @@ struct ThirdPersonCameraState {
     engine::Vec3 position = {0.0f, 3.0f, -6.0f};
     engine::Vec3 target = {0.0f, 1.6f, 0.0f};
     float yawRadians = 0.0f;
-    float pitchRadians = engine::Radians(12.0f);
+    float pitchRadians = engine::Radians(22.0f);
     float distance = 6.0f;
 };
 
