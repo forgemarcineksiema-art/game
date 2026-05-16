@@ -2,6 +2,80 @@
 
 Last updated: 2026-05-16
 
+## v0.68 Provisional Jolt Vehicle Runtime Direction (2026-05-16)
+
+Selected milestone:
+
+- Make and document a provisional Jolt vehicle-runtime direction decision from current automated evidence.
+
+Candidate milestone triage:
+
+- Jolt direction decision: impact = converts months of opt-in vehicle QA into an actionable next technical direction; risk = low code risk because this is a decision/evidence milestone; validation path = Jolt configure/build/CTest and physics/vehicle QA tools.
+- Storm pump visual state cue: impact = improves new content readability; risk = low, but it would be another presentation pass immediately after content growth; validation path = scene tests and visual smoke.
+- Input-scripted route QA: impact = closes an important future evidence gap; risk = higher because it may need app/input plumbing; validation path = new runtime QA plus default verify.
+
+Why selected:
+
+- v0.67 added playable content. The next strongest non-content move is to stop treating the vehicle runtime evidence as indefinite research. The Jolt path now has parity/contact checks, control checks, route checks, live opt-in evidence, first-job playthrough evidence, and collision-backed obstacle replay evidence.
+
+Implementation notes:
+
+- Rebuilt the Jolt preset after v0.67 because the previously built Jolt executable was stale and rejected the new `stormPumpReset` scene flag.
+- Reran the current physics/vehicle QA stack against the fresh Jolt build.
+- Recorded a provisional decision in `docs\PHYSICS_DECISION.md`: Jolt is now the preferred vehicle-runtime candidate for the next hardening/promotion milestone, while deterministic remains the default live gameplay path until a deliberate default-promotion milestone covers live play risks.
+- Updated roadmap/context to point the next vehicle step toward live hardening or controlled default-promotion evidence instead of more open-ended feasibility proving.
+
+Files changed:
+
+- `docs\STATUS.md`
+- `docs\PHYSICS_DECISION.md`
+- `docs\ROADMAP.md`
+- `docs\CONTEXT_MAP.md`
+
+Validation and evidence:
+
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 15/15.
+- `python tools\vehicle_runtime_qa.py`: initially failed against a stale Jolt executable that did not know `stormPumpReset`; after rebuild, passed with backend `jolt`, samples=5, controlChecks=4, routeChecks=2, obstacleChecks=2, maxPositionDelta=1.49, recommendation=`promote`.
+- `python tools\vehicle_physics_qa.py`: initially failed against the stale executable; after rebuild, passed with backend `jolt`, samples=5, recommendation=`promote`.
+- `python tools\physics_parity_qa.py`: initially failed against the stale executable; after rebuild, passed with backend `jolt`, floor=4, raycast=4, overlap=4.
+- `python tools\character_contact_qa.py`: initially failed against the stale executable; after rebuild, passed with backend `jolt`, probes=7.
+
+Automated evidence generated:
+
+- `build\physics\ferry-office-vehicle-runtime-comparison-report.json`
+- `build\physics\ferry-office-vehicle-feasibility-report.json`
+- `build\physics\ferry-office-collision-parity-report.json`
+- `build\physics\ferry-office-character-contact-report.json`
+
+Decision note:
+
+- Decision made: Jolt is the preferred vehicle-runtime candidate for the next hardening/promotion milestone, not just an exploratory option.
+- Alternatives considered: keep deterministic indefinitely as the only serious path, promote Jolt to default immediately, or continue adding unrelated vehicle QA.
+- Evidence used: Jolt CTest 15/15; runtime route reaches checkpoint in 212 frames versus deterministic 139; runtime comparison maxPositionDelta=1.49; tap/coast, brake, reverse, reverse coast, route, camera-aware obstacle, and collision-backed obstacle checks pass; obstacle overlap frames are zero for deterministic and Jolt.
+- Why this helps Tidebreak: vehicle feel is a core pillar, and the project now has enough automated evidence to focus the next vehicle work on live hardening/default-promotion risk instead of re-proving basic feasibility.
+- Revisit when: a live default-promotion milestone tests player-facing controls, camera behavior, exit safety, road-edge behavior, and no vendor leakage under normal play-mode conditions.
+
+Remaining limitations:
+
+- Deterministic remains the default vehicle runtime.
+- Jolt still needs a deliberate live hardening/default-promotion milestone before it replaces the default path.
+- Human driving comparison would still be useful later, but automated evidence is strong enough to choose the next technical direction now.
+
+Final validation:
+
+- `scripts\verify.ps1`: passed; doctor/configure/build succeeded, default CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke passed.
+- `git diff --check`: passed with only expected CRLF normalization warnings.
+
+Commit/push:
+
+- Pending at status edit time.
+
+Next direction:
+
+- Build a bounded Jolt live hardening/default-promotion milestone, or add a small storm pump visible-state cue first if content readability becomes the higher leverage gap.
+
 ## v0.67 Storm Pump Job Seed (2026-05-16)
 
 Selected milestone:

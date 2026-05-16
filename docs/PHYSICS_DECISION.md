@@ -8,7 +8,7 @@ Choose Jolt Physics as Tidebreak's default production physics candidate unless a
 
 Keep PhysX as the backup candidate. Do not choose Bullet for the main engine path unless a future, narrow test gives a strong reason.
 
-This decision does not mean every current gameplay collision path should be rewritten immediately. v0.9.2 adds a vendor-safe `src/engine/physics` boundary and an opt-in Jolt backend spike. v0.33 adds a QA-only Ferry Office static-collision parity bridge, v0.34 adds a player-proxy contact probe, and v0.35 adds a wheeled vehicle feasibility probe. Existing Ferry Office gameplay still uses the tested prototype paths until a later goal migrates one behavior at a time. v0.49 adds opt-in Jolt runtime enter-drive-exit-confirm playthrough evidence for the first service job, but not Jolt default promotion.
+This decision does not mean every current gameplay collision path should be rewritten immediately. v0.9.2 adds a vendor-safe `src/engine/physics` boundary and an opt-in Jolt backend spike. v0.33 adds a QA-only Ferry Office static-collision parity bridge, v0.34 adds a player-proxy contact probe, and v0.35 adds a wheeled vehicle feasibility probe. Existing Ferry Office gameplay still uses the tested prototype paths until a later goal migrates one behavior at a time. v0.49 adds opt-in Jolt runtime enter-drive-exit-confirm playthrough evidence for the first service job, and v0.68 promotes Jolt from exploratory option to preferred vehicle-runtime candidate for the next hardening/default-promotion milestone. Deterministic vehicle gameplay remains the default until that deliberate promotion work is complete.
 
 ## Why Decide Now
 
@@ -215,13 +215,14 @@ Validated so far:
 - v0.49 added the same first-job runtime playthrough path for the opt-in Jolt adapter: it reaches the dock-road checkpoint in 213 frames, exits at a clear position, confirms the service run, and reports no fallback or bounds hit.
 - v0.59 tightens obstacle-proxy validation and tunes the opt-in Jolt adapter: Jolt now reaches the checkpoint in 212 frames, keeps the obstacle final-X progress gap to about 2.91 units, and `tools\vehicle_runtime_qa.py` reports recommendation `promote` for continued opt-in comparison evidence.
 - v0.65 adds collision-backed obstacle replay telemetry to the runtime comparison: deterministic and Jolt obstacle replays both clear a QA-only overlap probe with zero overlap frames, while preserving the existing controls, route, camera, and progress checks.
+- v0.68 refreshes the Jolt preset after the storm pump scene-content expansion and reruns the evidence stack: Jolt CTest passes 15/15; `tools\physics_parity_qa.py`, `tools\character_contact_qa.py`, `tools\vehicle_physics_qa.py`, and `tools\vehicle_runtime_qa.py` all pass; runtime comparison still reports `maxPositionDelta=1.49`, route completion in 212 frames for Jolt versus 139 for deterministic, zero obstacle overlap frames, and recommendation `promote`.
 - `rg -n "Jolt|JPH::|<Jolt/|JPH/" src\game` returns no matches; Jolt types remain private to engine-owned physics code.
 
 Important limits:
 
-- This is still a QA/runtime comparison switch, not a normal play-mode replacement.
+- This is still a QA/runtime comparison switch and opt-in live path, not a normal play-mode replacement.
 - The deterministic `VehicleController` remains the live gameplay fallback.
-- The Jolt runtime adapter is proven against compact controls checks, a straight service-run route proxy, the same first-job enter-drive-exit-confirm playthrough loop as the deterministic controller, a camera-aware obstacle proxy, and a QA-only collision-backed obstacle replay. A default vehicle-path replacement should still happen only through a deliberate promotion milestone.
+- The Jolt runtime adapter is proven against compact controls checks, a straight service-run route proxy, the same first-job enter-drive-exit-confirm playthrough loop as the deterministic controller, a camera-aware obstacle proxy, and a QA-only collision-backed obstacle replay. The provisional direction is to use Jolt as the preferred candidate for the next live hardening/default-promotion milestone, while keeping deterministic as the default until that milestone validates player-facing controls, camera behavior, exit safety, road-edge behavior, and no vendor leakage.
 
 ## v0.37 Live Opt-in Vehicle Runtime Switch Result
 

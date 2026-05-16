@@ -20,7 +20,7 @@ Recent history forms a clear arc:
 - v0.32: deterministic Ferry Office playthrough QA.
 - v0.33: Jolt static scene-query parity QA.
 - v0.34: Jolt character/contact probe QA.
-- v0.45-v0.67: Jolt vehicle runtime controls, service-run route proxy, route-pace tuning, deterministic service-vehicle runtime playthrough QA, opt-in Jolt first-job live-loop QA, the Dock Road Relay follow-up beat, relay/log/clearance endpoint consequences, compact playtest follow-up text, camera-aware obstacle-proxy vehicle steering evidence, a clearance-tag visual cue, a tiny original clearance-tag mesh prop, Jolt obstacle-progress tuning, a compact Harbor Parts return micro-slice, a follow-up next-step readability line, scene-authored action bindings for simple/gated flag beats, a Ferry Office Work Board signoff endpoint, a Ferry Office handoff note endpoint, collision-backed obstacle replay telemetry in vehicle runtime QA, a dynamic handoff-filed visual state cue, and a storm pump job seed.
+- v0.45-v0.68: Jolt vehicle runtime controls, service-run route proxy, route-pace tuning, deterministic service-vehicle runtime playthrough QA, opt-in Jolt first-job live-loop QA, the Dock Road Relay follow-up beat, relay/log/clearance endpoint consequences, compact playtest follow-up text, camera-aware obstacle-proxy vehicle steering evidence, a clearance-tag visual cue, a tiny original clearance-tag mesh prop, Jolt obstacle-progress tuning, a compact Harbor Parts return micro-slice, a follow-up next-step readability line, scene-authored action bindings for simple/gated flag beats, a Ferry Office Work Board signoff endpoint, a Ferry Office handoff note endpoint, collision-backed obstacle replay telemetry in vehicle runtime QA, a dynamic handoff-filed visual state cue, a storm pump job seed, and a provisional Jolt vehicle-runtime direction decision.
 
 ## Architecture Map
 
@@ -367,9 +367,9 @@ Validation:
 
 ## Recommendation
 
-Best next move: make a provisional Jolt vehicle-runtime direction decision from the accumulated route/control/playthrough/obstacle evidence; if content readability is the priority, add a tiny visible state cue for the storm pump job seed.
+Best next move: harden the opt-in Jolt live runtime toward a controlled default-promotion trial; if content readability is the priority, add a tiny visible state cue for the storm pump job seed.
 
-Reason: v0.35 proved Jolt vehicle feasibility, v0.36 proved a frame-stepped runtime adapter comparison, v0.37 exposed that adapter through `--vehicle-runtime jolt`, v0.45 hardened tap/brake/reverse/coast checks, v0.46 added automated service-run route checks, v0.47 tuned Jolt route pace under a 240-frame budget, v0.48 proved the deterministic first-job vehicle beat can enter, drive, checkpoint, exit, and confirm through runtime controller behavior, v0.49 proved the same beat through the opt-in Jolt path, v0.59 closes the camera-aware obstacle proxy progress gap, and v0.65 adds collision-backed obstacle replay evidence. Meanwhile v0.64-v0.67 grew the office follow-up chain into a compact second job seed, so the next strongest non-content move is a vehicle-runtime direction decision.
+Reason: v0.35 proved Jolt vehicle feasibility, v0.36 proved a frame-stepped runtime adapter comparison, v0.37 exposed that adapter through `--vehicle-runtime jolt`, v0.45 hardened tap/brake/reverse/coast checks, v0.46 added automated service-run route checks, v0.47 tuned Jolt route pace under a 240-frame budget, v0.48 proved the deterministic first-job vehicle beat can enter, drive, checkpoint, exit, and confirm through runtime controller behavior, v0.49 proved the same beat through the opt-in Jolt path, v0.59 closes the camera-aware obstacle proxy progress gap, v0.65 adds collision-backed obstacle replay evidence, and v0.68 makes Jolt the preferred vehicle-runtime candidate for the next hardening/default-promotion milestone. Deterministic remains default until that milestone proves live play risk is acceptable.
 
 Second-best: improve input-scripted runtime QA if the next authored beat would depend on behavior that `tools/playthrough_qa.py` still bypasses.
 

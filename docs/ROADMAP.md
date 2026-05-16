@@ -738,6 +738,14 @@ Status: implemented and validated. Scene data now has 21 authored scene material
 
 Status: implemented and validated. Scene data now has 15 interactables, 15 route markers, and 14 objective markers; deterministic playthrough QA completes a 19-event chain through storm pump reset and ticket closeout.
 
+## v0.68 - Provisional Jolt Vehicle Runtime Direction
+
+- Refresh the Jolt preset after the v0.67 scene/content expansion.
+- Rerun Jolt CTest and the physics/vehicle QA tools against the current authored Ferry Office scene.
+- Make a provisional vehicle-runtime direction decision from automated evidence.
+
+Status: implemented and validated. Jolt CTest passes 15/15, physics parity/contact/vehicle feasibility/runtime QA all pass after rebuilding the stale Jolt executable, and Jolt is now the preferred vehicle-runtime candidate for the next live hardening/default-promotion milestone while deterministic remains the default runtime.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.67, the next useful future milestone should probably make a provisional Jolt vehicle-runtime direction decision from the accumulated route/control/playthrough/obstacle evidence, unless the storm pump job seed needs a small visible state cue first.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.68, the next useful future milestone should either harden the opt-in Jolt live runtime toward a controlled default-promotion trial, or add a small storm pump visible-state cue if content readability is the higher leverage gap.
