@@ -68,6 +68,7 @@ KNOWN_WORLD_FLAGS = {
     "harborPartsDelivered",
     "harborPartsPickedUp",
     "lowDockDrainCleared",
+    "lowDockDrainLogged",
     "maintenanceBoxInspected",
     "manifestCollected",
     "powerRestored",

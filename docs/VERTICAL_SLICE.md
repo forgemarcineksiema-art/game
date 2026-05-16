@@ -104,6 +104,10 @@ v0.63 adds a Ferry Office Work Board signoff after the parts shelf delivery. Upd
 
 v0.64 adds one final office-side handoff note after the Work Board update. Filing it records `ferryOfficeHandoffFiled=true`, giving the next ferry crew a remembered handoff consequence without adding a generic mission framework, inventory, save/load, NPC dispatcher, or new asset pass.
 
+## v0.89 Low Dock Drain Office Log Closeout
+
+After the storm pump ticket and low dock drain clear tag, the player can return to the Ferry Office Drain Log and sign off the low dock drain closeout. This records `lowDockDrainLogged=true`, keeps the follow-up chain ending back at the office hub, and gives the drain work a remembered administrative endpoint without adding a job-board UI, save/load, NPC dispatcher, inventory, or a generic mission framework.
+
 ## Systems Explicitly Deferred
 
 - Additional vehicles beyond the one v0.16 service-yard vehicle beat.

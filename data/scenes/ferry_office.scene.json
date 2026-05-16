@@ -1449,6 +1449,18 @@
       "message": "Low dock drain tagged clear after the pump reset.",
       "requiredWorldFlags": ["stormPumpTicketClosed"],
       "worldFlagsSetWhenReady": ["lowDockDrainCleared"]
+    },
+    {
+      "id": "ferry-office-drain-log",
+      "name": "Ferry Office Drain Log",
+      "prompt": "Log Low Dock Drain",
+      "type": "info",
+      "position": [-1.42, 0.68, 2.22],
+      "radius": 1.3,
+      "oneShot": false,
+      "message": "Low dock drain closeout logged at the Ferry Office.",
+      "requiredWorldFlags": ["lowDockDrainCleared"],
+      "worldFlagsSetWhenReady": ["lowDockDrainLogged"]
     }
   ],
   "traversalAffordances": [
@@ -1584,6 +1596,12 @@
       "from": "storm-pump-ticket",
       "to": "low-dock-drain-marker",
       "points": [[-1.92, 0.08, 2.56], [3.0, 0.08, -0.35], [10.0, 0.08, -2.2], [18.92, 0.08, -1.25]]
+    },
+    {
+      "id": "route-low-dock-drain-to-office-log",
+      "from": "low-dock-drain-marker",
+      "to": "ferry-office-drain-log",
+      "points": [[18.92, 0.08, -1.25], [10.0, 0.08, -2.2], [3.0, 0.08, -0.35], [-1.42, 0.08, 2.22]]
     }
   ],
   "objectiveMarkers": [
@@ -1661,6 +1679,11 @@
       "id": "low-dock-drain-objective-marker",
       "label": "Low dock drain clear tag",
       "position": [18.92, 0.08, -1.25]
+    },
+    {
+      "id": "ferry-office-drain-log-marker",
+      "label": "Ferry Office drain log closeout",
+      "position": [-1.42, 0.08, 2.22]
     }
   ],
   "authoringNotes": [

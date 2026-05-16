@@ -908,6 +908,16 @@ Status: implemented and validated. The office front now has a raised surround, s
 
 Status: implemented and validated. The front sign now has a raised frame and inset bands instead of a plain yellow block; `scripts/verify.ps1`, scene/asset/mesh/scale checks, and GDI/DX11 visual smoke pass.
 
+## v0.89 - Low Dock Drain Office Log Closeout
+
+- Add a compact office-side closeout after the low dock drain clear tag.
+- Route the player from the low dock drain back to the Ferry Office Drain Log.
+- Record `lowDockDrainLogged` as remembered local world state through scene-authored action bindings.
+- Extend scene routes/objective markers and scripted playthrough QA to cover the 21-event chain.
+- Keep this as authored content growth, not a job-board UI, save/load system, NPC dispatcher, or broader mission framework.
+
+Status: implemented and validated. Scene data now has 17 interactables, 17 route markers, and 16 objective markers; deterministic playthrough QA completes the 21-event chain through the Ferry Office drain log closeout.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.88, the next useful future milestone should either improve dock foreground/approach cohesion without micro-trim noise, replace another high-visibility repeated unit-box cue with a purposeful original mesh, improve the side service-panel/notice-board cluster as a coherent set, or use preferred-runtime evidence to harden Jolt road-edge/live-control behavior.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.89, the next useful future milestone should either add a visible state cue for the new Ferry Office drain log, build preferred-runtime/Jolt road-edge live-control evidence, or improve the side service-panel/notice-board cluster as a coherent player-facing pass.

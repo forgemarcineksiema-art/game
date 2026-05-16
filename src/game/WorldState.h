@@ -28,6 +28,7 @@ enum class WorldFlag {
     StormPumpReset,
     StormPumpTicketClosed,
     LowDockDrainCleared,
+    LowDockDrainLogged,
     Count,
 };
 

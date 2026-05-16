@@ -48,6 +48,7 @@ class PlaythroughQaTests(unittest.TestCase):
                             {"name": "stormPumpReset", "passed": True},
                             {"name": "stormPumpTicketClosed", "passed": True},
                             {"name": "lowDockDrainCleared", "passed": True},
+                            {"name": "lowDockDrainLogged", "passed": True},
                         ],
                         "vehicleRuntime": {
                             "requested": "deterministic",
@@ -78,6 +79,7 @@ class PlaythroughQaTests(unittest.TestCase):
                                 "stormPumpReset": True,
                                 "stormPumpTicketClosed": True,
                                 "lowDockDrainCleared": True,
+                                "lowDockDrainLogged": True,
                             },
                         },
                     }
@@ -122,6 +124,7 @@ class PlaythroughQaTests(unittest.TestCase):
                                 "stormPumpReset": False,
                                 "stormPumpTicketClosed": False,
                                 "lowDockDrainCleared": False,
+                                "lowDockDrainLogged": False,
                             },
                         },
                     }
@@ -170,6 +173,7 @@ class PlaythroughQaTests(unittest.TestCase):
                                 "stormPumpReset": True,
                                 "stormPumpTicketClosed": True,
                                 "lowDockDrainCleared": True,
+                                "lowDockDrainLogged": True,
                             },
                         },
                     }
@@ -204,6 +208,7 @@ class PlaythroughQaTests(unittest.TestCase):
                             {"name": "stormPumpReset", "passed": True},
                             {"name": "stormPumpTicketClosed", "passed": True},
                             {"name": "lowDockDrainCleared", "passed": True},
+                            {"name": "lowDockDrainLogged", "passed": True},
                         ],
                         "final": {
                             "phase": "complete",
@@ -227,6 +232,7 @@ class PlaythroughQaTests(unittest.TestCase):
                                 "stormPumpReset": True,
                                 "stormPumpTicketClosed": True,
                                 "lowDockDrainCleared": True,
+                                "lowDockDrainLogged": True,
                             },
                         },
                     }

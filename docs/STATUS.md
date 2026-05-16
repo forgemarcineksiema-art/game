@@ -2,6 +2,90 @@
 
 Last updated: 2026-05-16
 
+## v0.89 Low Dock Drain Office Log Closeout (2026-05-16)
+
+Selected milestone:
+
+- Add a compact office-side closeout after the Low Dock Drain clear tag.
+
+Candidate milestone triage:
+
+- Post-drain office closeout beat: impact high because it adds player-facing content after several visual-only passes; risk medium because it touches world flags, scene data, objective text, and QA; validation path = red/green C++ tests, scene tools, playthrough QA, visual smoke, `scripts\verify.ps1`.
+- Jolt preferred-runtime refresh: impact medium for vehicle direction; risk low/medium; validation path = Jolt preset and vehicle QA, but it would be another technical pass before a fresh content beat.
+- Side service-panel/notice-board visual pass: impact medium; risk low; validation path = scene/asset/capture checks, but it would continue the visual-only streak.
+
+Why selected:
+
+- v0.84-v0.88 made the playable slice look less like blockout, but the authored follow-up chain still ended at the low dock drain. Returning to the Ferry Office Drain Log gives the work a compact hub-side consequence and keeps the chain grounded in the office instead of only adding another prop pass.
+
+What changed:
+
+- Added `lowDockDrainLogged` to the remembered world-state flag table.
+- Added a scene-authored `Ferry Office Drain Log` interaction gated by `lowDockDrainCleared`.
+- Added `route-low-dock-drain-to-office-log` and `ferry-office-drain-log-marker`.
+- Extended follow-up status/next-step text so the drain work is not considered complete until the office log is signed.
+- Extended the deterministic playthrough QA and Python report validator to require the new closeout.
+- Updated roadmap, vertical-slice notes, and context map counts.
+
+Files changed:
+
+- `data\scenes\ferry_office.scene.json`
+- `src\game\FerryOfficeData.h`
+- `src\game\FerryOfficeJob.cpp`
+- `src\game\FerryOfficePlaythroughQa.cpp`
+- `src\game\PrototypeScene.cpp`
+- `src\game\WorldState.h`
+- `src\game\WorldState.cpp`
+- `tools\playthrough_qa.py`
+- `tools\scene_data.py`
+- `tests\EngineCoreTests.cpp`
+- `tests\test_playthrough_qa.py`
+- `tests\test_scene_tools.py`
+- `docs\CONTEXT_MAP.md`
+- `docs\ROADMAP.md`
+- `docs\VERTICAL_SLICE.md`
+- `docs\STATUS.md`
+
+Validation so far:
+
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: passed.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed after the expected red run first failed with nine missing-beat/world-flag assertions.
+- `python tests\test_scene_tools.py`: passed; 48 tests.
+- `python tests\test_playthrough_qa.py`: passed; 5 tests.
+- `python tools\validate_scene.py`: passed.
+- `python tools\scene_report.py`: passed; 24 scene materials, 30 visual placeholders, 19 mesh assets, 66 mesh instances, 17 interactables, 17 route markers, and 16 objective markers.
+- `cmake --build --preset windows-vs2022-debug --target EngineApp`: passed.
+- `python tools\playthrough_qa.py`: passed; deterministic vehicle runtime reached the checkpoint in 139 frames and the full chain completed with 21 events.
+- `python tools\capture_visual_smoke.py`: passed; GDI colors=80/lumaRange=221, DX11 colors=48/lumaRange=221 with WARP fallback in this environment.
+- `python tools\validate_assets.py`: passed; 19 model files.
+- `python tools\mesh_report.py`: passed; 19 mesh assets, 66 mesh instances, 19 referenced model files.
+- `python tools\scale_audit.py`: passed.
+
+Automated evidence generated:
+
+- `build\playthroughs\ferry-office-service-call-report.json`
+- `build\captures\v0.31-gdi-capture.bmp`
+- `build\captures\v0.31-dx11-capture.bmp`
+- `build\captures\capture_visual_smoke_report.json`
+
+Provisional decision:
+
+- Keep adding compact authored content through scene action bindings when the beat is a simple remembered flag and route/objective marker. Richer behavior still stays in C++ until another independent job proves a stable generic shape.
+
+Remaining limitations:
+
+- The Ferry Office Drain Log is an authored interaction and route/objective marker only. It is not a UI job board, save/load entry, inventory item, NPC dispatcher, or persistent journal.
+- The new closeout does not yet have a dedicated visual state cue; that is a reasonable next player-facing follow-up if content readability becomes the next bottleneck.
+
+Final validation:
+
+- `scripts\verify.ps1`: passed; doctor completed with known plain-PATH tool warnings, configure/build succeeded, default CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke completed.
+- `git diff --check`: passed with only expected CRLF normalization warnings for touched files.
+
+Next direction:
+
+- Prefer either a small visible state cue for the new Ferry Office Drain Log, or a bounded preferred-runtime/Jolt road-edge live-control evidence pass if the next inspection shows vehicle migration is the bigger leverage point.
+
 ## v0.88 Ferry Office Sign Panel Mesh Pass (2026-05-16)
 
 What looked weak:

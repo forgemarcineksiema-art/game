@@ -34,6 +34,7 @@ REQUIRED_FLAGS = [
     "stormPumpReset",
     "stormPumpTicketClosed",
     "lowDockDrainCleared",
+    "lowDockDrainLogged",
 ]
 REQUIRED_RUNTIME_STEPS = [
     "serviceVehicleRuntime",
@@ -49,6 +50,7 @@ REQUIRED_RUNTIME_STEPS = [
     "stormPumpReset",
     "stormPumpTicketClosed",
     "lowDockDrainCleared",
+    "lowDockDrainLogged",
 ]
 
 

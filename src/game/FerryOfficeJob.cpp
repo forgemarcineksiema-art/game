@@ -69,7 +69,9 @@ std::string FerryOfficeFollowupStatusText(const WorldState& state)
                    ? "closed"
                    : (state.isFlagSet(WorldFlag::StormPumpReset) ? "reset" : "later"))
            << " | drain="
-           << (state.isFlagSet(WorldFlag::LowDockDrainCleared) ? "clear" : "later");
+           << (state.isFlagSet(WorldFlag::LowDockDrainCleared) ? "clear" : "later")
+           << " | logbook="
+           << (state.isFlagSet(WorldFlag::LowDockDrainLogged) ? "signed" : "later");
     return output.str();
 }
 
@@ -108,7 +110,10 @@ std::string FerryOfficeFollowupNextStepText(const WorldState& state)
     if (!state.isFlagSet(WorldFlag::LowDockDrainCleared)) {
         return "Tag the low dock drain clear beside the service-run marker.";
     }
-    return "Low dock drain clear. Ferry Office follow-up complete.";
+    if (!state.isFlagSet(WorldFlag::LowDockDrainLogged)) {
+        return "Return to the Ferry Office Drain Log.";
+    }
+    return "Low dock drain logged. Ferry Office follow-up complete.";
 }
 
 void FerryOfficeJob::configure(FerryOfficeJobConfig config)

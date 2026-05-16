@@ -1166,7 +1166,7 @@ void TestSceneLoaderLoadsDefaultFerryOfficeScene()
     Expect(result.scene.meshInstances.size() >= 15,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored mesh instances, including the v0.18 prop style kit.");
-    Expect(result.scene.interactables.size() == 16,
+    Expect(result.scene.interactables.size() == 17,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored interactables.");
     Expect(result.scene.traversalAffordances.size() == 1,
@@ -1317,6 +1317,9 @@ void TestSceneLoaderLoadsHarborPartsJobBeat()
     const SceneInteractableDefinition* lowDockDrain = FindSceneInteractable(result.scene, "low-dock-drain-marker");
     const SceneRouteMarkerDefinition* lowDockDrainRoute = FindRouteMarker(result.scene, "route-storm-ticket-to-low-dock-drain");
     const SceneObjectiveMarkerDefinition* lowDockDrainMarker = FindObjectiveMarker(result.scene, "low-dock-drain-objective-marker");
+    const SceneInteractableDefinition* drainLog = FindSceneInteractable(result.scene, "ferry-office-drain-log");
+    const SceneRouteMarkerDefinition* drainLogRoute = FindRouteMarker(result.scene, "route-low-dock-drain-to-office-log");
+    const SceneObjectiveMarkerDefinition* drainLogMarker = FindObjectiveMarker(result.scene, "ferry-office-drain-log-marker");
 
     Expect(result.ok(),
         "TestSceneLoaderLoadsHarborPartsJobBeat",
@@ -1378,6 +1381,15 @@ void TestSceneLoaderLoadsHarborPartsJobBeat()
     Expect(lowDockDrainMarker != nullptr,
         "TestSceneLoaderLoadsHarborPartsJobBeat",
         "Scene data should expose an objective marker for the low dock drain clear tag.");
+    Expect(drainLog != nullptr && drainLog->name == "Ferry Office Drain Log",
+        "TestSceneLoaderLoadsHarborPartsJobBeat",
+        "Scene data should include the Ferry Office drain log closeout after the low dock drain clear tag.");
+    Expect(drainLogRoute != nullptr && drainLogRoute->points.size() >= 2,
+        "TestSceneLoaderLoadsHarborPartsJobBeat",
+        "Scene data should route from the low dock drain back to the Ferry Office drain log.");
+    Expect(drainLogMarker != nullptr,
+        "TestSceneLoaderLoadsHarborPartsJobBeat",
+        "Scene data should expose an objective marker for the drain log closeout.");
 }
 
 void TestSceneLoaderLoadsInteractableActionPrerequisites()
@@ -1423,6 +1435,11 @@ void TestSceneLoaderLoadsInteractableActionPrerequisites()
     Expect(lowDockDrain != nullptr && ContainsString(lowDockDrain->requiredWorldFlags, "stormPumpTicketClosed"),
         "TestSceneLoaderLoadsInteractableActionPrerequisites",
         "Low Dock Drain Marker should declare the closed pump ticket prerequisite.");
+    const SceneInteractableDefinition* drainLog = FindSceneInteractable(result.scene, "ferry-office-drain-log");
+    Expect(drainLog != nullptr && ContainsString(drainLog->requiredWorldFlags, "lowDockDrainCleared")
+            && ContainsString(drainLog->worldFlagsSetWhenReady, "lowDockDrainLogged"),
+        "TestSceneLoaderLoadsInteractableActionPrerequisites",
+        "Ferry Office Drain Log should declare the low dock drain clear prerequisite and log flag.");
 }
 
 void TestSceneLoaderReportsMissingSceneFile()
@@ -3582,9 +3599,19 @@ void TestFerryOfficeFollowupStatusSummarizesEndpointChain()
         "Follow-up status should show that the low dock drain remains after the pump ticket closes.");
 
     state.setFlag(WorldFlag::LowDockDrainCleared, true, "Low Dock Drain Marker");
-    Expect(FerryOfficeFollowupStatusText(state).find("drain=clear") != std::string::npos,
+    Expect(FerryOfficeFollowupStatusText(state).find("drain=clear") != std::string::npos
+            && FerryOfficeFollowupStatusText(state).find("logbook=later") != std::string::npos,
         "TestFerryOfficeFollowupStatusSummarizesEndpointChain",
-        "Follow-up status should show when the low dock drain has been tagged clear.");
+        "Follow-up status should show when the low dock drain has been tagged clear before the office log closeout.");
+
+    WorldFlag drainLogFlag = WorldFlag::PowerRestored;
+    Expect(TryWorldFlagFromName("lowDockDrainLogged", drainLogFlag),
+        "TestFerryOfficeFollowupStatusSummarizesEndpointChain",
+        "The drain log closeout should have a named world flag.");
+    state.setFlag(drainLogFlag, true, "Ferry Office Drain Log");
+    Expect(FerryOfficeFollowupStatusText(state).find("logbook=signed") != std::string::npos,
+        "TestFerryOfficeFollowupStatusSummarizesEndpointChain",
+        "Follow-up status should show when the office drain log has been signed.");
 }
 
 void TestFerryOfficeFollowupNextStepGuidesLongChain()
@@ -3646,9 +3673,18 @@ void TestFerryOfficeFollowupNextStepGuidesLongChain()
         "After the storm pump ticket, the next step should point to the low dock drain.");
 
     state.setFlag(WorldFlag::LowDockDrainCleared, true, "Low Dock Drain Marker");
+    Expect(FerryOfficeFollowupNextStepText(state).find("Drain Log") != std::string::npos,
+        "TestFerryOfficeFollowupNextStepGuidesLongChain",
+        "After the low dock drain is clear, the next step should send the player back to the Ferry Office drain log.");
+
+    WorldFlag drainLogFlag = WorldFlag::PowerRestored;
+    Expect(TryWorldFlagFromName("lowDockDrainLogged", drainLogFlag),
+        "TestFerryOfficeFollowupNextStepGuidesLongChain",
+        "The drain log closeout should have a named world flag.");
+    state.setFlag(drainLogFlag, true, "Ferry Office Drain Log");
     Expect(FerryOfficeFollowupNextStepText(state).find("complete") != std::string::npos,
         "TestFerryOfficeFollowupNextStepGuidesLongChain",
-        "After the low dock drain is clear, the next step should acknowledge follow-up completion.");
+        "After the office drain log is signed, the next step should acknowledge follow-up completion.");
 }
 
 void TestFerryOfficeObjectiveTextGuidesRouteSteps()
@@ -3948,6 +3984,15 @@ void TestHarborPartsJobRequiresClearedDockRoad()
     Expect(drainCleared && scene.worldState().isFlagSet(WorldFlag::LowDockDrainCleared),
         "TestHarborPartsJobRequiresClearedDockRoad",
         "The low dock drain marker should remember the final clear tag after the ticket is closed.");
+    Expect(scene.currentJobObjectiveText().find("Drain Log") != std::string::npos,
+        "TestHarborPartsJobRequiresClearedDockRoad",
+        "The objective should route the clear drain back to the Ferry Office drain log.");
+
+    const bool drainLogged = scene.applyInteractionResult(
+        MakeSceneInteraction(std::string(FerryOffice::Names::FerryOfficeDrainLog), InteractableType::Info));
+    Expect(drainLogged && scene.worldState().isFlagSet(WorldFlag::LowDockDrainLogged),
+        "TestHarborPartsJobRequiresClearedDockRoad",
+        "The Ferry Office drain log should remember the post-drain closeout.");
 }
 
 void TestPrototypeSceneAppliesAuthoredInteractableFlagBindings()
@@ -4065,6 +4110,9 @@ void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
     Expect(state.isFlagSet(WorldFlag::LowDockDrainCleared),
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should tag the low dock drain clear after the pump ticket.");
+    Expect(state.isFlagSet(WorldFlag::LowDockDrainLogged),
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "QA playthrough should log the low dock drain closeout back at the Ferry Office.");
     Expect(result.steps.size() >= 9,
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should report each major authored phase.");
@@ -4115,6 +4163,9 @@ void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
     Expect(hasStep("lowDockDrainCleared"),
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should record the low dock drain clear-tag beat.");
+    Expect(hasStep("lowDockDrainLogged"),
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "QA playthrough should record the Ferry Office drain log closeout beat.");
     Expect(std::filesystem::exists(reportPath),
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should write a report artifact.");
@@ -4161,6 +4212,9 @@ void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
         Expect(report["final"]["flags"]["lowDockDrainCleared"] == true,
             "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
             "QA playthrough report should expose the low dock drain clear tag.");
+        Expect(report["final"]["flags"]["lowDockDrainLogged"] == true,
+            "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+            "QA playthrough report should expose the Ferry Office drain log closeout.");
         Expect(report["vehicleRuntime"]["backend"] == "deterministic",
             "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
             "QA playthrough report should expose the vehicle runtime backend.");
