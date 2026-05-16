@@ -5134,7 +5134,7 @@ External context notes:
 
 Recommended next goal:
 
-- Start with the input-scripted runtime QA pass described in `docs\CONTEXT_MAP.md`. It should improve confidence in the live Ferry Office loop before deeper physics or vehicle changes.
+- Start with the Jolt vehicle feasibility / promotion spike described in `docs\CONTEXT_MAP.md` if the goal is to push beyond prototype vehicle tuning. Input-scripted runtime QA remains useful only when live-loop regression coverage is the immediate blocker.
 
 ## Goal-Based Delivery Methodology (2026-05-16)
 
@@ -5189,7 +5189,7 @@ Validation results:
 
 Commit/push status:
 
-- Pending final git status and commit/push after reviewer fixes.
+- Commit `7190607 Document goal-based delivery workflow` was pushed to `origin/main`.
 
 Next-goal prompt:
 
@@ -5205,22 +5205,24 @@ Repository rules:
 - Commit and push only if validation passes and there are no unrelated user changes.
 
 Goal:
-Build input-scripted runtime QA for the Ferry Office Service Call.
+Build an opt-in Jolt vehicle feasibility spike for the Ferry Office service vehicle.
 
 Why now:
-The current playthrough QA proves scene/job state directly, but it does not exercise the live runtime update loop through keyboard-style input, player/camera timing, traversal activation, vehicle entry/driving/exit, and presentation-safe state changes. This goal should turn the first playable loop into a stronger regression gate before deeper Jolt or vehicle migration work.
+The deterministic service-yard vehicle has been useful, but more prototype tuning will not answer whether Tidebreak should promote vehicle work toward Jolt. The repo already has an opt-in Jolt backend and Ferry Office physics QA, so the next useful goal is a bounded vehicle feasibility report that compares a Jolt-backed probe against the current service-vehicle baseline and recommends promote, defer, or replace.
 
 Scope:
-- Add a QA-only scripted-input runtime path or runner that drives the real update loop without opening a normal interactive session.
-- Cover the Ferry Office service-call path through manifest, service route, maintenance/power, gate, vehicle, checkpoint, service-run confirmation, and completion.
-- Write a JSON report and Python wrapper similar to existing QA tools.
-- Add focused C++ and Python tests.
+- Add a QA-only, opt-in Jolt vehicle probe behind engine-owned physics APIs or Jolt-private implementation files.
+- Use the current Ferry Office service vehicle and dock-road scale as the comparison baseline.
+- Run a scripted throttle/brake/steer scenario and report stability, speed, steering response, stopping behavior, and final transform/error metrics.
+- Write a JSON report and Python wrapper similar to existing physics QA tools.
+- Add focused default-build tests for CLI/report/unavailable-backend behavior and opt-in Jolt validation for the real probe.
 
 Non-goals:
 - No new job content.
-- No visual polish.
-- No Jolt vehicle migration.
-- No broad input framework rewrite unless a tiny seam is required for the scripted runner.
+- No traffic, NPCs, damage, garage, economy, save/load, or Job #2.
+- No live gameplay vehicle replacement until the feasibility report says it is worth promoting.
+- No extra deterministic vehicle polish unless needed as a baseline metric.
+- No Jolt vendor types leaking into game-facing APIs.
 
 Files/docs to read first:
 - AGENTS.md
@@ -5228,19 +5230,61 @@ Files/docs to read first:
 - docs/CONTEXT_MAP.md
 - docs/VERTICAL_SLICE.md
 - docs/TECH_DEBT.md
-- src/engine/application/Application.*
-- src/engine/input/Input.h
+- docs/PHYSICS_DECISION.md
+- src/engine/physics/PhysicsWorld.*
+- src/engine/physics/JoltPhysicsWorld.cpp
+- src/game/VehicleController.*
 - src/game/SandboxLayer.*
-- src/game/FerryOfficePlaythroughQa.*
-- tools/playthrough_qa.py
+- src/game/FerryOfficePhysicsParity.*
+- src/game/FerryOfficeCharacterContactQa.*
+- tools/physics_parity_qa.py
+- tools/character_contact_qa.py
 - tests/EngineCoreTests.cpp
 
 Validation:
 - scripts/verify.ps1
-- python tools/playthrough_qa.py
-- python tools/capture_visual_smoke.py
+- cmake --preset windows-vs2022-debug-jolt
+- cmake --build --preset windows-vs2022-debug-jolt
+- ctest --preset windows-vs2022-debug-jolt --output-on-failure
+- python tools/physics_parity_qa.py
+- python tools/character_contact_qa.py
+- python tools/<new-vehicle-qa>.py
 
 Use subagents:
-- Worker: inspect the smallest seam for feeding scripted input into the runtime without overbuilding.
-- Reviewer: check for scope creep, missing validation, and accidental replacement of existing deterministic QA.
+- Worker: inspect the smallest engine-owned Jolt vehicle probe that can answer feasibility without replacing live gameplay.
+- Reviewer: check for scope creep, Jolt vendor leakage into game code, missing default-build fallback behavior, and whether the report really supports a promote/defer/replace decision.
 ```
+
+## Direction Correction - Target-System Promotion (2026-05-16)
+
+Correction:
+
+- The user clarified that older "do not do this yet" notes must not be treated as permanent blockers.
+- Future Codex work should avoid repeating old constraints such as "no Job #2", "no Jolt vehicle work", or "not yet" as automatic reasons to avoid stronger goals.
+- The project lead behavior should be: inspect current evidence, choose a goal that moves Tidebreak toward target systems, and use subagents as workers/reviewers.
+- Prototype polish is acceptable only when it unlocks validation or a production decision.
+
+Documentation updated:
+
+- `docs\CONTEXT_MAP.md` now recommends Jolt vehicle feasibility / promotion as the best next move when the goal is to stop tuning the deterministic placeholder vehicle path.
+- Input-scripted runtime QA remains documented as a useful supporting option, not the default next goal.
+
+Commands run:
+
+```powershell
+git status --short --branch
+Select-String -Path docs\CONTEXT_MAP.md,docs\STATUS.md -Pattern "Build input-scripted runtime QA|input-scripted|Ferry Office Service Call" -Context 6,35
+Get-Content -Raw docs\TECH_DEBT.md
+Get-Content -Raw docs\ROADMAP.md
+git diff --check
+scripts\verify.ps1
+```
+
+Validation results:
+
+- `git diff --check`: passed; only expected Windows CRLF warnings were reported for the touched Markdown files.
+- `scripts\verify.ps1`: passed; CTest passed 9/9, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke loaded the Ferry Office scene and all 8 static mesh assets.
+
+Commit/push status:
+
+- A commit is created for this direction correction; final hash and push status are reported in the final response.
