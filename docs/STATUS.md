@@ -33,6 +33,80 @@ Last updated: 2026-05-16
 6. Add PowerShell/Python workbench commands for doctor, configure/build, verify, and status reporting.
 7. Run the available validation commands, record exact results here, and keep any compiler/graphics blockers honest.
 
+## v0.54 Dock Road Clearance Tag Consequence (2026-05-16)
+
+Selected milestone:
+
+- Add one compact scene-authored consequence after the relay service log: tag the dock road clear for the next ferry run.
+
+Candidate triage:
+
+- Post-relay scene-authored consequence: high playable/content impact, low risk, validates through scene tools, C++ tests, deterministic/Jolt playthrough QA, and `scripts\verify.ps1`.
+- Camera-aware Jolt obstacle route: good vehicle-promotion evidence, medium risk, but it would make two vehicle/QA-heavy milestones in a row after v0.53.
+- Docs/version consistency pass: low risk, but too maintenance-shaped while content can safely grow.
+
+Why selected:
+
+- v0.53 just improved vehicle evidence, so the next safest high-leverage move was player-facing content.
+- The existing relay reset/log chain already had scene markers and playthrough coverage, making a tiny remembered clearance tag a bounded way to make the endpoint feel more consequential.
+
+Definition of Done:
+
+- Scene data exposes a `dock-road-clearance-tag` interactable, route marker, and objective marker after `relay-service-log`.
+- Runtime behavior records `dockRoadClearanceTagged` only after `dockRoadRelayLogged`.
+- C++ tests and Python playthrough validation require the new flag and step.
+- Deterministic and opt-in Jolt playthroughs both complete the longer service-call follow-up chain.
+- `docs\STATUS.md`, `docs\ROADMAP.md`, `docs\TECH_DEBT.md`, and `docs\CONTEXT_MAP.md` reflect the new truth.
+- `scripts\verify.ps1` and `git diff --check` pass before commit.
+
+Implementation notes:
+
+- Added `WorldFlag::DockRoadClearanceTagged` and included it in world summaries/playthrough reports.
+- Added stable Ferry Office name, prompt, message, position, and radius constants for `Dock Road Clearance Tag`.
+- Added C++ gating in `PrototypeScene`: the clearance tag only records after the relay reset has been logged.
+- Extended the scene JSON with one interactable, one short route from the service log to the clearance tag, and one objective marker.
+- Extended `FerryOfficePlaythroughQa` and `tools\playthrough_qa.py` so stale reports without `dockRoadClearanceTagged` are rejected.
+
+Commands and results:
+
+- `python tests\test_scene_tools.py`: failed as expected before implementation because `dock-road-clearance-tag`, its route, and its objective marker were missing.
+- `python tests\test_playthrough_qa.py`: passed before implementation, 5 tests.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: failed as expected before implementation because `FerryOffice::Names::DockRoadClearanceTag` and `WorldFlag::DockRoadClearanceTagged` did not exist.
+- `python tests\test_scene_tools.py`: passed after implementation, 40 tests.
+- `python tests\test_playthrough_qa.py`: passed after implementation, 5 tests.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: passed.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `python tools\validate_scene.py`: passed.
+- `python tools\scene_report.py`: passed; scene now reports 9 interactables, 9 route markers, and 8 objective markers.
+- `python tools\scale_audit.py`: passed; no suspicious scale issues.
+- `python tools\validate_assets.py`: passed.
+- `python tools\mesh_report.py`: passed; 11 referenced model files.
+- `python tools\playthrough_qa.py`: initially failed after the C++ test build because `EngineApp.exe` was still the old binary and the wrapper correctly rejected a report missing `dockRoadClearanceTagged`.
+- `cmake --build --preset windows-vs2022-debug --target EngineApp`: passed.
+- `python tools\playthrough_qa.py`: passed; phase=`complete`, events=13, vehicleRuntime=`deterministic`, framesToCheckpoint=139.
+- `cmake --build --preset windows-vs2022-debug-jolt --target EngineApp`: passed.
+- `python tools\playthrough_qa.py --exe build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --vehicle-runtime jolt --report-json build\playthroughs\ferry-office-service-call-jolt-report.json`: passed; phase=`complete`, events=13, vehicleRuntime=`jolt`, framesToCheckpoint=213.
+- `scripts\verify.ps1`: passed; doctor, configure, build, CTest 11/11, scene validation, asset validation, mesh report, and smoke run completed.
+
+Automated evidence generated:
+
+- `build\playthroughs\ferry-office-service-call-report.json` now completes with `dockRoadClearanceTagged=true` and event count 13.
+- `build\playthroughs\ferry-office-service-call-jolt-report.json` now completes the same 13-event chain through opt-in Jolt with no fallback or bounds hit.
+
+Provisional decision:
+
+- Keep deterministic vehicle runtime as default and Jolt as opt-in; this milestone used Jolt only to prove the longer content chain still survives the alternate vehicle backend.
+- The next vehicle-promotion decision still needs camera-aware obstacle/collision evidence or steering tuning because v0.53 showed large response differences.
+
+Remaining limitations:
+
+- This is still a compact endpoint chain, not a full Job #2 framework, persistence system, new art asset, or human keyboard/mouse playthrough.
+- The clearance tag is represented through existing marker/interactable language rather than a bespoke visual prop.
+
+Next direction:
+
+- Either make a presentation/readability pass for the longer Dock Road endpoint chain, or return to vehicle evidence with a camera-aware Jolt obstacle route/tuning pass.
+
 ## v0.49 Opt-in Jolt Live-loop Playthrough QA (2026-05-16)
 
 Selected milestone:

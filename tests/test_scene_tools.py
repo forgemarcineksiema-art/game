@@ -47,10 +47,13 @@ class SceneToolTests(unittest.TestCase):
             "service-run-checkpoint-marker",
             "dock-road-relay",
             "relay-service-log",
+            "dock-road-clearance-tag",
             "route-service-confirm-to-relay",
             "route-relay-to-service-log",
+            "route-service-log-to-clearance-tag",
             "dock-road-relay-marker",
             "relay-service-log-marker",
+            "dock-road-clearance-marker",
         ]:
             self.assertIn(required_id, ids)
 
@@ -79,11 +82,11 @@ class SceneToolTests(unittest.TestCase):
         self.assertEqual(19, summary.material_count)
         self.assertGreaterEqual(summary.collider_count, 9)
         self.assertEqual(25, summary.visual_count)
-        self.assertEqual(8, summary.interactable_count)
+        self.assertEqual(9, summary.interactable_count)
         self.assertEqual(1, summary.traversal_count)
         self.assertEqual(1, summary.vehicle_count)
-        self.assertEqual(8, summary.route_count)
-        self.assertEqual(7, summary.objective_marker_count)
+        self.assertEqual(9, summary.route_count)
+        self.assertEqual(8, summary.objective_marker_count)
 
     def test_scene_summary_reports_mesh_assets_and_instances(self) -> None:
         summary = scene_data.build_summary(self.scene)

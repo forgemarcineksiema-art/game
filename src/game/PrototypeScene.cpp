@@ -84,6 +84,15 @@ void PrototypeScene::buildFromFerryOfficeData()
     dockRoadRelay.message = FerryOffice::Messages::DockRoadRelay;
     m_interactions.addInteractable(dockRoadRelay);
 
+    Interactable dockRoadClearanceTag;
+    dockRoadClearanceTag.name = FerryOffice::Names::DockRoadClearanceTag;
+    dockRoadClearanceTag.prompt = FerryOffice::Prompts::DockRoadClearanceTag;
+    dockRoadClearanceTag.position = FerryOffice::Positions::DockRoadClearanceTag;
+    dockRoadClearanceTag.radius = FerryOffice::Radii::DockRoadClearanceTag;
+    dockRoadClearanceTag.type = InteractableType::Info;
+    dockRoadClearanceTag.message = FerryOffice::Messages::DockRoadClearanceTag;
+    m_interactions.addInteractable(dockRoadClearanceTag);
+
     TraversalAffordance serviceVault;
     serviceVault.name = FerryOffice::Names::ServiceVault;
     serviceVault.prompt = FerryOffice::Prompts::ServiceVault;
@@ -241,6 +250,10 @@ bool PrototypeScene::applyInteractionResult(const InteractionResult& result)
         if (m_worldState.isFlagSet(WorldFlag::DockRoadRelayReset)) {
             changed |= m_worldState.setFlag(WorldFlag::DockRoadRelayLogged, true, result.name);
         }
+    } else if (result.name == FerryOffice::Names::DockRoadClearanceTag) {
+        if (m_worldState.isFlagSet(WorldFlag::DockRoadRelayLogged)) {
+            changed |= m_worldState.setFlag(WorldFlag::DockRoadClearanceTagged, true, result.name);
+        }
     }
 
     return changed;
@@ -324,8 +337,12 @@ std::string PrototypeScene::currentJobObjectiveText() const
     if (m_worldState.isFlagSet(WorldFlag::DockRoadRelayReset) && !m_worldState.isFlagSet(WorldFlag::DockRoadRelayLogged)) {
         return "Log the relay reset on the service-run board.";
     }
-    if (m_worldState.isFlagSet(WorldFlag::DockRoadRelayLogged)) {
-        return "Relay reset logged. Ferry Office follow-up complete.";
+    if (m_worldState.isFlagSet(WorldFlag::DockRoadRelayLogged)
+        && !m_worldState.isFlagSet(WorldFlag::DockRoadClearanceTagged)) {
+        return "Tag Dock Road clear beside the relay service board.";
+    }
+    if (m_worldState.isFlagSet(WorldFlag::DockRoadClearanceTagged)) {
+        return "Dock road clear. Ferry Office follow-up complete.";
     }
     return m_job.currentObjectiveText(m_worldState);
 }

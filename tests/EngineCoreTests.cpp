@@ -1104,7 +1104,7 @@ void TestSceneLoaderLoadsDefaultFerryOfficeScene()
     Expect(result.scene.meshInstances.size() >= 15,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored mesh instances, including the v0.18 prop style kit.");
-    Expect(result.scene.interactables.size() == 8,
+    Expect(result.scene.interactables.size() == 9,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored interactables.");
     Expect(result.scene.traversalAffordances.size() == 1,
@@ -1182,8 +1182,11 @@ void TestSceneLoaderLoadsDockRoadRelayBeat()
 {
     const SceneLoadResult result = LoadSceneDefinition(DefaultScenePathForTests());
     const SceneInteractableDefinition* relay = FindSceneInteractable(result.scene, "dock-road-relay");
+    const SceneInteractableDefinition* clearanceTag = FindSceneInteractable(result.scene, "dock-road-clearance-tag");
     const SceneRouteMarkerDefinition* route = FindRouteMarker(result.scene, "route-service-confirm-to-relay");
+    const SceneRouteMarkerDefinition* clearanceRoute = FindRouteMarker(result.scene, "route-service-log-to-clearance-tag");
     const SceneObjectiveMarkerDefinition* marker = FindObjectiveMarker(result.scene, "dock-road-relay-marker");
+    const SceneObjectiveMarkerDefinition* clearanceMarker = FindObjectiveMarker(result.scene, "dock-road-clearance-marker");
 
     Expect(result.ok(),
         "TestSceneLoaderLoadsDockRoadRelayBeat",
@@ -1205,6 +1208,23 @@ void TestSceneLoaderLoadsDockRoadRelayBeat()
     Expect(marker != nullptr,
         "TestSceneLoaderLoadsDockRoadRelayBeat",
         "Scene data should expose an objective marker for the relay.");
+    Expect(clearanceTag != nullptr,
+        "TestSceneLoaderLoadsDockRoadRelayBeat",
+        "Scene data should include the dock-road clearance tag consequence.");
+    if (clearanceTag != nullptr) {
+        Expect(clearanceTag->name == FerryOffice::Names::DockRoadClearanceTag,
+            "TestSceneLoaderLoadsDockRoadRelayBeat",
+            "Dock-road clearance tag should preserve its stable gameplay name.");
+        Expect(clearanceTag->radius >= 1.3f,
+            "TestSceneLoaderLoadsDockRoadRelayBeat",
+            "Dock-road clearance tag should have a usable focus radius.");
+    }
+    Expect(clearanceRoute != nullptr,
+        "TestSceneLoaderLoadsDockRoadRelayBeat",
+        "Scene data should route from the relay log to the dock-road clearance tag.");
+    Expect(clearanceMarker != nullptr,
+        "TestSceneLoaderLoadsDockRoadRelayBeat",
+        "Scene data should expose an objective marker for the clearance tag.");
 }
 
 void TestSceneLoaderReportsMissingSceneFile()
@@ -3400,6 +3420,16 @@ void TestDockRoadRelayRequiresCompletedServiceCall()
     Expect(relayLogged && scene.worldState().isFlagSet(WorldFlag::DockRoadRelayLogged),
         "TestDockRoadRelayRequiresCompletedServiceCall",
         "The relay service log should complete only after the dock-road relay has been reset.");
+
+    const bool clearanceTagged = scene.applyInteractionResult(
+        MakeSceneInteraction(std::string(FerryOffice::Names::DockRoadClearanceTag), InteractableType::Info));
+    Expect(clearanceTagged && scene.worldState().isFlagSet(WorldFlag::DockRoadClearanceTagged),
+        "TestDockRoadRelayRequiresCompletedServiceCall",
+        "The dock-road clearance tag should complete only after the relay reset has been logged.");
+    Expect(scene.currentJobObjectiveText().find("clear") != std::string::npos
+            || scene.currentJobObjectiveText().find("Clear") != std::string::npos,
+        "TestDockRoadRelayRequiresCompletedServiceCall",
+        "The objective should acknowledge the dock-road clearance consequence.");
 }
 
 void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
@@ -3449,6 +3479,9 @@ void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
     Expect(state.isFlagSet(WorldFlag::DockRoadRelayLogged),
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should log the relay reset as a follow-up consequence.");
+    Expect(state.isFlagSet(WorldFlag::DockRoadClearanceTagged),
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "QA playthrough should tag the dock road clear as a visible local consequence.");
     Expect(result.steps.size() >= 7,
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should report each major authored phase.");
@@ -3475,6 +3508,9 @@ void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
     Expect(hasStep("dockRoadRelayLogged"),
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should record the relay reset log beat.");
+    Expect(hasStep("dockRoadClearanceTagged"),
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "QA playthrough should record the dock-road clearance tag beat.");
     Expect(std::filesystem::exists(reportPath),
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should write a report artifact.");
@@ -3497,6 +3533,9 @@ void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
         Expect(report["final"]["flags"]["dockRoadRelayLogged"] == true,
             "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
             "QA playthrough report should expose the dock-road relay sign-off.");
+        Expect(report["final"]["flags"]["dockRoadClearanceTagged"] == true,
+            "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+            "QA playthrough report should expose the dock-road clearance tag.");
         Expect(report["vehicleRuntime"]["backend"] == "deterministic",
             "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
             "QA playthrough report should expose the vehicle runtime backend.");

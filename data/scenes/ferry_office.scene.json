@@ -1001,6 +1001,17 @@
       "oneShot": false,
       "message": "Relay reset logged for the Ferry Office service board.",
       "worldFlagsSetWhenReady": ["dockRoadRelayLogged"]
+    },
+    {
+      "id": "dock-road-clearance-tag",
+      "name": "Dock Road Clearance Tag",
+      "prompt": "Tag Dock Road Clear",
+      "type": "info",
+      "position": [17.1, 0.55, 0.08],
+      "radius": 1.4,
+      "oneShot": false,
+      "message": "Dock road tagged clear for the next ferry run.",
+      "worldFlagsSetWhenReady": ["dockRoadClearanceTagged"]
     }
   ],
   "traversalAffordances": [
@@ -1088,6 +1099,12 @@
       "from": "dock-road-relay",
       "to": "relay-service-log",
       "points": [[18.05, 0.08, 0.25], [17.55, 0.08, 0.46]]
+    },
+    {
+      "id": "route-service-log-to-clearance-tag",
+      "from": "relay-service-log",
+      "to": "dock-road-clearance-tag",
+      "points": [[17.55, 0.08, 0.46], [17.1, 0.08, 0.08]]
     }
   ],
   "objectiveMarkers": [
@@ -1125,6 +1142,11 @@
       "id": "relay-service-log-marker",
       "label": "Relay reset sign-off",
       "position": [17.55, 0.08, 0.46]
+    },
+    {
+      "id": "dock-road-clearance-marker",
+      "label": "Dock road clear tag",
+      "position": [17.1, 0.08, 0.08]
     }
   ],
   "authoringNotes": [

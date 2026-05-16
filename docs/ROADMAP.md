@@ -613,6 +613,15 @@ Status: implemented and validated. Scene data now has 8 interactables, 8 route m
 
 Status: implemented and validated. The passing Jolt report records 2 obstacle-proxy checks: deterministic reaches max lateral offset 1.96 and final x 18.82, while Jolt reaches max lateral offset 0.29 and final x 11.97 over the same 150-frame proxy. Both stay in bounds, but the behavioral difference keeps deterministic as the default for now.
 
+## v0.54 - Dock Road Clearance Tag Consequence
+
+- Add one tiny scene-authored endpoint interaction after `dockRoadRelayLogged`.
+- Record `dockRoadClearanceTagged` only after the relay reset has been logged.
+- Extend scene routes, objective markers, C++ tests, and playthrough QA so the service-call follow-up chain ends with a visible road-clear tag.
+- Keep this as compact content growth, not a mission framework, save system, new mesh asset, or default vehicle-runtime promotion.
+
+Status: implemented as a small remembered world-state consequence. Scene data now has 9 interactables, 9 route markers, and 8 objective markers; deterministic and opt-in Jolt playthroughs both complete with 13 events, with checkpoint timing still 139 frames for deterministic and 213 frames for Jolt.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. With v0.53 covering a first obstacle-proxy steering comparison, the next useful milestone is either a camera-aware obstacle route/tuning pass for Jolt or a small scene-authored consequence that changes route/readability after `dockRoadRelayLogged`.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. With v0.54 adding a third compact post-service consequence, the next useful milestone should either improve player-facing readability/presentation of the now-longer endpoint chain or return to vehicle evidence with a camera-aware Jolt obstacle route/tuning pass.

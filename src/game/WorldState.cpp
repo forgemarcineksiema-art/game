@@ -20,6 +20,7 @@ constexpr std::array AllFlags = {
     WorldFlag::FerryOfficeJobComplete,
     WorldFlag::DockRoadRelayReset,
     WorldFlag::DockRoadRelayLogged,
+    WorldFlag::DockRoadClearanceTagged,
 };
 
 } // namespace
@@ -53,6 +54,8 @@ std::string_view WorldFlagName(WorldFlag flag)
         return "dockRoadRelayReset";
     case WorldFlag::DockRoadRelayLogged:
         return "dockRoadRelayLogged";
+    case WorldFlag::DockRoadClearanceTagged:
+        return "dockRoadClearanceTagged";
     case WorldFlag::Count:
     default:
         return "unknown";

@@ -38,6 +38,7 @@ constexpr std::array RequiredFlags = {
     WorldFlag::FerryOfficeJobComplete,
     WorldFlag::DockRoadRelayReset,
     WorldFlag::DockRoadRelayLogged,
+    WorldFlag::DockRoadClearanceTagged,
 };
 
 const Interactable* FindInteractableByName(const PrototypeScene& scene, std::string_view name)
@@ -521,6 +522,14 @@ FerryOfficePlaythroughQaResult RunFerryOfficeServiceCallPlaythroughQa(
         scene,
         "dockRoadRelayLogged",
         {WorldFlag::DockRoadRelayLogged},
+        actionOk,
+        message);
+
+    actionOk = TriggerInteraction(scene, FerryOffice::Names::DockRoadClearanceTag, message);
+    RecordActionStep(result,
+        scene,
+        "dockRoadClearanceTagged",
+        {WorldFlag::DockRoadClearanceTagged},
         actionOk,
         message);
 

@@ -195,12 +195,12 @@ Commands run on 2026-05-16:
 
 - `python tools/status_report.py`: ran; reported build outputs present. It also created a transient Python `tools/__pycache__` directory during imports.
 - `scripts/doctor.ps1`: passed; expected plain-PATH warnings for compiler/tool binaries remained.
-- `python tools/scene_report.py`: passed; scene has 9 colliders, 24 visual placeholders, 11 mesh assets, 46 mesh instances, 7 interactables, 1 traversal affordance, 1 vehicle, 7 route markers, and 6 objective markers.
+- `python tools/scene_report.py`: passed; scene has 9 colliders, 25 visual placeholders, 11 mesh assets, 46 mesh instances, 9 interactables, 1 traversal affordance, 1 vehicle, 9 route markers, and 8 objective markers.
 - `python tools/validate_scene.py`: passed.
 - `python tools/validate_assets.py`: passed.
 - `python tools/scale_audit.py`: passed, no suspicious scale issues.
 - `python tools/mesh_report.py`: passed, 11 referenced model files.
-- `python tools/playthrough_qa.py`: passed; service-call phase `complete`, 12 events. After v0.52 this report is also expected to include vehicle runtime evidence, runtime service-vehicle enter, dock-road checkpoint, exit steps, the Dock Road Relay reset step, and the relay service log sign-off.
+- `python tools/playthrough_qa.py`: passed; service-call phase `complete`, 13 events. After v0.54 this report is also expected to include vehicle runtime evidence, runtime service-vehicle enter, dock-road checkpoint, exit steps, the Dock Road Relay reset step, the relay service log sign-off, and the dock-road clear-tag consequence.
 - `python tools/capture_visual_smoke.py`: passed for GDI and DX11 captures; DX11 used WARP in this environment.
 - `python tools/physics_parity_qa.py`: passed with Jolt backend; floor=4, raycast=4, overlap=4.
 - `python tools/character_contact_qa.py`: passed with Jolt backend; probes=7.
@@ -367,7 +367,7 @@ Validation:
 
 ## Recommendation
 
-Best next move: tune or extend the Jolt obstacle proxy into a camera-aware obstacle route if vehicle promotion is the priority, or add a small scene-authored consequence that changes route/readability after `dockRoadRelayLogged`.
+Best next move: tune or extend the Jolt obstacle proxy into a camera-aware obstacle route if vehicle promotion is the priority, or make a presentation/readability pass for the now-longer Dock Road endpoint chain if player-facing clarity is the priority.
 
 Reason: v0.35 proved Jolt vehicle feasibility, v0.36 proved a frame-stepped runtime adapter comparison, v0.37 exposed that adapter through `--vehicle-runtime jolt`, v0.45 hardened tap/brake/reverse/coast checks, v0.46 added automated service-run route checks, v0.47 tuned Jolt route pace under a 240-frame budget, v0.48 proved the deterministic first-job vehicle beat can enter, drive, checkpoint, exit, and confirm through runtime controller behavior, and v0.49 proved the same beat through the opt-in Jolt path in 213 frames with no fallback or bounds hit. That is enough for continued opt-in testing and small content growth, but not enough for default Jolt promotion until steering, obstacle, camera, and collision replay evidence exists.
 
@@ -392,10 +392,10 @@ Goal:
 Add one small scene-authored Job #2 beat if content progress is the priority, or build a deterministic-vs-Jolt steering/obstacle replay if vehicle promotion is the priority.
 
 Why now:
-The first service job now has runtime enter, drive, checkpoint, exit, and confirm evidence for both deterministic and opt-in Jolt vehicle paths, v0.52 adds a compact Dock Road Relay reset plus relay service log sign-off with remembered state, and v0.53 adds a first obstacle-proxy steering comparison. Content can keep growing from a better-covered first job, while Jolt default promotion still needs camera-aware obstacle/collision evidence or steering tuning because the same proxy shows different deterministic and Jolt response magnitudes.
+The first service job now has runtime enter, drive, checkpoint, exit, and confirm evidence for both deterministic and opt-in Jolt vehicle paths, v0.54 adds a compact Dock Road Relay reset, relay service log sign-off, and dock-road clear-tag consequence with remembered state, and v0.53 adds a first obstacle-proxy steering comparison. Content can keep growing from a better-covered first job, while Jolt default promotion still needs camera-aware obstacle/collision evidence or steering tuning because the same proxy shows different deterministic and Jolt response magnitudes.
 
 Scope:
-- Either extend the runtime QA path to run the opt-in Jolt vehicle switch through enter-drive-checkpoint-exit-confirm behavior, or add a single compact authored follow-up job with visible world-state change.
+- Either extend vehicle evidence with a camera-aware obstacle route, or make the compact authored endpoint chain clearer in playtest presentation.
 - Keep deterministic vehicle gameplay as the default.
 - Record whether Jolt should remain opt-in, get another tuning pass, or be considered for broader steering/obstacle testing; if adding content, extend playthrough QA to cover the new beat.
 
