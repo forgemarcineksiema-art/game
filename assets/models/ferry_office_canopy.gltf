@@ -1,0 +1,90 @@
+{
+  "asset": {
+    "version": "2.0",
+    "generator": "Tidebreak tools/create_simple_prop_gltf.py v0.81 ferry office canopy fallback helper",
+    "extras": {
+      "tidebreakSource": "project-original fallback geometry",
+      "notBlenderExport": true
+    }
+  },
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "mesh": 0,
+      "name": "ferry_office_canopy"
+    }
+  ],
+  "meshes": [
+    {
+      "name": "ferry_office_canopy",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0
+          },
+          "indices": 1,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 504,
+      "uri": "data:application/octet-stream;base64,zcw8wAAAAAAAAAAAzcw8QAAAAAAAAAAAzcw8QM3MzD3NzGxAzcw8wM3MzD3NzGxAzcw8wI/CdT4AAAAAzcw8QI/CdT4AAAAAzcw8QOxRuD7NzGxAzcw8wOxRuD7NzGxAzcw8wArXIzzsUbg9CtczwArXIzzsUbg9CtczwMP1qD7sUbg9zcw8wMP1qD7sUbg9zcw8wArXIzw9CmdACtczwArXIzw9CmdACtczwMP1qD49CmdAzcw8wMP1qD49CmdACtczQArXIzzsUbg9zcw8QArXIzzsUbg9zcw8QMP1qD7sUbg9CtczQMP1qD7sUbg9CtczQArXIzw9CmdAzcw8QArXIzw9CmdAzcw8QMP1qD49CmdACtczQMP1qD49CmdAAAACAAEAAAADAAIABAAFAAYABAAGAAcAAAABAAUAAAAFAAQAAwAHAAYAAwAGAAIAAAAEAAcAAAAHAAMAAQACAAYAAQAGAAUACAAJAAoACAAKAAsADQAMAA8ADQAPAA4ADAAIAAsADAALAA8ACQANAA4ACQAOAAoACwAKAA4ACwAOAA8ADAANAAkADAAJAAgAEAARABIAEAASABMAFQAUABcAFQAXABYAFAAQABMAFAATABcAEQAVABYAEQAWABIAEwASABYAEwAWABcAFAAVABEAFAARABAA"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 288,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 288,
+      "byteLength": 216,
+      "target": 34963
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 24,
+      "type": "VEC3",
+      "min": [
+        -2.95,
+        0.0,
+        0.0
+      ],
+      "max": [
+        2.95,
+        0.36,
+        3.7
+      ]
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 0,
+      "componentType": 5123,
+      "count": 108,
+      "type": "SCALAR",
+      "min": [
+        0
+      ],
+      "max": [
+        23
+      ]
+    }
+  ]
+}

@@ -58,6 +58,25 @@ def write_clearance_tag(output_path: pathlib.Path, overwrite: bool = True) -> No
     )
 
 
+def write_ferry_office_canopy(output_path: pathlib.Path, overwrite: bool = True) -> None:
+    if output_path.exists() and not overwrite:
+        raise FileExistsError(f"{output_path} already exists; pass --overwrite to replace it")
+
+    vertices: list[tuple[float, float, float]] = []
+    indices: list[int] = []
+    _append_roof_canopy(vertices, indices)
+    _append_box(vertices, indices, center=(-2.88, 0.17, 1.85), half_extents=(0.07, 0.16, 1.76))
+    _append_box(vertices, indices, center=(2.88, 0.17, 1.85), half_extents=(0.07, 0.16, 1.76))
+
+    _write_embedded_gltf(
+        output_path=output_path,
+        vertices=vertices,
+        indices=indices,
+        name="ferry_office_canopy",
+        generator="Tidebreak tools/create_simple_prop_gltf.py v0.81 ferry office canopy fallback helper",
+    )
+
+
 def _write_embedded_gltf(
     output_path: pathlib.Path,
     vertices: list[tuple[float, float, float]],
@@ -144,6 +163,12 @@ def _write_embedded_gltf(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Create a tiny original Tidebreak fallback prop glTF.")
+    parser.add_argument(
+        "--kind",
+        choices=("ferry-notice-board", "clearance-tag", "ferry-office-canopy"),
+        default="ferry-notice-board",
+        help="Prop kind to generate.",
+    )
     parser.add_argument("--output", default=str(DEFAULT_OUTPUT), help="Output .gltf path.")
     parser.add_argument("--overwrite", action="store_true", help="Replace an existing output file.")
     return parser.parse_args()
@@ -153,7 +178,12 @@ def main() -> int:
     args = parse_args()
     output_path = pathlib.Path(args.output)
     try:
-        write_ferry_notice_board(output_path, overwrite=args.overwrite)
+        if args.kind == "clearance-tag":
+            write_clearance_tag(output_path, overwrite=args.overwrite)
+        elif args.kind == "ferry-office-canopy":
+            write_ferry_office_canopy(output_path, overwrite=args.overwrite)
+        else:
+            write_ferry_notice_board(output_path, overwrite=args.overwrite)
     except FileExistsError as exc:
         print(f"[error] {exc}")
         return 1
@@ -190,6 +220,35 @@ def _append_box(
     ]
     base_index = len(vertices)
     vertices.extend(corners)
+    for face in face_indices:
+        indices.extend(base_index + index for index in face)
+
+
+def _append_roof_canopy(
+    vertices: list[tuple[float, float, float]],
+    indices: list[int],
+) -> None:
+    base_index = len(vertices)
+    vertices.extend(
+        [
+            (-2.95, 0.00, 0.00),
+            (2.95, 0.00, 0.00),
+            (2.95, 0.10, 3.70),
+            (-2.95, 0.10, 3.70),
+            (-2.95, 0.24, 0.00),
+            (2.95, 0.24, 0.00),
+            (2.95, 0.36, 3.70),
+            (-2.95, 0.36, 3.70),
+        ]
+    )
+    face_indices = [
+        (0, 2, 1, 0, 3, 2),
+        (4, 5, 6, 4, 6, 7),
+        (0, 1, 5, 0, 5, 4),
+        (3, 7, 6, 3, 6, 2),
+        (0, 4, 7, 0, 7, 3),
+        (1, 2, 6, 1, 6, 5),
+    ]
     for face in face_indices:
         indices.extend(base_index + index for index in face)
 

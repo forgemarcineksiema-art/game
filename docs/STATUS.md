@@ -2,6 +2,67 @@
 
 Last updated: 2026-05-16
 
+## v0.81 Ferry Office Canopy Mesh Pass (2026-05-16)
+
+Selected milestone:
+
+- Replace the highest-visibility unit-box roof slab/front fascia with a small original Ferry Office canopy mesh.
+
+Candidate visual pass triage:
+
+- Ferry Office Canopy Mesh Pass: visible impact = high because the office roof dominates the first frame and still looked like stacked debug slabs; risk = medium-low because the static `.gltf` path and asset validators already exist; validation/capture path = scene tools, asset tools, GDI/DX11 visual smoke, `scripts\verify.ps1`.
+- Bounded fog/horizon treatment: visible impact = high; risk = higher because it touches renderer behavior and text/capture readability.
+- Service-yard-to-dock-road material hierarchy pass: visible impact = medium; risk = low, but less first-frame payoff than the office roof silhouette.
+
+Why selected:
+
+- After v0.80, the roofline was grounded but still mostly a large unit-box slab plus strip. A shallow generated canopy mesh makes the Ferry Office read more like authored coastal service architecture without adding clutter, route blockers, or gameplay behavior.
+
+Implementation notes:
+
+- Added `ferry_office_canopy.gltf` through `tools\create_simple_prop_gltf.py`.
+- Extended the fallback prop generator with a `--kind ferry-office-canopy` option.
+- Replaced the `mesh-ferry-office-roof-cap` instance with the new canopy mesh while preserving the stable instance id expected by scene tool tests.
+- Removed the redundant unit-box front fascia instance because the new canopy mesh includes the front overhang/lip.
+- Updated asset/mesh/roadmap documentation for the new referenced mesh.
+
+Files changed:
+
+- `assets\models\ferry_office_canopy.gltf`
+- `data\scenes\ferry_office.scene.json`
+- `tools\create_simple_prop_gltf.py`
+- `docs\STATUS.md`
+- `docs\ROADMAP.md`
+- `docs\ASSET_GUIDE.md`
+- `docs\MESH_RENDERING.md`
+
+Validation:
+
+- First `scripts\verify.ps1`: failed in `SceneToolTests.test_v0121_readability_mesh_instances_exist` because the initial edit renamed `mesh-ferry-office-roof-cap` to `mesh-ferry-office-roof-canopy`; repaired by keeping the stable instance id and changing only its asset.
+- `python tools\validate_scene.py`: passed.
+- `python tools\validate_assets.py`: passed.
+- `python tools\mesh_report.py`: passed; 13 mesh assets, 68 mesh instances, 13 referenced model files, `ferry_office_canopy.gltf` referenced once.
+- `python tools\scene_report.py`: passed; 24 scene materials, 30 visual placeholders, 68 mesh instances, 16 interactables, 16 route markers, and 15 objective markers.
+- `python tools\scale_audit.py`: passed.
+- `python tools\capture_visual_smoke.py --renderer gdi`: passed; GDI colors=75/lumaRange=221.
+- `scripts\verify.ps1`: passed after the stable-id repair; doctor completed with known plain-PATH tool warnings, configure/build succeeded, default CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke completed.
+- `python tools\capture_visual_smoke.py`: passed; GDI colors=75/lumaRange=221, DX11 colors=43/lumaRange=221 with WARP fallback in this environment.
+- `git diff --check`: passed with only expected CRLF normalization warnings for touched files.
+
+Automated evidence generated:
+
+- `build\captures\v0.31-gdi-capture.bmp`
+- `build\captures\v0.31-dx11-capture.bmp`
+- `build\captures\capture_visual_smoke_report.json`
+
+Remaining visual weakness:
+
+- The Ferry Office facade and service-yard transition still use many primitive box cues. The next visible pass should improve route/material hierarchy around the service-yard-to-dock-road transition or add a bounded horizon/fog treatment if renderer readability stays safe.
+
+Commit/push:
+
+- Included in the `v0.81 ferry office canopy mesh pass` commit/push step.
+
 ## v0.80 Ferry Office Roofline Grounding Pass (2026-05-16)
 
 Selected milestone:

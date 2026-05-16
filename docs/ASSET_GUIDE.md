@@ -77,6 +77,7 @@ v0.12-v0.18 supports a tiny static `.gltf` subset through `src/engine/assets/Sta
 - v0.18 adds four original prop-kit meshes: `service_road_sign.gltf`, `road_edge_post.gltf`, `service_barrier.gltf`, and `utility_box.gltf`.
 - v0.20 adds `ferry_notice_board.gltf` through `tools/create_simple_prop_gltf.py` because Blender was unavailable during that run. This asset is project-original fallback geometry, not Blender export.
 - v0.58 adds `clearance_tag.gltf` through the same fallback helper because the endpoint cue is tiny and does not justify Blender yet.
+- v0.81 adds `ferry_office_canopy.gltf` through the same fallback helper because the Ferry Office roofline is a high-visibility first-frame silhouette and benefits from one cohesive authored mesh.
 - v0.20.1 adds `blender_ferry_notice_board.gltf` through `tools/blender/create_tidebreak_notice_board.py`. v0.27 adds `blender_cable_reel.gltf` through `tools/blender/create_tidebreak_cable_reel.py`. v0.42 adds `blender_wet_road_surface.gltf` through `tools/blender/create_tidebreak_wet_road_surface.py`. v0.43 adds `blender_harbor_backdrop.gltf` through `tools/blender/create_tidebreak_harbor_backdrop.py`. v0.44 adds `blender_harbor_water_surface.gltf` through `tools/blender/create_tidebreak_harbor_water_surface.py`. These scripts author in Tidebreak coordinates, map to Blender's Z-up space, export with Blender 5.1.1, and post-embed the buffer for the current loader subset.
 - Use meters, Y-up, +Z forward.
 - Keep placeholder meshes small, original, and clearly documented.

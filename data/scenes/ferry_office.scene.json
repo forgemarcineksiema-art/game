@@ -558,26 +558,29 @@
       "provenance": "Authored procedurally by tools/blender/create_tidebreak_harbor_water_surface.py and exported headlessly by Blender 5.1.1 during v0.44.",
       "authoringBoundsHalfExtents": [0.50, 0.02, 0.50],
       "notes": "Low harbor water surface mesh with subtle static ripple ridges. It is untextured presentation geometry only, not simulated water, collision, fluid physics, or terrain."
+    },
+    {
+      "id": "ferry-office-canopy-mesh",
+      "path": "assets/models/ferry_office_canopy.gltf",
+      "format": "gltf",
+      "units": "meter",
+      "upAxis": "Y",
+      "license": "project-original",
+      "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v0.81 fallback Ferry Office canopy because the roofline is a high-visibility first-frame silhouette; not a Blender export.",
+      "authoringBoundsHalfExtents": [2.95, 0.18, 1.85],
+      "notes": "Small original sloped canopy mesh for Ferry Office first-impression readability. No textures, logos, readable text, collision, or final architectural art."
     }
   ],
   "meshInstances": [
     {
       "id": "mesh-ferry-office-roof-cap",
-      "assetId": "unit-box-mesh",
-      "position": [0.0, 1.68, 5.18],
+      "assetId": "ferry-office-canopy-mesh",
+      "position": [0.0, 1.50, 2.02],
       "yawDegrees": 0.0,
-      "scale": [5.9, 0.24, 1.1],
+      "scale": [1.0, 1.0, 1.0],
       "colorKey": "rusted-roof-trim",
-      "replacesVisualPlaceholderId": "ferry-office-roof-cap"
-    },
-    {
-      "id": "mesh-ferry-office-front-roof-fascia",
-      "assetId": "unit-box-mesh",
-      "position": [0.0, 1.68, 2.02],
-      "yawDegrees": 0.0,
-      "scale": [5.35, 0.14, 0.12],
-      "colorKey": "rusted-roof-trim",
-      "notes": "v0.80 visual-only front fascia that ties the Ferry Office roofline to the facade in the default frame."
+      "replacesVisualPlaceholderId": "ferry-office-roof-cap",
+      "notes": "v0.81 generated original canopy mesh that replaces the largest unit-box roof slab/front fascia with a shallow sloped overhang; visual only."
     },
     {
       "id": "mesh-ferry-office-left-roof-downpost",
