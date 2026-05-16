@@ -1147,7 +1147,7 @@ void TestSceneLoaderLoadsDefaultFerryOfficeScene()
     Expect(result.scene.meshInstances.size() >= 15,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored mesh instances, including the v0.18 prop style kit.");
-    Expect(result.scene.interactables.size() == 13,
+    Expect(result.scene.interactables.size() == 15,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored interactables.");
     Expect(result.scene.traversalAffordances.size() == 1,
@@ -1289,6 +1289,12 @@ void TestSceneLoaderLoadsHarborPartsJobBeat()
     const SceneInteractableDefinition* handoffNote = FindSceneInteractable(result.scene, "ferry-office-handoff-note");
     const SceneRouteMarkerDefinition* handoffRoute = FindRouteMarker(result.scene, "route-work-board-to-handoff-note");
     const SceneObjectiveMarkerDefinition* handoffMarker = FindObjectiveMarker(result.scene, "ferry-office-handoff-marker");
+    const SceneInteractableDefinition* stormPump = FindSceneInteractable(result.scene, "storm-pump-switch");
+    const SceneInteractableDefinition* stormTicket = FindSceneInteractable(result.scene, "storm-pump-ticket");
+    const SceneRouteMarkerDefinition* stormPumpRoute = FindRouteMarker(result.scene, "route-handoff-note-to-storm-pump");
+    const SceneRouteMarkerDefinition* stormTicketRoute = FindRouteMarker(result.scene, "route-storm-pump-to-ticket");
+    const SceneObjectiveMarkerDefinition* stormPumpMarker = FindObjectiveMarker(result.scene, "storm-pump-marker");
+    const SceneObjectiveMarkerDefinition* stormTicketMarker = FindObjectiveMarker(result.scene, "storm-pump-ticket-marker");
 
     Expect(result.ok(),
         "TestSceneLoaderLoadsHarborPartsJobBeat",
@@ -1326,6 +1332,21 @@ void TestSceneLoaderLoadsHarborPartsJobBeat()
     Expect(handoffMarker != nullptr,
         "TestSceneLoaderLoadsHarborPartsJobBeat",
         "Scene data should expose an objective marker for the handoff note.");
+    Expect(stormPump != nullptr && stormPump->name == FerryOffice::Names::StormPumpSwitch,
+        "TestSceneLoaderLoadsHarborPartsJobBeat",
+        "Scene data should include the storm pump reset as the next compact job seed.");
+    Expect(stormTicket != nullptr && stormTicket->name == FerryOffice::Names::StormPumpTicket,
+        "TestSceneLoaderLoadsHarborPartsJobBeat",
+        "Scene data should include a Ferry Office ticket closeout for the storm pump reset.");
+    Expect(stormPumpRoute != nullptr && stormPumpRoute->points.size() >= 2,
+        "TestSceneLoaderLoadsHarborPartsJobBeat",
+        "Scene data should route from the handoff note to the storm pump.");
+    Expect(stormTicketRoute != nullptr && stormTicketRoute->points.size() >= 2,
+        "TestSceneLoaderLoadsHarborPartsJobBeat",
+        "Scene data should route from the storm pump back to the office ticket.");
+    Expect(stormPumpMarker != nullptr && stormTicketMarker != nullptr,
+        "TestSceneLoaderLoadsHarborPartsJobBeat",
+        "Scene data should expose objective markers for the storm pump job seed.");
 }
 
 void TestSceneLoaderLoadsInteractableActionPrerequisites()
@@ -1359,6 +1380,14 @@ void TestSceneLoaderLoadsInteractableActionPrerequisites()
     Expect(handoffNote != nullptr && ContainsString(handoffNote->requiredWorldFlags, "ferryOfficeBoardUpdated"),
         "TestSceneLoaderLoadsInteractableActionPrerequisites",
         "Ferry Office Handoff Note should declare the work-board prerequisite.");
+    const SceneInteractableDefinition* stormPump = FindSceneInteractable(result.scene, "storm-pump-switch");
+    Expect(stormPump != nullptr && ContainsString(stormPump->requiredWorldFlags, "ferryOfficeHandoffFiled"),
+        "TestSceneLoaderLoadsInteractableActionPrerequisites",
+        "Storm Pump Switch should declare the filed handoff prerequisite.");
+    const SceneInteractableDefinition* stormTicket = FindSceneInteractable(result.scene, "storm-pump-ticket");
+    Expect(stormTicket != nullptr && ContainsString(stormTicket->requiredWorldFlags, "stormPumpReset"),
+        "TestSceneLoaderLoadsInteractableActionPrerequisites",
+        "Storm Pump Ticket should declare the storm pump reset prerequisite.");
 }
 
 void TestSceneLoaderReportsMissingSceneFile()
@@ -3534,9 +3563,19 @@ void TestFerryOfficeFollowupNextStepGuidesLongChain()
         "After work-board signoff, the next step should point to the handoff note.");
 
     state.setFlag(WorldFlag::FerryOfficeHandoffFiled, true, "Ferry Office Handoff Note");
+    Expect(FerryOfficeFollowupNextStepText(state).find("storm pump") != std::string::npos,
+        "TestFerryOfficeFollowupNextStepGuidesLongChain",
+        "After the handoff note, the next step should point to the storm pump.");
+
+    state.setFlag(WorldFlag::StormPumpReset, true, "Storm Pump Switch");
+    Expect(FerryOfficeFollowupNextStepText(state).find("ticket") != std::string::npos,
+        "TestFerryOfficeFollowupNextStepGuidesLongChain",
+        "After the storm pump reset, the next step should point to the office ticket.");
+
+    state.setFlag(WorldFlag::StormPumpTicketClosed, true, "Storm Pump Ticket");
     Expect(FerryOfficeFollowupNextStepText(state).find("complete") != std::string::npos,
         "TestFerryOfficeFollowupNextStepGuidesLongChain",
-        "After the handoff note, the next step should acknowledge follow-up completion.");
+        "After the storm pump ticket, the next step should acknowledge follow-up completion.");
 }
 
 void TestFerryOfficeObjectiveTextGuidesRouteSteps()
@@ -3809,6 +3848,24 @@ void TestHarborPartsJobRequiresClearedDockRoad()
     Expect(handoffFiled && scene.worldState().isFlagSet(WorldFlag::FerryOfficeHandoffFiled),
         "TestHarborPartsJobRequiresClearedDockRoad",
         "The Ferry Office handoff note should remember the final crew handoff.");
+    Expect(scene.currentJobObjectiveText().find("storm pump") != std::string::npos,
+        "TestHarborPartsJobRequiresClearedDockRoad",
+        "The objective should send the player toward the storm pump after the handoff note.");
+
+    const bool pumpReset = scene.applyInteractionResult(
+        MakeSceneInteraction(std::string(FerryOffice::Names::StormPumpSwitch), InteractableType::Info));
+    Expect(pumpReset && scene.worldState().isFlagSet(WorldFlag::StormPumpReset),
+        "TestHarborPartsJobRequiresClearedDockRoad",
+        "The storm pump switch should remember the reset after the handoff note is filed.");
+    Expect(scene.currentJobObjectiveText().find("ticket") != std::string::npos,
+        "TestHarborPartsJobRequiresClearedDockRoad",
+        "The objective should route the reset pump back to the Ferry Office ticket.");
+
+    const bool ticketClosed = scene.applyInteractionResult(
+        MakeSceneInteraction(std::string(FerryOffice::Names::StormPumpTicket), InteractableType::Info));
+    Expect(ticketClosed && scene.worldState().isFlagSet(WorldFlag::StormPumpTicketClosed),
+        "TestHarborPartsJobRequiresClearedDockRoad",
+        "The storm pump ticket should close after the pump has been reset.");
 }
 
 void TestPrototypeSceneAppliesAuthoredInteractableFlagBindings()
@@ -3917,6 +3974,12 @@ void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
     Expect(state.isFlagSet(WorldFlag::FerryOfficeHandoffFiled),
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should file the Ferry Office handoff note.");
+    Expect(state.isFlagSet(WorldFlag::StormPumpReset),
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "QA playthrough should reset the storm pump as the second compact job seed.");
+    Expect(state.isFlagSet(WorldFlag::StormPumpTicketClosed),
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "QA playthrough should close the storm pump ticket.");
     Expect(result.steps.size() >= 9,
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should report each major authored phase.");
@@ -3958,6 +4021,12 @@ void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
     Expect(hasStep("ferryOfficeHandoffFiled"),
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should record the handoff note beat.");
+    Expect(hasStep("stormPumpReset"),
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "QA playthrough should record the storm pump reset beat.");
+    Expect(hasStep("stormPumpTicketClosed"),
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "QA playthrough should record the storm pump ticket closeout beat.");
     Expect(std::filesystem::exists(reportPath),
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should write a report artifact.");
@@ -3995,6 +4064,12 @@ void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
         Expect(report["final"]["flags"]["ferryOfficeHandoffFiled"] == true,
             "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
             "QA playthrough report should expose the handoff note.");
+        Expect(report["final"]["flags"]["stormPumpReset"] == true,
+            "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+            "QA playthrough report should expose the storm pump reset.");
+        Expect(report["final"]["flags"]["stormPumpTicketClosed"] == true,
+            "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+            "QA playthrough report should expose the storm pump ticket closeout.");
         Expect(report["vehicleRuntime"]["backend"] == "deterministic",
             "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
             "QA playthrough report should expose the vehicle runtime backend.");

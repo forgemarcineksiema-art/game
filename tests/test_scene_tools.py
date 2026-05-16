@@ -109,11 +109,11 @@ class SceneToolTests(unittest.TestCase):
         self.assertEqual(21, summary.material_count)
         self.assertGreaterEqual(summary.collider_count, 9)
         self.assertEqual(27, summary.visual_count)
-        self.assertEqual(13, summary.interactable_count)
+        self.assertEqual(15, summary.interactable_count)
         self.assertEqual(1, summary.traversal_count)
         self.assertEqual(1, summary.vehicle_count)
-        self.assertEqual(13, summary.route_count)
-        self.assertEqual(12, summary.objective_marker_count)
+        self.assertEqual(15, summary.route_count)
+        self.assertEqual(14, summary.objective_marker_count)
 
     def test_scene_summary_reports_mesh_assets_and_instances(self) -> None:
         summary = scene_data.build_summary(self.scene)

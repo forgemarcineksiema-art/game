@@ -140,6 +140,24 @@ void PrototypeScene::buildFromFerryOfficeData()
     ferryOfficeHandoffNote.message = FerryOffice::Messages::FerryOfficeHandoffNote;
     m_interactions.addInteractable(ferryOfficeHandoffNote);
 
+    Interactable stormPumpSwitch;
+    stormPumpSwitch.name = FerryOffice::Names::StormPumpSwitch;
+    stormPumpSwitch.prompt = FerryOffice::Prompts::StormPumpSwitch;
+    stormPumpSwitch.position = FerryOffice::Positions::StormPumpSwitch;
+    stormPumpSwitch.radius = FerryOffice::Radii::StormPumpSwitch;
+    stormPumpSwitch.type = InteractableType::Info;
+    stormPumpSwitch.message = FerryOffice::Messages::StormPumpSwitch;
+    m_interactions.addInteractable(stormPumpSwitch);
+
+    Interactable stormPumpTicket;
+    stormPumpTicket.name = FerryOffice::Names::StormPumpTicket;
+    stormPumpTicket.prompt = FerryOffice::Prompts::StormPumpTicket;
+    stormPumpTicket.position = FerryOffice::Positions::StormPumpTicket;
+    stormPumpTicket.radius = FerryOffice::Radii::StormPumpTicket;
+    stormPumpTicket.type = InteractableType::Info;
+    stormPumpTicket.message = FerryOffice::Messages::StormPumpTicket;
+    m_interactions.addInteractable(stormPumpTicket);
+
     addInteractableActionBinding(std::string(FerryOffice::Names::FerryManifest),
         {WorldFlag::ManifestCollected},
         {},
@@ -199,6 +217,14 @@ void PrototypeScene::buildFromFerryOfficeData()
         {},
         {WorldFlag::FerryOfficeBoardUpdated},
         {WorldFlag::FerryOfficeHandoffFiled});
+    addInteractableActionBinding(std::string(FerryOffice::Names::StormPumpSwitch),
+        {},
+        {WorldFlag::FerryOfficeHandoffFiled},
+        {WorldFlag::StormPumpReset});
+    addInteractableActionBinding(std::string(FerryOffice::Names::StormPumpTicket),
+        {},
+        {WorldFlag::StormPumpReset},
+        {WorldFlag::StormPumpTicketClosed});
 
     TraversalAffordance serviceVault;
     serviceVault.name = FerryOffice::Names::ServiceVault;
@@ -475,8 +501,16 @@ std::string PrototypeScene::currentJobObjectiveText() const
         && !m_worldState.isFlagSet(WorldFlag::FerryOfficeHandoffFiled)) {
         return "File the Ferry Office handoff note for the next ferry crew.";
     }
-    if (m_worldState.isFlagSet(WorldFlag::FerryOfficeHandoffFiled)) {
-        return "Handoff filed. Ferry Office follow-up complete.";
+    if (m_worldState.isFlagSet(WorldFlag::FerryOfficeHandoffFiled)
+        && !m_worldState.isFlagSet(WorldFlag::StormPumpReset)) {
+        return "Reset the storm pump by the service-yard cable reel.";
+    }
+    if (m_worldState.isFlagSet(WorldFlag::StormPumpReset)
+        && !m_worldState.isFlagSet(WorldFlag::StormPumpTicketClosed)) {
+        return "Close the storm pump ticket at the Ferry Office board.";
+    }
+    if (m_worldState.isFlagSet(WorldFlag::StormPumpTicketClosed)) {
+        return "Storm pump ticket closed. Ferry Office follow-up complete.";
     }
     return m_job.currentObjectiveText(m_worldState);
 }

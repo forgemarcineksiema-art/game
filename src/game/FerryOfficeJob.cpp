@@ -63,7 +63,11 @@ std::string FerryOfficeFollowupStatusText(const WorldState& state)
            << " | board="
            << (state.isFlagSet(WorldFlag::FerryOfficeBoardUpdated) ? "updated" : "later")
            << " | handoff="
-           << (state.isFlagSet(WorldFlag::FerryOfficeHandoffFiled) ? "filed" : "later");
+           << (state.isFlagSet(WorldFlag::FerryOfficeHandoffFiled) ? "filed" : "later")
+           << " | pump="
+           << (state.isFlagSet(WorldFlag::StormPumpTicketClosed)
+                   ? "closed"
+                   : (state.isFlagSet(WorldFlag::StormPumpReset) ? "reset" : "later"));
     return output.str();
 }
 
@@ -93,7 +97,13 @@ std::string FerryOfficeFollowupNextStepText(const WorldState& state)
     if (!state.isFlagSet(WorldFlag::FerryOfficeHandoffFiled)) {
         return "File the Ferry Office handoff note.";
     }
-    return "Handoff filed. Ferry Office follow-up complete.";
+    if (!state.isFlagSet(WorldFlag::StormPumpReset)) {
+        return "Reset the storm pump by the service-yard cable reel.";
+    }
+    if (!state.isFlagSet(WorldFlag::StormPumpTicketClosed)) {
+        return "Close the storm pump ticket at the Ferry Office board.";
+    }
+    return "Storm pump ticket closed. Ferry Office follow-up complete.";
 }
 
 void FerryOfficeJob::configure(FerryOfficeJobConfig config)

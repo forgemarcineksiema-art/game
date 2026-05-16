@@ -729,6 +729,15 @@ Status: implemented and validated. The generated Jolt runtime comparison report 
 
 Status: implemented and validated. Scene data now has 21 authored scene materials and 27 visual placeholders; the handoff cue shifts from pending amber to filed green through `ScenePresentationState`, while scene validation, playthrough QA, visual smoke, and the main verify gate cover the change.
 
+## v0.67 - Storm Pump Job Seed
+
+- Add a compact second job seed after the Ferry Office handoff note.
+- Route the player from the handoff note to the service-yard storm pump, then back to a Ferry Office pump ticket closeout.
+- Record `stormPumpReset` and `stormPumpTicketClosed` as remembered local world state.
+- Keep this as scene-authored compact content, not a generic mission framework, job-board UI, save/load system, or bespoke asset pass.
+
+Status: implemented and validated. Scene data now has 15 interactables, 15 route markers, and 14 objective markers; deterministic playthrough QA completes a 19-event chain through storm pump reset and ticket closeout.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.66, the next useful future milestone can either seed a compact Job #2 now that the first office loop has visible endpoint state, or make a provisional Jolt vehicle-runtime direction decision from the accumulated route/control/playthrough/obstacle evidence.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.67, the next useful future milestone should probably make a provisional Jolt vehicle-runtime direction decision from the accumulated route/control/playthrough/obstacle evidence, unless the storm pump job seed needs a small visible state cue first.

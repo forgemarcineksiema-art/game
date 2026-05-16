@@ -45,6 +45,8 @@ class PlaythroughQaTests(unittest.TestCase):
                             {"name": "harborPartsDelivered", "passed": True},
                             {"name": "ferryOfficeBoardUpdated", "passed": True},
                             {"name": "ferryOfficeHandoffFiled", "passed": True},
+                            {"name": "stormPumpReset", "passed": True},
+                            {"name": "stormPumpTicketClosed", "passed": True},
                         ],
                         "vehicleRuntime": {
                             "requested": "deterministic",
@@ -72,6 +74,8 @@ class PlaythroughQaTests(unittest.TestCase):
                                 "harborPartsDelivered": True,
                                 "ferryOfficeBoardUpdated": True,
                                 "ferryOfficeHandoffFiled": True,
+                                "stormPumpReset": True,
+                                "stormPumpTicketClosed": True,
                             },
                         },
                     }
@@ -113,6 +117,8 @@ class PlaythroughQaTests(unittest.TestCase):
                                 "harborPartsDelivered": False,
                                 "ferryOfficeBoardUpdated": False,
                                 "ferryOfficeHandoffFiled": False,
+                                "stormPumpReset": False,
+                                "stormPumpTicketClosed": False,
                             },
                         },
                     }
@@ -158,6 +164,8 @@ class PlaythroughQaTests(unittest.TestCase):
                                 "harborPartsDelivered": True,
                                 "ferryOfficeBoardUpdated": True,
                                 "ferryOfficeHandoffFiled": True,
+                                "stormPumpReset": True,
+                                "stormPumpTicketClosed": True,
                             },
                         },
                     }
@@ -189,6 +197,8 @@ class PlaythroughQaTests(unittest.TestCase):
                             {"name": "harborPartsDelivered", "passed": True},
                             {"name": "ferryOfficeBoardUpdated", "passed": True},
                             {"name": "ferryOfficeHandoffFiled", "passed": True},
+                            {"name": "stormPumpReset", "passed": True},
+                            {"name": "stormPumpTicketClosed", "passed": True},
                         ],
                         "final": {
                             "phase": "complete",
@@ -209,6 +219,8 @@ class PlaythroughQaTests(unittest.TestCase):
                                 "harborPartsDelivered": True,
                                 "ferryOfficeBoardUpdated": True,
                                 "ferryOfficeHandoffFiled": True,
+                                "stormPumpReset": True,
+                                "stormPumpTicketClosed": True,
                             },
                         },
                     }

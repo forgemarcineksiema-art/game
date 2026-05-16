@@ -22,6 +22,8 @@ inline constexpr std::string_view HarborPartsCrate = "Harbor Parts Crate";
 inline constexpr std::string_view FerryOfficePartsShelf = "Ferry Office Parts Shelf";
 inline constexpr std::string_view FerryOfficeWorkBoard = "Ferry Office Work Board";
 inline constexpr std::string_view FerryOfficeHandoffNote = "Ferry Office Handoff Note";
+inline constexpr std::string_view StormPumpSwitch = "Storm Pump Switch";
+inline constexpr std::string_view StormPumpTicket = "Storm Pump Ticket";
 } // namespace Names
 
 namespace Prompts {
@@ -39,6 +41,8 @@ inline constexpr std::string_view HarborPartsCrate = "Collect Harbor Parts";
 inline constexpr std::string_view FerryOfficePartsShelf = "Deliver Harbor Parts";
 inline constexpr std::string_view FerryOfficeWorkBoard = "Update Work Board";
 inline constexpr std::string_view FerryOfficeHandoffNote = "File Handoff Note";
+inline constexpr std::string_view StormPumpSwitch = "Reset Storm Pump";
+inline constexpr std::string_view StormPumpTicket = "Close Pump Ticket";
 } // namespace Prompts
 
 namespace Messages {
@@ -57,6 +61,8 @@ inline constexpr std::string_view HarborPartsCrate = "Harbor parts crate picked 
 inline constexpr std::string_view FerryOfficePartsShelf = "Harbor parts delivered to the Ferry Office shelf.";
 inline constexpr std::string_view FerryOfficeWorkBoard = "Ferry Office work board updated with the Harbor Parts return.";
 inline constexpr std::string_view FerryOfficeHandoffNote = "Ferry Office handoff note filed for the next ferry crew.";
+inline constexpr std::string_view StormPumpSwitch = "Storm pump reset for the low dock drain.";
+inline constexpr std::string_view StormPumpTicket = "Storm pump ticket closed on the Ferry Office board.";
 } // namespace Messages
 
 namespace Positions {
@@ -75,6 +81,8 @@ inline constexpr engine::Vec3 HarborPartsCrate {16.7f, 0.55f, -0.62f};
 inline constexpr engine::Vec3 FerryOfficePartsShelf {-1.72f, 0.62f, 3.24f};
 inline constexpr engine::Vec3 FerryOfficeWorkBoard {-2.08f, 0.68f, 2.82f};
 inline constexpr engine::Vec3 FerryOfficeHandoffNote {-2.35f, 0.68f, 3.42f};
+inline constexpr engine::Vec3 StormPumpSwitch {7.02f, 0.55f, 0.48f};
+inline constexpr engine::Vec3 StormPumpTicket {-1.92f, 0.68f, 2.56f};
 inline constexpr engine::Vec3 ServiceRunCheckpoint {19.35f, 0.08f, -2.2f};
 inline constexpr engine::Vec3 ServiceVaultStart {2.8f, 0.0f, -0.35f};
 inline constexpr engine::Vec3 ServiceVaultEnd {2.8f, 0.0f, 1.45f};
@@ -99,6 +107,8 @@ inline constexpr float HarborPartsCrate = 1.4f;
 inline constexpr float FerryOfficePartsShelf = 1.5f;
 inline constexpr float FerryOfficeWorkBoard = 1.4f;
 inline constexpr float FerryOfficeHandoffNote = 1.3f;
+inline constexpr float StormPumpSwitch = 1.4f;
+inline constexpr float StormPumpTicket = 1.3f;
 inline constexpr float ServiceRunCheckpoint = 1.5f;
 } // namespace Radii
 

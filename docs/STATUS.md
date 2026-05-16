@@ -2,6 +2,96 @@
 
 Last updated: 2026-05-16
 
+## v0.67 Storm Pump Job Seed (2026-05-16)
+
+Selected milestone:
+
+- Add a compact second job seed after the Ferry Office handoff note: reset the storm pump near the service-yard cable reel, then close the pump ticket back at the Ferry Office board.
+
+Candidate milestone triage:
+
+- Storm pump job seed: impact = adds playable follow-up content with a small out-and-back route; risk = moderate but bounded by scene-authored action bindings and playthrough QA; validation path = scene/tool tests, playthrough QA, visual smoke, `scripts\verify.ps1`.
+- Jolt vehicle direction decision: impact = clarifies runtime strategy; risk = lower code churn but less player-facing than content right after a visual endpoint pass; validation path = existing vehicle QA.
+- SandboxLayer extraction: impact = future maintainability; risk = non-playable after a content/presentation milestone; validation path = C++ tests and playthrough QA.
+
+Why selected:
+
+- The Ferry Office loop now has enough scene-authored action binding support and visible endpoint state to safely grow by one more compact beat. The storm pump seed adds purposeful local work without a new mission framework, broad map expansion, or new assets.
+
+Implementation notes:
+
+- Added `stormPumpReset` and `stormPumpTicketClosed` world flags.
+- Added fallback constants and runtime bindings for `Storm Pump Switch` and `Storm Pump Ticket`.
+- Added scene-authored interactables, route markers, and objective markers for the out-and-back storm pump task.
+- Extended follow-up status/next-step/objective text so the handoff now points to the storm pump, then back to the Ferry Office ticket.
+- Extended C++ playthrough QA and the Python report validator to require the two new flags and steps.
+- Updated scene/tool/C++ tests for the new authored content counts and prerequisite chain.
+
+Files changed:
+
+- `data\scenes\ferry_office.scene.json`
+- `src\game\FerryOfficeData.h`
+- `src\game\FerryOfficeJob.cpp`
+- `src\game\FerryOfficePlaythroughQa.cpp`
+- `src\game\PrototypeScene.cpp`
+- `src\game\WorldState.h`
+- `src\game\WorldState.cpp`
+- `tools\scene_data.py`
+- `tools\playthrough_qa.py`
+- `tests\EngineCoreTests.cpp`
+- `tests\test_playthrough_qa.py`
+- `tests\test_scene_tools.py`
+- `docs\STATUS.md`
+- `docs\ROADMAP.md`
+- `docs\CONTEXT_MAP.md`
+
+Focused validation:
+
+- `python tools\validate_scene.py`: passed.
+- `python tests\test_scene_tools.py`: passed, 44 tests.
+- `python tests\test_playthrough_qa.py`: passed, 5 tests.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: passed.
+- `cmake --build --preset windows-vs2022-debug --target EngineApp EngineCoreTests`: passed after rebuilding the app executable for the new world flags.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: initially failed one stale next-step expectation after the handoff note; fixed to expect the storm pump/ticket sequence, then passed.
+- `python tools\playthrough_qa.py`: initially failed against the stale `EngineApp.exe` because the scene loader did not yet know `stormPumpReset`; after rebuilding `EngineApp`, passed with phase `complete`, 19 events, deterministic runtime, and 139 frames to checkpoint.
+- `python tools\scene_report.py`: passed; now reports 15 interactables, 15 route markers, and 14 objective markers.
+- `python tools\capture_visual_smoke.py`: passed; GDI colors=65/lumaRange=221, DX11 colors=44/lumaRange=221 with WARP fallback in this environment.
+- `python tools\scale_audit.py`: passed.
+- `python tools\mesh_report.py`: passed.
+- `python tools\validate_assets.py`: passed.
+
+Automated evidence generated:
+
+- `build\playthroughs\ferry-office-service-call-report.json`
+- `build\captures\capture_visual_smoke_report.json`
+
+Decision note:
+
+- Decision made: seed Job #2 as two scene-authored interactions using existing props and route markers, rather than adding a new mission framework or bespoke asset.
+- Alternatives considered: Jolt promotion decision, SandboxLayer cleanup, or a larger new job route.
+- Evidence used: green scene validation, green playthrough QA with 19 events, existing cable reel/office board scene anchors, and existing scene-authored flag bindings.
+- Why this helps Tidebreak: the world now has a second compact practical task after the first service loop, with remembered state and clear route guidance.
+- Revisit when: the job needs bespoke visual state, a proper job-board UI, persistence/save-load, or stronger runtime-input QA for walking the out-and-back route.
+
+Remaining limitations:
+
+- This is a job seed, not a full job-board system.
+- The storm pump uses existing authored props and markers; it does not yet have a bespoke pump asset or visible reset animation.
+- The playthrough QA triggers interactions directly and validates state transitions; it does not physically walk the storm pump route.
+
+Final validation:
+
+- `scripts\verify.ps1`: passed; doctor/configure/build succeeded, default CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke passed.
+- `git diff --check`: passed with only expected CRLF normalization warnings.
+
+Commit/push:
+
+- Pending at status edit time.
+
+Next direction:
+
+- After validation and push, prefer a bounded Jolt vehicle-runtime decision/hardening pass or add visible pump/ticket state only if the new job seed proves too invisible in automated capture/playthrough evidence.
+
 ## v0.66 Ferry Office Handoff State Cue (2026-05-16)
 
 Selected milestone:

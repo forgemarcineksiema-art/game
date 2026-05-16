@@ -31,6 +31,8 @@ REQUIRED_FLAGS = [
     "harborPartsDelivered",
     "ferryOfficeBoardUpdated",
     "ferryOfficeHandoffFiled",
+    "stormPumpReset",
+    "stormPumpTicketClosed",
 ]
 REQUIRED_RUNTIME_STEPS = [
     "serviceVehicleRuntime",
@@ -43,6 +45,8 @@ REQUIRED_RUNTIME_STEPS = [
     "harborPartsDelivered",
     "ferryOfficeBoardUpdated",
     "ferryOfficeHandoffFiled",
+    "stormPumpReset",
+    "stormPumpTicketClosed",
 ]
 
 

@@ -71,6 +71,8 @@ KNOWN_WORLD_FLAGS = {
     "serviceRouteUsed",
     "serviceRunConfirmed",
     "serviceVehicleUsed",
+    "stormPumpReset",
+    "stormPumpTicketClosed",
 }
 
 
