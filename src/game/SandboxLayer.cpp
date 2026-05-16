@@ -532,6 +532,13 @@ std::string SandboxLayer::buildPresentationText(bool minimal) const
         output << "Status: service gate=" << (m_scene.worldState().isFlagSet(WorldFlag::RouteOpened) ? "open" : "closed")
                << " | power=" << (m_scene.worldState().isFlagSet(WorldFlag::PowerRestored) ? "restored" : "offline")
                << " | mode=" << (vehicle.occupied ? "driving" : "on foot") << "\n";
+        const bool showFollowupStatus = m_scene.isJobComplete()
+            || m_scene.worldState().isFlagSet(WorldFlag::DockRoadRelayReset)
+            || m_scene.worldState().isFlagSet(WorldFlag::DockRoadRelayLogged)
+            || m_scene.worldState().isFlagSet(WorldFlag::DockRoadClearanceTagged);
+        if (showFollowupStatus) {
+            output << FerryOfficeFollowupStatusText(m_scene.worldState()) << "\n";
+        }
         if (vehicle.occupied) {
             output << "Drive: speed=" << vehicle.speed
                    << " | checkpoint="

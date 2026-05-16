@@ -3209,6 +3209,32 @@ void TestFerryOfficeJobCompletionRequiresAllJobFlags()
         "Repeating a completed service run should not duplicate job events.");
 }
 
+void TestFerryOfficeFollowupStatusSummarizesEndpointChain()
+{
+    WorldState state;
+
+    Expect(FerryOfficeFollowupStatusText(state).find("relay=later") != std::string::npos,
+        "TestFerryOfficeFollowupStatusSummarizesEndpointChain",
+        "Follow-up status should tell playtest mode the relay beat is still ahead.");
+
+    state.setFlag(WorldFlag::DockRoadRelayReset, true, "Dock Road Relay");
+    Expect(FerryOfficeFollowupStatusText(state).find("relay=reset") != std::string::npos
+            && FerryOfficeFollowupStatusText(state).find("log=later") != std::string::npos,
+        "TestFerryOfficeFollowupStatusSummarizesEndpointChain",
+        "Follow-up status should show relay reset progress before the log beat.");
+
+    state.setFlag(WorldFlag::DockRoadRelayLogged, true, "Relay Service Log");
+    Expect(FerryOfficeFollowupStatusText(state).find("log=signed") != std::string::npos
+            && FerryOfficeFollowupStatusText(state).find("road=later") != std::string::npos,
+        "TestFerryOfficeFollowupStatusSummarizesEndpointChain",
+        "Follow-up status should show relay log progress before the road clear tag.");
+
+    state.setFlag(WorldFlag::DockRoadClearanceTagged, true, "Dock Road Clearance Tag");
+    Expect(FerryOfficeFollowupStatusText(state).find("road=clear") != std::string::npos,
+        "TestFerryOfficeFollowupStatusSummarizesEndpointChain",
+        "Follow-up status should show when the endpoint chain leaves the road clear.");
+}
+
 void TestFerryOfficeObjectiveTextGuidesRouteSteps()
 {
     PrototypeScene scene;
@@ -4453,6 +4479,7 @@ int main()
     TestFerryOfficeJobStartsIncompleteAndOrdersObjectives();
     TestFerryOfficeJobVehicleCheckpointRequiresOccupiedVehicle();
     TestFerryOfficeJobCompletionRequiresAllJobFlags();
+    TestFerryOfficeFollowupStatusSummarizesEndpointChain();
     TestFerryOfficeSliceStartsIncomplete();
     TestFerryOfficeObjectiveTextGuidesRouteSteps();
     TestFerryOfficeCompletionRequiresRememberedLoop();

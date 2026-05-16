@@ -47,6 +47,18 @@ std::string_view FerryOfficeJobPhaseName(FerryOfficeJobPhase phase)
     }
 }
 
+std::string FerryOfficeFollowupStatusText(const WorldState& state)
+{
+    std::ostringstream output;
+    output << "Follow-up: relay="
+           << (state.isFlagSet(WorldFlag::DockRoadRelayReset) ? "reset" : "later")
+           << " | log="
+           << (state.isFlagSet(WorldFlag::DockRoadRelayLogged) ? "signed" : "later")
+           << " | road="
+           << (state.isFlagSet(WorldFlag::DockRoadClearanceTagged) ? "clear" : "later");
+    return output.str();
+}
+
 void FerryOfficeJob::configure(FerryOfficeJobConfig config)
 {
     m_config = std::move(config);

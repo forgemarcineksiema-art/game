@@ -107,6 +107,64 @@ Next direction:
 
 - Either make a presentation/readability pass for the longer Dock Road endpoint chain, or return to vehicle evidence with a camera-aware Jolt obstacle route/tuning pass.
 
+## v0.55 Dock Road Follow-up Readability Pass (2026-05-16)
+
+Selected milestone:
+
+- Make the longer Dock Road endpoint chain readable in playtest presentation by adding a compact follow-up status line for relay, log, and road-clear progress.
+
+Candidate triage:
+
+- Endpoint-chain playtest readability: high player-facing impact, low risk, validates through C++ text tests, playthrough QA, visual smoke, and `scripts\verify.ps1`.
+- Camera-aware Jolt obstacle route: good vehicle-promotion evidence, medium risk, but v0.54 just added content that should be made legible before adding more technical vehicle evidence.
+- Another content beat: medium impact, but it would lengthen the chain before improving player comprehension.
+
+Why selected:
+
+- v0.54 made the endpoint chain longer. The playtest overlay still summarized only vehicle/checkpoint/confirm progress, so the new relay/log/clear beats were less scannable unless the player followed objective text or raw debug state.
+- A small presentation helper improves player-facing clarity without changing job state, scene data, or vehicle behavior.
+
+Definition of Done:
+
+- A tested helper summarizes the endpoint chain as `Follow-up: relay=... | log=... | road=...`.
+- Playtest mode shows that helper only after the first service job is complete or follow-up state exists.
+- Initial playtest/minimal/debug behavior remains readable and raw debug telemetry remains available behind `F1`.
+- Playthrough QA, visual smoke, `scripts\verify.ps1`, and `git diff --check` pass.
+
+Implementation notes:
+
+- Added `FerryOfficeFollowupStatusText(...)` beside the Ferry Office job helper rather than growing more ad hoc string logic in `SandboxLayer`.
+- `SandboxLayer` now adds the follow-up line to non-minimal presentation text after job completion or any relay/log/clearance state.
+- Added C++ coverage for the relay reset, relay log, and road-clear status wording.
+
+Commands and results:
+
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: failed as expected before implementation because `FerryOfficeFollowupStatusText` did not exist.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: passed after implementation.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `cmake --build --preset windows-vs2022-debug --target EngineApp`: passed.
+- `python tools\playthrough_qa.py`: passed; phase=`complete`, events=13, vehicleRuntime=`deterministic`, framesToCheckpoint=139.
+- `python tools\capture_visual_smoke.py`: passed for GDI and DX11 playtest captures; DX11 used WARP in this environment.
+- `scripts\verify.ps1`: passed; doctor, configure, build, CTest 11/11, scene validation, asset validation, mesh report, and smoke run completed.
+
+Automated evidence generated:
+
+- C++ tests prove the compact follow-up status changes from relay later, to relay reset/log later, to log signed/road later, to road clear.
+- `build\captures\capture_visual_smoke_report.json` confirms playtest text still renders in both GDI and DX11 captures.
+
+Provisional decision:
+
+- Keep the longer endpoint chain and make it readable through compact playtest status rather than adding a full HUD or mission tracker yet.
+
+Remaining limitations:
+
+- The status line is still text-only and appears after the service job is complete; it is not a spatial marker hierarchy, HUD objective widget, or full input-scripted UI replay.
+- Human playtest remains useful later for whether the wording feels natural, but automated text/capture evidence is enough for this milestone.
+
+Next direction:
+
+- Return to camera-aware Jolt obstacle route/tuning if vehicle promotion is the priority, or add a small visual prop/cue for the clearance tag if endpoint presentation still feels too abstract.
+
 ## v0.49 Opt-in Jolt Live-loop Playthrough QA (2026-05-16)
 
 Selected milestone:

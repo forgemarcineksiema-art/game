@@ -24,6 +24,7 @@ enum class FerryOfficeJobPhase {
 };
 
 std::string_view FerryOfficeJobPhaseName(FerryOfficeJobPhase phase);
+std::string FerryOfficeFollowupStatusText(const WorldState& state);
 
 class FerryOfficeJob {
 public:

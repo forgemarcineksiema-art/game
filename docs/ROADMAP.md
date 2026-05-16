@@ -622,6 +622,14 @@ Status: implemented and validated. The passing Jolt report records 2 obstacle-pr
 
 Status: implemented as a small remembered world-state consequence. Scene data now has 9 interactables, 9 route markers, and 8 objective markers; deterministic and opt-in Jolt playthroughs both complete with 13 events, with checkpoint timing still 139 frames for deterministic and 213 frames for Jolt.
 
+## v0.55 - Dock Road Follow-up Readability Pass
+
+- Add a compact playtest follow-up status for the relay reset, relay log, and road-clear tag.
+- Keep initial playtest text uncluttered; show the follow-up summary only after the first service job completes or follow-up progress exists.
+- Preserve raw debug telemetry behind `F1` and avoid adding a HUD framework or mission tracker.
+
+Status: implemented and validated. Playtest mode now adds `Follow-up: relay=... | log=... | road=...` for the Dock Road endpoint chain; focused tests, deterministic playthrough QA, and GDI/DX11 visual smoke pass.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. With v0.54 adding a third compact post-service consequence, the next useful milestone should either improve player-facing readability/presentation of the now-longer endpoint chain or return to vehicle evidence with a camera-aware Jolt obstacle route/tuning pass.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. With v0.55 making the longer endpoint chain more readable, the next useful milestone should either return to vehicle evidence with a camera-aware Jolt obstacle route/tuning pass or add a small visual prop/cue for the clearance tag if endpoint presentation still feels too abstract.

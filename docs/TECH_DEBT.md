@@ -119,7 +119,7 @@ This file lists known foundation issues during the current playable-build phase.
 - Flag mappings are hardcoded in `PrototypeScene`; v0.8 reduced string-id repetition by using centralized Ferry Office names.
 - `FerryOfficeJob` is one explicit scene-owned job helper for the Ferry Office Service Call. It is not a generic mission graph, quest scripting layer, reward system, or persistence layer.
 - Repeated same-value flag writes are ignored, which is correct for v0.6 but may need richer event semantics later.
-- Debug summary text became longer in v0.7 because it now includes objective, completion, and `exitReached`. v0.17 adds playtest/minimal/debug text modes, but there is still no real UI overlay or HUD framework.
+- Debug summary text became longer in v0.7 because it now includes objective, completion, and `exitReached`. v0.17 adds playtest/minimal/debug text modes, and v0.55 adds a compact follow-up status for the Dock Road endpoint chain, but there is still no real UI overlay or HUD framework.
 - There is no mission graph, quest scripting, dialogue integration, global event bus, or persistence layer.
 - Slice completion is a scene helper, not a mission/objective scripting system.
 - Job completion is also a scene helper. It proves one driver/fixer loop, but should not be generalized until more job types prove the real data shape.
