@@ -38,7 +38,7 @@ struct AppConfig {
     std::filesystem::path qaPhysicsReportPath;
     bool vehicleRuntimeAdapterEnabled = false;
     physics::PhysicsBackend vehicleRuntimeBackend = physics::PhysicsBackend::Simple;
-    Color clearColor = {0.08f, 0.11f, 0.16f, 1.0f};
+    Color clearColor = {0.11f, 0.15f, 0.18f, 1.0f};
 
     bool captureRequested() const;
     bool qaPlaythroughRequested() const;

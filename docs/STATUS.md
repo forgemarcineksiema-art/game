@@ -2,6 +2,60 @@
 
 Last updated: 2026-05-16
 
+## v0.82 Overcast Sky Readability Pass (2026-05-16)
+
+Selected milestone:
+
+- Reduce the remaining dark-void feeling in the default Ferry Office first frame with a bounded overcast clear-color lift.
+
+Candidate visual pass triage:
+
+- Overcast Sky Readability Pass: visible impact = high because the current capture still spends much of the frame on a flat dark background; risk = low because this is a single renderer config default and capture validates text/readability.
+- Service-yard-to-dock-road material hierarchy pass: visible impact = medium; risk = low, but less first-frame payoff than fixing the background weight.
+- Renderer fog/horizon treatment: visible impact = high; risk = higher because it changes rendering behavior beyond a bounded clear-color presentation value.
+
+Why selected:
+
+- Even after the v0.81 canopy mesh, the upper frame still read too heavy and empty. Current capture evidence justified revisiting the overcast background as a small presentation correction, not a new fog/sky/weather system.
+
+Implementation notes:
+
+- Raised the default app clear color from `{0.08, 0.11, 0.16, 1.0}` to `{0.11, 0.15, 0.18, 1.0}`.
+- Preserved renderer paths, scene layout, gameplay, prompts, route flow, and overlay behavior.
+
+Files changed:
+
+- `src\engine\core\Config.h`
+- `docs\STATUS.md`
+- `docs\ROADMAP.md`
+
+Validation:
+
+- `scripts\build.ps1`: passed.
+- `python tools\capture_visual_smoke.py --renderer gdi`: passed; GDI colors=75/lumaRange=221 and the overlay remained readable.
+- `scripts\verify.ps1`: passed; doctor completed with known plain-PATH tool warnings, configure/build succeeded, default CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke completed.
+- `python tools\capture_visual_smoke.py`: passed; GDI colors=75/lumaRange=221, DX11 colors=43/lumaRange=221 with WARP fallback in this environment.
+- `python tools\validate_scene.py`: passed.
+- `python tools\validate_assets.py`: passed.
+- `python tools\mesh_report.py`: passed; 13 mesh assets, 68 mesh instances, 13 referenced model files.
+- `python tools\scene_report.py`: passed; 24 scene materials, 30 visual placeholders, 68 mesh instances, 16 interactables, 16 route markers, and 15 objective markers.
+- `python tools\scale_audit.py`: passed.
+- `git diff --check`: passed with only expected CRLF normalization warnings for touched files.
+
+Automated evidence generated:
+
+- `build\captures\v0.31-gdi-capture.bmp`
+- `build\captures\v0.31-dx11-capture.bmp`
+- `build\captures\capture_visual_smoke_report.json`
+
+Remaining visual weakness:
+
+- The background is still a flat clear color rather than true horizon haze. The next safer visible pass is likely service-yard-to-dock-road route/material hierarchy or another purposeful original mesh replacement, not more global color lifting.
+
+Commit/push:
+
+- Included in the `v0.82 overcast sky readability pass` commit/push step.
+
 ## v0.81 Ferry Office Canopy Mesh Pass (2026-05-16)
 
 Selected milestone:

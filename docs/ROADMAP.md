@@ -852,6 +852,14 @@ Status: implemented and validated. The default Ferry Office frame now has a clea
 
 Status: implemented and validated. The default Ferry Office frame now shows a shallow sloped canopy mesh instead of a stacked roof slab/front strip, making the office read more like authored coastal service architecture while `scripts/verify.ps1`, scene/asset/mesh/scale checks, and GDI/DX11 visual smoke pass.
 
+## v0.82 - Overcast Sky Readability Pass
+
+- Lift the default renderer clear color slightly so the first frame reads less like a dark void and more like damp coastal overcast.
+- Keep this as a bounded presentation tweak, not a sky system, fog renderer, lighting pass, or weather feature.
+- Preserve scene layout, gameplay behavior, text overlay readability, and capture validation.
+
+Status: implemented and validated. The default background now uses a restrained lighter blue-gray clear color while the playtest overlay remains readable; `scripts/verify.ps1`, scene/asset/mesh/scale checks, and GDI/DX11 visual smoke pass.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.81, the next useful future milestone should either improve route/material hierarchy around the service-yard-to-dock-road transition, add a bounded fog/horizon treatment if the renderer path is ready, add an automated route-walking proxy for the longer Ferry Office follow-up chain, or use preferred-runtime evidence to harden Jolt road-edge/live-control behavior.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.82, the next useful future milestone should either improve route/material hierarchy around the service-yard-to-dock-road transition, replace another high-visibility repeated unit-box cue with a purposeful original mesh, add an automated route-walking proxy for the longer Ferry Office follow-up chain, or use preferred-runtime evidence to harden Jolt road-edge/live-control behavior.
