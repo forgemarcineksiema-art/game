@@ -935,6 +935,14 @@ Status: implemented and validated. Scene data now has 25 authored scene material
 
 Status: implemented and validated. Jolt CTest passes 15/15; physics parity, character contact, vehicle feasibility, vehicle runtime comparison, and Jolt playthrough QA all pass. Runtime comparison reports `maxPositionDelta=1.49`, Jolt route completion in 212 frames versus 139 deterministic, zero obstacle overlap frames, and recommendation `promote`.
 
+## v0.92 - Late-chain Playtest Route Guidance
+
+- Draw the current active route leg in playtest mode instead of hiding all route guidance outside F1/debug.
+- Keep full route scaffolding, raw wire boxes, and validation clutter debug-only.
+- Centralize service-call and follow-up route/objective marker policy in `FerryOfficeJob`.
+
+Status: implemented and validated. Playtest mode now draws only the active route leg and a solid destination cue, while debug mode still draws every authored route marker. C++ tests cover the route sequence through the Ferry Office Drain Log follow-up.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.91, return to a player-facing slice improvement: late-chain route guidance/readability or the side service-panel/notice-board cluster.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.92, prefer a small side service-panel/notice-board visual/readability pass or a stronger automated capture that exercises a mid-chain route state.

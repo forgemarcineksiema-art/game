@@ -41,6 +41,7 @@ private:
     void drawStaticMeshDebug(engine::IRenderer& renderer);
     void drawWorldStateDebug(engine::IRenderer& renderer);
     void drawSliceDebug(engine::IRenderer& renderer);
+    void drawPlaytestGuidance(engine::IRenderer& renderer);
     void drawSceneVisualPlaceholders(engine::IRenderer& renderer);
     void drawPlayerPresentation(engine::IRenderer& renderer);
     void drawPlayerDebug(engine::IRenderer& renderer);

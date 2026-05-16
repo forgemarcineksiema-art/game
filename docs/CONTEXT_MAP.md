@@ -20,7 +20,7 @@ Recent history forms a clear arc:
 - v0.32: deterministic Ferry Office playthrough QA.
 - v0.33: Jolt static scene-query parity QA.
 - v0.34: Jolt character/contact probe QA.
-- v0.45-v0.91: Jolt vehicle runtime controls, service-run route proxy, route-pace tuning, deterministic service-vehicle runtime playthrough QA, opt-in Jolt first-job live-loop QA, the Dock Road Relay follow-up beat, relay/log/clearance endpoint consequences, compact playtest follow-up text, camera-aware obstacle-proxy vehicle steering evidence, a clearance-tag visual cue, a tiny original clearance-tag mesh prop, Jolt obstacle-progress tuning, a compact Harbor Parts return micro-slice, a follow-up next-step readability line, scene-authored action bindings for simple/gated flag beats, a Ferry Office Work Board signoff endpoint, a Ferry Office handoff note endpoint, collision-backed obstacle replay telemetry in vehicle runtime QA, a dynamic handoff-filed visual state cue, a storm pump job seed, a provisional Jolt vehicle-runtime direction decision, visible storm pump/ticket state cues, a preferred play-wrapper runtime trial for Jolt-enabled executables, a Low Dock Drain clear-tag follow-up, a Ferry Office Drain Log closeout, a visible office-side Drain Log state cue, and a refreshed preferred Jolt evidence decision.
+- v0.45-v0.92: Jolt vehicle runtime controls, service-run route proxy, route-pace tuning, deterministic service-vehicle runtime playthrough QA, opt-in Jolt first-job live-loop QA, the Dock Road Relay follow-up beat, relay/log/clearance endpoint consequences, compact playtest follow-up text, camera-aware obstacle-proxy vehicle steering evidence, a clearance-tag visual cue, a tiny original clearance-tag mesh prop, Jolt obstacle-progress tuning, a compact Harbor Parts return micro-slice, a follow-up next-step readability line, scene-authored action bindings for simple/gated flag beats, a Ferry Office Work Board signoff endpoint, a Ferry Office handoff note endpoint, collision-backed obstacle replay telemetry in vehicle runtime QA, a dynamic handoff-filed visual state cue, a storm pump job seed, a provisional Jolt vehicle-runtime direction decision, visible storm pump/ticket state cues, a preferred play-wrapper runtime trial for Jolt-enabled executables, a Low Dock Drain clear-tag follow-up, a Ferry Office Drain Log closeout, a visible office-side Drain Log state cue, a refreshed preferred Jolt evidence decision, and active late-chain route guidance in playtest mode.
 
 ## Architecture Map
 
@@ -119,7 +119,7 @@ Recent history forms a clear arc:
 
 `src/game/FerryOfficeJob.*`
 
-- Explicit first service-call job helper: phase ordering, objective text, checkpoint detection, completion.
+- Explicit first service-call job helper: phase ordering, objective text, checkpoint detection, completion, and active route/objective marker ids for the service-call plus follow-up chain.
 
 `src/game/FerryOffice*Qa.*`
 

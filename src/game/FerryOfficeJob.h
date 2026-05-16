@@ -24,6 +24,8 @@ enum class FerryOfficeJobPhase {
 };
 
 std::string_view FerryOfficeJobPhaseName(FerryOfficeJobPhase phase);
+std::string_view FerryOfficeActiveRouteMarkerId(const WorldState& state, FerryOfficeJobPhase phase);
+std::string_view FerryOfficeActiveObjectiveMarkerId(const WorldState& state, FerryOfficeJobPhase phase);
 std::string FerryOfficeFollowupStatusText(const WorldState& state);
 std::string FerryOfficeFollowupNextStepText(const WorldState& state);
 

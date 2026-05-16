@@ -47,6 +47,111 @@ std::string_view FerryOfficeJobPhaseName(FerryOfficeJobPhase phase)
     }
 }
 
+std::string_view FerryOfficeActiveRouteMarkerId(const WorldState& state, FerryOfficeJobPhase phase)
+{
+    if (!state.isFlagSet(WorldFlag::FerryOfficeJobComplete)) {
+        switch (phase) {
+        case FerryOfficeJobPhase::UseServiceRoute:
+            return "route-manifest-to-vault";
+        case FerryOfficeJobPhase::RestorePower:
+            return "route-vault-to-maintenance";
+        case FerryOfficeJobPhase::OpenServiceGate:
+            return "route-maintenance-to-button";
+        case FerryOfficeJobPhase::ReachDockRoad:
+            return "route-service-yard-to-dock-road";
+        case FerryOfficeJobPhase::ConfirmServiceRun:
+            return "route-dock-road-to-service-confirm";
+        default:
+            return {};
+        }
+    }
+
+    if (!state.isFlagSet(WorldFlag::DockRoadRelayReset)) {
+        return "route-service-confirm-to-relay";
+    }
+    if (!state.isFlagSet(WorldFlag::DockRoadRelayLogged)) {
+        return "route-relay-to-service-log";
+    }
+    if (!state.isFlagSet(WorldFlag::DockRoadClearanceTagged)) {
+        return "route-service-log-to-clearance-tag";
+    }
+    if (!state.isFlagSet(WorldFlag::HarborPartsPickedUp)) {
+        return "route-clearance-tag-to-harbor-parts";
+    }
+    if (!state.isFlagSet(WorldFlag::HarborPartsDelivered)) {
+        return "route-harbor-parts-to-office-shelf";
+    }
+    if (!state.isFlagSet(WorldFlag::FerryOfficeBoardUpdated)) {
+        return "route-parts-shelf-to-work-board";
+    }
+    if (!state.isFlagSet(WorldFlag::FerryOfficeHandoffFiled)) {
+        return "route-work-board-to-handoff-note";
+    }
+    if (!state.isFlagSet(WorldFlag::StormPumpReset)) {
+        return "route-handoff-note-to-storm-pump";
+    }
+    if (!state.isFlagSet(WorldFlag::StormPumpTicketClosed)) {
+        return "route-storm-pump-to-ticket";
+    }
+    if (!state.isFlagSet(WorldFlag::LowDockDrainCleared)) {
+        return "route-storm-ticket-to-low-dock-drain";
+    }
+    if (!state.isFlagSet(WorldFlag::LowDockDrainLogged)) {
+        return "route-low-dock-drain-to-office-log";
+    }
+    return {};
+}
+
+std::string_view FerryOfficeActiveObjectiveMarkerId(const WorldState& state, FerryOfficeJobPhase phase)
+{
+    if (!state.isFlagSet(WorldFlag::FerryOfficeJobComplete)) {
+        switch (phase) {
+        case FerryOfficeJobPhase::UseServiceVehicle:
+        case FerryOfficeJobPhase::ReachDockRoad:
+            return "service-yard-marker";
+        case FerryOfficeJobPhase::ConfirmServiceRun:
+            return "service-run-checkpoint-marker";
+        default:
+            return {};
+        }
+    }
+
+    if (!state.isFlagSet(WorldFlag::DockRoadRelayReset)) {
+        return "dock-road-relay-marker";
+    }
+    if (!state.isFlagSet(WorldFlag::DockRoadRelayLogged)) {
+        return "relay-service-log-marker";
+    }
+    if (!state.isFlagSet(WorldFlag::DockRoadClearanceTagged)) {
+        return "dock-road-clearance-marker";
+    }
+    if (!state.isFlagSet(WorldFlag::HarborPartsPickedUp)) {
+        return "harbor-parts-marker";
+    }
+    if (!state.isFlagSet(WorldFlag::HarborPartsDelivered)) {
+        return "ferry-office-parts-shelf-marker";
+    }
+    if (!state.isFlagSet(WorldFlag::FerryOfficeBoardUpdated)) {
+        return "ferry-office-work-board-marker";
+    }
+    if (!state.isFlagSet(WorldFlag::FerryOfficeHandoffFiled)) {
+        return "ferry-office-handoff-marker";
+    }
+    if (!state.isFlagSet(WorldFlag::StormPumpReset)) {
+        return "storm-pump-marker";
+    }
+    if (!state.isFlagSet(WorldFlag::StormPumpTicketClosed)) {
+        return "storm-pump-ticket-marker";
+    }
+    if (!state.isFlagSet(WorldFlag::LowDockDrainCleared)) {
+        return "low-dock-drain-objective-marker";
+    }
+    if (!state.isFlagSet(WorldFlag::LowDockDrainLogged)) {
+        return "ferry-office-drain-log-marker";
+    }
+    return {};
+}
+
 std::string FerryOfficeFollowupStatusText(const WorldState& state)
 {
     std::ostringstream output;

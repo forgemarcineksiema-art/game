@@ -2605,6 +2605,14 @@ void TestSandboxLayerUsesScenePlayerStartYawForInitialComposition()
 
 void TestSandboxLayerPlaytestKeepsRouteDebugHiddenAfterManifest()
 {
+    const SceneLoadResult result = LoadSceneDefinition(DefaultScenePathForTests());
+    Expect(result.ok(),
+        "TestSandboxLayerPlaytestKeepsRouteDebugHiddenAfterManifest",
+        "Default scene should load before counting route guidance.");
+    if (!result.ok()) {
+        return;
+    }
+
     SandboxLayer layer(DefaultScenePathForTests(), engine::UiMode::Playtest);
     layer.onAttach();
 
@@ -2623,9 +2631,13 @@ void TestSandboxLayerPlaytestKeepsRouteDebugHiddenAfterManifest()
     layer.onDetach();
 
     const engine::Color routeColor {0.70f, 0.92f, 1.0f, 1.0f};
-    Expect(CountLinesWithColor(renderer, routeColor) == 0,
+    const std::size_t routeLines = CountLinesWithColor(renderer, routeColor);
+    Expect(routeLines > 0,
         "TestSandboxLayerPlaytestKeepsRouteDebugHiddenAfterManifest",
-        "After collecting the manifest, playtest mode should keep raw route debug lines hidden; F1 debug preserves route validation.");
+        "After collecting the manifest, playtest mode should draw the active route guidance leg.");
+    Expect(routeLines < CountRouteMarkerSegments(result.scene),
+        "TestSandboxLayerPlaytestKeepsRouteDebugHiddenAfterManifest",
+        "Playtest mode should draw only the active route leg, while F1 debug preserves all route validation.");
 }
 
 void TestSandboxLayerDebugTextPreservesFullTelemetry()
@@ -3632,61 +3644,103 @@ void TestFerryOfficeFollowupNextStepGuidesLongChain()
     Expect(FerryOfficeFollowupNextStepText(state).empty(),
         "TestFerryOfficeFollowupNextStepGuidesLongChain",
         "Follow-up next-step text should stay hidden before the service call is complete.");
+    Expect(FerryOfficeActiveRouteMarkerId(state, FerryOfficeJobPhase::CollectManifest).empty(),
+        "TestFerryOfficeFollowupNextStepGuidesLongChain",
+        "Route guidance should stay hidden before the Ferry Office job starts.");
 
     state.setFlag(WorldFlag::FerryOfficeJobComplete, true, "Ferry Office Service Call");
     Expect(FerryOfficeFollowupNextStepText(state).find("Dock Road Relay") != std::string::npos,
         "TestFerryOfficeFollowupNextStepGuidesLongChain",
         "The first follow-up next step should point to the relay.");
+    Expect(FerryOfficeActiveRouteMarkerId(state, FerryOfficeJobPhase::Complete) == "route-service-confirm-to-relay",
+        "TestFerryOfficeFollowupNextStepGuidesLongChain",
+        "Follow-up route guidance should send the player from service confirmation to the relay.");
+    Expect(FerryOfficeActiveObjectiveMarkerId(state, FerryOfficeJobPhase::Complete) == "dock-road-relay-marker",
+        "TestFerryOfficeFollowupNextStepGuidesLongChain",
+        "Follow-up objective guidance should highlight the relay marker.");
 
     state.setFlag(WorldFlag::DockRoadRelayReset, true, "Dock Road Relay");
     Expect(FerryOfficeFollowupNextStepText(state).find("Relay Service Log") != std::string::npos,
         "TestFerryOfficeFollowupNextStepGuidesLongChain",
         "After the relay reset, the next step should point to the log.");
+    Expect(FerryOfficeActiveRouteMarkerId(state, FerryOfficeJobPhase::Complete) == "route-relay-to-service-log",
+        "TestFerryOfficeFollowupNextStepGuidesLongChain",
+        "Follow-up route guidance should send the player from relay to log.");
 
     state.setFlag(WorldFlag::DockRoadRelayLogged, true, "Relay Service Log");
     Expect(FerryOfficeFollowupNextStepText(state).find("clear") != std::string::npos,
         "TestFerryOfficeFollowupNextStepGuidesLongChain",
         "After the log, the next step should point to the clear tag.");
+    Expect(FerryOfficeActiveRouteMarkerId(state, FerryOfficeJobPhase::Complete) == "route-service-log-to-clearance-tag",
+        "TestFerryOfficeFollowupNextStepGuidesLongChain",
+        "Follow-up route guidance should send the player from service log to clearance tag.");
 
     state.setFlag(WorldFlag::DockRoadClearanceTagged, true, "Dock Road Clearance Tag");
     Expect(FerryOfficeFollowupNextStepText(state).find("Harbor Parts") != std::string::npos,
         "TestFerryOfficeFollowupNextStepGuidesLongChain",
         "After clearance, the next step should point to the Harbor Parts crate.");
+    Expect(FerryOfficeActiveRouteMarkerId(state, FerryOfficeJobPhase::Complete) == "route-clearance-tag-to-harbor-parts",
+        "TestFerryOfficeFollowupNextStepGuidesLongChain",
+        "Follow-up route guidance should send the player from clearance tag to harbor parts.");
 
     state.setFlag(WorldFlag::HarborPartsPickedUp, true, "Harbor Parts Crate");
     Expect(FerryOfficeFollowupNextStepText(state).find("Ferry Office") != std::string::npos,
         "TestFerryOfficeFollowupNextStepGuidesLongChain",
         "After pickup, the next step should point back to the Ferry Office shelf.");
+    Expect(FerryOfficeActiveRouteMarkerId(state, FerryOfficeJobPhase::Complete) == "route-harbor-parts-to-office-shelf",
+        "TestFerryOfficeFollowupNextStepGuidesLongChain",
+        "Follow-up route guidance should send the player from harbor parts back to the office shelf.");
 
     state.setFlag(WorldFlag::HarborPartsDelivered, true, "Ferry Office Parts Shelf");
     Expect(FerryOfficeFollowupNextStepText(state).find("Work Board") != std::string::npos,
         "TestFerryOfficeFollowupNextStepGuidesLongChain",
         "After delivery, the next step should point to the Ferry Office Work Board.");
+    Expect(FerryOfficeActiveRouteMarkerId(state, FerryOfficeJobPhase::Complete) == "route-parts-shelf-to-work-board",
+        "TestFerryOfficeFollowupNextStepGuidesLongChain",
+        "Follow-up route guidance should send the player from parts shelf to work board.");
 
     state.setFlag(WorldFlag::FerryOfficeBoardUpdated, true, "Ferry Office Work Board");
     Expect(FerryOfficeFollowupNextStepText(state).find("handoff") != std::string::npos,
         "TestFerryOfficeFollowupNextStepGuidesLongChain",
         "After work-board signoff, the next step should point to the handoff note.");
+    Expect(FerryOfficeActiveRouteMarkerId(state, FerryOfficeJobPhase::Complete) == "route-work-board-to-handoff-note",
+        "TestFerryOfficeFollowupNextStepGuidesLongChain",
+        "Follow-up route guidance should send the player from work board to handoff note.");
 
     state.setFlag(WorldFlag::FerryOfficeHandoffFiled, true, "Ferry Office Handoff Note");
     Expect(FerryOfficeFollowupNextStepText(state).find("storm pump") != std::string::npos,
         "TestFerryOfficeFollowupNextStepGuidesLongChain",
         "After the handoff note, the next step should point to the storm pump.");
+    Expect(FerryOfficeActiveRouteMarkerId(state, FerryOfficeJobPhase::Complete) == "route-handoff-note-to-storm-pump",
+        "TestFerryOfficeFollowupNextStepGuidesLongChain",
+        "Follow-up route guidance should send the player from handoff note to storm pump.");
 
     state.setFlag(WorldFlag::StormPumpReset, true, "Storm Pump Switch");
     Expect(FerryOfficeFollowupNextStepText(state).find("ticket") != std::string::npos,
         "TestFerryOfficeFollowupNextStepGuidesLongChain",
         "After the storm pump reset, the next step should point to the office ticket.");
+    Expect(FerryOfficeActiveRouteMarkerId(state, FerryOfficeJobPhase::Complete) == "route-storm-pump-to-ticket",
+        "TestFerryOfficeFollowupNextStepGuidesLongChain",
+        "Follow-up route guidance should send the player from storm pump back to ticket.");
 
     state.setFlag(WorldFlag::StormPumpTicketClosed, true, "Storm Pump Ticket");
     Expect(FerryOfficeFollowupNextStepText(state).find("low dock drain") != std::string::npos,
         "TestFerryOfficeFollowupNextStepGuidesLongChain",
         "After the storm pump ticket, the next step should point to the low dock drain.");
+    Expect(FerryOfficeActiveRouteMarkerId(state, FerryOfficeJobPhase::Complete) == "route-storm-ticket-to-low-dock-drain",
+        "TestFerryOfficeFollowupNextStepGuidesLongChain",
+        "Follow-up route guidance should send the player from pump ticket to low dock drain.");
 
     state.setFlag(WorldFlag::LowDockDrainCleared, true, "Low Dock Drain Marker");
     Expect(FerryOfficeFollowupNextStepText(state).find("Drain Log") != std::string::npos,
         "TestFerryOfficeFollowupNextStepGuidesLongChain",
         "After the low dock drain is clear, the next step should send the player back to the Ferry Office drain log.");
+    Expect(FerryOfficeActiveRouteMarkerId(state, FerryOfficeJobPhase::Complete) == "route-low-dock-drain-to-office-log",
+        "TestFerryOfficeFollowupNextStepGuidesLongChain",
+        "Follow-up route guidance should send the player from low dock drain back to the office log.");
+    Expect(FerryOfficeActiveObjectiveMarkerId(state, FerryOfficeJobPhase::Complete) == "ferry-office-drain-log-marker",
+        "TestFerryOfficeFollowupNextStepGuidesLongChain",
+        "Follow-up objective guidance should highlight the Ferry Office drain log marker.");
 
     WorldFlag drainLogFlag = WorldFlag::PowerRestored;
     Expect(TryWorldFlagFromName("lowDockDrainLogged", drainLogFlag),
@@ -3696,6 +3750,9 @@ void TestFerryOfficeFollowupNextStepGuidesLongChain()
     Expect(FerryOfficeFollowupNextStepText(state).find("complete") != std::string::npos,
         "TestFerryOfficeFollowupNextStepGuidesLongChain",
         "After the office drain log is signed, the next step should acknowledge follow-up completion.");
+    Expect(FerryOfficeActiveRouteMarkerId(state, FerryOfficeJobPhase::Complete).empty(),
+        "TestFerryOfficeFollowupNextStepGuidesLongChain",
+        "Follow-up route guidance should hide itself after the long chain is complete.");
 }
 
 void TestFerryOfficeObjectiveTextGuidesRouteSteps()

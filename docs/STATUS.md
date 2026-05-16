@@ -2,6 +2,73 @@
 
 Last updated: 2026-05-16
 
+## v0.92 Late-chain Playtest Route Guidance (2026-05-16)
+
+Selected milestone:
+
+- Make playtest mode draw only the active Ferry Office route guidance leg, including the long follow-up chain.
+
+Candidate milestone triage:
+
+- Late-chain route guidance/readability: impact high because the authored chain is now long and text-only route handoff is too easy to miss; risk medium because it touches runtime presentation policy; validation path = red/green C++ render/helper tests, playthrough QA, visual smoke, `scripts\verify.ps1`.
+- Side service-panel/notice-board readability pass: impact medium and visual; risk low, but route readability is now the stronger player-facing bottleneck.
+- New follow-up content beat: impact high, but unsafe before making the existing long chain easier to follow in playtest mode.
+
+Why selected:
+
+- v0.89-v0.90 added another office return beat, and v0.91 refreshed vehicle evidence. The best next player-facing improvement is to make the existing authored chain easier to follow without switching to F1/debug.
+
+What changed:
+
+- Added `FerryOfficeActiveRouteMarkerId()` and `FerryOfficeActiveObjectiveMarkerId()` as the single route/objective guidance policy for the service call and follow-up chain.
+- Added a playtest-only guidance draw pass that renders active route lines and solid destination cues without raw wire boxes.
+- Trimmed old checkpoint marker special cases so playtest mode follows the active objective policy instead of stacking stale destination boxes.
+- Kept full route/marker scaffolding in debug mode for validation.
+- Updated C++ tests so playtest mode draws the current active leg after the manifest, while debug mode still draws every route.
+
+Files changed:
+
+- `src\game\FerryOfficeJob.h`
+- `src\game\FerryOfficeJob.cpp`
+- `src\game\SandboxLayer.h`
+- `src\game\SandboxLayer.cpp`
+- `tests\EngineCoreTests.cpp`
+- `docs\CONTEXT_MAP.md`
+- `docs\ROADMAP.md`
+- `docs\STATUS.md`
+
+Validation so far:
+
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: first failed as expected because the route/objective helper API did not exist; passed after implementation.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed, including a rerun after trimming stale checkpoint marker special cases.
+- `python tests\test_scene_tools.py`: passed, 49 tests.
+- `python tools\playthrough_qa.py`: passed; phase complete, events=21, deterministic vehicle runtime, framesToCheckpoint=139, report `build\playthroughs\ferry-office-service-call-report.json`.
+- `python tools\capture_visual_smoke.py`: passed; GDI colors=80/lumaRange=221 and DX11 colors=48/lumaRange=221 with WARP fallback, report `build\captures\capture_visual_smoke_report.json`.
+- `scripts\verify.ps1`: passed; configure/build, 11/11 CTest tests, scene validation, asset validation, mesh report, and smoke test completed.
+- `git diff --check`: passed with expected CRLF normalization warnings only.
+
+Automated evidence generated:
+
+- C++ tests prove playtest mode draws an active route leg after the manifest, stays below the full debug route count, and maps the follow-up route sequence from Dock Road Relay through Ferry Office Drain Log.
+- Playthrough QA proves the service call still reaches the checkpoint and completion state after the playtest guidance pass.
+- Visual smoke proves the guidance/presentation path still renders nonblank GDI and DX11 frames.
+
+Provisional decision:
+
+- Playtest mode should show the active player-facing route leg, while F1/debug remains the place for every route marker, trigger, wire box, and full validation scaffold.
+
+Remaining limitations:
+
+- The route guidance is still debug-renderer line/solid-box presentation, not a final HUD/minimap/path spline, occlusion-aware marker system, or authored signage pass.
+
+Final validation:
+
+- Passed.
+
+Next direction:
+
+- If validation stays green, prefer a small side service-panel/notice-board visual/readability pass or a stronger automated capture that exercises a mid-chain route state.
+
 ## v0.91 Preferred Jolt Evidence Refresh (2026-05-16)
 
 Selected milestone:

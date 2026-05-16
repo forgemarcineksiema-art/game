@@ -496,6 +496,8 @@ void SandboxLayer::onRender(engine::IRenderer& renderer)
         drawInteractionDebug(renderer);
         drawVehicleDebug(renderer);
         renderer.drawDebugBox(m_camera.state().target, {0.08f, 0.08f, 0.08f}, {1.0f, 0.25f, 0.7f, 1.0f});
+    } else {
+        drawPlaytestGuidance(renderer);
     }
     renderer.drawDebugText(m_debugText);
 }
@@ -699,21 +701,7 @@ bool SandboxLayer::shouldDrawRouteMarker(std::string_view routeId) const
         return true;
     }
 
-    switch (m_scene.job().phase(m_scene.worldState())) {
-    case FerryOfficeJobPhase::UseServiceRoute:
-        return routeId == "route-manifest-to-vault";
-    case FerryOfficeJobPhase::RestorePower:
-        return routeId == "route-vault-to-maintenance";
-    case FerryOfficeJobPhase::OpenServiceGate:
-        return routeId == "route-maintenance-to-button";
-    case FerryOfficeJobPhase::ReachDockRoad:
-        return routeId == "route-service-yard-to-dock-road";
-    case FerryOfficeJobPhase::ConfirmServiceRun:
-    case FerryOfficeJobPhase::Complete:
-        return routeId == "route-dock-road-to-service-confirm";
-    default:
-        return false;
-    }
+    return routeId == FerryOfficeActiveRouteMarkerId(m_scene.worldState(), m_scene.job().phase(m_scene.worldState()));
 }
 
 bool SandboxLayer::shouldDrawObjectiveMarker(std::string_view markerId) const
@@ -731,14 +719,15 @@ bool SandboxLayer::shouldDrawObjectiveMarker(std::string_view markerId) const
     }
     if (markerId == "service-yard-marker") {
         return phase == FerryOfficeJobPhase::UseServiceVehicle
-            || phase == FerryOfficeJobPhase::ReachDockRoad
-            || phase == FerryOfficeJobPhase::ConfirmServiceRun
-            || phase == FerryOfficeJobPhase::Complete;
+            || phase == FerryOfficeJobPhase::ReachDockRoad;
     }
-    if (markerId == "dock-road-marker" || markerId == "service-run-checkpoint-marker") {
-        return phase == FerryOfficeJobPhase::ReachDockRoad
-            || phase == FerryOfficeJobPhase::ConfirmServiceRun
-            || phase == FerryOfficeJobPhase::Complete;
+    if (markerId == "dock-road-marker") {
+        return phase == FerryOfficeJobPhase::ReachDockRoad;
+    }
+
+    const std::string_view activeMarker = FerryOfficeActiveObjectiveMarkerId(m_scene.worldState(), phase);
+    if (!activeMarker.empty()) {
+        return markerId == activeMarker;
     }
 
     return false;
@@ -1071,6 +1060,36 @@ void SandboxLayer::drawSliceDebug(engine::IRenderer& renderer)
     renderer.drawDebugSolidBox(exitMarker, {0.28f, 0.28f, 0.28f}, ScaleColor(exitColor, 0.45f));
     renderer.drawDebugBox(exitMarker, {0.28f, 0.28f, 0.28f}, exitColor);
     renderer.drawDebugBox({exitMarker.x, floor + 0.03f, exitMarker.z}, {FerryOffice::Radii::ExitMarker, 0.03f, FerryOffice::Radii::ExitMarker}, exitColor);
+}
+
+void SandboxLayer::drawPlaytestGuidance(engine::IRenderer& renderer)
+{
+    if (!m_sceneDefinitionLoaded) {
+        return;
+    }
+
+    const engine::Color routeColor {0.70f, 0.92f, 1.0f, 1.0f};
+    const engine::Color objectiveColor {0.95f, 0.86f, 0.42f, 1.0f};
+
+    for (const SceneRouteMarkerDefinition& marker : m_sceneDefinition.routeMarkers) {
+        if (!shouldDrawRouteMarker(marker.id)) {
+            continue;
+        }
+
+        for (std::size_t index = 1; index < marker.points.size(); ++index) {
+            renderer.drawDebugLine(marker.points[index - 1], marker.points[index], routeColor);
+        }
+    }
+
+    for (const SceneObjectiveMarkerDefinition& marker : m_sceneDefinition.objectiveMarkers) {
+        if (!shouldDrawObjectiveMarker(marker.id)) {
+            continue;
+        }
+
+        const engine::Vec3 center {marker.position.x, marker.position.y + 0.18f, marker.position.z};
+        renderer.drawDebugSolidBox(center, {0.20f, 0.16f, 0.20f}, objectiveColor);
+        renderer.drawDebugLine(center, center + engine::Vec3 {0.0f, 0.55f, 0.0f}, objectiveColor);
+    }
 }
 
 void SandboxLayer::drawTraversalDebug(engine::IRenderer& renderer)
