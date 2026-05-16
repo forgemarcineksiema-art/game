@@ -2,6 +2,60 @@
 
 Last updated: 2026-05-16
 
+## v0.77 Ferry Office Distant Shoreline Pass (2026-05-16)
+
+Selected milestone:
+
+- Reduce the empty upper-background read in the default Ferry Office frame with a small authored distant-shoreline silhouette.
+
+Candidate visual pass triage:
+
+- Ferry Office Distant Shoreline Pass: visible impact = high because the void above the office still dominates the first frame; risk = low because it reuses an existing backdrop mesh as visual-only scene data; validation/capture path = scene tools, GDI/DX11 visual smoke, `scripts\verify.ps1`.
+- Small original mesh replacement: visible impact = medium; risk = medium because it adds asset-generation scope.
+- Fog/horizon renderer treatment: visible impact = high; risk = higher because it would affect both renderers and text readability.
+
+Why selected:
+
+- The office, dock, gate, and player proxy now read better, but the default view still had a large flat upper background. A restrained existing harbor-backdrop mesh behind the roofline gives the scene a little coastal depth without adding random foreground clutter or broad renderer work.
+
+Implementation notes:
+
+- Added one visual-only `blender-harbor-backdrop-mesh` instance behind the Ferry Office roofline.
+- Reused the existing `misty-island-ground` material key to stay inside the validated scene palette.
+- Preserved collision, route flow, camera behavior, interactables, and gameplay state.
+
+Files changed:
+
+- `data\scenes\ferry_office.scene.json`
+- `docs\STATUS.md`
+- `docs\ROADMAP.md`
+
+Focused validation:
+
+- `python tools\validate_scene.py`: passed.
+- `python tools\validate_assets.py`: passed.
+- `python tools\capture_visual_smoke.py --renderer gdi`: passed; GDI colors=72/lumaRange=221.
+- `scripts\verify.ps1`: passed; doctor completed with known plain-PATH tool warnings, configure/build succeeded, default CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke completed.
+- `python tools\capture_visual_smoke.py`: passed; GDI colors=72/lumaRange=221, DX11 colors=41/lumaRange=221 with WARP fallback in this environment.
+- `python tools\mesh_report.py`: passed; 12 mesh assets, 55 mesh instances, 12 referenced model files.
+- `python tools\scene_report.py`: passed; 24 scene materials, 30 visual placeholders, 55 mesh instances, 16 interactables, 16 route markers, and 15 objective markers.
+- `python tools\scale_audit.py`: passed.
+- `git diff --check`: passed with only expected CRLF normalization warnings for touched files.
+
+Automated evidence generated:
+
+- `build\captures\v0.31-gdi-capture.bmp`
+- `build\captures\v0.31-dx11-capture.bmp`
+- `build\captures\capture_visual_smoke_report.json`
+
+Remaining visual weakness:
+
+- The background still uses simple static silhouettes rather than real sky, fog, or atmospheric depth. A later renderer-aware haze pass could improve this, but the current change is intentionally scene-only.
+
+Commit/push:
+
+- Ready to commit and push as `v0.77 ferry office distant shoreline pass`.
+
 ## v0.76 Player Proxy Silhouette Cleanup (2026-05-16)
 
 Selected milestone:
@@ -55,7 +109,7 @@ Remaining visual weakness:
 
 Commit/push:
 
-- Ready to commit and push as `v0.76 player proxy silhouette cleanup`.
+- Committed and pushed as `a15edfa` (`v0.76 player proxy silhouette cleanup`).
 
 ## v0.75 Overcast Background Separation Pass (2026-05-16)
 

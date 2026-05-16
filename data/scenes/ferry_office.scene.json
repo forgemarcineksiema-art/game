@@ -571,6 +571,15 @@
       "replacesVisualPlaceholderId": "ferry-office-roof-cap"
     },
     {
+      "id": "mesh-ferry-office-distant-shoreline",
+      "assetId": "blender-harbor-backdrop-mesh",
+      "position": [0.0, 1.82, 6.35],
+      "yawDegrees": 180.0,
+      "scale": [6.4, 0.85, 1.0],
+      "colorKey": "misty-island-ground",
+      "notes": "v0.77 distant muted shoreline silhouette behind the Ferry Office roofline; visual only, no collision or map expansion."
+    },
+    {
       "id": "mesh-ferry-office-facade-panel",
       "assetId": "unit-box-mesh",
       "position": [0.0, 0.95, 2.12],
