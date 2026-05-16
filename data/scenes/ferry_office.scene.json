@@ -842,6 +842,24 @@
       "notes": "v0.25 approach-side notice board that balances the first camera read and points the eye toward the manifest."
     },
     {
+      "id": "mesh-ferry-office-approach-sign-upper-rule",
+      "assetId": "unit-box-mesh",
+      "position": [1.55, 1.08, 0.78],
+      "yawDegrees": -22.0,
+      "scale": [0.72, 0.06, 0.05],
+      "colorKey": "ferry-route-sign-blue",
+      "notes": "v0.78 visual-only approach sign rule that breaks up the blank yellow board without readable text or texture scope."
+    },
+    {
+      "id": "mesh-ferry-office-approach-sign-lower-rule",
+      "assetId": "unit-box-mesh",
+      "position": [1.55, 0.92, 0.78],
+      "yawDegrees": -22.0,
+      "scale": [0.52, 0.06, 0.05],
+      "colorKey": "ferry-route-sign-blue",
+      "notes": "v0.78 shorter lower sign rule for authored Ferry Office focal detail; visual only."
+    },
+    {
       "id": "mesh-dock-road-edge-post-a",
       "assetId": "road-edge-post-mesh",
       "position": [11.15, 0.0, -3.45],

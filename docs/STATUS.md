@@ -2,6 +2,60 @@
 
 Last updated: 2026-05-16
 
+## v0.78 Ferry Office Sign Detail Pass (2026-05-16)
+
+Selected milestone:
+
+- Make the high-visibility Ferry Office approach sign look more authored and less like a blank placeholder slab.
+
+Candidate visual pass triage:
+
+- Ferry Office Sign Detail Pass: visible impact = medium/high because the yellow approach sign is a focal object in the default frame; risk = low because the pass adds two visual-only trim lines; validation/capture path = scene tools, GDI/DX11 visual smoke, `scripts\verify.ps1`.
+- Player arm silhouette pass: visible impact = medium; risk = low but it would repeat the previous character-proxy area.
+- Small original mesh replacement: visible impact = medium; risk = medium because it adds asset-generation scope.
+
+Why selected:
+
+- After v0.77, the office gained background depth, but the approach notice board still read as a large blank yellow block. Two restrained blue rules make it feel like authored ferry-office signage without adding readable text, texture scope, or clutter.
+
+Implementation notes:
+
+- Added two visual-only `unit-box-mesh` sign rules on the visible Ferry Office approach notice board.
+- Reused the existing `ferry-route-sign-blue` material key.
+- Preserved collision, prompt readability, route flow, and gameplay behavior.
+
+Files changed:
+
+- `data\scenes\ferry_office.scene.json`
+- `docs\STATUS.md`
+- `docs\ROADMAP.md`
+
+Focused validation:
+
+- `python tools\validate_scene.py`: passed.
+- `python tools\validate_assets.py`: passed.
+- `python tools\capture_visual_smoke.py --renderer gdi`: passed; GDI colors=75/lumaRange=221.
+- `scripts\verify.ps1`: passed; doctor completed with known plain-PATH tool warnings, configure/build succeeded, default CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke completed.
+- `python tools\capture_visual_smoke.py`: passed; GDI colors=75/lumaRange=221, DX11 colors=41/lumaRange=221 with WARP fallback in this environment.
+- `python tools\mesh_report.py`: passed; 12 mesh assets, 57 mesh instances, 12 referenced model files.
+- `python tools\scene_report.py`: passed; 24 scene materials, 30 visual placeholders, 57 mesh instances, 16 interactables, 16 route markers, and 15 objective markers.
+- `python tools\scale_audit.py`: passed.
+- `git diff --check`: passed with only expected CRLF normalization warnings for touched files.
+
+Automated evidence generated:
+
+- `build\captures\v0.31-gdi-capture.bmp`
+- `build\captures\v0.31-dx11-capture.bmp`
+- `build\captures\capture_visual_smoke_report.json`
+
+Remaining visual weakness:
+
+- The sign detail is still primitive geometry rather than real sign art. A future original mesh or texture pass could improve this once the visual loop can afford asset scope.
+
+Commit/push:
+
+- Ready to commit and push as `v0.78 ferry office sign detail pass`.
+
 ## v0.77 Ferry Office Distant Shoreline Pass (2026-05-16)
 
 Selected milestone:
@@ -54,7 +108,7 @@ Remaining visual weakness:
 
 Commit/push:
 
-- Ready to commit and push as `v0.77 ferry office distant shoreline pass`.
+- Committed and pushed as `dd45939` (`v0.77 ferry office distant shoreline pass`).
 
 ## v0.76 Player Proxy Silhouette Cleanup (2026-05-16)
 
