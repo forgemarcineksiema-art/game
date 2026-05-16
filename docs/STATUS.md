@@ -2,6 +2,60 @@
 
 Last updated: 2026-05-16
 
+## v0.74 Dock Foreground Material Rhythm Pass (2026-05-16)
+
+Selected milestone:
+
+- Make the starting dock foreground read less like one flat slab and more like damp authored dock boards.
+
+Candidate visual pass triage:
+
+- Dock Foreground Material Rhythm Pass: visible impact = high in the default frame because the foreground dock occupies much of the first view; risk = low because the pass adds visual-only seams to the existing slab; validation/capture path = scene tools, GDI/DX11 visual smoke, `scripts\verify.ps1`.
+- Coastal Atmosphere Pass: visible impact = medium; risk = medium because sky/fog changes would likely require renderer or presentation-system work.
+- Service Yard Identity Pass: visible impact = medium; risk = medium because the default frame already has several right-side props and more equipment could create clutter.
+
+Why selected:
+
+- After v0.72 and v0.73, the Ferry Office first frame had stronger camera composition and gate structure, but the foreground dock still read as a broad flat brown surface. Thin board seams add material rhythm and eye-leading without adding random prop clutter.
+
+Implementation notes:
+
+- Added four visual-only damp dock-board seam meshes to the start dock slab.
+- Reused `unit-box-mesh` and the existing `wet-timber` material key.
+- Left dock colliders, player start, route markers, and gameplay unchanged.
+
+Files changed:
+
+- `data\scenes\ferry_office.scene.json`
+- `docs\STATUS.md`
+- `docs\ROADMAP.md`
+
+Focused validation:
+
+- `python tools\validate_scene.py`: passed.
+- `python tools\validate_assets.py`: passed.
+- `python tools\mesh_report.py`: passed; 12 mesh assets, 54 mesh instances, 12 referenced model files.
+- `python tools\scene_report.py`: passed; 24 scene materials, 30 visual placeholders, 54 mesh instances, 16 interactables, 16 route markers, and 15 objective markers.
+- `python tools\scale_audit.py`: passed.
+- `python tools\capture_visual_smoke.py --renderer gdi`: passed; GDI capture shows dock-board seams in the default first view.
+- `scripts\verify.ps1`: passed; doctor completed with known plain-PATH tool warnings, configure/build succeeded, default CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke completed.
+- `python tools\capture_visual_smoke.py`: passed; GDI colors=69/lumaRange=221, DX11 colors=39/lumaRange=221 with WARP fallback in this environment.
+- `git diff --check`: passed with only the expected CRLF normalization warning for the touched scene file.
+
+Automated evidence generated:
+
+- `build\captures\v0.31-gdi-capture.bmp`
+- `build\captures\v0.31-dx11-capture.bmp`
+- `build\captures\capture_visual_smoke_report.json`
+
+Remaining visual weakness:
+
+- The sky/background is still very flat and dark, and the dock-board seams are still placeholder geometry rather than true material detail. A future pass should either improve coastal atmospheric separation or start replacing the most repeated unit-box cues with slightly richer original meshes.
+
+Commit/push:
+
+- Pending.
+
 ## v0.73 Ferry Office Gate Focal Hierarchy Pass (2026-05-16)
 
 Selected milestone:

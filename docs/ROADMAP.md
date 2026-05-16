@@ -788,6 +788,14 @@ Status: implemented and validated. The default third-person camera now starts at
 
 Status: implemented and validated. The scene now has 50 mesh instances, including three visual-only closed-gate slat/seam meshes that make the Ferry Office gate read as weathered service infrastructure rather than one flat slab; `scripts/verify.ps1`, scene/asset/mesh/scale checks, and GDI/DX11 visual smoke pass.
 
+## v0.74 - Dock Foreground Material Rhythm Pass
+
+- Add subtle visual-only board seams to the starting dock foreground so the default frame reads less like a single flat slab.
+- Use existing `unit-box-mesh` and `wet-timber` material language rather than adding new assets or clutter.
+- Preserve dock collision, player start, route markers, and gameplay behavior.
+
+Status: implemented and validated. The scene now has 54 mesh instances, including four visual-only dock-board seam meshes that add damp foreground rhythm and lead the eye toward the Ferry Office approach; `scripts/verify.ps1`, scene/asset/mesh/scale checks, and GDI/DX11 visual smoke pass.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.73, the next useful future milestone should either improve dock foreground material rhythm/coastal atmosphere from fresh capture evidence, add an automated route-walking proxy for the longer Ferry Office follow-up chain, or use preferred-runtime evidence to harden Jolt road-edge/live-control behavior.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.74, the next useful future milestone should either improve coastal atmospheric separation from fresh capture evidence, replace a small repeated unit-box cue with a richer original mesh, add an automated route-walking proxy for the longer Ferry Office follow-up chain, or use preferred-runtime evidence to harden Jolt road-edge/live-control behavior.

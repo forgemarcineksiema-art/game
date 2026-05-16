@@ -715,6 +715,42 @@
       "notes": "v0.26 paired dock-side cleat silhouette for the starting pier."
     },
     {
+      "id": "mesh-dock-board-seam-left-outer",
+      "assetId": "unit-box-mesh",
+      "position": [-2.85, 0.025, -1.0],
+      "yawDegrees": 0.0,
+      "scale": [0.055, 0.05, 3.55],
+      "colorKey": "wet-timber",
+      "notes": "v0.74 visual-only damp dock-board seam that adds foreground material rhythm without changing collision."
+    },
+    {
+      "id": "mesh-dock-board-seam-left-inner",
+      "assetId": "unit-box-mesh",
+      "position": [-1.05, 0.025, -1.0],
+      "yawDegrees": 0.0,
+      "scale": [0.055, 0.05, 3.55],
+      "colorKey": "wet-timber",
+      "notes": "v0.74 inner board seam to lead the first view toward the Ferry Office approach; visual only."
+    },
+    {
+      "id": "mesh-dock-board-seam-right-inner",
+      "assetId": "unit-box-mesh",
+      "position": [1.05, 0.025, -1.0],
+      "yawDegrees": 0.0,
+      "scale": [0.055, 0.05, 3.55],
+      "colorKey": "wet-timber",
+      "notes": "v0.74 paired inner board seam for readable dock foreground rhythm; visual only."
+    },
+    {
+      "id": "mesh-dock-board-seam-right-outer",
+      "assetId": "unit-box-mesh",
+      "position": [2.85, 0.025, -1.0],
+      "yawDegrees": 0.0,
+      "scale": [0.055, 0.05, 3.55],
+      "colorKey": "wet-timber",
+      "notes": "v0.74 outer board seam that keeps the start dock from reading as a flat slab; visual only."
+    },
+    {
       "id": "mesh-service-yard-crate",
       "assetId": "unit-box-mesh",
       "position": [8.15, 0.45, 0.45],
