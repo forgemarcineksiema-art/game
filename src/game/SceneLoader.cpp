@@ -1,6 +1,7 @@
 #include "game/SceneLoader.h"
 
 #include "engine/math/Math.h"
+#include "game/WorldState.h"
 
 #include <fstream>
 #include <nlohmann/json.hpp>
@@ -156,6 +157,31 @@ std::vector<std::string> ReadOptionalStringArray(const json& object, std::string
     return values;
 }
 
+std::vector<std::string> ReadOptionalWorldFlagArray(const json& object, std::string_view key, std::string_view path)
+{
+    std::vector<std::string> values = ReadOptionalStringArray(object, key, path);
+    for (const std::string& value : values) {
+        WorldFlag flag = WorldFlag::PowerRestored;
+        if (!TryWorldFlagFromName(value, flag)) {
+            throw std::runtime_error(std::string(path) + "." + std::string(key) + " contains unknown world flag '" + value + "'.");
+        }
+    }
+    return values;
+}
+
+std::string ReadOptionalWorldFlagName(const json& object, std::string_view key, std::string_view path)
+{
+    std::string value = ReadOptionalString(object, key, path);
+    if (value.empty()) {
+        return value;
+    }
+    WorldFlag flag = WorldFlag::PowerRestored;
+    if (!TryWorldFlagFromName(value, flag)) {
+        throw std::runtime_error(std::string(path) + "." + std::string(key) + " contains unknown world flag '" + value + "'.");
+    }
+    return value;
+}
+
 SceneColliderDefinition ParseCollider(const json& value, std::size_t index)
 {
     const std::string path = "colliders[" + std::to_string(index) + "]";
@@ -165,7 +191,7 @@ SceneColliderDefinition ParseCollider(const json& value, std::size_t index)
     collider.center = ReadVec3(value, "center", path);
     collider.halfExtents = ReadVec3(value, "halfExtents", path);
     collider.blocksPlayer = ReadOptionalBool(value, "blocksPlayer", true, path);
-    collider.stateFlag = ReadOptionalString(value, "stateFlag", path);
+    collider.stateFlag = ReadOptionalWorldFlagName(value, "stateFlag", path);
     collider.blocksWhenFlagFalse = ReadOptionalBool(value, "blocksWhenFlagFalse", false, path);
     return collider;
 }
@@ -231,9 +257,9 @@ SceneInteractableDefinition ParseInteractable(const json& value, std::size_t ind
     interactable.radius = ReadFloat(value, "radius", path);
     interactable.oneShot = ReadOptionalBool(value, "oneShot", false, path);
     interactable.message = ReadOptionalString(value, "message", path);
-    interactable.worldFlagsSet = ReadOptionalStringArray(value, "worldFlagsSet", path);
-    interactable.requiredWorldFlags = ReadOptionalStringArray(value, "requiredWorldFlags", path);
-    interactable.worldFlagsSetWhenReady = ReadOptionalStringArray(value, "worldFlagsSetWhenReady", path);
+    interactable.worldFlagsSet = ReadOptionalWorldFlagArray(value, "worldFlagsSet", path);
+    interactable.requiredWorldFlags = ReadOptionalWorldFlagArray(value, "requiredWorldFlags", path);
+    interactable.worldFlagsSetWhenReady = ReadOptionalWorldFlagArray(value, "worldFlagsSetWhenReady", path);
     return interactable;
 }
 
@@ -251,7 +277,7 @@ SceneTraversalAffordanceDefinition ParseTraversalAffordance(const json& value, s
     affordance.requiredFacingDirection = ReadVec3(value, "requiredFacingDirection", path);
     affordance.requiredFacingDot = ReadFloat(value, "requiredFacingDot", path);
     affordance.durationSeconds = ReadFloat(value, "durationSeconds", path);
-    affordance.worldFlagsSetOnComplete = ReadOptionalStringArray(value, "worldFlagsSetOnComplete", path);
+    affordance.worldFlagsSetOnComplete = ReadOptionalWorldFlagArray(value, "worldFlagsSetOnComplete", path);
     return affordance;
 }
 

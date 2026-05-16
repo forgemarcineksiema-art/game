@@ -13,12 +13,19 @@
 
 struct SceneDefinition;
 struct SceneInteractableDefinition;
+struct SceneTraversalAffordanceDefinition;
 
 struct InteractableActionBinding {
     std::string name;
     std::vector<WorldFlag> worldFlagsSet;
     std::vector<WorldFlag> requiredWorldFlags;
     std::vector<WorldFlag> worldFlagsSetWhenReady;
+};
+
+struct TraversalActionBinding {
+    int affordanceId = 0;
+    std::string source;
+    std::vector<WorldFlag> worldFlagsSetOnComplete;
 };
 
 class PrototypeScene {
@@ -40,6 +47,7 @@ public:
 
     bool applyInteractionResult(const InteractionResult& result);
     bool recordServiceRouteUsed();
+    bool recordTraversalCompleted(int affordanceId);
     bool recordServiceVehicleUsed();
     bool updateJobVehicleCheckpoint(engine::Vec3 vehiclePosition, bool vehicleOccupied);
     bool recordExitReached();
@@ -61,6 +69,8 @@ private:
         std::vector<WorldFlag> requiredWorldFlags,
         std::vector<WorldFlag> worldFlagsSetWhenReady);
     void addInteractableActionBinding(const SceneInteractableDefinition& interactable);
+    void addTraversalActionBinding(int affordanceId, std::string source, std::vector<WorldFlag> worldFlagsSetOnComplete);
+    void addTraversalActionBinding(int affordanceId, const SceneTraversalAffordanceDefinition& affordance);
     bool applyAuthoredInteractionBinding(std::string_view name, const std::string& source);
     bool hasRequiredWorldFlags(const InteractableActionBinding& binding) const;
     void configureJobFromDefinition(const SceneDefinition& sceneDefinition);
@@ -72,4 +82,5 @@ private:
     WorldState m_worldState;
     FerryOfficeJob m_job;
     std::vector<InteractableActionBinding> m_interactableActionBindings;
+    std::vector<TraversalActionBinding> m_traversalActionBindings;
 };

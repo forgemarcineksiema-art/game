@@ -86,6 +86,22 @@ class SceneToolTests(unittest.TestCase):
 
         self.assertTrue(any("radius must be positive" in error for error in result.errors))
 
+    def test_unknown_world_flag_is_reported(self) -> None:
+        scene = copy.deepcopy(self.scene)
+        scene["interactables"][0]["worldFlagsSet"] = ["manifestCollected", "typoFlag"]
+
+        result = scene_data.validate_scene(scene)
+
+        self.assertTrue(any("typoFlag" in error for error in result.errors))
+
+    def test_unknown_traversal_completion_flag_is_reported(self) -> None:
+        scene = copy.deepcopy(self.scene)
+        scene["traversalAffordances"][0]["worldFlagsSetOnComplete"] = ["missingTraversalFlag"]
+
+        result = scene_data.validate_scene(scene)
+
+        self.assertTrue(any("missingTraversalFlag" in error for error in result.errors))
+
     def test_scene_summary_reports_core_counts(self) -> None:
         summary = scene_data.build_summary(self.scene)
 

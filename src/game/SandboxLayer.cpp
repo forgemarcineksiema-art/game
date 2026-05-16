@@ -369,7 +369,7 @@ void SandboxLayer::onUpdate(double deltaSeconds, const engine::InputState& input
 
         m_player.update(dt, input, m_camera.state().yawRadians, &traversalActivation);
         if (m_player.state().traversalLandedThisFrame) {
-            recordWorldStateChange(m_scene.recordServiceRouteUsed());
+            recordWorldStateChange(m_scene.recordTraversalCompleted(m_player.state().landedTraversalId));
         }
 
         const engine::Vec3 playerFacing = engine::ForwardFromYaw(m_player.state().facingYawRadians);

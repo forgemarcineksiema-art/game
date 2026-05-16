@@ -44,6 +44,7 @@ void PlayerController::update(float deltaSeconds, const engine::InputState& inpu
 {
     const float dt = engine::Clamp(deltaSeconds, 0.0f, 0.1f);
     m_state.traversalLandedThisFrame = false;
+    m_state.landedTraversalId = 0;
     if (m_state.traversalMode == PlayerTraversalMode::Normal && traversalActivation && traversalActivation->started) {
         m_activeTraversal = *traversalActivation;
         if (m_activeTraversal.useCurrentPlayerPositionAsStart) {
@@ -110,9 +111,10 @@ void PlayerController::update(float deltaSeconds, const engine::InputState& inpu
                 m_state.lastCollisionHitCount = 0;
             }
             m_state.traversalMode = PlayerTraversalMode::Normal;
-            m_state.activeTraversalId = 0;
             m_state.traversalProgress = 1.0f;
             m_state.traversalLandedThisFrame = true;
+            m_state.landedTraversalId = m_activeTraversal.affordanceId;
+            m_state.activeTraversalId = 0;
             m_activeTraversal = {};
             m_traversalElapsedSeconds = 0.0f;
         }

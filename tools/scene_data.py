@@ -51,6 +51,26 @@ KNOWN_COLOR_KEYS = {
     "wet-timber",
 }
 
+KNOWN_WORLD_FLAGS = {
+    "dockRoadClearanceTagged",
+    "dockRoadReached",
+    "dockRoadRelayLogged",
+    "dockRoadRelayReset",
+    "exitReached",
+    "ferryOfficeBoardUpdated",
+    "ferryOfficeJobComplete",
+    "ferryOfficeJobStarted",
+    "harborPartsDelivered",
+    "harborPartsPickedUp",
+    "maintenanceBoxInspected",
+    "manifestCollected",
+    "powerRestored",
+    "routeOpened",
+    "serviceRouteUsed",
+    "serviceRunConfirmed",
+    "serviceVehicleUsed",
+}
+
 
 @dataclass
 class ValidationResult:
@@ -178,6 +198,7 @@ def validate_scene(scene: dict[str, Any]) -> ValidationResult:
         _validate_positive_vec3(item.get("halfExtents"), f"{label}.halfExtents", result)
         if "blocksPlayer" not in item:
             result.errors.append(f"{label}.blocksPlayer is required.")
+        _validate_optional_world_flag(item.get("stateFlag"), f"{label}.stateFlag", result)
 
     for visual in _as_list(scene.get("visualPlaceholders")):
         item = _as_dict(visual)
@@ -199,6 +220,8 @@ def validate_scene(scene: dict[str, Any]) -> ValidationResult:
             _require_string(item, key, label, result)
         _validate_vec3(item.get("position"), f"{label}.position", result)
         _require_positive_number(item, "radius", label, result)
+        for key in ["worldFlagsSet", "requiredWorldFlags", "worldFlagsSetWhenReady"]:
+            _validate_world_flag_list(item.get(key), f"{label}.{key}", result)
 
     for affordance in _as_list(scene.get("traversalAffordances")):
         item = _as_dict(affordance)
@@ -211,6 +234,7 @@ def validate_scene(scene: dict[str, Any]) -> ValidationResult:
         _validate_vec3(item.get("requiredFacingDirection"), f"{label}.requiredFacingDirection", result)
         _require_positive_number(item, "focusRadius", label, result)
         _require_positive_number(item, "durationSeconds", label, result)
+        _validate_world_flag_list(item.get("worldFlagsSetOnComplete"), f"{label}.worldFlagsSetOnComplete", result)
 
     for vehicle in _as_list(scene.get("vehicles")):
         item = _as_dict(vehicle)
@@ -550,6 +574,30 @@ def _validate_color_key(value: Any, label: str, result: ValidationResult) -> Non
         return
     if value not in KNOWN_COLOR_KEYS:
         result.errors.append(f"{label}.colorKey is unknown: {value}")
+
+
+def _validate_optional_world_flag(value: Any, label: str, result: ValidationResult) -> None:
+    if value is None:
+        return
+    if not isinstance(value, str) or not value:
+        result.errors.append(f"{label} must be a non-empty string when provided.")
+        return
+    if value not in KNOWN_WORLD_FLAGS:
+        result.errors.append(f"{label} is unknown: {value}")
+
+
+def _validate_world_flag_list(value: Any, label: str, result: ValidationResult) -> None:
+    if value is None:
+        return
+    if not isinstance(value, list):
+        result.errors.append(f"{label} must be a list of world flag names.")
+        return
+    for index, item in enumerate(value):
+        if not isinstance(item, str) or not item:
+            result.errors.append(f"{label}[{index}] must be a non-empty world flag name.")
+            continue
+        if item not in KNOWN_WORLD_FLAGS:
+            result.errors.append(f"{label}[{index}] is unknown: {item}")
 
 
 def _number_or_none(value: Any) -> float | None:

@@ -20,6 +20,7 @@ void PrototypeScene::buildFromFerryOfficeData()
 {
     m_world.buildFerryOfficePrototypeLayout();
     m_interactableActionBindings.clear();
+    m_traversalActionBindings.clear();
 
     Interactable pickup;
     pickup.name = FerryOffice::Names::FerryManifest;
@@ -84,6 +85,15 @@ void PrototypeScene::buildFromFerryOfficeData()
     dockRoadRelay.type = InteractableType::Info;
     dockRoadRelay.message = FerryOffice::Messages::DockRoadRelay;
     m_interactions.addInteractable(dockRoadRelay);
+
+    Interactable relayServiceLog;
+    relayServiceLog.name = FerryOffice::Names::RelayServiceLog;
+    relayServiceLog.prompt = FerryOffice::Prompts::RelayServiceLog;
+    relayServiceLog.position = FerryOffice::Positions::RelayServiceLog;
+    relayServiceLog.radius = FerryOffice::Radii::RelayServiceLog;
+    relayServiceLog.type = InteractableType::Info;
+    relayServiceLog.message = FerryOffice::Messages::RelayServiceLog;
+    m_interactions.addInteractable(relayServiceLog);
 
     Interactable dockRoadClearanceTag;
     dockRoadClearanceTag.name = FerryOffice::Names::DockRoadClearanceTag;
@@ -187,7 +197,11 @@ void PrototypeScene::buildFromFerryOfficeData()
     serviceVault.requiredFacingDirection = FerryOffice::Positions::ServiceVaultFacing;
     serviceVault.requiredFacingDot = FerryOffice::Traversal::ServiceVaultRequiredFacingDot;
     serviceVault.durationSeconds = FerryOffice::Traversal::ServiceVaultDurationSeconds;
-    m_traversal.addAffordance(serviceVault);
+    const int serviceVaultId = m_traversal.addAffordance(serviceVault);
+    addTraversalActionBinding(
+        serviceVaultId,
+        std::string(FerryOffice::Messages::ServiceVault),
+        {WorldFlag::ServiceRouteUsed});
 
     FerryOfficeJobConfig jobConfig;
     jobConfig.vehicleCheckpointPosition = FerryOffice::Positions::ServiceRunCheckpoint;
@@ -224,6 +238,7 @@ void PrototypeScene::loadFromDefinition(const SceneDefinition& sceneDefinition)
     m_interactions.clear();
     m_traversal.clear();
     m_interactableActionBindings.clear();
+    m_traversalActionBindings.clear();
 
     for (const SceneInteractableDefinition& authored : sceneDefinition.interactables) {
         Interactable interactable;
@@ -249,7 +264,8 @@ void PrototypeScene::loadFromDefinition(const SceneDefinition& sceneDefinition)
         affordance.requiredFacingDirection = authored.requiredFacingDirection;
         affordance.requiredFacingDot = authored.requiredFacingDot;
         affordance.durationSeconds = authored.durationSeconds;
-        m_traversal.addAffordance(std::move(affordance));
+        const int affordanceId = m_traversal.addAffordance(std::move(affordance));
+        addTraversalActionBinding(affordanceId, authored);
     }
 
     configureJobFromDefinition(sceneDefinition);
@@ -337,6 +353,20 @@ bool PrototypeScene::applyInteractionResult(const InteractionResult& result)
 bool PrototypeScene::recordServiceRouteUsed()
 {
     return m_worldState.setFlag(WorldFlag::ServiceRouteUsed, true, std::string(FerryOffice::Messages::ServiceVault));
+}
+
+bool PrototypeScene::recordTraversalCompleted(int affordanceId)
+{
+    bool changed = false;
+    for (const TraversalActionBinding& binding : m_traversalActionBindings) {
+        if (binding.affordanceId != affordanceId) {
+            continue;
+        }
+        for (WorldFlag flag : binding.worldFlagsSetOnComplete) {
+            changed |= m_worldState.setFlag(flag, true, binding.source);
+        }
+    }
+    return changed;
 }
 
 bool PrototypeScene::recordServiceVehicleUsed()
@@ -494,6 +524,35 @@ void PrototypeScene::addInteractableActionBinding(const SceneInteractableDefinit
         std::move(worldFlagsSet),
         std::move(requiredWorldFlags),
         std::move(worldFlagsSetWhenReady));
+}
+
+void PrototypeScene::addTraversalActionBinding(
+    int affordanceId,
+    std::string source,
+    std::vector<WorldFlag> worldFlagsSetOnComplete)
+{
+    if (affordanceId <= 0 || worldFlagsSetOnComplete.empty()) {
+        return;
+    }
+
+    TraversalActionBinding binding;
+    binding.affordanceId = affordanceId;
+    binding.source = std::move(source);
+    binding.worldFlagsSetOnComplete = std::move(worldFlagsSetOnComplete);
+    m_traversalActionBindings.push_back(std::move(binding));
+}
+
+void PrototypeScene::addTraversalActionBinding(int affordanceId, const SceneTraversalAffordanceDefinition& affordance)
+{
+    std::vector<WorldFlag> flags;
+    for (const std::string& name : affordance.worldFlagsSetOnComplete) {
+        WorldFlag flag = WorldFlag::PowerRestored;
+        if (TryWorldFlagFromName(name, flag)) {
+            flags.push_back(flag);
+        }
+    }
+
+    addTraversalActionBinding(affordanceId, affordance.name, std::move(flags));
 }
 
 bool PrototypeScene::applyAuthoredInteractionBinding(std::string_view name, const std::string& source)

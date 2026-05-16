@@ -33,6 +33,51 @@ Last updated: 2026-05-16
 6. Add PowerShell/Python workbench commands for doctor, configure/build, verify, and status reporting.
 7. Run the available validation commands, record exact results here, and keep any compiler/graphics blockers honest.
 
+## Code Review Hardening Pass (2026-05-16)
+
+Goal:
+
+- Perform a focused professional code review for correctness, validation gaps, and fragile prototype patterns, then fix the highest-confidence issues without adding broad systems.
+
+Review findings fixed:
+
+- The built-in Ferry Office fallback scene had an action binding for `Relay Service Log` but did not create the actual fallback interactable. If runtime scene JSON failed to load, the follow-up chain could reset the Dock Road Relay but had no real focused relay-log marker to continue the chain.
+- Scene-authored traversal data declared `worldFlagsSetOnComplete`, but live `SandboxLayer` still hardcoded `serviceRouteUsed` for any traversal landing. This worked only because there is currently one traversal affordance; it would set the wrong flag as soon as another traversal was added.
+- Authored world flag names in scene JSON were not validated by `tools\validate_scene.py`, and C++ scene loading silently ignored unknown flags when building action bindings. A typo could pass authoring validation and produce missing world-state behavior at runtime.
+- The tiny glTF static-mesh loader assumed tightly packed `POSITION` data and ignored `bufferView.byteStride`, while the Python asset helper already understood interleaved position data. A legal interleaved export could load with corrupted runtime vertex positions.
+
+Implementation notes:
+
+- Added the missing built-in `Relay Service Log` fallback interactable.
+- Added traversal completion bindings in `PrototypeScene`, tracked the landed traversal id in `PlayerController`, and routed `SandboxLayer` through authored traversal completion flags.
+- Added C++ runtime scene-loader validation for collider `stateFlag`, interactable world flag arrays, and traversal completion flag arrays.
+- Added Python scene-tool validation for the same world flag fields.
+- Hardened the static mesh loader to respect `bufferView.buffer`, `byteStride`, and accessor ranges against `byteLength`.
+
+Evidence added:
+
+- New C++ tests cover unknown world flag rejection, built-in fallback follow-up interactables, traversal completion bindings, and interleaved glTF position stride.
+- New Python scene-tool tests reject unknown interactable and traversal world flags.
+
+Commands and results:
+
+- `python tools\status_report.py`: passed; reported clean `main...origin/main` at orientation time.
+- `python tests\test_scene_tools.py`: passed, 44 tests.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: passed after fixing one local test helper mistake during iteration.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `python tests\test_run_scripts.py`: passed, 8 tests.
+- `python tests\test_playthrough_qa.py`: passed, 5 tests.
+- `python tests\test_vehicle_runtime_qa.py`: passed, 8 tests.
+- `python tests\test_capture_visual_smoke.py`: passed, 6 tests.
+- `python tests\test_physics_parity_tool.py; python tests\test_character_contact_qa.py; python tests\test_vehicle_physics_qa.py`: passed, 2 tests each.
+- `scripts\verify.ps1`: passed; doctor, configure, build, CTest 11/11, scene validation, asset validation, mesh report, and null smoke run completed.
+- `git diff --check`: passed; only expected CRLF normalization warnings for touched text files.
+
+Remaining limitations:
+
+- This pass did not promote Jolt, add collision-backed obstacle replay, add a generic mission framework, or broaden the glTF loader beyond the current tiny static mesh subset.
+- Traversal completion bindings are now data-driven for boolean flags, but traversal behavior itself remains the existing single vault-style prototype.
+
 ## v0.63 Ferry Office Work Board Signoff (2026-05-16)
 
 Selected milestone:

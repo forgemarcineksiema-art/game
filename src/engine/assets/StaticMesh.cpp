@@ -1,6 +1,7 @@
 #include "engine/assets/StaticMesh.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cmath>
 #include <cstdint>
 #include <cstring>
@@ -14,8 +15,10 @@ namespace engine {
 namespace {
 
 struct BufferViewInfo {
+    int buffer = 0;
     std::size_t byteOffset = 0;
     std::size_t byteLength = 0;
+    std::size_t byteStride = 0;
 };
 
 struct AccessorInfo {
@@ -187,8 +190,10 @@ StaticMeshLoadResult LoadStaticMeshFromGltf(const std::filesystem::path& path)
     if (root.contains("bufferViews") && root["bufferViews"].is_array()) {
         for (const auto& bv : root["bufferViews"]) {
             BufferViewInfo view;
+            view.buffer = bv.value("buffer", 0);
             view.byteOffset = bv.value("byteOffset", 0U);
             view.byteLength = bv.value("byteLength", 0U);
+            view.byteStride = bv.value("byteStride", 0U);
             bufferViews.push_back(view);
         }
     }
@@ -257,14 +262,26 @@ StaticMeshLoadResult LoadStaticMeshFromGltf(const std::filesystem::path& path)
 
     const BufferViewInfo& positionView = bufferViews[static_cast<std::size_t>(positionAccessor.bufferView)];
     const BufferViewInfo& indexView = bufferViews[static_cast<std::size_t>(indexAccessor.bufferView)];
+    if (positionView.buffer != 0 || indexView.buffer != 0) {
+        return Fail("glTF mesh bufferViews must reference the embedded buffer 0.");
+    }
 
     StaticMeshAsset mesh;
     mesh.sourcePath = path;
     mesh.id = path.stem().string();
     mesh.vertices.reserve(positionAccessor.count);
     const std::size_t positionBase = positionView.byteOffset + positionAccessor.byteOffset;
+    const std::size_t positionElementSize = sizeof(float) * 3;
+    const std::size_t positionStride = positionView.byteStride > 0 ? positionView.byteStride : positionElementSize;
+    if (positionStride < positionElementSize) {
+        return Fail("glTF POSITION bufferView byteStride is smaller than a FLOAT VEC3.");
+    }
+    if (positionAccessor.count > 0
+        && positionAccessor.byteOffset + (positionAccessor.count - 1) * positionStride + positionElementSize > positionView.byteLength) {
+        return Fail("glTF POSITION accessor range exceeds its bufferView byteLength.");
+    }
     for (std::size_t index = 0; index < positionAccessor.count; ++index) {
-        const std::size_t offset = positionBase + index * sizeof(float) * 3;
+        const std::size_t offset = positionBase + index * positionStride;
         const auto x = ReadValue<float>(*buffer, offset + sizeof(float) * 0);
         const auto y = ReadValue<float>(*buffer, offset + sizeof(float) * 1);
         const auto z = ReadValue<float>(*buffer, offset + sizeof(float) * 2);
@@ -276,7 +293,15 @@ StaticMeshLoadResult LoadStaticMeshFromGltf(const std::filesystem::path& path)
 
     mesh.indices.reserve(indexAccessor.count);
     const std::size_t indexBase = indexView.byteOffset + indexAccessor.byteOffset;
-    const std::size_t indexStride = indexAccessor.componentType == 5123 ? sizeof(std::uint16_t) : sizeof(std::uint32_t);
+    const std::size_t indexElementSize = indexAccessor.componentType == 5123 ? sizeof(std::uint16_t) : sizeof(std::uint32_t);
+    const std::size_t indexStride = indexView.byteStride > 0 ? indexView.byteStride : indexElementSize;
+    if (indexStride < indexElementSize) {
+        return Fail("glTF index bufferView byteStride is smaller than the index component size.");
+    }
+    if (indexAccessor.count > 0
+        && indexAccessor.byteOffset + (indexAccessor.count - 1) * indexStride + indexElementSize > indexView.byteLength) {
+        return Fail("glTF index accessor range exceeds its bufferView byteLength.");
+    }
     for (std::size_t index = 0; index < indexAccessor.count; ++index) {
         const std::size_t offset = indexBase + index * indexStride;
         if (indexAccessor.componentType == 5123) {

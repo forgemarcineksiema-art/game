@@ -1065,6 +1065,39 @@ void TestStaticMeshLoaderReportsInvalidJsonTypesWithoutThrowing()
         "Invalid glTF accessor types should produce a clear loader error.");
 }
 
+void TestStaticMeshLoaderHonorsInterleavedPositionStride()
+{
+    const std::filesystem::path meshPath = std::filesystem::temp_directory_path() / "tidebreak_interleaved_positions.gltf";
+    {
+        std::ofstream file(meshPath);
+        file << R"({
+            "asset": {"version": "2.0"},
+            "buffers": [{"uri": "data:application/octet-stream;base64,AAAAAAAAAAAAAAAAAADGQgAAgD8AAAAAAAAAAAAAxkIAAAAAAACAPwAAAAAAAMZCAAABAAIA", "byteLength": 54}],
+            "bufferViews": [
+                {"buffer": 0, "byteOffset": 0, "byteLength": 48, "byteStride": 16},
+                {"buffer": 0, "byteOffset": 48, "byteLength": 6}
+            ],
+            "accessors": [
+                {"bufferView": 0, "componentType": 5126, "count": 3, "type": "VEC3"},
+                {"bufferView": 1, "componentType": 5123, "count": 3, "type": "SCALAR"}
+            ],
+            "meshes": [{"primitives": [{"attributes": {"POSITION": 0}, "indices": 1}]}]
+        })";
+    }
+
+    const engine::StaticMeshLoadResult result = engine::LoadStaticMeshFromGltf(meshPath);
+
+    Expect(result.ok(),
+        "TestStaticMeshLoaderHonorsInterleavedPositionStride",
+        result.error.empty() ? "Interleaved POSITION data should load." : result.error);
+    ExpectNear(result.mesh.bounds.max.x, 1.0f, 0.001f,
+        "TestStaticMeshLoaderHonorsInterleavedPositionStride",
+        "The loader should advance POSITION reads by byteStride instead of treating padding as vertex X data.");
+    ExpectNear(result.mesh.bounds.max.y, 1.0f, 0.001f,
+        "TestStaticMeshLoaderHonorsInterleavedPositionStride",
+        "The loader should advance POSITION reads by byteStride instead of treating padding as vertex Y data.");
+}
+
 void TestStaticMeshBuildsTransformedTriangleList()
 {
     engine::StaticMeshAsset mesh;
@@ -1393,6 +1426,51 @@ void TestPrototypeSceneLoadsInteractionsAndTraversalFromSceneData()
     Expect(manifestFocus.hasFocus && manifestFocus.name == FerryOffice::Names::FerryManifest,
         "TestPrototypeSceneLoadsInteractionsAndTraversalFromSceneData",
         "Loaded scene interactables should preserve the Ferry Manifest focus behavior.");
+}
+
+void TestSceneLoaderRejectsUnknownWorldFlags()
+{
+    std::ifstream input(DefaultScenePathForTests());
+    nlohmann::json scene = nlohmann::json::parse(input);
+    scene["interactables"][0]["worldFlagsSet"] = nlohmann::json::array({"manifestCollected", "typoFlag"});
+
+    const std::filesystem::path tempPath = std::filesystem::temp_directory_path() / "tidebreak-unknown-world-flag.scene.json";
+    {
+        std::ofstream output(tempPath);
+        output << scene.dump(2);
+    }
+
+    const SceneLoadResult result = LoadSceneDefinition(tempPath);
+    Expect(!result.ok(),
+        "TestSceneLoaderRejectsUnknownWorldFlags",
+        "Runtime scene loading should reject unknown authored world flags instead of silently dropping them.");
+    Expect(result.error.find("typoFlag") != std::string::npos,
+        "TestSceneLoaderRejectsUnknownWorldFlags",
+        "Scene loader errors should name the unknown world flag.");
+}
+
+void TestBuiltInFerryOfficeFallbackContainsFollowupInteractables()
+{
+    PrototypeScene scene;
+
+    const auto hasInteractable = [&](std::string_view name) {
+        for (const Interactable& interactable : scene.interactions().interactables()) {
+            if (interactable.name == name) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    Expect(hasInteractable(FerryOffice::Names::DockRoadRelay),
+        "TestBuiltInFerryOfficeFallbackContainsFollowupInteractables",
+        "Built-in fallback should include the Dock Road Relay follow-up interactable.");
+    Expect(hasInteractable(FerryOffice::Names::RelayServiceLog),
+        "TestBuiltInFerryOfficeFallbackContainsFollowupInteractables",
+        "Built-in fallback should include the Relay Service Log interactable, not just its action binding.");
+    Expect(hasInteractable(FerryOffice::Names::DockRoadClearanceTag),
+        "TestBuiltInFerryOfficeFallbackContainsFollowupInteractables",
+        "Built-in fallback should include the Dock Road Clearance Tag follow-up interactable.");
 }
 
 void TestPhysicsWorldCreatesAndShutsDownThroughVendorFreeInterface()
@@ -3176,6 +3254,45 @@ void TestTraversalCompletionRecordsServiceRouteUsed()
         "Repeated traversal completion should keep one service route event.");
 }
 
+void TestAuthoredTraversalCompletionBindingsControlWorldFlags()
+{
+    SceneDefinition sceneDefinition;
+    sceneDefinition.id = "traversal-binding-test";
+
+    SceneTraversalAffordanceDefinition unbound;
+    unbound.id = "unbound-vault";
+    unbound.name = "Unbound Vault";
+    unbound.prompt = "Vault Unbound";
+    unbound.type = "vault";
+    unbound.startPosition = {0.0f, 0.0f, 0.0f};
+    unbound.endPosition = {1.0f, 0.0f, 0.0f};
+    unbound.focusRadius = 1.0f;
+    unbound.requiredFacingDirection = {1.0f, 0.0f, 0.0f};
+    unbound.requiredFacingDot = 0.1f;
+    unbound.durationSeconds = 0.2f;
+    sceneDefinition.traversalAffordances.push_back(unbound);
+
+    SceneTraversalAffordanceDefinition bound = unbound;
+    bound.id = "bound-vault";
+    bound.name = "Bound Vault";
+    bound.worldFlagsSetOnComplete = {"serviceRouteUsed"};
+    sceneDefinition.traversalAffordances.push_back(bound);
+
+    PrototypeScene scene(sceneDefinition);
+    const int unboundId = scene.traversal().affordances()[0].id;
+    const int boundId = scene.traversal().affordances()[1].id;
+
+    const bool unboundChanged = scene.recordTraversalCompleted(unboundId);
+    Expect(!unboundChanged && !scene.worldState().isFlagSet(WorldFlag::ServiceRouteUsed),
+        "TestAuthoredTraversalCompletionBindingsControlWorldFlags",
+        "An authored traversal without completion flags should not set serviceRouteUsed just because any traversal landed.");
+
+    const bool boundChanged = scene.recordTraversalCompleted(boundId);
+    Expect(boundChanged && scene.worldState().isFlagSet(WorldFlag::ServiceRouteUsed),
+        "TestAuthoredTraversalCompletionBindingsControlWorldFlags",
+        "An authored traversal completion binding should set its declared world flags.");
+}
+
 InteractionResult MakeSceneInteraction(std::string name, InteractableType type, bool toggled = false)
 {
     InteractionResult result;
@@ -4675,6 +4792,7 @@ int main()
     TestStaticMeshLoaderLoadsV018PropKit();
     TestStaticMeshLoaderReportsMissingAsset();
     TestStaticMeshLoaderReportsInvalidJsonTypesWithoutThrowing();
+    TestStaticMeshLoaderHonorsInterleavedPositionStride();
     TestStaticMeshBuildsTransformedTriangleList();
     TestSceneLoaderLoadsDefaultFerryOfficeScene();
     TestSceneLoaderLoadsV018VisualIdentityPropKit();
@@ -4686,6 +4804,8 @@ int main()
     TestSceneLoaderLoadsVehicleBoundsAndRoadMarkers();
     TestPrototypeWorldBuildsFerryOfficeCollidersFromSceneData();
     TestPrototypeSceneLoadsInteractionsAndTraversalFromSceneData();
+    TestSceneLoaderRejectsUnknownWorldFlags();
+    TestBuiltInFerryOfficeFallbackContainsFollowupInteractables();
     TestPhysicsWorldCreatesAndShutsDownThroughVendorFreeInterface();
     TestPhysicsWorldRaycastHitsStaticBox();
     TestPhysicsWorldDebugLinesExposeStaticBoxes();
@@ -4752,6 +4872,7 @@ int main()
     TestMaintenanceInteractionRestoresPower();
     TestWallButtonOpensRouteWithoutClosingItAgain();
     TestTraversalCompletionRecordsServiceRouteUsed();
+    TestAuthoredTraversalCompletionBindingsControlWorldFlags();
     TestFerryOfficeJobStartsIncompleteAndOrdersObjectives();
     TestFerryOfficeJobVehicleCheckpointRequiresOccupiedVehicle();
     TestFerryOfficeJobCompletionRequiresAllJobFlags();

@@ -37,6 +37,7 @@ struct PlayerState {
     engine::Vec3 traversalTargetPosition;
     bool traversalUsesCurrentPlayerPositionStart = false;
     bool traversalLandedThisFrame = false;
+    int landedTraversalId = 0;
 };
 
 class PlayerController {
