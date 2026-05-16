@@ -1104,7 +1104,7 @@ void TestSceneLoaderLoadsDefaultFerryOfficeScene()
     Expect(result.scene.meshInstances.size() >= 15,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored mesh instances, including the v0.18 prop style kit.");
-    Expect(result.scene.interactables.size() == 9,
+    Expect(result.scene.interactables.size() == 11,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored interactables.");
     Expect(result.scene.traversalAffordances.size() == 1,
@@ -1229,6 +1229,36 @@ void TestSceneLoaderLoadsDockRoadRelayBeat()
     Expect(clearanceTagMesh != nullptr && clearanceTagMesh->assetId == "clearance-tag-mesh",
         "TestSceneLoaderLoadsDockRoadRelayBeat",
         "Scene data should expose an authored clearance-tag mesh prop at the endpoint.");
+}
+
+void TestSceneLoaderLoadsHarborPartsJobBeat()
+{
+    const SceneLoadResult result = LoadSceneDefinition(DefaultScenePathForTests());
+    const SceneInteractableDefinition* partsCrate = FindSceneInteractable(result.scene, "harbor-parts-crate");
+    const SceneInteractableDefinition* partsShelf = FindSceneInteractable(result.scene, "ferry-office-parts-shelf");
+    const SceneRouteMarkerDefinition* crateRoute = FindRouteMarker(result.scene, "route-clearance-tag-to-harbor-parts");
+    const SceneRouteMarkerDefinition* shelfRoute = FindRouteMarker(result.scene, "route-harbor-parts-to-office-shelf");
+    const SceneObjectiveMarkerDefinition* crateMarker = FindObjectiveMarker(result.scene, "harbor-parts-marker");
+    const SceneObjectiveMarkerDefinition* shelfMarker = FindObjectiveMarker(result.scene, "ferry-office-parts-shelf-marker");
+
+    Expect(result.ok(),
+        "TestSceneLoaderLoadsHarborPartsJobBeat",
+        "Default scene should load before querying the harbor parts job beat.");
+    Expect(partsCrate != nullptr && partsCrate->name == FerryOffice::Names::HarborPartsCrate,
+        "TestSceneLoaderLoadsHarborPartsJobBeat",
+        "Scene data should include the harbor parts pickup after road clearance.");
+    Expect(partsShelf != nullptr && partsShelf->name == FerryOffice::Names::FerryOfficePartsShelf,
+        "TestSceneLoaderLoadsHarborPartsJobBeat",
+        "Scene data should include the Ferry Office delivery shelf.");
+    Expect(crateRoute != nullptr && crateRoute->points.size() >= 2,
+        "TestSceneLoaderLoadsHarborPartsJobBeat",
+        "Scene data should route from the clearance tag to the parts crate.");
+    Expect(shelfRoute != nullptr && shelfRoute->points.size() >= 2,
+        "TestSceneLoaderLoadsHarborPartsJobBeat",
+        "Scene data should route from the parts crate back to the office shelf.");
+    Expect(crateMarker != nullptr && shelfMarker != nullptr,
+        "TestSceneLoaderLoadsHarborPartsJobBeat",
+        "Scene data should expose objective markers for the second job beat.");
 }
 
 void TestSceneLoaderReportsMissingSceneFile()
@@ -3241,9 +3271,20 @@ void TestFerryOfficeFollowupStatusSummarizesEndpointChain()
         "Follow-up status should show relay log progress before the road clear tag.");
 
     state.setFlag(WorldFlag::DockRoadClearanceTagged, true, "Dock Road Clearance Tag");
-    Expect(FerryOfficeFollowupStatusText(state).find("road=clear") != std::string::npos,
+    Expect(FerryOfficeFollowupStatusText(state).find("road=clear") != std::string::npos
+            && FerryOfficeFollowupStatusText(state).find("parts=later") != std::string::npos,
         "TestFerryOfficeFollowupStatusSummarizesEndpointChain",
         "Follow-up status should show when the endpoint chain leaves the road clear.");
+
+    state.setFlag(WorldFlag::HarborPartsPickedUp, true, "Harbor Parts Crate");
+    Expect(FerryOfficeFollowupStatusText(state).find("parts=picked") != std::string::npos,
+        "TestFerryOfficeFollowupStatusSummarizesEndpointChain",
+        "Follow-up status should show when the Harbor Parts crate is being carried.");
+
+    state.setFlag(WorldFlag::HarborPartsDelivered, true, "Ferry Office Parts Shelf");
+    Expect(FerryOfficeFollowupStatusText(state).find("parts=delivered") != std::string::npos,
+        "TestFerryOfficeFollowupStatusSummarizesEndpointChain",
+        "Follow-up status should show when the Harbor Parts crate has been delivered.");
 }
 
 void TestFerryOfficeObjectiveTextGuidesRouteSteps()
@@ -3463,10 +3504,47 @@ void TestDockRoadRelayRequiresCompletedServiceCall()
     Expect(clearanceTagged && scene.worldState().isFlagSet(WorldFlag::DockRoadClearanceTagged),
         "TestDockRoadRelayRequiresCompletedServiceCall",
         "The dock-road clearance tag should complete only after the relay reset has been logged.");
-    Expect(scene.currentJobObjectiveText().find("clear") != std::string::npos
-            || scene.currentJobObjectiveText().find("Clear") != std::string::npos,
+    Expect(scene.currentJobObjectiveText().find("Harbor Parts") != std::string::npos,
         "TestDockRoadRelayRequiresCompletedServiceCall",
-        "The objective should acknowledge the dock-road clearance consequence.");
+        "The objective should send the player into the Harbor Parts follow-up after dock-road clearance.");
+}
+
+void TestHarborPartsJobRequiresClearedDockRoad()
+{
+    PrototypeScene scene;
+
+    const bool earlyPickup = scene.applyInteractionResult(
+        MakeSceneInteraction(std::string(FerryOffice::Names::HarborPartsCrate), InteractableType::Info));
+    Expect(!earlyPickup && !scene.worldState().isFlagSet(WorldFlag::HarborPartsPickedUp),
+        "TestHarborPartsJobRequiresClearedDockRoad",
+        "The harbor parts crate should not be available before dock-road clearance is tagged.");
+
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::FerryManifest), InteractableType::Pickup));
+    scene.recordServiceRouteUsed();
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::MaintenanceBox), InteractableType::Info));
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::WallButton), InteractableType::Info));
+    scene.recordServiceVehicleUsed();
+    scene.updateJobVehicleCheckpoint(FerryOffice::Positions::ServiceRunCheckpoint, true);
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::ServiceRunMarker), InteractableType::Info));
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::DockRoadRelay), InteractableType::Info));
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::RelayServiceLog), InteractableType::Info));
+    scene.applyInteractionResult(MakeSceneInteraction(std::string(FerryOffice::Names::DockRoadClearanceTag), InteractableType::Info));
+
+    const bool pickedUp = scene.applyInteractionResult(
+        MakeSceneInteraction(std::string(FerryOffice::Names::HarborPartsCrate), InteractableType::Info));
+    Expect(pickedUp && scene.worldState().isFlagSet(WorldFlag::HarborPartsPickedUp),
+        "TestHarborPartsJobRequiresClearedDockRoad",
+        "The harbor parts crate should be picked up after the dock road is clear.");
+    Expect(scene.currentJobObjectiveText().find("parts") != std::string::npos
+            || scene.currentJobObjectiveText().find("Parts") != std::string::npos,
+        "TestHarborPartsJobRequiresClearedDockRoad",
+        "The objective should point toward the parts delivery after pickup.");
+
+    const bool delivered = scene.applyInteractionResult(
+        MakeSceneInteraction(std::string(FerryOffice::Names::FerryOfficePartsShelf), InteractableType::Info));
+    Expect(delivered && scene.worldState().isFlagSet(WorldFlag::HarborPartsDelivered),
+        "TestHarborPartsJobRequiresClearedDockRoad",
+        "The Ferry Office parts shelf should remember the delivered crate.");
 }
 
 void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
@@ -3519,7 +3597,13 @@ void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
     Expect(state.isFlagSet(WorldFlag::DockRoadClearanceTagged),
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should tag the dock road clear as a visible local consequence.");
-    Expect(result.steps.size() >= 7,
+    Expect(state.isFlagSet(WorldFlag::HarborPartsPickedUp),
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "QA playthrough should collect the harbor parts crate.");
+    Expect(state.isFlagSet(WorldFlag::HarborPartsDelivered),
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "QA playthrough should deliver the harbor parts to the Ferry Office shelf.");
+    Expect(result.steps.size() >= 9,
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should report each major authored phase.");
     const auto hasStep = [&result](std::string_view name) {
@@ -3548,6 +3632,12 @@ void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
     Expect(hasStep("dockRoadClearanceTagged"),
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should record the dock-road clearance tag beat.");
+    Expect(hasStep("harborPartsPickedUp"),
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "QA playthrough should record the Harbor Parts pickup beat.");
+    Expect(hasStep("harborPartsDelivered"),
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "QA playthrough should record the Harbor Parts delivery beat.");
     Expect(std::filesystem::exists(reportPath),
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should write a report artifact.");
@@ -3573,6 +3663,12 @@ void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
         Expect(report["final"]["flags"]["dockRoadClearanceTagged"] == true,
             "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
             "QA playthrough report should expose the dock-road clearance tag.");
+        Expect(report["final"]["flags"]["harborPartsPickedUp"] == true,
+            "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+            "QA playthrough report should expose the Harbor Parts pickup.");
+        Expect(report["final"]["flags"]["harborPartsDelivered"] == true,
+            "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+            "QA playthrough report should expose the Harbor Parts delivery.");
         Expect(report["vehicleRuntime"]["backend"] == "deterministic",
             "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
             "QA playthrough report should expose the vehicle runtime backend.");
@@ -4424,6 +4520,7 @@ int main()
     TestSceneLoaderLoadsV018VisualIdentityPropKit();
     TestSceneLoaderLoadsFirstJobMarkers();
     TestSceneLoaderLoadsDockRoadRelayBeat();
+    TestSceneLoaderLoadsHarborPartsJobBeat();
     TestSceneLoaderReportsMissingSceneFile();
     TestSceneLoaderLoadsVehicleBoundsAndRoadMarkers();
     TestPrototypeWorldBuildsFerryOfficeCollidersFromSceneData();
@@ -4502,6 +4599,7 @@ int main()
     TestFerryOfficeObjectiveTextGuidesRouteSteps();
     TestFerryOfficeCompletionRequiresRememberedLoop();
     TestDockRoadRelayRequiresCompletedServiceCall();
+    TestHarborPartsJobRequiresClearedDockRoad();
     TestFerryOfficeExitMarkerRequiresReadyState();
     TestWallButtonOpenLatchesServiceGateColliderState();
     TestFerryOfficeServiceVaultFocusesFromAccessibleSide();

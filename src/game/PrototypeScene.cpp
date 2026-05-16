@@ -93,6 +93,24 @@ void PrototypeScene::buildFromFerryOfficeData()
     dockRoadClearanceTag.message = FerryOffice::Messages::DockRoadClearanceTag;
     m_interactions.addInteractable(dockRoadClearanceTag);
 
+    Interactable harborPartsCrate;
+    harborPartsCrate.name = FerryOffice::Names::HarborPartsCrate;
+    harborPartsCrate.prompt = FerryOffice::Prompts::HarborPartsCrate;
+    harborPartsCrate.position = FerryOffice::Positions::HarborPartsCrate;
+    harborPartsCrate.radius = FerryOffice::Radii::HarborPartsCrate;
+    harborPartsCrate.type = InteractableType::Info;
+    harborPartsCrate.message = FerryOffice::Messages::HarborPartsCrate;
+    m_interactions.addInteractable(harborPartsCrate);
+
+    Interactable ferryOfficePartsShelf;
+    ferryOfficePartsShelf.name = FerryOffice::Names::FerryOfficePartsShelf;
+    ferryOfficePartsShelf.prompt = FerryOffice::Prompts::FerryOfficePartsShelf;
+    ferryOfficePartsShelf.position = FerryOffice::Positions::FerryOfficePartsShelf;
+    ferryOfficePartsShelf.radius = FerryOffice::Radii::FerryOfficePartsShelf;
+    ferryOfficePartsShelf.type = InteractableType::Info;
+    ferryOfficePartsShelf.message = FerryOffice::Messages::FerryOfficePartsShelf;
+    m_interactions.addInteractable(ferryOfficePartsShelf);
+
     TraversalAffordance serviceVault;
     serviceVault.name = FerryOffice::Names::ServiceVault;
     serviceVault.prompt = FerryOffice::Prompts::ServiceVault;
@@ -254,6 +272,14 @@ bool PrototypeScene::applyInteractionResult(const InteractionResult& result)
         if (m_worldState.isFlagSet(WorldFlag::DockRoadRelayLogged)) {
             changed |= m_worldState.setFlag(WorldFlag::DockRoadClearanceTagged, true, result.name);
         }
+    } else if (result.name == FerryOffice::Names::HarborPartsCrate) {
+        if (m_worldState.isFlagSet(WorldFlag::DockRoadClearanceTagged)) {
+            changed |= m_worldState.setFlag(WorldFlag::HarborPartsPickedUp, true, result.name);
+        }
+    } else if (result.name == FerryOffice::Names::FerryOfficePartsShelf) {
+        if (m_worldState.isFlagSet(WorldFlag::HarborPartsPickedUp)) {
+            changed |= m_worldState.setFlag(WorldFlag::HarborPartsDelivered, true, result.name);
+        }
     }
 
     return changed;
@@ -341,8 +367,16 @@ std::string PrototypeScene::currentJobObjectiveText() const
         && !m_worldState.isFlagSet(WorldFlag::DockRoadClearanceTagged)) {
         return "Tag Dock Road clear beside the relay service board.";
     }
-    if (m_worldState.isFlagSet(WorldFlag::DockRoadClearanceTagged)) {
-        return "Dock road clear. Ferry Office follow-up complete.";
+    if (m_worldState.isFlagSet(WorldFlag::DockRoadClearanceTagged)
+        && !m_worldState.isFlagSet(WorldFlag::HarborPartsPickedUp)) {
+        return "Collect the Harbor Parts Crate near the dock-road cabinet.";
+    }
+    if (m_worldState.isFlagSet(WorldFlag::HarborPartsPickedUp)
+        && !m_worldState.isFlagSet(WorldFlag::HarborPartsDelivered)) {
+        return "Deliver the harbor parts to the Ferry Office parts shelf.";
+    }
+    if (m_worldState.isFlagSet(WorldFlag::HarborPartsDelivered)) {
+        return "Harbor parts delivered. Ferry Office follow-up complete.";
     }
     return m_job.currentObjectiveText(m_worldState);
 }

@@ -1,6 +1,6 @@
 # Vertical Slice
 
-Last updated: 2026-05-15
+Last updated: 2026-05-16
 
 ## Slice Name
 
@@ -93,6 +93,12 @@ The slice still uses debug text and markers, not a real UI framework. Job #2 rem
 The first compact follow-up beat is `Dock Road Relay`.
 
 After the Ferry Office Service Call completes at the service-run marker, the player can reset a small relay at the dock-road endpoint. This records `dockRoadRelayReset=true` and flips a small endpoint status cue from warning orange to reset green. The player can then log the reset at the nearby service board, recording `dockRoadRelayLogged=true`. This gives the service-run area a remembered visible/sign-off consequence without adding a mission framework, NPC AI, economy, save/load, new vehicle physics, or broader map expansion.
+
+## v0.60 Harbor Parts Return Micro-slice
+
+The first compact second-job style beat is `Harbor Parts Return`.
+
+After the Dock Road relay has been reset, logged, and tagged clear, the player can collect a Harbor Parts Crate by the dock-road maintenance cabinet, recording `harborPartsPickedUp=true`. The player can then return to the Ferry Office and deliver it to the parts shelf, recording `harborPartsDelivered=true`. This makes the service-yard and office form a small return loop with visible remembered state while still avoiding a generic mission framework, inventory, save/load, NPC dispatcher, economy, or carried-object simulation.
 
 ## Systems Explicitly Deferred
 

@@ -33,6 +33,79 @@ Last updated: 2026-05-16
 6. Add PowerShell/Python workbench commands for doctor, configure/build, verify, and status reporting.
 7. Run the available validation commands, record exact results here, and keep any compiler/graphics blockers honest.
 
+## v0.60 Harbor Parts Return Micro-slice (2026-05-16)
+
+Selected milestone:
+
+- Add a compact Harbor Parts return job beat after the Dock Road clearance chain.
+
+Candidate triage:
+
+- Harbor Parts return micro-slice: high playable-content impact, moderate-low risk, validates through scene tests, C++ job/playthrough tests, `tools\playthrough_qa.py`, visual smoke, and `scripts\verify.ps1`.
+- Collision-backed Jolt obstacle route: high vehicle-promotion value, medium risk, but v0.59 just completed a vehicle-tech milestone.
+- SandboxLayer responsibility split: useful architecture work, but player-facing content can safely grow first.
+
+Why selected:
+
+- v0.59 closed the strongest automated vehicle obstacle-progress gap, so the next highest-leverage move was content-facing progress.
+- The existing Dock Road endpoint chain already had remembered flags, route markers, and playthrough QA, making a two-step return delivery a bounded way to make the slice feel more like a practical driver/fixer job.
+
+Definition of Done:
+
+- Add a `Harbor Parts Crate` pickup-style interactable after `dockRoadClearanceTagged`.
+- Add a `Ferry Office Parts Shelf` delivery interactable after `harborPartsPickedUp`.
+- Add scene-authored routes/objective markers for the crate and return shelf.
+- Extend C++ and Python QA so the scripted playthrough requires both new flags and steps.
+- Keep initial prompt/focus on the Ferry Manifest.
+- Update docs, pass `scripts\verify.ps1`, run `git diff --check`, commit, and push.
+
+Implementation notes:
+
+- Added `WorldFlag::HarborPartsPickedUp` and `WorldFlag::HarborPartsDelivered`.
+- Added Ferry Office constants for the harbor parts crate and office shelf.
+- Gated the crate behind dock-road clearance and gated the shelf behind crate pickup in `PrototypeScene`.
+- Extended `currentJobObjectiveText()` and the playtest follow-up status from `relay/log/road` to include `parts=later/picked/delivered`.
+- Extended `data\scenes\ferry_office.scene.json` to 11 interactables, 11 route markers, and 10 objective markers.
+- Moved the office shelf deeper inside the office after EngineCoreTests caught it stealing the initial manifest prompt.
+- Extended `FerryOfficePlaythroughQa` and `tools\playthrough_qa.py` so stale reports missing Harbor Parts flags/steps are rejected.
+
+Commands and results:
+
+- `python tests\test_scene_tools.py`: failed as expected before implementation because `harbor-parts-crate`, `ferry-office-parts-shelf`, routes, markers, and scene counts were missing.
+- `python tests\test_playthrough_qa.py`: passed before implementation, 5 tests.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: failed as expected before implementation because Harbor Parts constants and flags did not exist.
+- `python tests\test_scene_tools.py`: passed after implementation, 42 tests.
+- `python tests\test_playthrough_qa.py`: passed after implementation, 5 tests.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests EngineApp`: passed.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: initially failed because the shelf focus radius stole the spawn prompt; passed after moving the shelf deeper into the office.
+- `python tools\validate_scene.py`: passed.
+- `python tools\scene_report.py`: passed; scene reports 20 materials, 26 visual placeholders, 12 mesh assets, 47 mesh instances, 11 interactables, 11 route markers, and 10 objective markers.
+- `python tools\playthrough_qa.py`: passed; phase=`complete`, events=15, vehicleRuntime=`deterministic`, framesToCheckpoint=139.
+- `python tools\scale_audit.py`: passed; no suspicious scale issues.
+- `python tools\validate_assets.py`: passed; 12 model files.
+- `python tools\mesh_report.py`: passed; 12 mesh assets, 47 mesh instances, 12 referenced model files.
+- `python tools\capture_visual_smoke.py`: passed for GDI and DX11 captures; DX11 used WARP in this environment.
+- `scripts\verify.ps1`: passed; doctor, configure, build, CTest 11/11, scene validation, asset validation, mesh report, and smoke run completed.
+
+Automated evidence generated:
+
+- `build\playthroughs\ferry-office-service-call-report.json` completes the longer 15-event chain with `harborPartsPickedUp=true` and `harborPartsDelivered=true`.
+- Visual smoke preserved the initial playtest prompt as `Press E: Collect Ferry Manifest` after the shelf relocation.
+
+Provisional decision:
+
+- Treat Harbor Parts Return as compact Job #2 content, but not a mission framework, inventory system, persistence feature, or economy.
+- Keep behavior mappings explicit in C++ for now; the next content beat can decide whether repeated gating patterns justify scene action bindings.
+
+Remaining limitations:
+
+- Harbor parts are represented by existing interactable/route/debug-text language, not a carried prop, inventory item, save/load state, or bespoke delivery animation.
+- The shelf delivery is remembered only for the current runtime session.
+
+Next direction:
+
+- Prefer a presentation/readability pass for the longer 15-event chain or begin scene action bindings if the next content beat would otherwise add more hardcoded `PrototypeScene` branches.
+
 ## v0.54 Dock Road Clearance Tag Consequence (2026-05-16)
 
 Selected milestone:

@@ -50,12 +50,18 @@ class SceneToolTests(unittest.TestCase):
             "dock-road-clearance-tag",
             "dock-road-clearance-status-tag",
             "mesh-dock-road-clearance-tag",
+            "harbor-parts-crate",
+            "ferry-office-parts-shelf",
             "route-service-confirm-to-relay",
             "route-relay-to-service-log",
             "route-service-log-to-clearance-tag",
+            "route-clearance-tag-to-harbor-parts",
+            "route-harbor-parts-to-office-shelf",
             "dock-road-relay-marker",
             "relay-service-log-marker",
             "dock-road-clearance-marker",
+            "harbor-parts-marker",
+            "ferry-office-parts-shelf-marker",
         ]:
             self.assertIn(required_id, ids)
 
@@ -84,11 +90,11 @@ class SceneToolTests(unittest.TestCase):
         self.assertEqual(20, summary.material_count)
         self.assertGreaterEqual(summary.collider_count, 9)
         self.assertEqual(26, summary.visual_count)
-        self.assertEqual(9, summary.interactable_count)
+        self.assertEqual(11, summary.interactable_count)
         self.assertEqual(1, summary.traversal_count)
         self.assertEqual(1, summary.vehicle_count)
-        self.assertEqual(9, summary.route_count)
-        self.assertEqual(8, summary.objective_marker_count)
+        self.assertEqual(11, summary.route_count)
+        self.assertEqual(10, summary.objective_marker_count)
 
     def test_scene_summary_reports_mesh_assets_and_instances(self) -> None:
         summary = scene_data.build_summary(self.scene)

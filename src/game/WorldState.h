@@ -21,6 +21,8 @@ enum class WorldFlag {
     DockRoadRelayReset,
     DockRoadRelayLogged,
     DockRoadClearanceTagged,
+    HarborPartsPickedUp,
+    HarborPartsDelivered,
     Count,
 };
 

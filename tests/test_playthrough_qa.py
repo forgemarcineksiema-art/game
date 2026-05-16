@@ -41,6 +41,8 @@ class PlaythroughQaTests(unittest.TestCase):
                             {"name": "dockRoadRelayReset", "passed": True},
                             {"name": "dockRoadRelayLogged", "passed": True},
                             {"name": "dockRoadClearanceTagged", "passed": True},
+                            {"name": "harborPartsPickedUp", "passed": True},
+                            {"name": "harborPartsDelivered", "passed": True},
                         ],
                         "vehicleRuntime": {
                             "requested": "deterministic",
@@ -64,6 +66,8 @@ class PlaythroughQaTests(unittest.TestCase):
                                 "dockRoadRelayReset": True,
                                 "dockRoadRelayLogged": True,
                                 "dockRoadClearanceTagged": True,
+                                "harborPartsPickedUp": True,
+                                "harborPartsDelivered": True,
                             },
                         },
                     }
@@ -101,6 +105,8 @@ class PlaythroughQaTests(unittest.TestCase):
                                 "dockRoadRelayReset": False,
                                 "dockRoadRelayLogged": False,
                                 "dockRoadClearanceTagged": False,
+                                "harborPartsPickedUp": False,
+                                "harborPartsDelivered": False,
                             },
                         },
                     }
@@ -142,6 +148,8 @@ class PlaythroughQaTests(unittest.TestCase):
                                 "dockRoadRelayReset": True,
                                 "dockRoadRelayLogged": True,
                                 "dockRoadClearanceTagged": True,
+                                "harborPartsPickedUp": True,
+                                "harborPartsDelivered": True,
                             },
                         },
                     }
@@ -169,6 +177,8 @@ class PlaythroughQaTests(unittest.TestCase):
                             {"name": "dockRoadRelayReset", "passed": True},
                             {"name": "dockRoadRelayLogged", "passed": True},
                             {"name": "dockRoadClearanceTagged", "passed": True},
+                            {"name": "harborPartsPickedUp", "passed": True},
+                            {"name": "harborPartsDelivered", "passed": True},
                         ],
                         "final": {
                             "phase": "complete",
@@ -185,6 +195,8 @@ class PlaythroughQaTests(unittest.TestCase):
                                 "dockRoadRelayReset": True,
                                 "dockRoadRelayLogged": True,
                                 "dockRoadClearanceTagged": True,
+                                "harborPartsPickedUp": True,
+                                "harborPartsDelivered": True,
                             },
                         },
                     }

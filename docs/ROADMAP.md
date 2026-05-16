@@ -665,6 +665,15 @@ Status: implemented and validated. Scene data now has 12 mesh assets, 47 mesh in
 
 Status: implemented and validated. Jolt vehicle runtime QA now passes with maxPositionDelta=1.49 and recommendation=`promote`; the obstacle proxy final-X gap shrank from 6.85 to about 2.91 units, Jolt reaches the service checkpoint in 212 frames, opt-in Jolt playthrough QA completes the 13-event chain, and deterministic remains default pending collision-backed evidence.
 
+## v0.60 - Harbor Parts Return Micro-slice
+
+- Add a compact second content loop after Dock Road clearance: pick up Harbor Parts by the dock-road cabinet and return them to the Ferry Office shelf.
+- Record `harborPartsPickedUp` and `harborPartsDelivered` as remembered local state.
+- Extend scene routes/objective markers and scripted playthrough QA to cover the return trip.
+- Keep this as authored compact content, not an inventory system, save/load feature, economy, NPC job board, or generic mission framework.
+
+Status: implemented and validated. Scene data now has 11 interactables, 11 route markers, and 10 objective markers; deterministic playthrough QA completes the 15-event chain with Harbor Parts pickup and delivery, while the initial playtest prompt still focuses the Ferry Manifest.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. With v0.59 closing the obstacle-progress proxy gap, the next useful vehicle milestone is a collision-backed obstacle route before default Jolt promotion. If staying content-facing, choose a compact Job #2 micro-slice rather than continuing endpoint polish.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. With v0.60 adding a second compact content loop, the next useful content milestone is either a presentation/readability pass for the 15-event chain or scene action bindings to reduce `PrototypeScene` hardcoding before adding another beat. For vehicle promotion, the next useful milestone remains a collision-backed obstacle route before default Jolt promotion.

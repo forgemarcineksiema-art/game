@@ -55,7 +55,11 @@ std::string FerryOfficeFollowupStatusText(const WorldState& state)
            << " | log="
            << (state.isFlagSet(WorldFlag::DockRoadRelayLogged) ? "signed" : "later")
            << " | road="
-           << (state.isFlagSet(WorldFlag::DockRoadClearanceTagged) ? "clear" : "later");
+           << (state.isFlagSet(WorldFlag::DockRoadClearanceTagged) ? "clear" : "later")
+           << " | parts="
+           << (state.isFlagSet(WorldFlag::HarborPartsDelivered)
+                   ? "delivered"
+                   : (state.isFlagSet(WorldFlag::HarborPartsPickedUp) ? "picked" : "later"));
     return output.str();
 }
 

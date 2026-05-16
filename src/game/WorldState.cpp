@@ -21,6 +21,8 @@ constexpr std::array AllFlags = {
     WorldFlag::DockRoadRelayReset,
     WorldFlag::DockRoadRelayLogged,
     WorldFlag::DockRoadClearanceTagged,
+    WorldFlag::HarborPartsPickedUp,
+    WorldFlag::HarborPartsDelivered,
 };
 
 } // namespace
@@ -56,6 +58,10 @@ std::string_view WorldFlagName(WorldFlag flag)
         return "dockRoadRelayLogged";
     case WorldFlag::DockRoadClearanceTagged:
         return "dockRoadClearanceTagged";
+    case WorldFlag::HarborPartsPickedUp:
+        return "harborPartsPickedUp";
+    case WorldFlag::HarborPartsDelivered:
+        return "harborPartsDelivered";
     case WorldFlag::Count:
     default:
         return "unknown";

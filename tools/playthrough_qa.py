@@ -27,6 +27,8 @@ REQUIRED_FLAGS = [
     "dockRoadRelayReset",
     "dockRoadRelayLogged",
     "dockRoadClearanceTagged",
+    "harborPartsPickedUp",
+    "harborPartsDelivered",
 ]
 REQUIRED_RUNTIME_STEPS = [
     "serviceVehicleRuntime",
@@ -35,6 +37,8 @@ REQUIRED_RUNTIME_STEPS = [
     "dockRoadRelayReset",
     "dockRoadRelayLogged",
     "dockRoadClearanceTagged",
+    "harborPartsPickedUp",
+    "harborPartsDelivered",
 ]
 
 
