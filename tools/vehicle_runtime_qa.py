@@ -17,6 +17,12 @@ SCHEMA = "v0.36-ferry-office-vehicle-runtime-comparison"
 MAX_POSITION_DELTA = 4.0
 MAX_YAW_DELTA_DEGREES = 130.0
 MAX_SPEED_DELTA = 5.0
+REQUIRED_CONTROL_CHECKS = {
+    "tapThrottleCoast",
+    "brakeStopsForwardMotion",
+    "reverseMovesBackward",
+    "reverseCoastSettles",
+}
 
 
 def default_exe_path() -> pathlib.Path:
@@ -48,6 +54,27 @@ def _require_samples(report: dict[str, Any], key: str) -> list[dict[str, Any]]:
     return samples
 
 
+def _require_control_checks(report: dict[str, Any]) -> list[dict[str, Any]]:
+    checks = report.get("controlChecks")
+    if not isinstance(checks, list) or not checks:
+        raise ValueError("Vehicle runtime report is missing controls-focused control checks.")
+
+    names = set()
+    for check in checks:
+        if not isinstance(check, dict):
+            raise ValueError(f"Vehicle runtime control check is invalid: {check}")
+        names.add(str(check.get("name", "")))
+        if check.get("passed") is not True:
+            raise ValueError(f"Vehicle runtime control check failed: {check}")
+        if "speed" not in check or "distance" not in check or "frameIndex" not in check:
+            raise ValueError(f"Vehicle runtime control check is missing telemetry: {check}")
+
+    missing = REQUIRED_CONTROL_CHECKS - names
+    if missing:
+        raise ValueError(f"Vehicle runtime report is missing required control checks: {sorted(missing)}")
+    return checks
+
+
 def load_and_validate_report(report_path: pathlib.Path) -> dict[str, Any]:
     if not report_path.exists():
         raise FileNotFoundError(f"Vehicle runtime comparison report was not created: {report_path}")
@@ -70,6 +97,7 @@ def load_and_validate_report(report_path: pathlib.Path) -> dict[str, Any]:
         raise ValueError("Vehicle runtime comparison samples are not paired.")
     if report["adapter"].get("backend") != "jolt":
         raise ValueError(f"Vehicle runtime QA must run against opt-in Jolt backend, got: {report['adapter'].get('backend')}")
+    _require_control_checks(report)
 
     comparison = report.get("comparison")
     if not isinstance(comparison, dict):
@@ -120,6 +148,7 @@ def run_vehicle_runtime(exe: pathlib.Path, scene: pathlib.Path, report_path: pat
         "Vehicle runtime QA passed: "
         f"backend={report['adapter']['backend']}, "
         f"samples={len(report['adapter']['samples'])}, "
+        f"controlChecks={len(report['controlChecks'])}, "
         f"maxPositionDelta={comparison['maxPositionDelta']:.2f}, "
         f"recommendation={comparison['recommendation']}, "
         f"report={report_path}"

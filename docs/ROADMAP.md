@@ -528,6 +528,16 @@ Status: implemented as a background composition pass. The Ferry Office scene now
 
 Status: implemented as a focused water presentation pass. The Ferry Office scene now references 11 mesh assets and 46 mesh instances, including `blender_harbor_water_surface.gltf` used three times over the existing water-edge cues while keeping all gameplay and collision unchanged.
 
+## v0.45 - Vehicle Runtime Controls QA Hardening
+
+- Extend the existing Ferry Office vehicle runtime comparison report with controls-focused checks for short throttle tap/coast, braking, reverse motion, and reverse coast-down.
+- Keep deterministic vehicle gameplay as the default and keep the Jolt live runtime behind the explicit opt-in path.
+- Require the Python vehicle runtime QA wrapper to reject stale reports that do not include the controls-focused checks.
+- Preserve current gameplay, scene data, renderer presentation, physics backend boundaries, and the existing live vehicle switch.
+- Avoid default Jolt promotion, vehicle retuning, Job #2, traffic, damage, broader map work, or Jolt vendor leakage into `src/game`.
+
+Status: implemented as a validation hardening pass. `tools\vehicle_runtime_qa.py` now requires four control checks in addition to paired deterministic/Jolt samples, and the Jolt-enabled runtime comparison still recommends `promote` for continued opt-in testing with `maxPositionDelta=2.95`.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. The next vehicle decision should be a short human comparison pass between normal deterministic driving and `--vehicle-runtime jolt`, then either defer Jolt vehicle promotion with concrete feel issues or promote one narrow follow-up to improve the switched path. Avoid Job #2 until the first job is automatically validated, comfortable by hand, and no longer blocked by core movement/vehicle confidence.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. The next vehicle decision should still be a short human comparison pass between normal deterministic driving and `--vehicle-runtime jolt`, now backed by the v0.45 tap/brake/reverse/coast controls checks. Either defer Jolt vehicle promotion with concrete feel issues or promote one narrow follow-up to improve the switched path. Avoid Job #2 until the first job is automatically validated, comfortable by hand, and no longer blocked by core movement/vehicle confidence.

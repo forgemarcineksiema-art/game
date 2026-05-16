@@ -38,6 +38,15 @@ struct FerryOfficeVehicleRuntimeComparisonResult {
     int inputFrameCount = 0;
     std::vector<engine::physics::VehicleProbeSample> deterministicSamples;
     std::vector<engine::physics::VehicleProbeSample> adapterSamples;
+    struct ControlCheck {
+        std::string name;
+        bool passed = false;
+        int frameIndex = 0;
+        float speed = 0.0f;
+        float distance = 0.0f;
+        std::string message;
+    };
+    std::vector<ControlCheck> controlChecks;
     float maxPositionDelta = 0.0f;
     float maxYawDeltaDegrees = 0.0f;
     float maxSpeedDelta = 0.0f;

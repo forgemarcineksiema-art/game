@@ -5508,6 +5508,106 @@ Validation:
 - python tools\vehicle_runtime_qa.py
 ```
 
+## v0.45 Vehicle Runtime Controls QA Hardening (2026-05-16)
+
+Goal:
+
+- Make the existing Ferry Office deterministic-vs-Jolt vehicle runtime QA closer to the manual-playtest decision that is blocking vehicle promotion.
+- Add controls-focused evidence for the user-reported risk areas: tiny throttle taps, braking, reverse motion, and reverse coast-down.
+- Keep deterministic live gameplay as the default and preserve the explicit `--vehicle-runtime jolt` opt-in path.
+
+Non-goals:
+
+- No default Jolt vehicle promotion.
+- No vehicle feel retuning.
+- No Job #2, traffic, damage, garage, save/load, broader road/map expansion, renderer polish, scene props, or content work.
+- No Jolt vendor types in `src\game`.
+
+TDD notes:
+
+- Added failing C++ expectations first in `TestFerryOfficeVehicleRuntimeComparisonQaWritesReport` for `controlChecks` in the runtime comparison result and JSON report.
+- Added failing Python validation first in `tests\test_vehicle_runtime_qa.py` to reject passing reports that omit controls-focused checks.
+- Initial red result:
+  - `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: failed because `FerryOfficeVehicleRuntimeComparisonResult::controlChecks` did not exist.
+  - `python tests\test_vehicle_runtime_qa.py`: failed because the wrapper still accepted a passing report without `controlChecks`.
+
+Implementation notes:
+
+- `FerryOfficeVehicleRuntimeComparisonResult` now includes controls-focused `ControlCheck` records.
+- `RunFerryOfficeVehicleRuntimeComparisonQa` writes a top-level `controlChecks` report block with:
+  - `tapThrottleCoast`,
+  - `brakeStopsForwardMotion`,
+  - `reverseMovesBackward`,
+  - `reverseCoastSettles`.
+- The checks run through the selected `IVehicleRuntimeAdapter` boundary, so the default simple adapter and opt-in Jolt adapter are exercised without exposing vendor types to game code.
+- The Python wrapper now requires all four checks before accepting a passing runtime comparison report.
+- The Jolt check design was split into independent tap, brake, reverse, and coast probes after an early combined brake-then-short-reverse probe proved too brittle for the opt-in runtime despite the dedicated reverse regression passing.
+
+Focused validation:
+
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests; build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `python tests\test_vehicle_runtime_qa.py`: passed, 3 tests.
+- `cmake --build --preset windows-vs2022-debug-jolt --target EngineCoreTests EngineApp; python tools\vehicle_runtime_qa.py`: passed; backend `jolt`, samples=5, controlChecks=4, maxPositionDelta=2.95, recommendation=`promote`.
+- `ctest --preset windows-vs2022-debug --output-on-failure`: passed, 11/11.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed, 15/15.
+- `python tools\physics_parity_qa.py`: passed; backend `jolt`, floor=4, raycast=4, overlap=4.
+- `python tools\character_contact_qa.py`: passed; backend `jolt`, probes=7.
+- `python tools\vehicle_physics_qa.py`: passed; backend `jolt`, samples=5, recommendation=`promote`.
+- `python tools\vehicle_runtime_qa.py`: passed; backend `jolt`, samples=5, controlChecks=4, maxPositionDelta=2.95, recommendation=`promote`.
+- `python tools\playthrough_qa.py`: passed; phase=`complete`, events=10.
+
+Final validation:
+
+- `scripts\verify.ps1`: passed after code/docs updates; doctor completed with known plain-PATH warnings, configure/build succeeded, CTest passed 11/11, scene validation passed, asset validation passed, mesh report found 11 referenced model files and 46 mesh instances, and the null smoke run loaded all Ferry Office mesh assets.
+
+Remaining limitations:
+
+- This is stronger automated evidence, not a substitute for a human deterministic-vs-Jolt-live drive.
+- The default live vehicle path remains deterministic.
+- The runtime adapter is still opt-in; player collision, traversal, service-gate behavior, traffic, damage, audio, and production vehicle tuning remain unchanged.
+
+Next-goal prompt:
+
+```text
+Create a Codex goal for Tidebreak.
+
+Repository rules:
+- Follow AGENTS.md and docs/AI_WORKFLOW.md.
+- Use docs/CONTEXT_MAP.md for orientation.
+- Update docs/STATUS.md.
+- Run scripts/verify.ps1 before claiming success.
+- Commit and push only if validation passes and there are no unrelated user changes.
+
+Goal:
+Run and document a bounded deterministic-vs-Jolt-live vehicle hand-play comparison for the Ferry Office service vehicle.
+
+Why now:
+The Jolt vehicle path now has feasibility, runtime-comparison, live opt-in switch, tap/coast/reverse fix coverage, and controls-focused v0.45 runtime QA. The missing evidence is human feel: whether the switched path is actually better, worse, or just different in the compact service yard.
+
+Scope:
+- Run baseline deterministic play with `scripts/play.ps1 -DebugUi`.
+- Run opt-in Jolt live play with `scripts/play.ps1 -VehicleRuntime jolt -ExecutablePath build\windows-vs2022-debug-jolt\Debug\EngineApp.exe -DebugUi`.
+- Compare enter/exit, low-speed control, short throttle taps, brake-to-reverse transition, reverse steering readability, camera target behavior, route completion, and debug telemetry.
+- Record concrete promote/defer/tune evidence in `docs/STATUS.md`.
+- Keep automated QA fresh before and after the comparison.
+
+Non-goals:
+- No Job #2.
+- No traffic, NPCs, damage, garage, economy, save/load, mission scripting, or broad map expansion.
+- No default replacement unless the comparison clearly supports it and validation remains clean.
+- No extra deterministic vehicle polish unless it blocks a fair comparison.
+- No Jolt vendor types leaking into game-facing APIs.
+
+Validation:
+- scripts/verify.ps1
+- cmake --build --preset windows-vs2022-debug-jolt
+- ctest --preset windows-vs2022-debug-jolt --output-on-failure
+- python tools\physics_parity_qa.py
+- python tools\character_contact_qa.py
+- python tools\vehicle_physics_qa.py
+- python tools\vehicle_runtime_qa.py
+```
+
 ## v0.39 Scene Presentation Material Boundary (2026-05-16)
 
 Goal attempted:

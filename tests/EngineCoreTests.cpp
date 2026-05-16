@@ -3742,6 +3742,14 @@ void TestFerryOfficeVehicleRuntimeComparisonQaWritesReport()
     Expect(result.deterministicSamples.size() >= 4 && result.adapterSamples.size() == result.deterministicSamples.size(),
         "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
         "Runtime comparison QA should record paired deterministic and adapter samples.");
+    Expect(result.controlChecks.size() >= 3,
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Runtime comparison QA should include manual-control confidence checks for tap, brake, reverse, and coast behavior.");
+    for (const auto& check : result.controlChecks) {
+        Expect(check.passed,
+            "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+            check.message);
+    }
     Expect(result.maxPositionDelta <= 0.75f,
         "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
         "Simple runtime adapter should stay close to the deterministic fallback path.");
@@ -3764,6 +3772,9 @@ void TestFerryOfficeVehicleRuntimeComparisonQaWritesReport()
     Expect(report["adapter"]["backend"] == "simple",
         "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
         "Runtime comparison report should include adapter backend metadata.");
+    Expect(report["controlChecks"].size() >= 3,
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Runtime comparison report should include controls-focused QA checks.");
 
     std::filesystem::remove(reportPath);
 }

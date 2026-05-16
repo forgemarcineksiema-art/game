@@ -42,6 +42,18 @@ nlohmann::json SampleJson(const engine::physics::VehicleProbeSample& sample)
     };
 }
 
+nlohmann::json ControlCheckJson(const FerryOfficeVehicleRuntimeComparisonResult::ControlCheck& check)
+{
+    return {
+        {"name", check.name},
+        {"passed", check.passed},
+        {"frameIndex", check.frameIndex},
+        {"speed", check.speed},
+        {"distance", check.distance},
+        {"message", check.message},
+    };
+}
+
 float HorizontalDistance(engine::Vec3 lhs, engine::Vec3 rhs)
 {
     return engine::Length(engine::Vec2 {lhs.x - rhs.x, lhs.z - rhs.z});
@@ -90,6 +102,181 @@ engine::InputState RuntimeInputForDeterministicController(const engine::physics:
 engine::physics::VehicleRuntimeInput RuntimeInputForAdapter(const engine::physics::VehicleProbeInputFrame& input)
 {
     return {input.throttle, input.steer, input.brake};
+}
+
+bool RuntimeStateLooksStable(const engine::physics::VehicleRuntimeState& state)
+{
+    return !state.outOfBounds && state.wheelContactCount >= 2;
+}
+
+bool StepRuntimeAdapter(
+    engine::physics::IVehicleRuntimeAdapter& adapter,
+    const engine::physics::VehicleRuntimeInput& input,
+    int frames,
+    float fixedStepSeconds)
+{
+    for (int frame = 0; frame < frames; ++frame) {
+        if (!adapter.step(input, fixedStepSeconds)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+FerryOfficeVehicleRuntimeComparisonResult::ControlCheck MakeControlCheck(
+    std::string name,
+    const engine::physics::VehicleRuntimeState& state,
+    bool passed,
+    float distance,
+    std::string message)
+{
+    FerryOfficeVehicleRuntimeComparisonResult::ControlCheck check;
+    check.name = std::move(name);
+    check.passed = passed;
+    check.frameIndex = state.frameIndex;
+    check.speed = state.speed;
+    check.distance = distance;
+    check.message = std::move(message);
+    return check;
+}
+
+std::vector<FerryOfficeVehicleRuntimeComparisonResult::ControlCheck> RunVehicleRuntimeControlChecks(
+    const engine::physics::VehicleRuntimeConfig& config,
+    engine::physics::PhysicsBackend backend)
+{
+    std::vector<FerryOfficeVehicleRuntimeComparisonResult::ControlCheck> checks;
+
+    {
+        std::unique_ptr<engine::physics::IVehicleRuntimeAdapter> adapter =
+            engine::physics::CreateVehicleRuntimeAdapter(backend);
+        if (!adapter || !adapter->initialize(config)) {
+            engine::physics::VehicleRuntimeState state;
+            state.position = config.spawnPosition;
+            checks.push_back(MakeControlCheck(
+                "tapThrottleCoast",
+                state,
+                false,
+                0.0f,
+                "Runtime adapter was unavailable for tap/coast control QA."));
+            return checks;
+        }
+
+        const bool stepped = StepRuntimeAdapter(*adapter, {1.0f, 0.0f, 0.0f}, 1, config.fixedStepSeconds)
+            && StepRuntimeAdapter(*adapter, {}, 90, config.fixedStepSeconds);
+        const engine::physics::VehicleRuntimeState settled = adapter->state();
+        adapter->shutdown();
+
+        const float distance = HorizontalDistance(config.spawnPosition, settled.position);
+        const bool passed = stepped
+            && RuntimeStateLooksStable(settled)
+            && std::abs(settled.speed) <= 0.25f
+            && distance <= 1.5f;
+        checks.push_back(MakeControlCheck(
+            "tapThrottleCoast",
+            settled,
+            passed,
+            distance,
+            passed
+                ? "Short throttle tap settled without service-yard creep."
+                : "Short throttle tap did not settle quickly enough for compact-yard control."));
+    }
+
+    std::unique_ptr<engine::physics::IVehicleRuntimeAdapter> adapter =
+        engine::physics::CreateVehicleRuntimeAdapter(backend);
+    if (!adapter || !adapter->initialize(config)) {
+        engine::physics::VehicleRuntimeState state;
+        state.position = config.spawnPosition;
+        checks.push_back(MakeControlCheck(
+            "brakeStopsForwardMotion",
+            state,
+            false,
+            0.0f,
+            "Runtime adapter was unavailable for brake/reverse control QA."));
+        return checks;
+    }
+
+    const bool forwardStepped = StepRuntimeAdapter(*adapter, {0.65f, 0.0f, 0.0f}, 30, config.fixedStepSeconds);
+    const engine::physics::VehicleRuntimeState forward = adapter->state();
+    const bool brakeStepped = StepRuntimeAdapter(*adapter, {0.0f, 0.0f, 1.0f}, 16, config.fixedStepSeconds);
+    const engine::physics::VehicleRuntimeState stopped = adapter->state();
+    const float brakeDistance = HorizontalDistance(forward.position, stopped.position);
+    const bool brakePassed = forwardStepped
+        && brakeStepped
+        && RuntimeStateLooksStable(stopped)
+        && std::abs(stopped.speed) <= 0.65f
+        && stopped.speed >= -0.25f;
+    checks.push_back(MakeControlCheck(
+        "brakeStopsForwardMotion",
+        stopped,
+        brakePassed,
+        brakeDistance,
+        brakePassed
+            ? "Brake input stopped forward motion before reverse was requested."
+            : "Brake input did not stop forward motion inside the compact control budget."));
+
+    adapter->shutdown();
+    adapter = engine::physics::CreateVehicleRuntimeAdapter(backend);
+    if (!adapter || !adapter->initialize(config)) {
+        engine::physics::VehicleRuntimeState state;
+        state.position = config.spawnPosition;
+        checks.push_back(MakeControlCheck(
+            "reverseMovesBackward",
+            state,
+            false,
+            0.0f,
+            "Runtime adapter was unavailable for reverse control QA."));
+        return checks;
+    }
+
+    const bool reverseStepped = StepRuntimeAdapter(*adapter, {-1.0f, 0.0f, 0.0f}, 80, config.fixedStepSeconds);
+    const engine::physics::VehicleRuntimeState reverse = adapter->state();
+    const float signedReverseDistance = engine::Dot(reverse.position - config.spawnPosition, engine::ForwardFromYaw(config.spawnYawRadians));
+    const bool reversePassed = reverseStepped
+        && RuntimeStateLooksStable(reverse)
+        && reverse.speed < -0.10f
+        && signedReverseDistance < -0.15f;
+    checks.push_back(MakeControlCheck(
+        "reverseMovesBackward",
+        reverse,
+        reversePassed,
+        -signedReverseDistance,
+        reversePassed
+            ? "Reverse input produced negative speed and backward motion."
+            : "Reverse input did not produce clear backward motion."));
+
+    adapter->shutdown();
+    adapter = engine::physics::CreateVehicleRuntimeAdapter(backend);
+    if (!adapter || !adapter->initialize(config)) {
+        engine::physics::VehicleRuntimeState state;
+        state.position = config.spawnPosition;
+        checks.push_back(MakeControlCheck(
+            "reverseCoastSettles",
+            state,
+            false,
+            0.0f,
+            "Runtime adapter was unavailable for reverse coast control QA."));
+        return checks;
+    }
+
+    StepRuntimeAdapter(*adapter, {-0.65f, 0.0f, 0.0f}, 30, config.fixedStepSeconds);
+    const engine::physics::VehicleRuntimeState reverseBeforeCoast = adapter->state();
+    const bool coastStepped = StepRuntimeAdapter(*adapter, {}, 90, config.fixedStepSeconds);
+    const engine::physics::VehicleRuntimeState coasted = adapter->state();
+    const float coastDistance = HorizontalDistance(reverseBeforeCoast.position, coasted.position);
+    const bool coastPassed = coastStepped
+        && RuntimeStateLooksStable(coasted)
+        && std::abs(coasted.speed) <= 0.35f;
+    checks.push_back(MakeControlCheck(
+        "reverseCoastSettles",
+        coasted,
+        coastPassed,
+        coastDistance,
+        coastPassed
+            ? "Neutral input settled reverse motion after backing up."
+            : "Neutral input did not settle reverse motion quickly enough."));
+
+    adapter->shutdown();
+    return checks;
 }
 
 VehicleController BuildDeterministicVehicle(const SceneVehicleDefinition& vehicle)
@@ -200,6 +387,11 @@ bool WriteReport(const FerryOfficeVehicleRuntimeComparisonResult& result)
         adapterSamples.push_back(SampleJson(sample));
     }
 
+    nlohmann::json controlChecks = nlohmann::json::array();
+    for (const FerryOfficeVehicleRuntimeComparisonResult::ControlCheck& check : result.controlChecks) {
+        controlChecks.push_back(ControlCheckJson(check));
+    }
+
     const nlohmann::json report = {
         {"schema", "v0.36-ferry-office-vehicle-runtime-comparison"},
         {"scenario", result.scenario},
@@ -215,6 +407,7 @@ bool WriteReport(const FerryOfficeVehicleRuntimeComparisonResult& result)
             {"backend", result.adapterBackendName},
             {"samples", adapterSamples},
         }},
+        {"controlChecks", controlChecks},
         {"comparison", {
             {"maxPositionDelta", result.maxPositionDelta},
             {"maxYawDeltaDegrees", result.maxYawDeltaDegrees},
@@ -386,14 +579,19 @@ FerryOfficeVehicleRuntimeComparisonResult RunFerryOfficeVehicleRuntimeComparison
     }
 
     adapter->shutdown();
+    result.controlChecks = RunVehicleRuntimeControlChecks(config, backend);
 
     const bool closeEnough = result.maxPositionDelta <= RuntimePositionDeltaLimit
         && result.maxYawDeltaDegrees <= RuntimeYawDeltaLimitDegrees
         && result.maxSpeedDelta <= RuntimeSpeedDeltaLimit;
-    result.passed = deterministicStable && adapterStable && closeEnough && !result.deterministicSamples.empty();
+    const bool controlsStable = !result.controlChecks.empty()
+        && std::all_of(result.controlChecks.begin(), result.controlChecks.end(), [](const auto& check) {
+               return check.passed;
+           });
+    result.passed = deterministicStable && adapterStable && closeEnough && controlsStable && !result.deterministicSamples.empty();
     result.recommendation = result.passed ? "promote" : "defer";
     result.recommendationReason = result.passed
-        ? "The selected vehicle runtime adapter stayed stable and close enough to compare behind a live switch."
+        ? "The selected vehicle runtime adapter stayed stable, close enough to compare, and passed compact service-yard control checks."
         : "The selected vehicle runtime adapter needs more work before live switch promotion.";
     if (!result.passed) {
         result.error = "Vehicle runtime comparison did not meet stability or comparison thresholds.";
