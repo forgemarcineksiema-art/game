@@ -1157,10 +1157,10 @@ void TestSceneLoaderLoadsDefaultFerryOfficeScene()
     Expect(result.scene.colliders.size() == 9,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored static colliders.");
-    Expect(result.scene.visualPlaceholders.size() == 30,
+    Expect(result.scene.visualPlaceholders.size() == 31,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored visual placeholders.");
-    Expect(result.scene.sceneMaterials.size() == 24,
+    Expect(result.scene.sceneMaterials.size() == 25,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored presentation materials for every current scene color key.");
     Expect(result.scene.meshInstances.size() >= 15,
@@ -1320,6 +1320,7 @@ void TestSceneLoaderLoadsHarborPartsJobBeat()
     const SceneInteractableDefinition* drainLog = FindSceneInteractable(result.scene, "ferry-office-drain-log");
     const SceneRouteMarkerDefinition* drainLogRoute = FindRouteMarker(result.scene, "route-low-dock-drain-to-office-log");
     const SceneObjectiveMarkerDefinition* drainLogMarker = FindObjectiveMarker(result.scene, "ferry-office-drain-log-marker");
+    const SceneVisualPlaceholderDefinition* drainLogStatus = FindVisualPlaceholder(result.scene, "ferry-office-drain-log-status-light");
 
     Expect(result.ok(),
         "TestSceneLoaderLoadsHarborPartsJobBeat",
@@ -1390,6 +1391,9 @@ void TestSceneLoaderLoadsHarborPartsJobBeat()
     Expect(drainLogMarker != nullptr,
         "TestSceneLoaderLoadsHarborPartsJobBeat",
         "Scene data should expose an objective marker for the drain log closeout.");
+    Expect(drainLogStatus != nullptr && drainLogStatus->colorKey == "ferry-office-drain-log-state",
+        "TestSceneLoaderLoadsHarborPartsJobBeat",
+        "Scene data should include a visible office-side drain log state cue.");
 }
 
 void TestSceneLoaderLoadsInteractableActionPrerequisites()
@@ -2228,6 +2232,8 @@ void TestScenePresentationDynamicPaletteStatesRemainDistinct()
     stormPumpTicketClosedState.stormPumpTicketClosed = true;
     ScenePresentationState lowDockDrainClearedState;
     lowDockDrainClearedState.lowDockDrainCleared = true;
+    ScenePresentationState lowDockDrainLoggedState;
+    lowDockDrainLoggedState.lowDockDrainLogged = true;
 
     const engine::Color closedGate = SceneColorForKey("service-gate-state", {});
     const engine::Color openGate = SceneColorForKey("service-gate-state", openGateState);
@@ -2247,6 +2253,8 @@ void TestScenePresentationDynamicPaletteStatesRemainDistinct()
     const engine::Color stormTicketClosed = SceneColorForKey("storm-pump-ticket-state", stormPumpTicketClosedState);
     const engine::Color drainPending = SceneColorForKey("low-dock-drain-state", {});
     const engine::Color drainCleared = SceneColorForKey("low-dock-drain-state", lowDockDrainClearedState);
+    const engine::Color drainLogPending = SceneColorForKey("ferry-office-drain-log-state", {});
+    const engine::Color drainLogSigned = SceneColorForKey("ferry-office-drain-log-state", lowDockDrainLoggedState);
 
     Expect(!ColorNear(closedGate, openGate),
         "TestScenePresentationDynamicPaletteStatesRemainDistinct",
@@ -2275,6 +2283,9 @@ void TestScenePresentationDynamicPaletteStatesRemainDistinct()
     Expect(drainCleared.g > drainPending.g && drainCleared.r < drainPending.r,
         "TestScenePresentationDynamicPaletteStatesRemainDistinct",
         "Low dock drain palette should shift from pending amber toward clear green.");
+    Expect(drainLogSigned.g > drainLogPending.g && drainLogSigned.r < drainLogPending.r,
+        "TestScenePresentationDynamicPaletteStatesRemainDistinct",
+        "Ferry Office drain log palette should shift from pending amber toward signed green.");
 }
 
 void TestScenePresentationMaterialPresetsStayBoundedForAuthoredKeys()

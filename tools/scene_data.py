@@ -36,6 +36,7 @@ KNOWN_COLOR_KEYS = {
     "dock-road-clearance-state",
     "dock-road-relay-state",
     "dock-weathered-wood",
+    "ferry-office-drain-log-state",
     "ferry-office-handoff-state",
     "ferry-route-sign-blue",
     "low-dock-drain-state",

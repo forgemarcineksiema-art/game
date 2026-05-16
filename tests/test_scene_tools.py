@@ -106,9 +106,9 @@ class SceneToolTests(unittest.TestCase):
         summary = scene_data.build_summary(self.scene)
 
         self.assertEqual("ferry-office", summary.scene_id)
-        self.assertEqual(24, summary.material_count)
+        self.assertEqual(25, summary.material_count)
         self.assertGreaterEqual(summary.collider_count, 9)
-        self.assertEqual(30, summary.visual_count)
+        self.assertEqual(31, summary.visual_count)
         self.assertEqual(17, summary.interactable_count)
         self.assertEqual(1, summary.traversal_count)
         self.assertEqual(1, summary.vehicle_count)
@@ -457,6 +457,21 @@ class SceneToolTests(unittest.TestCase):
             mesh_instances["mesh-ferry-office-sign-board"]["assetId"],
         )
         self.assertEqual("dock-muted-sign-yellow", mesh_instances["mesh-ferry-office-sign-board"]["colorKey"])
+
+    def test_v090_drain_log_status_cue_is_authored(self) -> None:
+        visual_placeholders = {placeholder["id"]: placeholder for placeholder in self.scene["visualPlaceholders"]}
+        material_keys = {material["key"] for material in self.scene["sceneMaterials"]}
+
+        self.assertIn("ferry-office-drain-log-status-light", visual_placeholders)
+        self.assertEqual(
+            "drain-log-status-light",
+            visual_placeholders["ferry-office-drain-log-status-light"]["role"],
+        )
+        self.assertEqual(
+            "ferry-office-drain-log-state",
+            visual_placeholders["ferry-office-drain-log-status-light"]["colorKey"],
+        )
+        self.assertIn("ferry-office-drain-log-state", material_keys)
 
     def test_duplicate_mesh_replacement_links_are_reported(self) -> None:
         scene = copy.deepcopy(self.scene)

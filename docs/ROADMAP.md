@@ -918,6 +918,15 @@ Status: implemented and validated. The front sign now has a raised frame and ins
 
 Status: implemented and validated. Scene data now has 17 interactables, 17 route markers, and 16 objective markers; deterministic playthrough QA completes the 21-event chain through the Ferry Office drain log closeout.
 
+## v0.90 - Ferry Office Drain Log State Cue
+
+- Add a visible office-side state cue for the Ferry Office Drain Log closeout.
+- Wire the cue to `lowDockDrainLogged` through `ScenePresentationState`.
+- Keep it as a tiny authored visual placeholder and dynamic color, not a final UI, text signage, mesh prop, save/load journal, or material-system expansion.
+- Preserve deterministic playthrough QA, scene validation, visual smoke, and the main verify gate.
+
+Status: implemented and validated. Scene data now has 25 authored scene materials and 31 visual placeholders; the drain-log cue shifts from pending amber to signed green after `lowDockDrainLogged`.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.89, the next useful future milestone should either add a visible state cue for the new Ferry Office drain log, build preferred-runtime/Jolt road-edge live-control evidence, or improve the side service-panel/notice-board cluster as a coherent player-facing pass.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.90, the next useful future milestone should either build preferred-runtime/Jolt road-edge live-control evidence or improve the side service-panel/notice-board cluster as a coherent player-facing pass.

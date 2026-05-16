@@ -17,6 +17,7 @@ struct ScenePresentationState {
     bool stormPumpReset = false;
     bool stormPumpTicketClosed = false;
     bool lowDockDrainCleared = false;
+    bool lowDockDrainLogged = false;
 };
 
 struct SceneMaterial {

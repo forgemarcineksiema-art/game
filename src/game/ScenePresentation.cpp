@@ -110,6 +110,11 @@ engine::Color DynamicSceneColor(std::string_view key, engine::Color authoredBase
             ? engine::Color {0.24f, 0.76f, 0.48f, 1.0f}
             : engine::Color {0.68f, 0.54f, 0.20f, 1.0f};
     }
+    if (key == "ferry-office-drain-log-state") {
+        return state.lowDockDrainLogged
+            ? engine::Color {0.26f, 0.78f, 0.44f, 1.0f}
+            : engine::Color {0.70f, 0.56f, 0.22f, 1.0f};
+    }
     if (key == "service-vehicle-cabin-placeholder") {
         if (state.vehicleOccupied) {
             return ScaleColor({0.18f, 0.58f, 0.95f, 1.0f}, 0.78f);
@@ -152,7 +157,8 @@ bool IsKnownSceneColorKey(std::string_view key)
         || key == "dock-road-clearance-state"
         || key == "storm-pump-state"
         || key == "storm-pump-ticket-state"
-        || key == "low-dock-drain-state";
+        || key == "low-dock-drain-state"
+        || key == "ferry-office-drain-log-state";
 }
 
 SceneMaterial SceneMaterialForKey(std::string_view key, ScenePresentationState state)
@@ -247,6 +253,11 @@ SceneMaterial SceneMaterialForKey(std::string_view key, ScenePresentationState s
         return PaintedMaterial(state.lowDockDrainCleared
             ? engine::Color {0.24f, 0.76f, 0.48f, 1.0f}
             : engine::Color {0.68f, 0.54f, 0.20f, 1.0f});
+    }
+    if (key == "ferry-office-drain-log-state") {
+        return PaintedMaterial(state.lowDockDrainLogged
+            ? engine::Color {0.26f, 0.78f, 0.44f, 1.0f}
+            : engine::Color {0.70f, 0.56f, 0.22f, 1.0f});
     }
 
     return DefaultMaterial({0.35f, 0.42f, 0.40f, 1.0f});

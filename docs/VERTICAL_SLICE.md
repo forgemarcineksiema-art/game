@@ -108,6 +108,8 @@ v0.64 adds one final office-side handoff note after the Work Board update. Filin
 
 After the storm pump ticket and low dock drain clear tag, the player can return to the Ferry Office Drain Log and sign off the low dock drain closeout. This records `lowDockDrainLogged=true`, keeps the follow-up chain ending back at the office hub, and gives the drain work a remembered administrative endpoint without adding a job-board UI, save/load, NPC dispatcher, inventory, or a generic mission framework.
 
+v0.90 adds a small office-side Drain Log state cue that shifts from pending amber to signed green after `lowDockDrainLogged=true`. It is still a debug/prototype visual placeholder, but it makes the closeout visible at the hub instead of only in text and QA reports.
+
 ## Systems Explicitly Deferred
 
 - Additional vehicles beyond the one v0.16 service-yard vehicle beat.

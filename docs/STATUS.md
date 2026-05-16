@@ -2,6 +2,82 @@
 
 Last updated: 2026-05-16
 
+## v0.90 Ferry Office Drain Log State Cue (2026-05-16)
+
+Selected milestone:
+
+- Add a visible remembered-state cue for the new Ferry Office Drain Log closeout.
+
+Candidate milestone triage:
+
+- Drain Log state cue: impact medium/high because v0.89 added a closeout interaction but left the office-side feedback silent; risk low because it follows the existing dynamic scene-color pattern; validation path = red/green C++ and scene-tool tests, scene validation/report, playthrough QA, visual smoke, `scripts\verify.ps1`.
+- Preferred Jolt road-edge live-control evidence: impact medium/high for vehicle direction; risk medium and better as the next technical pass after one player-facing feedback pass.
+- Side service-panel/notice-board visual pass: impact medium; risk low, but it does not directly reinforce the new authored closeout.
+
+Why selected:
+
+- The previous milestone made the follow-up chain end at the Ferry Office hub. A small status light beside the office log makes that remembered state visible in the same place, improving player-facing consequence without expanding scope.
+
+What changed:
+
+- Added an authored `ferry-office-drain-log-status-light` visual placeholder beside the office-side closeout area.
+- Added `ferry-office-drain-log-state` to scene materials, C++ presentation palette, and Python scene validation.
+- Extended `ScenePresentationState` and `SandboxLayer` so the cue shifts after `lowDockDrainLogged`.
+- Added red/green C++ and Python scene-tool coverage for the new cue and palette transition.
+
+Files changed:
+
+- `data\scenes\ferry_office.scene.json`
+- `src\game\SandboxLayer.cpp`
+- `src\game\ScenePresentation.h`
+- `src\game\ScenePresentation.cpp`
+- `tools\scene_data.py`
+- `tests\EngineCoreTests.cpp`
+- `tests\test_scene_tools.py`
+- `docs\CONTEXT_MAP.md`
+- `docs\ROADMAP.md`
+- `docs\SCENE_AUTHORING.md`
+- `docs\VERTICAL_SLICE.md`
+- `docs\STATUS.md`
+
+Validation so far:
+
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: first failed as expected because `ScenePresentationState::lowDockDrainLogged` did not exist; passed after implementation.
+- `python tests\test_scene_tools.py`: first failed as expected because the material/cue did not exist; then failed on the Python color-key allowlist; passed after tool update with 49 tests.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `python tools\validate_scene.py`: passed.
+- `python tools\scene_report.py`: passed; 25 scene materials, 31 visual placeholders, 19 mesh assets, 66 mesh instances, 17 interactables, 17 route markers, and 16 objective markers.
+- `python tools\validate_assets.py`: passed; 19 model files.
+- `python tools\mesh_report.py`: passed; 19 mesh assets, 66 mesh instances, 19 referenced model files.
+- `python tools\scale_audit.py`: passed.
+- `python tools\playthrough_qa.py`: passed; deterministic vehicle runtime reached the checkpoint in 139 frames and the 21-event chain still completed.
+- `python tools\capture_visual_smoke.py`: passed; GDI colors=80/lumaRange=221, DX11 colors=48/lumaRange=221 with WARP fallback in this environment.
+
+Automated evidence generated:
+
+- Focused tests prove the office drain-log palette shifts from pending amber to signed green after `lowDockDrainLogged`.
+- `build\playthroughs\ferry-office-service-call-report.json`
+- `build\captures\v0.31-gdi-capture.bmp`
+- `build\captures\v0.31-dx11-capture.bmp`
+- `build\captures\capture_visual_smoke_report.json`
+
+Provisional decision:
+
+- Keep using tiny authored dynamic-color cues for simple remembered-state feedback while the renderer is still a debug/immediate-mode presentation path. This improves local consequence without pretending the project has final UI, decals, text signage, or a material system.
+
+Remaining limitations:
+
+- The new cue is a small visual placeholder, not final art, readable text, a UI journal, save/load, or a mesh prop.
+
+Final validation:
+
+- `scripts\verify.ps1`: passed; doctor completed with known plain-PATH tool warnings, configure/build succeeded, default CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke completed.
+- `git diff --check`: passed with only expected CRLF normalization warnings for touched files.
+
+Next direction:
+
+- If validation stays green, prefer either preferred-runtime/Jolt road-edge live-control evidence or a small side-service-panel readability pass next.
+
 ## v0.89 Low Dock Drain Office Log Closeout (2026-05-16)
 
 Selected milestone:

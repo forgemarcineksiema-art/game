@@ -132,6 +132,11 @@
       "baseColor": [0.68, 0.54, 0.20, 1.0]
     },
     {
+      "key": "ferry-office-drain-log-state",
+      "response": "painted",
+      "baseColor": [0.70, 0.56, 0.22, 1.0]
+    },
+    {
       "key": "service-gate-state",
       "response": "painted",
       "baseColor": [0.42, 0.12, 0.08, 1.0]
@@ -417,6 +422,13 @@
       "center": [-1.92, 0.92, 2.56],
       "halfExtents": [0.16, 0.08, 0.05],
       "colorKey": "storm-pump-ticket-state"
+    },
+    {
+      "id": "ferry-office-drain-log-status-light",
+      "role": "drain-log-status-light",
+      "center": [-1.42, 0.92, 2.56],
+      "halfExtents": [0.16, 0.08, 0.05],
+      "colorKey": "ferry-office-drain-log-state"
     },
     {
       "id": "low-dock-drain-status-light",
