@@ -804,6 +804,14 @@ Status: implemented and validated. The scene now has 54 mesh instances, includin
 
 Status: implemented and validated. GDI and DX11 now use a slightly lighter overcast blue-gray default clear color; `scripts/verify.ps1`, scene/asset/mesh/scale checks, and GDI/DX11 visual smoke pass while text contrast remains usable.
 
+## v0.76 - Player Proxy Silhouette Cleanup
+
+- Make the centered third-person stand-in read less like a single debug column in the default Ferry Office frame.
+- Split the placeholder into compact leg, torso, shoulder, and head volumes while keeping it static and validation-friendly.
+- Preserve player collision, camera behavior, prompts, route flow, and interaction behavior.
+
+Status: implemented and validated. The default player proxy now has a clearer third-person silhouette in capture while staying within the existing placeholder renderer path; `scripts/verify.ps1`, scene/asset/mesh/scale checks, and GDI/DX11 visual smoke pass.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.75, the next useful future milestone should either replace a small repeated high-visibility unit-box cue with a richer original mesh, add a bounded fog/horizon treatment if the renderer path is ready, add an automated route-walking proxy for the longer Ferry Office follow-up chain, or use preferred-runtime evidence to harden Jolt road-edge/live-control behavior.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.76, the next useful future milestone should either replace a small repeated high-visibility unit-box cue with a richer original mesh, add a bounded fog/horizon treatment if the renderer path is ready, add an automated route-walking proxy for the longer Ferry Office follow-up chain, or use preferred-runtime evidence to harden Jolt road-edge/live-control behavior.

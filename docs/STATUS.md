@@ -2,6 +2,61 @@
 
 Last updated: 2026-05-16
 
+## v0.76 Player Proxy Silhouette Cleanup (2026-05-16)
+
+Selected milestone:
+
+- Make the default player stand-in read more like a compact third-person character and less like a single debug column.
+
+Candidate visual pass triage:
+
+- Player Proxy Silhouette Cleanup: visible impact = high because the player occupies the center of the default frame; risk = low because it only changes presentation boxes; validation/capture path = rebuild, GDI/DX11 visual smoke, `scripts\verify.ps1`.
+- Replace a repeated small prop mesh: visible impact = medium; risk = medium because it would add asset authoring scope.
+- Fog/horizon treatment: visible impact = high; risk = higher because renderer haze work could affect both backends and text readability.
+
+Why selected:
+
+- After v0.75, the scene background and authored dock/gate reads improved, but the player proxy was still one of the most obvious prototype cues in the first frame. Splitting it into legs, torso, shoulders, and head gives a clearer scale cue without adding gameplay or animation scope.
+
+Implementation notes:
+
+- Replaced the single player body box with separate leg, torso, shoulder, and head boxes in `SandboxLayer::drawPlayerPresentation`.
+- Kept the same placeholder presentation style, collision/gameplay state, camera behavior, prompt rendering, and interaction flow.
+- Verified from the GDI capture that the new silhouette remains readable in front of the Ferry Office and does not occlude the prompt/objective text.
+
+Files changed:
+
+- `src\game\SandboxLayer.cpp`
+- `docs\STATUS.md`
+- `docs\ROADMAP.md`
+
+Focused validation:
+
+- `scripts\build.ps1`: passed.
+- `python tools\capture_visual_smoke.py --renderer gdi`: passed before final verification; GDI colors=71/lumaRange=221.
+- `scripts\verify.ps1`: passed; doctor completed with known plain-PATH tool warnings, configure/build succeeded, default CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke completed.
+- `python tools\capture_visual_smoke.py`: passed; GDI colors=71/lumaRange=221, DX11 colors=41/lumaRange=221 with WARP fallback in this environment.
+- `python tools\validate_scene.py`: passed.
+- `python tools\validate_assets.py`: passed.
+- `python tools\mesh_report.py`: passed; 12 mesh assets, 54 mesh instances, 12 referenced model files.
+- `python tools\scene_report.py`: passed; 24 scene materials, 30 visual placeholders, 54 mesh instances, 16 interactables, 16 route markers, and 15 objective markers.
+- `python tools\scale_audit.py`: passed.
+- `git diff --check`: passed with only expected CRLF normalization warnings for touched files.
+
+Automated evidence generated:
+
+- `build\captures\v0.31-gdi-capture.bmp`
+- `build\captures\v0.31-dx11-capture.bmp`
+- `build\captures\capture_visual_smoke_report.json`
+
+Remaining visual weakness:
+
+- The player is still a static placeholder made from boxes. A future character pass should replace it with a tiny original mesh or stronger authored proxy once that can be done without turning the visual loop into animation scope.
+
+Commit/push:
+
+- Ready to commit and push as `v0.76 player proxy silhouette cleanup`.
+
 ## v0.75 Overcast Background Separation Pass (2026-05-16)
 
 Selected milestone:
@@ -54,7 +109,7 @@ Remaining visual weakness:
 
 Commit/push:
 
-- Pending.
+- Committed and pushed as `0d4db78` (`v0.75 overcast background separation pass`).
 
 ## v0.74 Dock Foreground Material Rhythm Pass (2026-05-16)
 

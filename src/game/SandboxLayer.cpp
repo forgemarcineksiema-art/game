@@ -908,10 +908,19 @@ void SandboxLayer::drawSceneVisualPlaceholders(engine::IRenderer& renderer)
 void SandboxLayer::drawPlayerPresentation(engine::IRenderer& renderer)
 {
     const PlayerState& player = m_player.state();
-    renderer.drawDebugSolidBox(player.position + engine::Vec3 {0.0f, 0.76f, 0.0f},
-        {0.24f, 0.58f, 0.18f},
+    renderer.drawDebugSolidBox(player.position + engine::Vec3 {-0.10f, 0.38f, 0.0f},
+        {0.07f, 0.34f, 0.08f},
+        {0.06f, 0.12f, 0.13f, 1.0f});
+    renderer.drawDebugSolidBox(player.position + engine::Vec3 {0.10f, 0.38f, 0.0f},
+        {0.07f, 0.34f, 0.08f},
+        {0.06f, 0.12f, 0.13f, 1.0f});
+    renderer.drawDebugSolidBox(player.position + engine::Vec3 {0.0f, 0.92f, 0.0f},
+        {0.23f, 0.36f, 0.17f},
         {0.08f, 0.16f, 0.18f, 1.0f});
-    renderer.drawDebugSolidBox(player.position + engine::Vec3 {0.0f, 1.46f, 0.0f},
+    renderer.drawDebugSolidBox(player.position + engine::Vec3 {0.0f, 1.34f, 0.0f},
+        {0.28f, 0.09f, 0.18f},
+        {0.07f, 0.14f, 0.16f, 1.0f});
+    renderer.drawDebugSolidBox(player.position + engine::Vec3 {0.0f, 1.52f, 0.0f},
         {0.16f, 0.16f, 0.16f},
         {0.38f, 0.30f, 0.22f, 1.0f});
 }
