@@ -76,6 +76,11 @@ bool ParseVehicleRuntime(std::string_view text, bool& adapterEnabled, physics::P
     return false;
 }
 
+bool ParseQaCaptureState(std::string_view text)
+{
+    return text == "relay-to-service-log";
+}
+
 } // namespace
 
 std::string_view UiModeName(UiMode mode)
@@ -244,6 +249,15 @@ ConfigParseResult ParseArguments(int argc, const char* const* argv)
             continue;
         }
 
+        if (ReadValue(argc, argv, index, argument, "--qa-capture-state", value)) {
+            if (!ParseQaCaptureState(value)) {
+                result.errors.push_back("--qa-capture-state must be: relay-to-service-log.");
+            } else {
+                result.config.qaCaptureState = value;
+            }
+            continue;
+        }
+
         if (ReadValue(argc, argv, index, argument, "--qa-physics-parity", value)) {
             if (value == "ferry-office-collision"
                 || value == "ferry-office-character-contact"
@@ -305,6 +319,7 @@ std::string BuildHelpText()
         << "  --capture-dir <path>  Write one renderer-owned BMP capture into the directory.\n"
         << "  --qa-playthrough <name> Run a QA-only automated playthrough. Supported: ferry-office-service-call.\n"
         << "  --qa-playthrough-report <path> Write the QA playthrough JSON report.\n"
+        << "  --qa-capture-state <name> Preload a QA-only capture state. Supported: relay-to-service-log.\n"
         << "  --qa-physics-parity <name> Run QA-only physics parity/contact. Supported: ferry-office-collision, ferry-office-character-contact, ferry-office-vehicle-feasibility, ferry-office-vehicle-runtime-comparison.\n"
         << "  --qa-physics-report <path> Write the QA physics parity JSON report.\n"
         << "  --help                Show this help.\n";

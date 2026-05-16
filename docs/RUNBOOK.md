@@ -153,11 +153,12 @@ scripts/play.ps1 -Dx11 -Frames 6 -CaptureFrame build\captures\dx11-frame.bmp
 scripts/play.ps1 -Frames 6 -CaptureDir build\captures
 python tools\capture_visual_smoke.py
 python tools\capture_visual_smoke.py --report-json build\captures\v0.31-visual-report.json
+python tools\capture_visual_smoke.py --scenario relay-to-service-log --report-json build\captures\capture_visual_smoke_midchain_report.json
 ```
 
 `--capture-frame <path>` writes one 32-bit BMP to the exact path. `--capture-dir <path>` writes one generated `capture-<renderer>.bmp` file into the directory. Capture occurs after a stable frame, or on the last bounded frame if the run is shorter than the stable-frame threshold. GDI captures the back buffer including the GDI debug text. DX11 captures the swap-chain back buffer before `Present`, including the v0.31 renderer-owned bitmap debug text and existing geometry/depth presentation.
 
-`tools\capture_visual_smoke.py` is the preferred bounded visual evidence path. It launches GDI and DX11, checks expected dimensions, BMP validity, non-flat color diversity, luminance range, broad Ferry Office start-view color signals for dark background, warm markers, green/teal markers, cool geometry, and a conservative top-left bright text signal. It also compares renderer capture dimensions and writes `build\captures\capture_visual_smoke_report.json` by default. This is intentionally not OCR, semantic object detection, or a pixel-perfect golden-image test.
+`tools\capture_visual_smoke.py` is the preferred bounded visual evidence path. It launches GDI and DX11, checks expected dimensions, BMP validity, non-flat color diversity, luminance range, broad Ferry Office start-view color signals for dark background, warm markers, green/teal markers, cool geometry, and a conservative top-left bright text signal. It also compares renderer capture dimensions and writes `build\captures\capture_visual_smoke_report.json` by default. `--scenario relay-to-service-log` forwards `--qa-capture-state relay-to-service-log` to the app, preloads a narrow QA-only Ferry Office mid-chain state, and captures active playtest route guidance near the Relay Service Log. This is not save/load, a manual-play shortcut, OCR, semantic object detection, or a pixel-perfect golden-image test.
 
 Automated Ferry Office playthrough QA:
 

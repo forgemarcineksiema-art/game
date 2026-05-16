@@ -232,10 +232,11 @@ def compare_capture_parity(captures: dict[str, dict[str, Any]]) -> dict[str, Any
     return parity
 
 
-def write_report(report_path: pathlib.Path, captures: dict[str, dict[str, Any]], parity: dict[str, Any]) -> None:
+def write_report(report_path: pathlib.Path, captures: dict[str, dict[str, Any]], parity: dict[str, Any], scenario: str = "initial") -> None:
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report = {
         "schema": "v0.31-capture-visual-smoke",
+        "scenario": scenario,
         "captures": captures,
         "parity": parity,
     }
@@ -246,6 +247,14 @@ def read_bmp_stats(path: pathlib.Path) -> dict[str, Any]:
     return analyze_bmp_capture(path)
 
 
+def qa_capture_state_args(scenario: str) -> list[str]:
+    if scenario == "initial":
+        return []
+    if scenario == "relay-to-service-log":
+        return ["--qa-capture-state", "relay-to-service-log"]
+    raise ValueError(f"Unsupported capture scenario '{scenario}'.")
+
+
 def run_capture(
     exe: pathlib.Path,
     scene: pathlib.Path,
@@ -253,6 +262,7 @@ def run_capture(
     output_path: pathlib.Path,
     frames: int,
     thresholds: VisualThresholds,
+    scenario: str = "initial",
 ) -> dict[str, Any]:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     if output_path.exists():
@@ -272,6 +282,7 @@ def run_capture(
         "--capture-frame",
         str(output_path),
     ]
+    command.extend(qa_capture_state_args(scenario))
     print("Running:", " ".join(command))
     result = subprocess.run(command, cwd=ROOT, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=False)
     print(result.stdout, end="")
@@ -304,6 +315,12 @@ def main() -> int:
     parser.add_argument("--output-dir", default=str(ROOT / "build" / "captures"), help="Directory for BMP captures.")
     parser.add_argument("--report-json", default="", help="Optional JSON report path. Defaults into --output-dir.")
     parser.add_argument("--frames", type=int, default=6, help="Bounded run length; capture occurs after a stable frame.")
+    parser.add_argument(
+        "--scenario",
+        choices=("initial", "relay-to-service-log"),
+        default="initial",
+        help="Capture state to preload. 'relay-to-service-log' exercises mid-chain playtest route guidance.",
+    )
     parser.add_argument("--expected-width", type=int, default=1280, help="Expected capture width.")
     parser.add_argument("--expected-height", type=int, default=720, help="Expected capture height.")
     parser.add_argument(
@@ -331,16 +348,20 @@ def main() -> int:
     try:
         captures: dict[str, dict[str, Any]] = {}
         for renderer in renderers:
+            capture_name = f"v0.31-{renderer}-capture.bmp"
+            if args.scenario != "initial":
+                capture_name = f"v0.94-{args.scenario}-{renderer}-capture.bmp"
             captures[renderer] = run_capture(
                 exe,
                 scene,
                 renderer,
-                output_dir / f"v0.31-{renderer}-capture.bmp",
+                output_dir / capture_name,
                 args.frames,
                 thresholds,
+                args.scenario,
             )
         parity = compare_capture_parity(captures)
-        write_report(report_path, captures, parity)
+        write_report(report_path, captures, parity, args.scenario)
         print(f"Wrote visual smoke report: {report_path}")
     except Exception as exc:
         print(f"Capture visual smoke failed: {exc}", file=sys.stderr)

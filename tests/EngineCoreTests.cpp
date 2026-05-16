@@ -482,6 +482,25 @@ void TestQaPhysicsParityArgumentsAcceptVehicleRuntimeComparisonScenario()
         "Config should preserve the requested vehicle runtime comparison scenario.");
 }
 
+void TestQaCaptureStateArgumentsSelectMidChainRouteState()
+{
+    const char* argv[] = {"EngineApp", "--qa-capture-state", "relay-to-service-log"};
+    const auto result = engine::ParseArguments(3, argv);
+
+    Expect(result.errors.empty(),
+        "TestQaCaptureStateArgumentsSelectMidChainRouteState",
+        "QA capture state argument should parse cleanly.");
+    Expect(result.config.qaCaptureState == "relay-to-service-log",
+        "TestQaCaptureStateArgumentsSelectMidChainRouteState",
+        "Config should preserve the requested route-guidance capture state.");
+
+    const char* badArgv[] = {"EngineApp", "--qa-capture-state", "unknown"};
+    const auto badResult = engine::ParseArguments(3, badArgv);
+    Expect(!badResult.errors.empty(),
+        "TestQaCaptureStateArgumentsSelectMidChainRouteState",
+        "Unknown QA capture states should be rejected.");
+}
+
 void TestVehicleRuntimeArgumentsDefaultToDeterministicFallback()
 {
     const char* argv[] = {"EngineApp"};
@@ -2638,6 +2657,33 @@ void TestSandboxLayerPlaytestKeepsRouteDebugHiddenAfterManifest()
     Expect(routeLines < CountRouteMarkerSegments(result.scene),
         "TestSandboxLayerPlaytestKeepsRouteDebugHiddenAfterManifest",
         "Playtest mode should draw only the active route leg, while F1 debug preserves all route validation.");
+}
+
+void TestSandboxLayerQaCaptureStateDrawsMidChainRouteGuidance()
+{
+    SandboxLayer layer(
+        DefaultScenePathForTests(),
+        engine::UiMode::Playtest,
+        engine::physics::PhysicsBackend::Simple,
+        false,
+        "relay-to-service-log");
+    layer.onAttach();
+
+    CountingRenderer renderer;
+    renderer.initialize({});
+    renderer.beginFrame(1);
+    layer.onRender(renderer);
+    renderer.endFrame();
+    const std::string text = layer.debugText();
+    layer.onDetach();
+
+    const engine::Color routeColor {0.70f, 0.92f, 1.0f, 1.0f};
+    Expect(CountLinesWithColor(renderer, routeColor) > 0,
+        "TestSandboxLayerQaCaptureStateDrawsMidChainRouteGuidance",
+        "QA capture state should draw the active relay-to-service-log route guidance in playtest mode.");
+    Expect(text.find("Relay Service Log") != std::string::npos,
+        "TestSandboxLayerQaCaptureStateDrawsMidChainRouteGuidance",
+        "QA capture state should preload the follow-up step that points to the Relay Service Log.");
 }
 
 void TestSandboxLayerDebugTextPreservesFullTelemetry()
@@ -5114,6 +5160,7 @@ int main()
     TestQaPhysicsParityArgumentsAcceptCharacterContactScenario();
     TestQaPhysicsParityArgumentsAcceptVehicleFeasibilityScenario();
     TestQaPhysicsParityArgumentsAcceptVehicleRuntimeComparisonScenario();
+    TestQaCaptureStateArgumentsSelectMidChainRouteState();
     TestVehicleRuntimeArgumentsDefaultToDeterministicFallback();
     TestVehicleRuntimeArgumentsAcceptPreferred();
     TestVehicleRuntimeArgumentsAcceptJoltOptIn();
@@ -5188,6 +5235,7 @@ int main()
     TestSandboxLayerDebugPreservesFullRouteGuidanceAtStart();
     TestSandboxLayerUsesScenePlayerStartYawForInitialComposition();
     TestSandboxLayerPlaytestKeepsRouteDebugHiddenAfterManifest();
+    TestSandboxLayerQaCaptureStateDrawsMidChainRouteGuidance();
     TestSandboxLayerDebugTextPreservesFullTelemetry();
     TestSandboxLayerMinimalTextStaysSmallButUseful();
     TestSandboxLayerF1TogglesBetweenPlaytestAndDebugText();

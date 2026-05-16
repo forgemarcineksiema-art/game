@@ -297,11 +297,13 @@ SandboxLayer::SandboxLayer(
     std::filesystem::path scenePath,
     engine::UiMode uiMode,
     engine::physics::PhysicsBackend vehicleRuntimeBackend,
-    bool vehicleRuntimeAdapterEnabled)
+    bool vehicleRuntimeAdapterEnabled,
+    std::string qaCaptureState)
     : m_scenePath(std::move(scenePath))
     , m_uiMode(uiMode)
     , m_nonDebugUiMode(uiMode == engine::UiMode::Debug ? engine::UiMode::Playtest : uiMode)
     , m_vehicleRuntimeAdapterEnabled(vehicleRuntimeAdapterEnabled)
+    , m_qaCaptureState(std::move(qaCaptureState))
     , m_vehicleRuntimeBackend(vehicleRuntimeBackend)
 {
 }
@@ -311,6 +313,7 @@ void SandboxLayer::onAttach()
     engine::Logger::info("Sandbox layer attached.");
     loadSceneDefinition();
     configureRuntimeFromScene();
+    applyQaCaptureState();
     m_player.setWorld(&m_scene.world());
     m_onFootCameraSettings = m_camera.settings();
     m_vehicleCameraSettings = m_onFootCameraSettings;
@@ -374,6 +377,36 @@ void SandboxLayer::configureRuntimeFromScene()
     m_vehicle.setSettings(vehicleSettings);
     m_vehicle.setPosition(ServiceYardVehicleSpawnPosition);
     m_vehicle.setYawRadians(ServiceYardVehicleSpawnYawRadians);
+}
+
+void SandboxLayer::applyQaCaptureState()
+{
+    if (m_qaCaptureState.empty()) {
+        return;
+    }
+
+    WorldState& state = m_scene.worldState();
+    const auto setFlag = [&state](WorldFlag flag) {
+        state.setFlag(flag, true, "QA capture state");
+    };
+
+    if (m_qaCaptureState == "relay-to-service-log") {
+        setFlag(WorldFlag::FerryOfficeJobStarted);
+        setFlag(WorldFlag::ManifestCollected);
+        setFlag(WorldFlag::ServiceRouteUsed);
+        setFlag(WorldFlag::MaintenanceBoxInspected);
+        setFlag(WorldFlag::PowerRestored);
+        setFlag(WorldFlag::RouteOpened);
+        setFlag(WorldFlag::ServiceVehicleUsed);
+        setFlag(WorldFlag::DockRoadReached);
+        setFlag(WorldFlag::ServiceRunConfirmed);
+        setFlag(WorldFlag::FerryOfficeJobComplete);
+        setFlag(WorldFlag::DockRoadRelayReset);
+        m_player.setPosition({17.45f, 0.0f, 0.05f});
+        m_player.setFacingYawRadians(0.0f);
+        m_camera.setYawRadians(0.0f);
+        engine::Logger::info("QA capture state applied: relay-to-service-log.");
+    }
 }
 
 void SandboxLayer::onUpdate(double deltaSeconds, const engine::InputState& input)

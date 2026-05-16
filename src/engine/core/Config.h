@@ -34,6 +34,7 @@ struct AppConfig {
     std::filesystem::path captureDir;
     std::string qaPlaythrough;
     std::filesystem::path qaPlaythroughReportPath;
+    std::string qaCaptureState;
     std::string qaPhysicsParity;
     std::filesystem::path qaPhysicsReportPath;
     bool vehicleRuntimeAdapterEnabled = false;

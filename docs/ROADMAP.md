@@ -951,6 +951,14 @@ Status: implemented and validated. Playtest mode now draws only the active route
 
 Status: implemented and validated. The office-side service panel now uses `ferry_office_service_panel.gltf` instead of the generic utility-box mesh; scene tools, asset validation, and mesh report identify 20 referenced model files.
 
+## v0.94 - Mid-chain Route Capture Evidence
+
+- Add a QA-only visual smoke scenario for a later Ferry Office route state.
+- Preload the authored chain near the Relay Service Log without changing normal play or playthrough QA.
+- Prove active playtest route guidance and overlay text from that mid-chain state in GDI and DX11.
+
+Status: implemented and validated. `tools\capture_visual_smoke.py --scenario relay-to-service-log` captures the active Relay Service Log route state through the same renderer-owned capture path as the default initial frame; `scripts\verify.ps1`, default visual smoke, and playthrough QA pass.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.93, prefer either a mid-chain route-state capture evidence pass or one small authored route-side cue for the next weak destination.
+Use `python tools\capture_visual_smoke.py`, `python tools\capture_visual_smoke.py --scenario relay-to-service-log --report-json build\captures\capture_visual_smoke_midchain_report.json`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.94, prefer one player-facing improvement: a small authored route-side cue, clearer destination presentation, or a compact content beat backed by the new mid-chain capture path.

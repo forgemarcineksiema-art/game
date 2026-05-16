@@ -2,6 +2,77 @@
 
 Last updated: 2026-05-16
 
+## v0.94 Mid-chain Route Capture Evidence (2026-05-16)
+
+Selected milestone:
+
+- Add a QA-only visual smoke scenario that captures the Ferry Office chain after the first service run, with active guidance aimed at the Relay Service Log.
+
+Candidate milestone triage:
+
+- Mid-chain route-state capture QA: impact medium-high because v0.92 route guidance needed evidence beyond the initial frame; risk low/medium because it touches CLI/config, SandboxLayer setup, visual smoke tooling, tests, and docs; validation path = red/green Python/C++ tests, mid-chain and initial visual smoke, playthrough QA, `scripts\verify.ps1`.
+- Small authored route-side cue: impact medium and player-facing, but route capture evidence is the safer immediate follow-up after v0.92/v0.93 changed guidance and presentation.
+- New follow-up content beat: impact high, but adding more chain length before mid-chain visual evidence would make route readability harder to judge.
+
+Why selected:
+
+- The current visual smoke path proved only the first Ferry Office frame. The active playtest route system now needs repeatable evidence from a later chain state so future presentation/content changes can be checked without relying on a manual drive to reach the Relay Service Log.
+
+What changed:
+
+- Added `--qa-capture-state relay-to-service-log` as a QA-only runtime argument that preloads the already-authored Ferry Office chain state, places the player near the Relay Service Log, and preserves playtest rendering.
+- Extended `tools\capture_visual_smoke.py` with `--scenario relay-to-service-log`, scenario-specific output names, report metadata, and unit coverage for the scenario-to-engine-argument mapping.
+- Added C++ parser coverage for the new QA capture state and runtime render coverage proving playtest mode draws active mid-chain route guidance and objective text for the Relay Service Log state.
+- Kept the default visual smoke scenario and normal gameplay/playthrough path unchanged.
+
+Files changed:
+
+- `src\engine\core\Config.h`
+- `src\engine\core\Config.cpp`
+- `src\game\main.cpp`
+- `src\game\SandboxLayer.h`
+- `src\game\SandboxLayer.cpp`
+- `tools\capture_visual_smoke.py`
+- `tests\test_capture_visual_smoke.py`
+- `tests\EngineCoreTests.cpp`
+- `docs\CONTEXT_MAP.md`
+- `docs\ROADMAP.md`
+- `docs\RUNBOOK.md`
+- `docs\STATUS.md`
+
+Validation so far:
+
+- `python tests\test_capture_visual_smoke.py`: first failed as expected because `qa_capture_state_args` did not exist; passed after implementation, 7 tests.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: first failed as expected because `AppConfig::qaCaptureState` and the QA-state SandboxLayer constructor path did not exist; passed after implementation.
+- `cmake --build --preset windows-vs2022-debug --target EngineApp EngineCoreTests`: passed.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `python tools\capture_visual_smoke.py --scenario relay-to-service-log --report-json build\captures\capture_visual_smoke_midchain_report.json`: passed after rebuilding `EngineApp`; GDI colors=65/lumaRange=214 and DX11 colors=41/lumaRange=214 with WARP fallback. The overlay reported `Objective: Log the relay reset on the service-run board.`, `Prompt: Press E: Log Relay Reset`, and `Next: Sign the Relay Service Log.`
+- `python tools\playthrough_qa.py`: passed; phase complete, events=21, deterministic vehicle runtime, framesToCheckpoint=139, report `build\playthroughs\ferry-office-service-call-report.json`.
+- `python tools\capture_visual_smoke.py`: passed for the default initial scenario; GDI colors=82/lumaRange=221 and DX11 colors=49/lumaRange=221 with WARP fallback, report `build\captures\capture_visual_smoke_report.json`.
+- `scripts\verify.ps1`: passed; configure/build, 11/11 CTest tests, scene validation, asset validation, mesh report, and smoke test completed.
+
+Automated evidence generated:
+
+- Unit tests prove the capture tool maps only supported scenario names to engine QA arguments.
+- C++ tests prove the QA capture state is parsed, rejects unknown states, and draws active mid-chain route guidance in playtest mode.
+- Mid-chain visual smoke proves the route/objective overlay and scene render path are nonblank in both GDI and DX11 from a later Ferry Office chain state.
+
+Provisional decision:
+
+- Keep `relay-to-service-log` as a narrow QA-only capture state, not a save/load feature, gameplay skip, or general mission-state injection system. Add more named capture states only when a later route/content milestone needs visual evidence from another chain point.
+
+Remaining limitations:
+
+- This does not validate manual driving feel, occlusion-aware guidance, final HUD design, or a complete save/load state model. It is an automated visual evidence hook for a known authored state.
+
+Final validation:
+
+- Passed.
+
+Next direction:
+
+- If validation stays green, prefer a small player-facing route/readability improvement or compact authored content beat now that mid-chain route guidance has repeatable capture evidence.
+
 ## v0.93 Ferry Office Service Panel Mesh Pass (2026-05-16)
 
 Selected milestone:

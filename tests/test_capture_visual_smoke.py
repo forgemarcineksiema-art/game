@@ -180,6 +180,16 @@ class CaptureVisualSmokeTests(unittest.TestCase):
             self.assertEqual(1280, report["captures"]["gdi"]["width"])
             self.assertTrue(report["parity"]["dimensions_match"])
 
+    def test_capture_scenario_maps_to_engine_qa_state(self) -> None:
+        self.assertEqual([], capture_visual_smoke.qa_capture_state_args("initial"))
+        self.assertEqual(
+            ["--qa-capture-state", "relay-to-service-log"],
+            capture_visual_smoke.qa_capture_state_args("relay-to-service-log"),
+        )
+
+        with self.assertRaisesRegex(ValueError, "scenario"):
+            capture_visual_smoke.qa_capture_state_args("unknown")
+
 
 if __name__ == "__main__":
     unittest.main()

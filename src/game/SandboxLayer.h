@@ -22,7 +22,8 @@ public:
         std::filesystem::path scenePath = "data/scenes/ferry_office.scene.json",
         engine::UiMode uiMode = engine::UiMode::Debug,
         engine::physics::PhysicsBackend vehicleRuntimeBackend = engine::physics::PhysicsBackend::Simple,
-        bool vehicleRuntimeAdapterEnabled = false);
+        bool vehicleRuntimeAdapterEnabled = false,
+        std::string qaCaptureState = {});
 
     void onAttach() override;
     void onUpdate(double deltaSeconds, const engine::InputState& input) override;
@@ -48,6 +49,7 @@ private:
     void recordWorldStateChange(bool changed);
     void loadSceneDefinition();
     void configureRuntimeFromScene();
+    void applyQaCaptureState();
     void setupVehiclePhysicsWorld();
     void setupVehicleRuntimeAdapter();
     void updateVehicleDriving(float deltaSeconds, const engine::InputState& input);
@@ -86,6 +88,7 @@ private:
     bool m_cameraInVehicleMode = false;
     bool m_sceneDefinitionLoaded = false;
     bool m_vehicleRuntimeAdapterEnabled = false;
+    std::string m_qaCaptureState;
     engine::physics::PhysicsBackend m_vehicleRuntimeBackend = engine::physics::PhysicsBackend::Simple;
     engine::UiMode m_uiMode = engine::UiMode::Debug;
     engine::UiMode m_nonDebugUiMode = engine::UiMode::Playtest;

@@ -20,7 +20,7 @@ Recent history forms a clear arc:
 - v0.32: deterministic Ferry Office playthrough QA.
 - v0.33: Jolt static scene-query parity QA.
 - v0.34: Jolt character/contact probe QA.
-- v0.45-v0.93: Jolt vehicle runtime controls, service-run route proxy, route-pace tuning, deterministic service-vehicle runtime playthrough QA, opt-in Jolt first-job live-loop QA, the Dock Road Relay follow-up beat, relay/log/clearance endpoint consequences, compact playtest follow-up text, camera-aware obstacle-proxy vehicle steering evidence, a clearance-tag visual cue, a tiny original clearance-tag mesh prop, Jolt obstacle-progress tuning, a compact Harbor Parts return micro-slice, a follow-up next-step readability line, scene-authored action bindings for simple/gated flag beats, a Ferry Office Work Board signoff endpoint, a Ferry Office handoff note endpoint, collision-backed obstacle replay telemetry in vehicle runtime QA, a dynamic handoff-filed visual state cue, a storm pump job seed, a provisional Jolt vehicle-runtime direction decision, visible storm pump/ticket state cues, a preferred play-wrapper runtime trial for Jolt-enabled executables, a Low Dock Drain clear-tag follow-up, a Ferry Office Drain Log closeout, a visible office-side Drain Log state cue, a refreshed preferred Jolt evidence decision, active late-chain route guidance in playtest mode, and a purpose-built office-side service-panel mesh cue.
+- v0.45-v0.94: Jolt vehicle runtime controls, service-run route proxy, route-pace tuning, deterministic service-vehicle runtime playthrough QA, opt-in Jolt first-job live-loop QA, the Dock Road Relay follow-up beat, relay/log/clearance endpoint consequences, compact playtest follow-up text, camera-aware obstacle-proxy vehicle steering evidence, a clearance-tag visual cue, a tiny original clearance-tag mesh prop, Jolt obstacle-progress tuning, a compact Harbor Parts return micro-slice, a follow-up next-step readability line, scene-authored action bindings for simple/gated flag beats, a Ferry Office Work Board signoff endpoint, a Ferry Office handoff note endpoint, collision-backed obstacle replay telemetry in vehicle runtime QA, a dynamic handoff-filed visual state cue, a storm pump job seed, a provisional Jolt vehicle-runtime direction decision, visible storm pump/ticket state cues, a preferred play-wrapper runtime trial for Jolt-enabled executables, a Low Dock Drain clear-tag follow-up, a Ferry Office Drain Log closeout, a visible office-side Drain Log state cue, a refreshed preferred Jolt evidence decision, active late-chain route guidance in playtest mode, a purpose-built office-side service-panel mesh cue, and QA-only mid-chain route capture evidence for the Relay Service Log state.
 
 ## Architecture Map
 
@@ -33,7 +33,7 @@ Recent history forms a clear arc:
 
 `src/engine/core`
 
-- `Config` parses CLI options, including renderer, scene, UI mode, capture, playthrough QA, and physics QA.
+- `Config` parses CLI options, including renderer, scene, UI mode, capture, QA capture states, playthrough QA, and physics QA.
 - `Clock`, `FileSystem`, and `Logger` are small standard-library foundations.
 
 `src/engine/platform`
@@ -86,7 +86,7 @@ Recent history forms a clear arc:
 
 `data/scenes/ferry_office.scene.json`
 
-- Current source of truth for Ferry Office layout and presentation intent: player start, scene materials, colliders, visual placeholders, mesh assets/instances, interactables, traversal, vehicle, route markers, objective markers. After v0.93 it includes 25 scene materials, 31 visual placeholders, 20 mesh assets, 66 mesh instances, 17 interactables, 17 route markers, and 16 objective markers, including the handoff-filed status cue, storm pump job seed, storm pump/ticket state cues, low dock drain clear-tag cue, Ferry Office Drain Log closeout, a visible office-side Drain Log state cue, active playtest route guidance, and a purpose-built office-side service-panel mesh.
+- Current source of truth for Ferry Office layout and presentation intent: player start, scene materials, colliders, visual placeholders, mesh assets/instances, interactables, traversal, vehicle, route markers, objective markers. After v0.94 it includes 25 scene materials, 31 visual placeholders, 20 mesh assets, 66 mesh instances, 17 interactables, 17 route markers, and 16 objective markers, including the handoff-filed status cue, storm pump job seed, storm pump/ticket state cues, low dock drain clear-tag cue, Ferry Office Drain Log closeout, a visible office-side Drain Log state cue, active playtest route guidance, a purpose-built office-side service-panel mesh, and a QA capture path for the Relay Service Log route state.
 
 `src/game/PrototypeWorld.*`
 
@@ -141,6 +141,7 @@ Recent history forms a clear arc:
 - player movement, camera, world collision, raycast.
 - interactions, traversal, world state, Ferry Office scene loop.
 - playthrough QA, runtime service-vehicle playthrough QA, physics parity QA, character contact QA report writing.
+- QA-only capture-state parsing and playtest route rendering from the Relay Service Log mid-chain state.
 - source boundary guard for accidental direct Jolt references in `src/game`.
 
 ### Python Tests
@@ -178,6 +179,7 @@ Runtime/visual/behavior QA:
 ```powershell
 python tools/playthrough_qa.py
 python tools/capture_visual_smoke.py
+python tools/capture_visual_smoke.py --scenario relay-to-service-log --report-json build\captures\capture_visual_smoke_midchain_report.json
 ```
 
 Opt-in physics QA:

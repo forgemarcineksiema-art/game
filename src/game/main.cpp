@@ -99,5 +99,6 @@ int main(int argc, const char* const* argv)
             parseResult.config.scenePath,
             parseResult.config.uiMode,
             parseResult.config.vehicleRuntimeBackend,
-            parseResult.config.vehicleRuntimeAdapterEnabled));
+            parseResult.config.vehicleRuntimeAdapterEnabled,
+            parseResult.config.qaCaptureState));
 }
