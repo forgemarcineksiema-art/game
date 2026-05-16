@@ -1147,7 +1147,7 @@ void TestSceneLoaderLoadsDefaultFerryOfficeScene()
     Expect(result.scene.meshInstances.size() >= 15,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored mesh instances, including the v0.18 prop style kit.");
-    Expect(result.scene.interactables.size() == 12,
+    Expect(result.scene.interactables.size() == 13,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored interactables.");
     Expect(result.scene.traversalAffordances.size() == 1,
@@ -1286,6 +1286,9 @@ void TestSceneLoaderLoadsHarborPartsJobBeat()
     const SceneInteractableDefinition* workBoard = FindSceneInteractable(result.scene, "ferry-office-work-board");
     const SceneRouteMarkerDefinition* workBoardRoute = FindRouteMarker(result.scene, "route-parts-shelf-to-work-board");
     const SceneObjectiveMarkerDefinition* workBoardMarker = FindObjectiveMarker(result.scene, "ferry-office-work-board-marker");
+    const SceneInteractableDefinition* handoffNote = FindSceneInteractable(result.scene, "ferry-office-handoff-note");
+    const SceneRouteMarkerDefinition* handoffRoute = FindRouteMarker(result.scene, "route-work-board-to-handoff-note");
+    const SceneObjectiveMarkerDefinition* handoffMarker = FindObjectiveMarker(result.scene, "ferry-office-handoff-marker");
 
     Expect(result.ok(),
         "TestSceneLoaderLoadsHarborPartsJobBeat",
@@ -1314,6 +1317,15 @@ void TestSceneLoaderLoadsHarborPartsJobBeat()
     Expect(workBoardMarker != nullptr,
         "TestSceneLoaderLoadsHarborPartsJobBeat",
         "Scene data should expose an objective marker for the work-board signoff.");
+    Expect(handoffNote != nullptr && handoffNote->name == FerryOffice::Names::FerryOfficeHandoffNote,
+        "TestSceneLoaderLoadsHarborPartsJobBeat",
+        "Scene data should include the Ferry Office handoff note after the work-board signoff.");
+    Expect(handoffRoute != nullptr && handoffRoute->points.size() >= 2,
+        "TestSceneLoaderLoadsHarborPartsJobBeat",
+        "Scene data should route from the work board to the handoff note.");
+    Expect(handoffMarker != nullptr,
+        "TestSceneLoaderLoadsHarborPartsJobBeat",
+        "Scene data should expose an objective marker for the handoff note.");
 }
 
 void TestSceneLoaderLoadsInteractableActionPrerequisites()
@@ -1343,6 +1355,10 @@ void TestSceneLoaderLoadsInteractableActionPrerequisites()
     Expect(workBoard != nullptr && ContainsString(workBoard->requiredWorldFlags, "harborPartsDelivered"),
         "TestSceneLoaderLoadsInteractableActionPrerequisites",
         "Ferry Office Work Board should declare the parts delivery prerequisite.");
+    const SceneInteractableDefinition* handoffNote = FindSceneInteractable(result.scene, "ferry-office-handoff-note");
+    Expect(handoffNote != nullptr && ContainsString(handoffNote->requiredWorldFlags, "ferryOfficeBoardUpdated"),
+        "TestSceneLoaderLoadsInteractableActionPrerequisites",
+        "Ferry Office Handoff Note should declare the work-board prerequisite.");
 }
 
 void TestSceneLoaderReportsMissingSceneFile()
@@ -3456,9 +3472,15 @@ void TestFerryOfficeFollowupStatusSummarizesEndpointChain()
         "Follow-up status should show when the Harbor Parts crate has been delivered before board signoff.");
 
     state.setFlag(WorldFlag::FerryOfficeBoardUpdated, true, "Ferry Office Work Board");
-    Expect(FerryOfficeFollowupStatusText(state).find("board=updated") != std::string::npos,
+    Expect(FerryOfficeFollowupStatusText(state).find("board=updated") != std::string::npos
+            && FerryOfficeFollowupStatusText(state).find("handoff=later") != std::string::npos,
         "TestFerryOfficeFollowupStatusSummarizesEndpointChain",
         "Follow-up status should show when the Ferry Office work board has been updated.");
+
+    state.setFlag(WorldFlag::FerryOfficeHandoffFiled, true, "Ferry Office Handoff Note");
+    Expect(FerryOfficeFollowupStatusText(state).find("handoff=filed") != std::string::npos,
+        "TestFerryOfficeFollowupStatusSummarizesEndpointChain",
+        "Follow-up status should show when the Ferry Office handoff note has been filed.");
 }
 
 void TestFerryOfficeFollowupNextStepGuidesLongChain()
@@ -3500,9 +3522,14 @@ void TestFerryOfficeFollowupNextStepGuidesLongChain()
         "After delivery, the next step should point to the Ferry Office Work Board.");
 
     state.setFlag(WorldFlag::FerryOfficeBoardUpdated, true, "Ferry Office Work Board");
+    Expect(FerryOfficeFollowupNextStepText(state).find("handoff") != std::string::npos,
+        "TestFerryOfficeFollowupNextStepGuidesLongChain",
+        "After work-board signoff, the next step should point to the handoff note.");
+
+    state.setFlag(WorldFlag::FerryOfficeHandoffFiled, true, "Ferry Office Handoff Note");
     Expect(FerryOfficeFollowupNextStepText(state).find("complete") != std::string::npos,
         "TestFerryOfficeFollowupNextStepGuidesLongChain",
-        "After work-board signoff, the next step should acknowledge follow-up completion.");
+        "After the handoff note, the next step should acknowledge follow-up completion.");
 }
 
 void TestFerryOfficeObjectiveTextGuidesRouteSteps()
@@ -3769,6 +3796,12 @@ void TestHarborPartsJobRequiresClearedDockRoad()
     Expect(signedOff && scene.worldState().isFlagSet(WorldFlag::FerryOfficeBoardUpdated),
         "TestHarborPartsJobRequiresClearedDockRoad",
         "The Ferry Office work board should remember the final parts return signoff.");
+
+    const bool handoffFiled = scene.applyInteractionResult(
+        MakeSceneInteraction(std::string(FerryOffice::Names::FerryOfficeHandoffNote), InteractableType::Info));
+    Expect(handoffFiled && scene.worldState().isFlagSet(WorldFlag::FerryOfficeHandoffFiled),
+        "TestHarborPartsJobRequiresClearedDockRoad",
+        "The Ferry Office handoff note should remember the final crew handoff.");
 }
 
 void TestPrototypeSceneAppliesAuthoredInteractableFlagBindings()
@@ -3874,6 +3907,9 @@ void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
     Expect(state.isFlagSet(WorldFlag::FerryOfficeBoardUpdated),
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should update the Ferry Office work board after delivery.");
+    Expect(state.isFlagSet(WorldFlag::FerryOfficeHandoffFiled),
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "QA playthrough should file the Ferry Office handoff note.");
     Expect(result.steps.size() >= 9,
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should report each major authored phase.");
@@ -3912,6 +3948,9 @@ void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
     Expect(hasStep("ferryOfficeBoardUpdated"),
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should record the work-board signoff beat.");
+    Expect(hasStep("ferryOfficeHandoffFiled"),
+        "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+        "QA playthrough should record the handoff note beat.");
     Expect(std::filesystem::exists(reportPath),
         "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
         "QA playthrough should write a report artifact.");
@@ -3946,6 +3985,9 @@ void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
         Expect(report["final"]["flags"]["ferryOfficeBoardUpdated"] == true,
             "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
             "QA playthrough report should expose the work-board signoff.");
+        Expect(report["final"]["flags"]["ferryOfficeHandoffFiled"] == true,
+            "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
+            "QA playthrough report should expose the handoff note.");
         Expect(report["vehicleRuntime"]["backend"] == "deterministic",
             "TestFerryOfficePlaythroughQaCompletesJobAndWritesReport",
             "QA playthrough report should expose the vehicle runtime backend.");

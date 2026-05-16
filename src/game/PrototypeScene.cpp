@@ -131,6 +131,15 @@ void PrototypeScene::buildFromFerryOfficeData()
     ferryOfficeWorkBoard.message = FerryOffice::Messages::FerryOfficeWorkBoard;
     m_interactions.addInteractable(ferryOfficeWorkBoard);
 
+    Interactable ferryOfficeHandoffNote;
+    ferryOfficeHandoffNote.name = FerryOffice::Names::FerryOfficeHandoffNote;
+    ferryOfficeHandoffNote.prompt = FerryOffice::Prompts::FerryOfficeHandoffNote;
+    ferryOfficeHandoffNote.position = FerryOffice::Positions::FerryOfficeHandoffNote;
+    ferryOfficeHandoffNote.radius = FerryOffice::Radii::FerryOfficeHandoffNote;
+    ferryOfficeHandoffNote.type = InteractableType::Info;
+    ferryOfficeHandoffNote.message = FerryOffice::Messages::FerryOfficeHandoffNote;
+    m_interactions.addInteractable(ferryOfficeHandoffNote);
+
     addInteractableActionBinding(std::string(FerryOffice::Names::FerryManifest),
         {WorldFlag::ManifestCollected},
         {},
@@ -186,6 +195,10 @@ void PrototypeScene::buildFromFerryOfficeData()
         {},
         {WorldFlag::HarborPartsDelivered},
         {WorldFlag::FerryOfficeBoardUpdated});
+    addInteractableActionBinding(std::string(FerryOffice::Names::FerryOfficeHandoffNote),
+        {},
+        {WorldFlag::FerryOfficeBoardUpdated},
+        {WorldFlag::FerryOfficeHandoffFiled});
 
     TraversalAffordance serviceVault;
     serviceVault.name = FerryOffice::Names::ServiceVault;
@@ -458,8 +471,12 @@ std::string PrototypeScene::currentJobObjectiveText() const
         && !m_worldState.isFlagSet(WorldFlag::FerryOfficeBoardUpdated)) {
         return "Update the Ferry Office Work Board with the parts return.";
     }
-    if (m_worldState.isFlagSet(WorldFlag::FerryOfficeBoardUpdated)) {
-        return "Work board updated. Ferry Office follow-up complete.";
+    if (m_worldState.isFlagSet(WorldFlag::FerryOfficeBoardUpdated)
+        && !m_worldState.isFlagSet(WorldFlag::FerryOfficeHandoffFiled)) {
+        return "File the Ferry Office handoff note for the next ferry crew.";
+    }
+    if (m_worldState.isFlagSet(WorldFlag::FerryOfficeHandoffFiled)) {
+        return "Handoff filed. Ferry Office follow-up complete.";
     }
     return m_job.currentObjectiveText(m_worldState);
 }

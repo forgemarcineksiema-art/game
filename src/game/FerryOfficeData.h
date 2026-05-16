@@ -21,6 +21,7 @@ inline constexpr std::string_view DockRoadClearanceTag = "Dock Road Clearance Ta
 inline constexpr std::string_view HarborPartsCrate = "Harbor Parts Crate";
 inline constexpr std::string_view FerryOfficePartsShelf = "Ferry Office Parts Shelf";
 inline constexpr std::string_view FerryOfficeWorkBoard = "Ferry Office Work Board";
+inline constexpr std::string_view FerryOfficeHandoffNote = "Ferry Office Handoff Note";
 } // namespace Names
 
 namespace Prompts {
@@ -37,6 +38,7 @@ inline constexpr std::string_view DockRoadClearanceTag = "Tag Dock Road Clear";
 inline constexpr std::string_view HarborPartsCrate = "Collect Harbor Parts";
 inline constexpr std::string_view FerryOfficePartsShelf = "Deliver Harbor Parts";
 inline constexpr std::string_view FerryOfficeWorkBoard = "Update Work Board";
+inline constexpr std::string_view FerryOfficeHandoffNote = "File Handoff Note";
 } // namespace Prompts
 
 namespace Messages {
@@ -54,6 +56,7 @@ inline constexpr std::string_view DockRoadClearanceTag = "Dock road tagged clear
 inline constexpr std::string_view HarborPartsCrate = "Harbor parts crate picked up for the Ferry Office shelf.";
 inline constexpr std::string_view FerryOfficePartsShelf = "Harbor parts delivered to the Ferry Office shelf.";
 inline constexpr std::string_view FerryOfficeWorkBoard = "Ferry Office work board updated with the Harbor Parts return.";
+inline constexpr std::string_view FerryOfficeHandoffNote = "Ferry Office handoff note filed for the next ferry crew.";
 } // namespace Messages
 
 namespace Positions {
@@ -71,6 +74,7 @@ inline constexpr engine::Vec3 DockRoadClearanceTag {17.1f, 0.55f, 0.08f};
 inline constexpr engine::Vec3 HarborPartsCrate {16.7f, 0.55f, -0.62f};
 inline constexpr engine::Vec3 FerryOfficePartsShelf {-1.72f, 0.62f, 3.24f};
 inline constexpr engine::Vec3 FerryOfficeWorkBoard {-2.08f, 0.68f, 2.82f};
+inline constexpr engine::Vec3 FerryOfficeHandoffNote {-2.35f, 0.68f, 3.42f};
 inline constexpr engine::Vec3 ServiceRunCheckpoint {19.35f, 0.08f, -2.2f};
 inline constexpr engine::Vec3 ServiceVaultStart {2.8f, 0.0f, -0.35f};
 inline constexpr engine::Vec3 ServiceVaultEnd {2.8f, 0.0f, 1.45f};
@@ -94,6 +98,7 @@ inline constexpr float DockRoadClearanceTag = 1.4f;
 inline constexpr float HarborPartsCrate = 1.4f;
 inline constexpr float FerryOfficePartsShelf = 1.5f;
 inline constexpr float FerryOfficeWorkBoard = 1.4f;
+inline constexpr float FerryOfficeHandoffNote = 1.3f;
 inline constexpr float ServiceRunCheckpoint = 1.5f;
 } // namespace Radii
 

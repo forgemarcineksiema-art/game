@@ -24,6 +24,7 @@ enum class WorldFlag {
     HarborPartsPickedUp,
     HarborPartsDelivered,
     FerryOfficeBoardUpdated,
+    FerryOfficeHandoffFiled,
     Count,
 };
 

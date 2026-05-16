@@ -58,6 +58,7 @@ KNOWN_WORLD_FLAGS = {
     "dockRoadRelayReset",
     "exitReached",
     "ferryOfficeBoardUpdated",
+    "ferryOfficeHandoffFiled",
     "ferryOfficeJobComplete",
     "ferryOfficeJobStarted",
     "harborPartsDelivered",

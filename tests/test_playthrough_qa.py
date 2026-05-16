@@ -44,6 +44,7 @@ class PlaythroughQaTests(unittest.TestCase):
                             {"name": "harborPartsPickedUp", "passed": True},
                             {"name": "harborPartsDelivered", "passed": True},
                             {"name": "ferryOfficeBoardUpdated", "passed": True},
+                            {"name": "ferryOfficeHandoffFiled", "passed": True},
                         ],
                         "vehicleRuntime": {
                             "requested": "deterministic",
@@ -70,6 +71,7 @@ class PlaythroughQaTests(unittest.TestCase):
                                 "harborPartsPickedUp": True,
                                 "harborPartsDelivered": True,
                                 "ferryOfficeBoardUpdated": True,
+                                "ferryOfficeHandoffFiled": True,
                             },
                         },
                     }
@@ -110,6 +112,7 @@ class PlaythroughQaTests(unittest.TestCase):
                                 "harborPartsPickedUp": False,
                                 "harborPartsDelivered": False,
                                 "ferryOfficeBoardUpdated": False,
+                                "ferryOfficeHandoffFiled": False,
                             },
                         },
                     }
@@ -154,6 +157,7 @@ class PlaythroughQaTests(unittest.TestCase):
                                 "harborPartsPickedUp": True,
                                 "harborPartsDelivered": True,
                                 "ferryOfficeBoardUpdated": True,
+                                "ferryOfficeHandoffFiled": True,
                             },
                         },
                     }
@@ -184,6 +188,7 @@ class PlaythroughQaTests(unittest.TestCase):
                             {"name": "harborPartsPickedUp", "passed": True},
                             {"name": "harborPartsDelivered", "passed": True},
                             {"name": "ferryOfficeBoardUpdated", "passed": True},
+                            {"name": "ferryOfficeHandoffFiled", "passed": True},
                         ],
                         "final": {
                             "phase": "complete",
@@ -203,6 +208,7 @@ class PlaythroughQaTests(unittest.TestCase):
                                 "harborPartsPickedUp": True,
                                 "harborPartsDelivered": True,
                                 "ferryOfficeBoardUpdated": True,
+                                "ferryOfficeHandoffFiled": True,
                             },
                         },
                     }

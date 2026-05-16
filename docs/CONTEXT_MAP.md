@@ -20,7 +20,7 @@ Recent history forms a clear arc:
 - v0.32: deterministic Ferry Office playthrough QA.
 - v0.33: Jolt static scene-query parity QA.
 - v0.34: Jolt character/contact probe QA.
-- v0.45-v0.63: Jolt vehicle runtime controls, service-run route proxy, route-pace tuning, deterministic service-vehicle runtime playthrough QA, opt-in Jolt first-job live-loop QA, the Dock Road Relay follow-up beat, relay/log/clearance endpoint consequences, compact playtest follow-up text, camera-aware obstacle-proxy vehicle steering evidence, a clearance-tag visual cue, a tiny original clearance-tag mesh prop, Jolt obstacle-progress tuning, a compact Harbor Parts return micro-slice, a follow-up next-step readability line, scene-authored action bindings for simple/gated flag beats, and a Ferry Office Work Board signoff endpoint.
+- v0.45-v0.64: Jolt vehicle runtime controls, service-run route proxy, route-pace tuning, deterministic service-vehicle runtime playthrough QA, opt-in Jolt first-job live-loop QA, the Dock Road Relay follow-up beat, relay/log/clearance endpoint consequences, compact playtest follow-up text, camera-aware obstacle-proxy vehicle steering evidence, a clearance-tag visual cue, a tiny original clearance-tag mesh prop, Jolt obstacle-progress tuning, a compact Harbor Parts return micro-slice, a follow-up next-step readability line, scene-authored action bindings for simple/gated flag beats, a Ferry Office Work Board signoff endpoint, and a Ferry Office handoff note endpoint.
 
 ## Architecture Map
 
@@ -195,12 +195,12 @@ Commands run on 2026-05-16:
 
 - `python tools/status_report.py`: ran; reported build outputs present. It also created a transient Python `tools/__pycache__` directory during imports.
 - `scripts/doctor.ps1`: passed; expected plain-PATH warnings for compiler/tool binaries remained.
-- `python tools/scene_report.py`: passed; scene has 9 colliders, 26 visual placeholders, 20 scene materials, 12 mesh assets, 47 mesh instances, 12 interactables, 1 traversal affordance, 1 vehicle, 12 route markers, and 11 objective markers.
+- `python tools/scene_report.py`: passed; scene has 9 colliders, 26 visual placeholders, 20 scene materials, 12 mesh assets, 47 mesh instances, 13 interactables, 1 traversal affordance, 1 vehicle, 13 route markers, and 12 objective markers.
 - `python tools/validate_scene.py`: passed.
 - `python tools/validate_assets.py`: passed.
 - `python tools/scale_audit.py`: passed, no suspicious scale issues.
 - `python tools/mesh_report.py`: passed, 12 referenced model files.
-- `python tools/playthrough_qa.py`: passed; service-call phase `complete`, 16 events. After v0.63 this report is also expected to include vehicle runtime evidence, runtime service-vehicle enter, dock-road checkpoint, exit steps, the Dock Road Relay reset step, the relay service log sign-off, the dock-road clear-tag consequence, Harbor Parts pickup, Harbor Parts delivery, and Ferry Office Work Board signoff.
+- `python tools/playthrough_qa.py`: passed; service-call phase `complete`, 17 events. After v0.64 this report is also expected to include vehicle runtime evidence, runtime service-vehicle enter, dock-road checkpoint, exit steps, the Dock Road Relay reset step, the relay service log sign-off, the dock-road clear-tag consequence, Harbor Parts pickup, Harbor Parts delivery, Ferry Office Work Board signoff, and Ferry Office handoff filing.
 - `python tools/capture_visual_smoke.py`: passed for GDI and DX11 captures; DX11 used WARP in this environment. After v0.55, playtest presentation also includes a compact `Follow-up: relay=... | log=... | road=...` line once endpoint follow-up state is relevant; after v0.58 the clearance-tag endpoint also has a tiny dynamic mesh prop; after v0.60 the initial playtest prompt still focuses `Collect Ferry Manifest` despite the new office shelf delivery interaction; after v0.61 the follow-up state also gets a compact `Next:` line, and after v0.63 that line points delivered Harbor Parts to the Ferry Office Work Board before completion.
 - `python tools/physics_parity_qa.py`: passed with Jolt backend; floor=4, raycast=4, overlap=4.
 - `python tools/character_contact_qa.py`: passed with Jolt backend; probes=7.

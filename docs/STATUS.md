@@ -2,6 +2,85 @@
 
 Last updated: 2026-05-16
 
+## v0.64 Ferry Office Handoff Note Beat (2026-05-16)
+
+Selected milestone:
+
+- Add one compact scene-authored follow-up beat after the Ferry Office Work Board signoff.
+
+Candidate milestone triage:
+
+- Compact authored content beat: impact high because it extends the playable Ferry Office return loop; risk low because v0.62 scene action bindings already support gated flags; validation path is scene tools plus playthrough QA.
+- Collision-backed Jolt obstacle replay: impact high for vehicle promotion evidence; risk medium/high because it touches opt-in physics behavior and is better as a separate focused milestone.
+- `SandboxLayer` helper extraction: impact medium for maintainability; risk low, but less player-facing than content progress.
+
+Decision:
+
+- Chose the compact authored content beat because the previous scene-action-binding work made this a cheap, validated way to grow playable content. Jolt remains opt-in; collision-backed vehicle evidence is still the next stronger physics candidate.
+
+Implementation notes:
+
+- Added `ferryOfficeHandoffFiled` as a remembered world flag.
+- Added a `Ferry Office Handoff Note` interactable to `data/scenes/ferry_office.scene.json`, gated by `ferryOfficeBoardUpdated` and setting `ferryOfficeHandoffFiled` through authored scene action bindings.
+- Added route and objective markers from the Work Board to the handoff note.
+- Updated playtest/follow-up next-step text so the player is pointed to the handoff note after the Work Board update.
+- Extended built-in fallback Ferry Office data, scene loader expectations, C++ playthrough QA, and Python playthrough report validation to require the new beat.
+
+Files changed:
+
+- `data/scenes/ferry_office.scene.json`
+- `src/game/WorldState.*`
+- `src/game/FerryOfficeData.h`
+- `src/game/FerryOfficeJob.cpp`
+- `src/game/PrototypeScene.cpp`
+- `src/game/FerryOfficePlaythroughQa.cpp`
+- `tools/scene_data.py`
+- `tools/playthrough_qa.py`
+- `tests/EngineCoreTests.cpp`
+- `tests/test_scene_tools.py`
+- `tests/test_playthrough_qa.py`
+- `docs/STATUS.md`
+- `docs/ROADMAP.md`
+- `docs/CONTEXT_MAP.md`
+- `docs/VERTICAL_SLICE.md`
+
+Automated evidence:
+
+- Scene now reports 9 colliders, 26 visual placeholders, 20 scene materials, 12 mesh assets, 47 mesh instances, 13 interactables, 1 traversal affordance, 1 vehicle, 13 route markers, and 12 objective markers.
+- Deterministic playthrough QA reaches `phase=complete` with 17 events, `vehicleRuntime=deterministic`, and `framesToCheckpoint=139`.
+- Visual smoke remains green for GDI and DX11/WARP captures.
+
+Commands and results:
+
+- `python tests\test_playthrough_qa.py`: passed, 5 tests.
+- `python tools\validate_scene.py`: initially failed because `tools\scene_data.py` did not know `ferryOfficeHandoffFiled`; fixed the validator flag table, then passed.
+- `python tools\scene_report.py`: initially reported the same validation error; after the validator fix, passed with the counts above.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: passed.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: initially failed stale scene-count assertions; fixed them, then passed.
+- `python tests\test_scene_tools.py`: initially failed stale interactable/route/objective counts; fixed them, then passed, 44 tests.
+- `cmake --build --preset windows-vs2022-debug --target EngineApp EngineCoreTests`: passed.
+- `python tools\playthrough_qa.py`: passed after rebuilding `EngineApp`; deterministic playthrough completed with 17 events.
+- `python tools\scale_audit.py`: passed; no suspicious scale issues.
+- `python tools\mesh_report.py`: passed; 12 mesh assets, 47 mesh instances, 12 model files.
+- `python tools\validate_assets.py`: passed; 12 model files.
+- `python tools\capture_visual_smoke.py`: passed; GDI captured 65 unique colors, DX11 captured 44 unique colors, both 1280x720 with text signal and luminance range 221. DX11 still used WARP in this environment.
+- `scripts\verify.ps1`: passed; doctor completed with known PATH warnings, configure/build succeeded, CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null smoke loaded the v0.64 scene.
+- `git diff --check`: passed with only expected CRLF normalization warnings for touched text files.
+
+Remaining limitations:
+
+- This is still a compact authored follow-up beat, not a generic mission framework, inventory, save/load, NPC dispatcher, or UI system.
+- The new note reuses existing placeholder/notice-board presentation rather than adding a bespoke mesh or final signage.
+- Jolt vehicle runtime remains opt-in; default promotion still needs collision-backed obstacle evidence.
+
+Commit/push status:
+
+- Pending at the time of this status edit.
+
+Next direction:
+
+- After v0.64 commit/push, the next useful milestone should usually be collision-backed deterministic-vs-Jolt obstacle replay, because the last two content milestones made playable progress and the vehicle promotion question now has a clear evidence gap.
+
 ## Milestone A - Inspection Findings
 
 - Repository root: `C:/Users/Marcin/Documents/New project`

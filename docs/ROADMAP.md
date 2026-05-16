@@ -702,6 +702,15 @@ Status: implemented and validated. Ferry Office scene data now declares prerequi
 
 Status: implemented and validated. Scene data now has 12 interactables, 12 route markers, and 11 objective markers; deterministic playthrough QA completes the 16-event chain through Harbor Parts delivery and Ferry Office Work Board signoff.
 
+## v0.64 - Ferry Office Handoff Note Beat
+
+- Add one final small office-side handoff note after the Ferry Office Work Board signoff.
+- Record `ferryOfficeHandoffFiled` as remembered local state through scene-authored action bindings.
+- Extend the authored route/objective marker chain and playthrough QA so the return loop now ends with a filed next-crew handoff.
+- Keep this as compact content, not a job-board UI, inventory system, save/load feature, NPC dispatcher, generic mission framework, or new asset pass.
+
+Status: implemented and validated. Scene data now has 13 interactables, 13 route markers, and 12 objective markers; deterministic playthrough QA completes the 17-event chain through Ferry Office handoff filing.
+
 ## Recommended Next Goal
 
-Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.63, this autonomous goal intentionally stops per user instruction. The next useful future milestone can either add collision-backed Jolt obstacle replay before default promotion, or add another compact authored content beat covered by playthrough QA.
+Use `python tools\capture_visual_smoke.py`, `python tools\playthrough_qa.py`, `python tools\physics_parity_qa.py`, opt-in `python tools\character_contact_qa.py`, opt-in `python tools\vehicle_physics_qa.py`, and opt-in `python tools\vehicle_runtime_qa.py` as bounded evidence before asking for manual play. After v0.64, the next useful future milestone should usually add collision-backed Jolt obstacle replay before default vehicle-runtime promotion. Another compact authored content beat remains possible, but vehicle promotion evidence is now the clearer gap.
