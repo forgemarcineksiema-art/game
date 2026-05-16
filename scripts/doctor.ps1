@@ -57,6 +57,7 @@ foreach ($Path in @(
     "docs\STATUS.md",
     "docs\DECISIONS.md",
     "docs\AI_WORKFLOW.md",
+    "docs\CONTEXT_MAP.md",
     "docs\GAME_DIRECTION.md",
     "docs\VERTICAL_SLICE.md",
     "docs\TECH_DEBT.md",

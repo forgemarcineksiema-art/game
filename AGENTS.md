@@ -103,6 +103,8 @@ python tools/mesh_report.py
 
 A change is done only when:
 
+- Work that is larger than a direct answer runs under an explicit Codex `/goal`, even if the goal is small.
+- The active goal has a concrete outcome, non-goals, validation plan, and stop rule. See `docs/AI_WORKFLOW.md` for the full goal-based delivery method.
 - The intended code/docs/scripts are updated.
 - `docs/STATUS.md` records what changed and what commands ran.
 - `scripts/verify.ps1` ran, or the exact blocker is documented.

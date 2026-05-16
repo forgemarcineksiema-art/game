@@ -13,6 +13,8 @@
 Thumbs.db
 *.swp
 *.swo
+__pycache__/
+*.pyc
 
 # Visual Studio
 *.user
@@ -21,4 +23,3 @@ Thumbs.db
 
 # CMake
 CMakeUserPresets.json
-

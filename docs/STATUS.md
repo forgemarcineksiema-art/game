@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-05-15
+Last updated: 2026-05-16
 
 ## Milestone A - Inspection Findings
 
@@ -5032,3 +5032,215 @@ Remaining limitations:
 - Live Ferry Office gameplay still uses `PrototypeWorld` collision.
 - The adapter is not a Jolt character controller, swept capsule, shape cast, dynamic contact solver, slope/step system, or vehicle physics migration.
 - The opened-gate case omits the gate body for that probe; it proves the desired nonblocking result, not a general dynamic collider system.
+
+## Context Expansion Pass (2026-05-16)
+
+Scope:
+
+- Built a compact durable project map for future Codex/human sessions.
+- Reviewed repository structure, recent git history, architecture docs, runbook, AI workflow, CMake setup, main C++ headers, `SandboxLayer` runtime flow, tests, scripts, scene tooling, QA tooling, and current scene/mesh reports.
+- Checked current external primary sources for Jolt Physics, CMake presets, nlohmann/json, and Microsoft Direct3D 11 reference.
+- Kept the pass documentation-focused; no gameplay or engine behavior was changed.
+
+Changes made:
+
+- Added `docs\CONTEXT_MAP.md` with the current architecture map, test/QA surface, validation snapshot, external-source notes, efficient working method, and recommended next directions.
+- Updated `docs\AI_WORKFLOW.md` so future sessions read `docs\CONTEXT_MAP.md` during orientation.
+- Updated `scripts\doctor.ps1` and `tools\status_report.py` so the new context map is part of normal orientation checks.
+- Updated `.gitignore` to ignore Python `__pycache__` and `.pyc` files created by local tooling.
+
+Commands run:
+
+```powershell
+git status --short --branch
+git log --oneline --decorate -12
+git remote -v
+rg --files
+Get-ChildItem -Directory
+Get-Content -Raw docs\ARCHITECTURE.md
+Get-Content -Raw docs\RUNBOOK.md
+Get-Content -Raw docs\AI_WORKFLOW.md
+Get-Content -Raw docs\DECISIONS.md
+Get-Content -Raw README.md
+Get-Content -Raw CMakeLists.txt
+Get-Content -Raw CMakePresets.json
+Get-Content -Raw src\engine\application\Application.h
+Get-Content -Raw src\engine\core\Config.h
+Get-Content -Raw src\engine\renderer\Renderer.h
+Get-Content -Raw src\engine\physics\PhysicsWorld.h
+Get-Content -Raw src\engine\assets\StaticMesh.h
+Get-Content -Raw src\engine\input\Input.h
+Get-Content -Raw src\game\SandboxLayer.h
+Get-Content -Raw src\game\PrototypeScene.h
+Get-Content -Raw src\game\PrototypeWorld.h
+Get-Content -Raw src\game\PlayerController.h
+Get-Content -Raw src\game\ThirdPersonCamera.h
+Get-Content -Raw src\game\VehicleController.h
+Get-Content -Raw src\game\FerryOfficeJob.h
+Get-Content -Raw src\game\WorldState.h
+Get-Content -Raw src\game\InteractionSystem.h
+Get-Content -Raw src\game\TraversalSystem.h
+Get-Content -Raw src\game\SceneDefinition.h
+Get-Content -Raw src\game\SceneLoader.h
+Get-Content -Raw src\game\FerryOfficeData.h
+Get-Content -Raw src\game\FerryOfficePlaythroughQa.h
+Get-Content -Raw src\game\FerryOfficePhysicsParity.h
+Get-Content -Raw src\game\FerryOfficeCharacterContactQa.h
+rg -n "SandboxLayer::(onAttach|onUpdate|onRender|configureRuntimeFromScene|buildPresentationText|drawStaticMeshDebug|setupVehiclePhysicsWorld)" src\game\SandboxLayer.cpp
+rg -n "ParseArguments|BuildHelpText|qa|capture" src\engine\core\Config.cpp
+rg -n "int main|qaPlaythrough|qaPhysicsParity|RunFerryOffice" src\game\main.cpp
+rg -n "TEST|Test[A-Za-z0-9_]+\(" tests\EngineCoreTests.cpp
+rg -n "def (main|run_|validate|analyze|parse|write)|class |SCHEMA|schema" tools tests -g "*.py"
+python tools\status_report.py
+scripts\doctor.ps1
+python tools\scene_report.py
+python tools\validate_scene.py
+python tools\validate_assets.py
+python tools\scale_audit.py
+python tools\mesh_report.py
+python tools\playthrough_qa.py
+python tools\capture_visual_smoke.py
+python tools\physics_parity_qa.py
+python tools\character_contact_qa.py
+python tools\status_report.py
+scripts\doctor.ps1
+scripts\verify.ps1
+$tools = (Resolve-Path 'tools').Path; $target = Resolve-Path 'tools\__pycache__' -ErrorAction SilentlyContinue; if ($target) { if ($target.Path.StartsWith($tools)) { Remove-Item -LiteralPath $target.Path -Recurse -Force; Write-Host "Removed $($target.Path)" } else { throw "Refusing to remove path outside tools: $($target.Path)" } }
+```
+
+Validation results:
+
+- `scripts\doctor.ps1`: passed; expected plain-PATH warnings remain for compiler/tool binaries.
+- `python tools\scene_report.py`: passed; Ferry Office scene reports 9 colliders, 24 visual placeholders, 8 mesh assets, 32 mesh instances, 6 interactables, 1 traversal affordance, 1 vehicle, 6 route markers, and 5 objective markers.
+- `python tools\validate_scene.py`: passed.
+- `python tools\validate_assets.py`: passed.
+- `python tools\scale_audit.py`: passed with no suspicious scale issues.
+- `python tools\mesh_report.py`: passed with 8 referenced model files.
+- `python tools\playthrough_qa.py`: passed; `phase=complete`, `events=10`.
+- `python tools\capture_visual_smoke.py`: passed for GDI and DX11 captures; DX11 still used WARP in this environment.
+- `python tools\physics_parity_qa.py`: passed with Jolt backend; floor=4, raycast=4, overlap=4.
+- `python tools\character_contact_qa.py`: passed with Jolt backend; probes=7.
+- `python tools\status_report.py`: passed after adding `docs\CONTEXT_MAP.md` to important files.
+- `scripts\doctor.ps1`: passed after adding `docs\CONTEXT_MAP.md` to expected files; expected plain-PATH warnings remained.
+- `scripts\verify.ps1`: passed after context-map, workflow, doctor, status-report, and gitignore updates; CTest passed 9/9, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke loaded the current scene and 8 static mesh assets.
+
+External context notes:
+
+- Jolt Physics official GitHub page showed latest release `5.5.0` from 2025-12-28, matching the repo's pinned opt-in tag.
+- Jolt docs list the current documentation archive through `5.5.0`, describe `CharacterVirtual` as a manually updated collision-check character path, and document `VehicleConstraint` for virtual wheel/track vehicle behavior.
+- CMake official docs confirm project-wide `CMakePresets.json` and user-specific `CMakeUserPresets.json`.
+- nlohmann/json official GitHub page showed latest `3.12.0` from 2025-04-11; this repo currently pins `3.11.3`.
+- Microsoft Learn remains the source for Direct3D 11 core API reference.
+
+Recommended next goal:
+
+- Start with the input-scripted runtime QA pass described in `docs\CONTEXT_MAP.md`. It should improve confidence in the live Ferry Office loop before deeper physics or vehicle changes.
+
+## Goal-Based Delivery Methodology (2026-05-16)
+
+Goal:
+
+- Document and wire in the repository operating method for Codex `/goal` work, subagent usage, validation, commit/push, and next-goal prompt handoff.
+
+Scope:
+
+- Convert the user's working style into durable repository instructions.
+- Keep the method action-oriented and suitable for both small and powerful goals.
+- Make it clear that Tidebreak should progress toward durable systems instead of endlessly polishing prototype surfaces.
+- Preserve existing validation scripts as code/data validation rather than coupling them to git workflow.
+
+Non-goals:
+
+- No gameplay, renderer, physics, scene, or tooling behavior changes.
+- No new process script or brittle prose validator.
+- No rewrite of the existing roadmap.
+
+Files changed:
+
+- `AGENTS.md`
+- `docs\AI_WORKFLOW.md`
+- `docs\CONTEXT_MAP.md`
+- `docs\STATUS.md`
+
+Research:
+
+- Used subagents for a local workflow-placement review and an independent goal-method framework.
+- Checked current external sources on pull requests, trunk-based development, and vertical-slice production practice.
+- Key external takeaways: keep changes reviewable and green, avoid long-lived branches, make each work packet "just right" rather than tiny or bloated, and treat a vertical slice as a readiness gate for moving from pre-production thinking into production execution.
+
+Commands run:
+
+```powershell
+git status --short
+Get-Content -Raw AGENTS.md
+Get-Content -Raw docs\AI_WORKFLOW.md
+Get-Content -Raw docs\CONTEXT_MAP.md
+scripts\verify.ps1
+git diff --check
+scripts\verify.ps1
+```
+
+Validation results:
+
+- `scripts\verify.ps1`: passed after methodology documentation edits; CTest passed 9/9, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke loaded the current scene and 8 static mesh assets.
+- Reviewer subagent found unconditional commit/push wording; corrected it to match the guarded `AGENTS.md` rule.
+- `git diff --check`: passed after reviewer fixes; only expected Windows CRLF warnings were reported.
+- Final `scripts\verify.ps1`: passed after reviewer fixes; CTest passed 9/9, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke loaded the current scene and 8 static mesh assets.
+
+Commit/push status:
+
+- Pending final git status and commit/push after reviewer fixes.
+
+Next-goal prompt:
+
+```text
+Create a Codex goal for Tidebreak.
+
+Repository rules:
+- Follow AGENTS.md and docs/AI_WORKFLOW.md.
+- Use docs/CONTEXT_MAP.md for orientation.
+- Avoid polish unless it blocks validation or a production decision.
+- Update docs/STATUS.md.
+- Run scripts/verify.ps1 before claiming success.
+- Commit and push only if validation passes and there are no unrelated user changes.
+
+Goal:
+Build input-scripted runtime QA for the Ferry Office Service Call.
+
+Why now:
+The current playthrough QA proves scene/job state directly, but it does not exercise the live runtime update loop through keyboard-style input, player/camera timing, traversal activation, vehicle entry/driving/exit, and presentation-safe state changes. This goal should turn the first playable loop into a stronger regression gate before deeper Jolt or vehicle migration work.
+
+Scope:
+- Add a QA-only scripted-input runtime path or runner that drives the real update loop without opening a normal interactive session.
+- Cover the Ferry Office service-call path through manifest, service route, maintenance/power, gate, vehicle, checkpoint, service-run confirmation, and completion.
+- Write a JSON report and Python wrapper similar to existing QA tools.
+- Add focused C++ and Python tests.
+
+Non-goals:
+- No new job content.
+- No visual polish.
+- No Jolt vehicle migration.
+- No broad input framework rewrite unless a tiny seam is required for the scripted runner.
+
+Files/docs to read first:
+- AGENTS.md
+- docs/AI_WORKFLOW.md
+- docs/CONTEXT_MAP.md
+- docs/VERTICAL_SLICE.md
+- docs/TECH_DEBT.md
+- src/engine/application/Application.*
+- src/engine/input/Input.h
+- src/game/SandboxLayer.*
+- src/game/FerryOfficePlaythroughQa.*
+- tools/playthrough_qa.py
+- tests/EngineCoreTests.cpp
+
+Validation:
+- scripts/verify.ps1
+- python tools/playthrough_qa.py
+- python tools/capture_visual_smoke.py
+
+Use subagents:
+- Worker: inspect the smallest seam for feeding scripted input into the runtime without overbuilding.
+- Reviewer: check for scope creep, missing validation, and accidental replacement of existing deterministic QA.
+```
