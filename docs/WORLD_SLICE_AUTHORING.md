@@ -4,6 +4,8 @@ Last updated: 2026-05-17
 
 Purpose: define the first boundary between Ferry Office as a regression scene and future Veyra Reach target slices. This document does not authorize a full map, mission framework, terrain system, editor, NPC AI, traffic, production art, or renderer rewrite.
 
+Post-v0.99 direction rebaseline: future target slices should serve Tidebreak as a narrative vehicle/crime/action sandbox, not as a service-work checklist. A target slice can be coastal, industrial, rural, resort-like, or urban depending on location. The common contract is risk, vehicle/space meaning, local response, and consequence.
+
 ## Scene Roles
 
 Every authored scene can now declare `sliceMetadata`.
@@ -27,6 +29,7 @@ Required role values:
 - Purpose: prove a second slice can exist outside Ferry Office with its own surface, road, collision, route, and marker intent.
 - It is not a mission, map expansion, terrain implementation, art pass, or new runtime gameplay chain.
 - It now carries one `targetObjective` gate bound to the existing Pilot Service Marker. This proves authored objective/consequence runtime for a target slice; it is still not a mission system.
+- Its next useful evolution should be a tiny action/response contract, not a prettier scaffold or another neutral `E` prompt. The target action can be provisional and abstract, but it must prove that a risky player action causes a visible/testable world response and an exit/recovery requirement.
 
 ## Metadata Contract
 
@@ -96,12 +99,15 @@ Allowed in a target-slice scaffold:
 - one authored `targetObjective` gate bound to an existing interactable marker,
 - validation and reporting tests.
 - neutral runtime smoke/capture evidence.
+- one tiny action/response proof if it is explicitly scoped as target-slice gameplay contract evidence.
 
 Deferred:
 
 - missions/jobs,
 - NPCs,
 - traffic,
+- full police/wanted/pursuit AI,
+- combat/weapons,
 - save/load,
 - terrain mesh/spline systems,
 - new vehicle runtime logic,
@@ -111,6 +117,18 @@ Deferred:
 - `SandboxLayer` location-specific gameplay chains.
 - inherited Ferry Office objective/job overlay.
 - inherited Ferry Office service vehicle fallback.
+
+## Crime/Action Slice Contract
+
+A future target-slice gameplay gate is acceptable only when it stays small and proves these facts:
+
+- The player action has risk or rule-breaking meaning in the scene.
+- The scene responds visibly or through runtime state that can later drive presentation.
+- Vehicle or route choice matters to escape, repositioning, recovery, or escalation.
+- The report distinguishes authored objective completion from action/response evidence.
+- Ferry Office job/world-state language does not leak into the target slice.
+
+This is not permission to build a generic mission framework, wanted system, traffic simulation, large map, terrain pass, or production content pipeline.
 
 ## Acceptance
 

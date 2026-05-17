@@ -2,6 +2,53 @@
 
 Last updated: 2026-05-17
 
+## Tidebreak Game Direction Rebaseline (2026-05-17)
+
+Goal:
+
+- Document the corrected Tidebreak game direction after discussion: compact narrative vehicle/crime/action sandbox, not a service-worker/operator checklist.
+- Keep Ferry Office as regression/debug testbed and Veyra Reach as the target-slice surface for the next gameplay contract.
+- Prepare the next appropriate goal prompt around risky player action plus local world response.
+
+Scope:
+
+- Updated `docs\GAME_DIRECTION.md` so the creative north star is story protagonist + vehicles + risk + conflict + world reaction, with tone varying by location.
+- Updated `docs\GAMEPLAY_REVIEW.md` so next-goal selection favors crime/action verbs, vehicle-as-action, local response, and avoids another Ferry Office endpoint/polish loop.
+- Updated `docs\VERTICAL_SLICE.md` to mark Ferry Office as historical prototype/regression testbed and define the post-v0.99 target-slice direction.
+- Updated `docs\WORLD_SLICE_AUTHORING.md` with a small crime/action slice contract for future target-slice gates.
+- Added `docs\reviews\tidebreak-game-direction-rebaseline.md` with the decision, stop-doing list, goal sequence, and ready next goal prompt.
+- Added `docs\superpowers\specs\2026-05-17-tidebreak-crime-action-direction-design.md`.
+
+Evidence:
+
+- CONFIRMED: Baseline `git status --short --branch` showed `main...origin/main` with no listed changes.
+- CONFIRMED: `git branch --show-current` returned `main`.
+- CONFIRMED: `python tools\status_report.py` passed and showed the current Veyra target-slice contact gate status.
+- CONFIRMED: `scripts\doctor.ps1` passed with expected optional PATH warnings for compiler/tool binaries.
+- CONFIRMED: `scripts\configure.ps1` passed for `windows-vs2022-debug`.
+- CONFIRMED: `scripts\build.ps1` passed and built `EngineCore`, `GamePrototype`, `EngineApp`, and `EngineCoreTests`.
+- CONFIRMED: `scripts\verify.ps1` passed; CTest 14/14 passed, both Ferry Office and Veyra scenes validated, world/slice report still lists `ferry-office` as `regression-testbed` and `veyra-reach-pilot` as `target-slice-scaffold`, and runtime scene smoke passed.
+
+Remaining limits:
+
+- This is a direction/documentation rebaseline, not a gameplay implementation.
+- It does not add crime/action runtime, police/wanted logic, NPCs, combat, traffic, terrain, content, art, or vehicle changes.
+- The ready next goal is intentionally small: prove risky action plus local response before any broad game system.
+
+Validation commands:
+
+- GREEN: `git status --short --branch`.
+- GREEN: `git branch --show-current`.
+- GREEN: `python tools\status_report.py`.
+- GREEN: `scripts\doctor.ps1`.
+- GREEN: `scripts\configure.ps1`.
+- GREEN: `scripts\build.ps1`.
+- GREEN: `scripts\verify.ps1`.
+
+Next recommended goal:
+
+Use the prompt in `docs\reviews\tidebreak-game-direction-rebaseline.md`: `Veyra risky action response contract`. The goal should prove the smallest risky-action plus local-response contract in Veyra, not add broad terrain, assets, police AI, traffic, combat, or another Ferry Office service endpoint.
+
 ## Target-Slice Player-World Contact Gate (2026-05-17)
 
 Goal:

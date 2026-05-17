@@ -1,6 +1,6 @@
 # Vertical Slice
 
-Last updated: 2026-05-16
+Last updated: 2026-05-17
 
 ## Slice Name
 
@@ -10,11 +10,13 @@ Last updated: 2026-05-16
 
 Define the first playable micro-scenario for the project direction locked in `docs/GAME_DIRECTION.md`.
 
-This document defines the micro-slice target and prototype state. Early versions deliberately deferred vehicles; v0.16 adds one narrow service-vehicle job beat using the existing vehicle prototype without adding traffic, economy, NPC AI, full missions, inventory, save/load, final art, or asset pipelines.
+This document defines the historical Ferry Office micro-slice target and prototype state. After the post-v0.99 direction rebaseline, Ferry Office is a regression/debug testbed. It should preserve validated evidence, but it should not keep absorbing new content as if a longer service chain will become the real game.
+
+The next real playable slice should be a compact crime/action situation in Veyra Reach or another target-slice scene: protagonist, vehicle, risky target, response, escape/reposition, and visible consequence.
 
 ## Player Experience Target
 
-In about 10 minutes, the player should understand:
+In the Ferry Office prototype, the player should understand:
 
 - where they are,
 - how to move and look around,
@@ -23,9 +25,19 @@ In about 10 minutes, the player should understand:
 - how one small action changes the world state,
 - why the region remembers meaningful actions.
 
+In the next target slice, the player should understand:
+
+- who they are in the situation,
+- what risky action they are choosing,
+- why the vehicle and route matter,
+- what changed because the world reacted,
+- how to leave, recover, or escalate.
+
 ## Scenario Summary
 
 The player arrives at a closed ferry office on Veyra Reach. The service gate is blocked, the manifest marker is near the dock office, and the maintenance box is reachable through the Service Barrier Vault route. The player collects or inspects the manifest, uses traversal to reach maintenance, restores local power, opens the service route, and reaches an exit marker with a visible remembered-state summary.
+
+This is no longer the production fantasy. It is a validated prototype chain that should keep guarding movement, interaction, traversal, vehicle, scene data, world-state, renderer, and QA regressions.
 
 ## Required Prototype Beats
 
@@ -116,6 +128,9 @@ v0.90 adds a small office-side Drain Log state cue that shifts from pending ambe
 - NPC AI.
 - Combat.
 - Weapons.
+- Crime/action response logic.
+- Pursuit/pressure systems.
+- Witness/attention systems.
 - Dialogue trees.
 - Mission scripting.
 - Inventory.
@@ -139,3 +154,15 @@ Reason: the slice depends on on-foot access gating, readable obstacles, and rout
 - The camera remains stable in narrow spaces.
 - Collision prevents walking through walls and allows the intended path.
 - The slice can be validated in a bounded run plus a manual checklist.
+
+## Post-v0.99 Target-Slice Direction
+
+The next target slice should not copy the Ferry Office structure with new names. It should prove the smallest action-sandbox contract:
+
+1. The player enters a location with a risky target or conflict.
+2. The player performs an action that is not merely a neutral service prompt.
+3. The world responds in a visible, testable way.
+4. The vehicle or route matters to resolution.
+5. QA can prove action, response, and exit/recovery without pretending this is a full mission system.
+
+Non-goals remain strict: no full police AI, traffic, combat suite, economy, save/load, final art, terrain system, mission editor, or broad map expansion until this small contract is real.

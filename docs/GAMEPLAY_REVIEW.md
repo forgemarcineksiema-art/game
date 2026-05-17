@@ -1,49 +1,52 @@
 # Gameplay Review
 
-Last updated: 2026-05-16
+Last updated: 2026-05-17
 
 Purpose: keep future Codex runs honest about Tidebreak as a game, not only as a validated engine workbench. Read this before choosing a new playable-content, presentation, movement, camera, vehicle, or world-state milestone.
 
 ## Current Read
 
-Tidebreak now has a real prototype loop, not just isolated systems. The Ferry Office scene has a validated 21-event chain, one service vehicle route, active route guidance, remembered local flags, visible state cues, original placeholder props, GDI/DX11 capture evidence, and after v0.95 one repaired state that changes traversable space by opening Low Dock Drain access.
+Tidebreak now has a strong validated prototype loop, but its game identity has been re-baselined. The Ferry Office scene has a validated 21-event chain, one service vehicle route, active route guidance, remembered local flags, visible state cues, original placeholder props, GDI/DX11 capture evidence, Jolt vehicle evidence, and one repaired state that changes traversable space. That is useful regression evidence, not the target player fantasy.
 
 The strongest playable identity is:
 
-- arrive at a compact coastal workplace,
-- understand a blocked or broken local route,
-- move and drive through the space,
-- fix or deliver something practical,
-- see the local place remember the change.
+- arrive in a compact authored location with tension,
+- read routes, witnesses, hazards, vehicles, exits, and valuable targets,
+- use on-foot movement and grounded driving to create action,
+- trespass, steal, recover, damage, chase, escape, threaten, or improvise,
+- trigger visible world response and remembered consequence.
 
-The weakest current identity is also clear: too many recent beats are administrative sign-offs. They are technically validated, but several have the same player verb: walk to marker, press `E`, set one flag, read text. This risks turning the slice into a checklist instead of a compact driver/fixer sandbox.
+The weakest current identity is also clear: too many recent beats are administrative sign-offs. They are technically validated, but several have the same player verb: walk to marker, press `E`, set one flag, read text. This risks turning Tidebreak into a field-work/checklist simulator instead of a narrative vehicle/crime/action sandbox.
+
+The game does not need to be urban or gangster by default. Tidebreak can move between heavy industrial ports, lonely service roads, resort corruption, small-town pressure, rural routes, and coastal illegal work. Tone should depend on location. The shared rule is that the player is a story protagonist in risky situations, not an operator completing neutral tasks.
 
 ## What Is Working
 
-- The scene is coherent enough to support a short authored chain.
-- The service vehicle route is the best kinetic beat because it changes pace and requires movement through space.
+- Ferry Office is coherent enough to remain a regression/debug testbed.
+- The vehicle route is the best kinetic beat because it changes pace and requires movement through space.
 - The world-state ledger is useful and validated.
 - Active playtest route guidance makes the long chain less dependent on F1/debug mode.
 - Visual smoke and playthrough QA give enough automated evidence to make provisional game decisions without waiting for manual review.
 - Jolt vehicle evidence is strong enough to treat Jolt as the preferred production vehicle-runtime candidate, while deterministic remains the safe direct-app and QA baseline/fallback.
+- Veyra now has a small target-slice runtime/objective/contact QA surface that is separate from Ferry Office assumptions.
 
 ## Main Gameplay Problems
 
 1. The chain is long, but many beats are shallow.
 
-   A 21-event report proves coverage, not fun. Future content should add a new verb, spatial problem, route change, delivery constraint, driving challenge, or visible consequence. Do not add another log/sign/tag endpoint unless it unlocks one of those.
+   A 21-event report proves coverage, not fun. Future content should add a new crime/action verb, spatial problem, chase/escape pressure, route choice, valuable target, visible consequence, or world response. Do not add another log/sign/tag endpoint unless it directly supports action.
 
-2. World consequences are still rare.
+2. The current world responds like a prototype, not like a crime/action sandbox.
 
-   v0.95 proves the right shape by opening Low Dock Drain access after the Storm Pump Ticket. Do not stop there. Future content should keep favoring physical route changes, blocked/unblocked spaces, moved objects, new access, or changed work zones over tiny color cues and text-only state.
+   v0.95 proves the right shape by opening Low Dock Drain access after the Storm Pump Ticket, and the Veyra contact gate proves authored player-world contact. The next step is not another neutral repair consequence. It should prove that a risky player action creates attention, pressure, access denial, pursuit-like behavior, or another readable reaction.
 
 3. The UI still carries too much design weight.
 
    The top-left overlay explains objectives, prompt, job state, follow-up state, and next step. That is useful, but the scene should carry more of the player's understanding through composition, landmarks, markers, state cues, and readable route geometry.
 
-4. Driving is underused relative to the project identity.
+4. Driving must become action, not only route completion.
 
-   The vehicle route is validated and important, but most follow-up content returns to on-foot marker interactions. A stronger Tidebreak loop should periodically ask the player to drive with purpose: reposition, tow later, deliver, clear, reroute, or choose a route.
+   The vehicle route is validated and manually accepted, but it is still mostly QA and traversal. A stronger Tidebreak loop should ask the player to arrive, block, escape, chase, flee, reposition, ram later, switch routes, or recover from a bad situation.
 
 5. Architecture is close to its next pressure point.
 
@@ -57,12 +60,12 @@ Use these rules after orientation and before choosing the next milestone.
 
 Prefer the milestone that improves one of these:
 
-- a new player verb,
+- a new crime/action player verb,
 - stronger driving or movement feel,
 - clearer objective understanding without more text,
-- a physical world-state consequence,
+- a physical or social world response,
 - a more believable authored place,
-- a safer path to the next compact job.
+- a safer path to the first compact crime/action slice.
 
 ### Treat Validation As Evidence, Not The Game
 
@@ -70,7 +73,7 @@ Green validation means the repo can move. It does not mean the next safest impro
 
 ### Avoid Checklist Growth
 
-Do not add multiple consecutive beats that only set flags through `E` prompts. A new interaction should usually change space, route, vehicle use, visible state, or future choice.
+Do not add multiple consecutive beats that only set flags through `E` prompts. A new interaction should usually create risk, change space, involve a vehicle, reveal a target, trigger response, or alter future choice.
 
 ### Do Not Pick Prop Polish By Default
 
@@ -87,104 +90,102 @@ Refactor when it unblocks content, reduces risk in `SandboxLayer`, creates a reu
 
 ## Strong Next Goal Shapes
 
-### 1. Physical World Consequence
+### 1. First Crime/Action Loop Contract
 
-Best near-term shape: after an existing follow-up beat such as storm pump, low dock drain, or relay service work, make the world visibly and spatially change.
+Best near-term shape: define and prove the smallest gameplay contract for a Tidebreak crime/action situation outside Ferry Office.
 
 Examples:
 
-- open a short service path,
-- remove a small road obstruction,
-- expose a new turnaround or dock-side shortcut,
-- change a work zone from blocked to passable,
-- move or lower a barrier after repair.
+- a valuable target that can be taken, damaged, or recovered,
+- an access/trespass line that makes the player action risky,
+- a visible response state after the action,
+- an escape/reposition requirement that gives the vehicle a purpose,
+- a failure/pressure state that is observable in QA.
 
 Validation:
 
-- C++ tests for state-to-collider/route/presentation behavior,
+- C++ tests for objective/action/response state,
 - scene validation/report/scale audit,
-- playthrough QA proves the state chain,
-- visual smoke captures before/after or a named QA capture state.
+- a recorded-input QA route through action and response,
+- visual/runtime smoke showing response state without Ferry Office language.
 
-### 2. Driving Feel Road-Test
+### 2. Veyra Local Response Gate
 
-Best if the next question is vehicle quality. Build an automated road-test report before tuning. For vehicle runtime decisions, make this Jolt-first: deterministic is the control/fallback, not the only feel target.
+Best if the next question is how the world answers the player. Use the existing Veyra scaffold to prove one local response after a risky action without building a mission framework.
+
+Good response shapes:
+
+- a blocked/changed route,
+- a warning/attention state,
+- a simple pursuit/pressure proxy,
+- a locked/unlocked escape route,
+- a visible marker/prop state that changes because of the risky action.
+
+Validation:
+
+- recorded-input target-slice QA,
+- target-slice runtime smoke,
+- scene tools,
+- `scripts\verify.ps1`.
+
+### 3. Vehicle-As-Action Gate
+
+Best if the next slice needs the vehicle to be more than transport. Use Jolt as the preferred production candidate and deterministic as control/fallback.
 
 Metrics:
 
-- time to checkpoint,
-- steering response,
-- stop distance,
-- reverse behavior,
-- yaw overshoot,
-- bounds hits,
-- route deviation,
-- camera target stability.
+- arrival to a risky location,
+- enter/exit under an objective state,
+- escape route progress,
+- turn/reverse/reset readability,
+- collision/contact response,
+- bounds and failure reason.
 
 Validation:
 
-- deterministic baseline report,
-- required Jolt/runtime-adapter comparison when the question is production vehicle direction,
-- playthrough QA,
-- focused C++ tests,
+- recorded-input route report,
+- vehicle runtime QA when vehicle behavior changes,
+- target-slice smoke/capture if Veyra is used,
 - `scripts\verify.ps1`.
 
-### 3. Objective/Route Readability Without More Text
+### 4. Slice Architecture Boundary
 
-Best if captures show the player reaches a state but the destination is visually weak.
-
-Improve:
-
-- in-world active destination cue,
-- route-side landmark,
-- destination framing,
-- prompt priority near clustered interactables,
-- marker scale/color policy.
-
-Avoid:
-
-- another top-left line,
-- another generic sign-off prop,
-- visual detail that does not help the current objective.
-
-### 4. Content Boundary For Second Job
-
-Best if adding new content would otherwise extend `FerryOfficeJob` with another long hardcoded chain.
+Best if adding the crime/action loop would otherwise push Veyra-specific behavior into `SandboxLayer` or create a second hardcoded `FerryOfficeJob`.
 
 Improve:
 
-- scene-authored action/route/objective binding shape,
-- smaller helper for follow-up chains,
+- scene-authored objective/action/response binding shape,
+- a small target-slice action/response runtime helper,
 - tests that prove route/objective policy from data,
-- migration of one existing follow-up segment, not a giant mission framework.
+- no ECS, editor, mission graph, traffic, police AI, or broad scripting system.
 
 ## Next Recommended Direction
 
 Do not treat another Ferry Office endpoint, prop, route cue, low-dock reaction, or terrain/readability pass as the default next move. Ferry Office is now a regression/debug testbed, not the first real game location.
 
-After the post-v0.99 Jolt input-semantics fix and manual play confirmation, the better direction is:
+After the post-v0.99 Jolt input-semantics fix, manual play confirmation, and Veyra target-slice runtime/contact gates, the better direction is:
 
 ```text
-Veyra Reach Pilot Slice Architecture Scaffold
+Veyra First Crime/Action Loop Contract
 ```
 
-Use the Ferry Office evidence as the regression baseline, not the content target. The next goal should create a small, validated boundary for a second target slice/world package: enough metadata and tooling for surface/road/collision/marker intent, while explicitly avoiding a full map, mission framework, editor, terrain-only pass, or asset/render rewrite.
+Use the Ferry Office evidence as the regression baseline, not the content target. The next goal should define and prove the smallest target-slice gameplay contract for risky action plus response: not a full mission, not police AI, not traffic, not terrain, not visual polish. It should make Veyra prove a player-facing crime/action loop shape instead of another neutral objective marker.
 
-The strongest alternate is not another world-response beat in the current scene. It is a narrower architecture cleanup only if the new scaffold would otherwise force more location-specific policy into `SandboxLayer`, `FerryOfficeJob`, or one growing scene JSON.
+The strongest alternate is a narrower architecture cleanup only if the action/response contract would otherwise force location-specific policy into `SandboxLayer`, `FerryOfficeJob`, or one growing scene JSON.
 
 ```text
-Scene/World Authoring Boundary Split
+Target-Slice Action/Response Runtime Boundary
 ```
 
-Keep that alternate bounded to data/tooling boundaries. Do not start an ECS, mission editor, broad content rewrite, or generic engine rewrite.
+Keep that alternate bounded to one action/response contract. Do not start an ECS, mission editor, broad content rewrite, generic engine rewrite, terrain pass, or another Ferry Office polish loop.
 
 ## Review Questions Before Any Next Goal
 
-- Does the player get a new verb, a stronger feel, or a more visible consequence?
+- Does the player get a crime/action verb, stronger feel, or a more visible consequence?
 - Would the change still matter if the debug overlay were hidden?
 - Is this improving Tidebreak, or only making the existing checklist longer?
-- Does the milestone rely on another `E` prompt and flag without spatial change?
+- Does the milestone rely on another `E` prompt and flag without risk, response, spatial change, or vehicle meaning?
 - Is the current weakness actually in content, driving, movement/camera, presentation, validation, or architecture?
 - What automated evidence will substitute for a human playtest?
 - Does the work reduce or increase pressure on `SandboxLayer` and `FerryOfficeJob`?
-- What should a player remember from this milestone?
+- What should a player remember from this milestone as an action scene?

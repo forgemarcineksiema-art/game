@@ -1,6 +1,6 @@
 # Game Direction
 
-Last updated: 2026-05-15
+Last updated: 2026-05-17
 
 ## Working Title
 
@@ -10,17 +10,17 @@ This is a working title only. It is meant to evoke an isolated coastal region, b
 
 ## Genre
 
-Small third-person cinematic systemic sandbox/adventure.
+Compact third-person narrative vehicle/crime/action sandbox.
 
 The project should feel like a compact, authored place with systemic reactions rather than a huge open world. It is an original game direction and must not copy names, places, characters, maps, missions, logos, or assets from any commercial game.
 
 ## Current Creative North Star
 
-`Tidebreak` is a third-person island driver/fixer sandbox where every job leaves a mark on a small coastal community.
+`Tidebreak` is a compact vehicle/crime/action sandbox about a story protagonist moving through coastal places where risk, vehicles, conflict, and world reaction matter.
 
-The project should not be built as a direct "mini GTA". The stronger direction is island-first: start with a compact, dense, memorable region where driving, movement, local jobs, route access, repairs, favors, and remembered consequences matter. A larger city or mainland district can exist later as an expansion of the fiction, but the first production truth is Veyra Reach as a small, authored island place.
+The project should not be built as a direct "mini GTA" or as a field-work simulator. The useful reference is the player-facing promise of a modern vehicle/crime/action sandbox: a protagonist enters risky situations, uses vehicles and physical space, breaks rules, triggers consequences, and escapes or escalates. The setting can be coastal, provincial, industrial, resort-like, rural, or urban depending on the location. The game does not need a city/gangster tone by default.
 
-The long-term player fantasy is practical rather than superheroic: drive, fix, deliver, unlock, improvise, help, annoy, break, repair, and become known. Vehicles are an important long-term pillar, but they should serve place, jobs, access, and local memory rather than turn the game into a pure vehicle simulator.
+The first production truth is still a small authored place, not a huge map. But the reason to build that place is crime/action play, not another sequence of service prompts. Vehicles are a central pillar because they create arrival, pursuit, escape, pressure, collisions, route choice, and identity. Interactions and remembered state matter only when they create visible risk, leverage, consequence, or new action.
 
 ## Influence Matrix
 
@@ -30,6 +30,7 @@ These references are design lenses, not cloning targets.
 | --- | --- |
 | Small dense map | `Bully` / `Yakuza` |
 | Physics and collision ambition | `GTA IV` |
+| Vehicle/crime/action promise | `GTA IV` / `GTA VI` as high-level ambition lenses |
 | Vehicle feel | `Mafia 2` / `GTA IV` |
 | World reactions | `Red Dead Redemption 2` / `GTA IV` |
 | Humor and chaos | `Saints Row 2` |
@@ -42,9 +43,9 @@ The filter is important: use the references for lessons about density, weight, r
 
 ## Core Fantasy
 
-You are the outsider who can get things unstuck.
+You are a story protagonist who can turn a place into a situation.
 
-The player arrives in a cut-off island region where normal authority has become unreliable. People remember who helped, who was ignored, what was damaged, what was delivered, and what was repaired. The fantasy is not power through combat scale; it is power through movement, driving, access, tools, favors, and consequences.
+The player arrives in a coastal region where normal authority, private interests, local loyalties, and illicit work overlap. People remember who was helped, threatened, ignored, exposed, chased, damaged, robbed, or used. The fantasy is not about being a worker/operator who completes service tickets. It is about moving through a grounded place as a character with pressure on them, creating action through vehicles, trespass, theft, favors, intimidation, damage, escape, and consequences.
 
 ## Fictional World
 
@@ -60,27 +61,27 @@ The region should be:
 
 ## Player Role
 
-The player is an outsider driver/fixer.
+The player is a story protagonist with strong driving skill, local pressure, and room to become dangerous.
 
-They are not a superhero, soldier, crime boss, celebrity, or chosen-one ruler. They are a capable visitor with practical skills: driving, movement, observation, basic repair, negotiation, carrying small objects, unlocking access, and making visible choices.
+They are not a superhero, soldier, celebrity, or chosen-one ruler. They also should not be framed mainly as a maintenance operator. They are a capable outsider or returning local who can drive, move, observe, intimidate, steal, improvise, help, betray, escape, and make visible choices. The exact tone depends on location: a port can be heavy and industrial, a resort can be colorful and satirical, a wet service road can be lonely and tense, and a town center can be social and reactive.
 
 ## Core Gameplay Loop
 
-1. Arrive at a small local problem.
-2. Observe the space, people, routes, locked paths, hazards, and useful objects.
-3. Move or drive through the environment using third-person traversal and grounded vehicle control.
-4. Interact with objects, switches, doors, notes, tools, and people.
-5. Change a local state: open access, repair a path, deliver an item, move a vehicle/object, mark a choice, or trigger a reaction.
-6. See the world remember that change through debug state first, then visible scene changes later.
-7. Return to a hub or nearby character with a new route, consequence, or lead.
+1. Arrive in a place with tension, opportunity, or threat.
+2. Read the space: routes, witnesses, hazards, vehicles, access, cover, exits, and valuable targets.
+3. Use on-foot movement and vehicle control to enter, trespass, steal, damage, recover, threaten, chase, escape, or improvise.
+4. Trigger a world response: attention, alarm, blocked access, pursuit pressure, changed state, or a character/faction consequence.
+5. Resolve the situation by leaving, hiding, returning, escalating, or accepting a consequence.
+6. See the world remember meaningful actions through visible state and later content, not only text/debug flags.
 
 ## Game Pillars
 
 - **Readable third-person feel:** movement, camera, and interaction should be clear before the world grows.
-- **Grounded driving with purpose:** vehicles should feel weighty and useful for jobs, access, and identity, not like generic arcade props.
-- **Small place, high memory:** the game should remember meaningful actions in a compact region rather than simulate a huge world badly.
-- **Practical systemic play:** doors, routes, tools, hazards, and local state are more important than combat escalation.
-- **Island-first authorship:** Veyra Reach should become a memorable place before any mainland/city expansion is promised.
+- **Grounded driving as action:** vehicles should feel weighty and useful for arrival, escape, pursuit, route choice, pressure, and identity.
+- **Small place, high consequence:** the game should remember meaningful actions in compact locations rather than simulate a huge world badly.
+- **Crime/action verbs before service verbs:** stealing, trespassing, escaping, chasing, damaging, recovering, and provoking response are more important than another neutral `E` prompt.
+- **Location-specific tone:** Tidebreak can be grim, colorful, satirical, lonely, or tense depending on the place. The tone should come from location and conflict, not one global filter.
+- **Veyra-first authorship:** Veyra Reach should become a memorable playable region before any mainland/city expansion is promised.
 - **Cinematic restraint:** camera and presentation can become polished, but v0.x work should stay playable and debuggable.
 - **Original grounded fiction:** no cloned cities, gangs, missions, characters, brands, logos, or famous maps.
 - **AI-friendly iteration:** every system needs clear docs, validation commands, and narrow next steps.
@@ -92,29 +93,31 @@ They are not a superhero, soldier, crime boss, celebrity, or chosen-one ruler. T
 - Not an Uncharted clone.
 - Not a Red Dead Redemption clone.
 - Not a pure truck simulator.
+- Not a service-worker/operator simulator.
 - Not a city-first open-world promise.
-- Not a combat-first action game.
+- Not a generic urban gangster game by default.
+- Not a combat-only action game.
 - Not an open-world promise in v0.x.
 - Not a mission scripting platform yet.
 - Not an asset showcase.
 - Not a physics-engine experiment.
 
-## First 10-Minute Vertical Slice
+## Prototype Slice Status
 
-The first playable slice should be `The Ferry Office`.
+`The Ferry Office` was the first validated prototype slice. It is now a regression/debug testbed, not the production target for the first real game slice.
 
-The player starts near a damaged ferry office at the edge of Veyra Reach. A blocked service gate, a loose walkway, a locked office door, and a small local request create a compact loop:
+The Ferry Office proved movement, camera, collision, interaction focus, traversal, remembered state, vehicle runtime evidence, scene data, capture tooling, and QA discipline. It also proved a risk: a long chain of `E` prompts, service tasks, logs, and state flags can look like progress while failing to become a compelling crime/action game.
 
-1. Walk from the dock to the ferry office.
-2. Learn that the office power is out and the side path is blocked.
-3. Traverse a simple obstacle or narrow route to reach a maintenance box.
-4. Interact with the maintenance box to restore local power.
-5. Return through a changed route.
-6. Pick up a small manifest or marker item.
-7. Use an interaction to open the office or trigger a remembered state.
-8. End with the world state visibly changed: power restored, route opened, item collected, and a log/state entry recorded.
+The next real slice should use the Veyra target-slice surface to prove a small crime/action loop:
 
-The first slice should fit inside one small scene and prove feel, clarity, and remembered actions. It should not require vehicles, NPC AI, combat, inventory, save/load, or final art.
+1. arrive by vehicle or start near a vehicle-relevant location,
+2. identify a risky target or conflict,
+3. enter or trespass on foot,
+4. trigger a visible response or pressure,
+5. use vehicle/space to escape, reposition, or escalate,
+6. leave a visible consequence behind.
+
+This does not require full police AI, traffic, combat, dialogue, economy, save/load, final art, or a large map. It does require the loop to feel like a crime/action situation rather than a checklist.
 
 ## Engine Priorities
 
