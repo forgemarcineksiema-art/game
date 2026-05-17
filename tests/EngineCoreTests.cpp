@@ -24,6 +24,7 @@
 #include "game/PrototypeWorld.h"
 #include "game/SandboxLayer.h"
 #include "game/SceneDefinition.h"
+#include "game/SceneGuidanceSurface.h"
 #include "game/SceneLoader.h"
 #include "game/ScenePresentation.h"
 #include "game/SceneRuntimePolicy.h"
@@ -1336,6 +1337,81 @@ void TestSceneRuntimePolicyTreatsUnknownLoadedSceneAsNeutral()
     Expect(policy.guidancePolicy == SceneGuidancePolicy::AllAuthored,
         "TestSceneRuntimePolicyTreatsUnknownLoadedSceneAsNeutral",
         "A loaded non-regression scene should use neutral authored guidance.");
+}
+
+void TestSceneGuidanceSurfaceShowsAllAuthoredNeutralMarkers()
+{
+    SceneGuidanceContext context;
+    context.guidancePolicy = SceneGuidancePolicy::AllAuthored;
+    context.vehicleAvailable = true;
+
+    Interactable interactable;
+    interactable.id = 42;
+    interactable.name = "Veyra Hillside Relay";
+    interactable.enabled = true;
+    interactable.consumed = false;
+
+    TraversalAffordance traversal;
+    traversal.id = 7;
+    traversal.name = "Veyra service ledge";
+    traversal.enabled = true;
+
+    Expect(ShouldDrawRouteGuidanceMarker(context, "veyra-hillside-route"),
+        "TestSceneGuidanceSurfaceShowsAllAuthoredNeutralMarkers",
+        "Neutral target-slice guidance should show authored route markers without Ferry Office active-route ids.");
+    Expect(ShouldDrawObjectiveGuidanceMarker(context, "veyra-hillside-objective"),
+        "TestSceneGuidanceSurfaceShowsAllAuthoredNeutralMarkers",
+        "Neutral target-slice guidance should show authored objective markers without Ferry Office phase names.");
+    Expect(ShouldDrawInteractableGuidanceMarker(context, interactable),
+        "TestSceneGuidanceSurfaceShowsAllAuthoredNeutralMarkers",
+        "Neutral target-slice guidance should show authored interactables without Ferry Office name checks.");
+    Expect(ShouldDrawTraversalGuidanceMarker(context, traversal),
+        "TestSceneGuidanceSurfaceShowsAllAuthoredNeutralMarkers",
+        "Neutral target-slice guidance should show authored traversal markers without Ferry Office job gating.");
+    Expect(ShouldDrawVehicleGuidance(context),
+        "TestSceneGuidanceSurfaceShowsAllAuthoredNeutralMarkers",
+        "Neutral target-slice guidance should show vehicle guidance when the scene actually has a vehicle.");
+}
+
+void TestSceneGuidanceSurfaceKeepsFerryOfficeActiveGuidanceScoped()
+{
+    SceneGuidanceContext context;
+    context.guidancePolicy = SceneGuidancePolicy::FerryOfficeActive;
+    context.ferryOfficePhase = FerryOfficeJobPhase::CollectManifest;
+    context.activeRouteMarkerId = "manifest-to-vault-route";
+    context.activeObjectiveMarkerId = "ferry-manifest-marker";
+
+    Interactable futureInteractable;
+    futureInteractable.id = 9;
+    futureInteractable.name = FerryOffice::Names::ServiceRunMarker;
+    futureInteractable.enabled = true;
+    futureInteractable.consumed = false;
+
+    TraversalAffordance traversal;
+    traversal.id = 5;
+    traversal.enabled = true;
+
+    Expect(ShouldDrawRouteGuidanceMarker(context, "manifest-to-vault-route"),
+        "TestSceneGuidanceSurfaceKeepsFerryOfficeActiveGuidanceScoped",
+        "Ferry Office active guidance should show the context-provided active route.");
+    Expect(!ShouldDrawRouteGuidanceMarker(context, "future-dock-road-route"),
+        "TestSceneGuidanceSurfaceKeepsFerryOfficeActiveGuidanceScoped",
+        "Ferry Office active guidance should hide future route markers.");
+    Expect(ShouldDrawObjectiveGuidanceMarker(context, "ferry-manifest-marker"),
+        "TestSceneGuidanceSurfaceKeepsFerryOfficeActiveGuidanceScoped",
+        "Ferry Office active guidance should show the context-provided active objective.");
+    Expect(!ShouldDrawObjectiveGuidanceMarker(context, "service-run-marker"),
+        "TestSceneGuidanceSurfaceKeepsFerryOfficeActiveGuidanceScoped",
+        "Ferry Office active guidance should hide future objective markers.");
+    Expect(!ShouldDrawInteractableGuidanceMarker(context, futureInteractable),
+        "TestSceneGuidanceSurfaceKeepsFerryOfficeActiveGuidanceScoped",
+        "Ferry Office active guidance should not expose the service-run marker at the manifest phase.");
+    Expect(!ShouldDrawTraversalGuidanceMarker(context, traversal),
+        "TestSceneGuidanceSurfaceKeepsFerryOfficeActiveGuidanceScoped",
+        "Ferry Office active guidance should not expose traversal unless the phase or focus asks for it.");
+    Expect(!ShouldDrawVehicleGuidance(context),
+        "TestSceneGuidanceSurfaceKeepsFerryOfficeActiveGuidanceScoped",
+        "Vehicle guidance should be hidden when no vehicle is available.");
 }
 
 void TestNeutralSceneRuntimeSurfaceBuildsPresentationWithoutFerryOfficeTerms()
@@ -5934,6 +6010,8 @@ int main()
     TestSceneRuntimePolicyKeepsFallbackAsFerryOfficeRegression();
     TestSceneRuntimePolicyClassifiesRegressionAndTargetSliceRoles();
     TestSceneRuntimePolicyTreatsUnknownLoadedSceneAsNeutral();
+    TestSceneGuidanceSurfaceShowsAllAuthoredNeutralMarkers();
+    TestSceneGuidanceSurfaceKeepsFerryOfficeActiveGuidanceScoped();
     TestNeutralSceneRuntimeSurfaceBuildsPresentationWithoutFerryOfficeTerms();
     TestNeutralSceneRuntimeSurfaceBuildsDebugWithoutFerryOfficeTelemetry();
     TestSceneLoaderLoadsV018VisualIdentityPropKit();

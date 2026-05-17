@@ -7,6 +7,7 @@
 #include "game/PlayerController.h"
 #include "game/PrototypeScene.h"
 #include "game/SceneDefinition.h"
+#include "game/SceneGuidanceSurface.h"
 #include "game/SceneRuntimePolicy.h"
 #include "game/SceneRuntimeSurface.h"
 #include "game/ThirdPersonCamera.h"
@@ -38,6 +39,7 @@ private:
     std::string buildFullDebugText() const;
     std::string buildPresentationText(bool minimal) const;
     NeutralSceneRuntimeView buildNeutralSceneRuntimeView() const;
+    SceneGuidanceContext buildSceneGuidanceContext() const;
     void toggleDebugUiMode();
     void drawInteractionDebug(engine::IRenderer& renderer);
     void drawTraversalDebug(engine::IRenderer& renderer);
@@ -59,13 +61,6 @@ private:
     bool isVehicleExitPositionClear(engine::Vec3 position) const;
     void applyCameraSettingsForMode(bool vehicleMode);
     void loadStaticMeshAssets();
-    bool shouldDrawFullGuidance() const;
-    bool shouldDrawRouteMarker(std::string_view routeId) const;
-    bool shouldDrawObjectiveMarker(std::string_view markerId) const;
-    bool shouldDrawInteractableMarker(const Interactable& interactable) const;
-    bool shouldDrawTraversalMarker(const TraversalAffordance& affordance) const;
-    bool shouldDrawVehicleGuidance() const;
-
     PrototypeScene m_scene;
     SceneDefinition m_sceneDefinition;
     SceneRuntimePolicy m_runtimePolicy;

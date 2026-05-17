@@ -883,137 +883,42 @@ void SandboxLayer::toggleDebugUiMode()
     engine::Logger::info("UI mode: debug");
 }
 
-bool SandboxLayer::shouldDrawFullGuidance() const
+SceneGuidanceContext SandboxLayer::buildSceneGuidanceContext() const
 {
-    return m_uiMode == engine::UiMode::Debug;
-}
-
-bool SandboxLayer::shouldDrawRouteMarker(std::string_view routeId) const
-{
-    if (shouldDrawFullGuidance()) {
-        return true;
-    }
-    if (m_runtimePolicy.guidancePolicy == SceneGuidancePolicy::AllAuthored) {
-        return true;
-    }
-
-    return routeId == FerryOfficeActiveRouteMarkerId(m_scene.worldState(), m_scene.job().phase(m_scene.worldState()));
-}
-
-bool SandboxLayer::shouldDrawObjectiveMarker(std::string_view markerId) const
-{
-    if (shouldDrawFullGuidance()) {
-        return true;
-    }
-    if (m_runtimePolicy.guidancePolicy == SceneGuidancePolicy::AllAuthored) {
-        return true;
-    }
-
     const FerryOfficeJobPhase phase = m_scene.job().phase(m_scene.worldState());
-    if (markerId == "dock-start-marker" || markerId == "office-marker") {
-        return phase == FerryOfficeJobPhase::CollectManifest
-            || phase == FerryOfficeJobPhase::UseServiceRoute
-            || phase == FerryOfficeJobPhase::RestorePower
-            || phase == FerryOfficeJobPhase::OpenServiceGate;
-    }
-    if (markerId == "service-yard-marker") {
-        return phase == FerryOfficeJobPhase::UseServiceVehicle
-            || phase == FerryOfficeJobPhase::ReachDockRoad;
-    }
-    if (markerId == "dock-road-marker") {
-        return phase == FerryOfficeJobPhase::ReachDockRoad;
-    }
-
-    const std::string_view activeMarker = FerryOfficeActiveObjectiveMarkerId(m_scene.worldState(), phase);
-    if (!activeMarker.empty()) {
-        return markerId == activeMarker;
-    }
-
-    return false;
-}
-
-bool SandboxLayer::shouldDrawInteractableMarker(const Interactable& interactable) const
-{
-    if (shouldDrawFullGuidance()) {
-        return true;
-    }
-    if (m_runtimePolicy.guidancePolicy == SceneGuidancePolicy::AllAuthored) {
-        return true;
-    }
-
-    const InteractionFocus& focus = m_scene.interactions().focus();
-    if (focus.hasFocus && focus.interactableId == interactable.id) {
-        return true;
-    }
-    if (!interactable.enabled || interactable.consumed) {
-        return false;
-    }
-    if (interactable.name == FerryOffice::Names::FerryManifest || interactable.name == FerryOffice::Names::FerryOfficeNotice) {
-        return true;
-    }
-    if (interactable.name == FerryOffice::Names::MaintenanceBox) {
-        return m_scene.worldState().isFlagSet(WorldFlag::ServiceRouteUsed)
-            || m_scene.worldState().isFlagSet(WorldFlag::PowerRestored);
-    }
-    if (interactable.name == FerryOffice::Names::WallButton) {
-        return m_scene.worldState().isFlagSet(WorldFlag::PowerRestored)
-            || m_scene.worldState().isFlagSet(WorldFlag::RouteOpened);
-    }
-    if (interactable.name == FerryOffice::Names::ExitMarker) {
-        return m_scene.isSliceReadyForExit() || m_scene.isSliceComplete();
-    }
-    if (interactable.name == FerryOffice::Names::ServiceRunMarker) {
-        const FerryOfficeJobPhase phase = m_scene.job().phase(m_scene.worldState());
-        return phase == FerryOfficeJobPhase::ReachDockRoad
-            || phase == FerryOfficeJobPhase::ConfirmServiceRun
-            || phase == FerryOfficeJobPhase::Complete;
-    }
-
-    return true;
-}
-
-bool SandboxLayer::shouldDrawTraversalMarker(const TraversalAffordance& affordance) const
-{
-    if (shouldDrawFullGuidance()) {
-        return true;
-    }
-    if (m_runtimePolicy.guidancePolicy == SceneGuidancePolicy::AllAuthored) {
-        return true;
-    }
-
-    const TraversalFocus& focus = m_scene.traversal().focus();
+    const InteractionFocus& interactionFocus = m_scene.interactions().focus();
+    const TraversalFocus& traversalFocus = m_scene.traversal().focus();
     const PlayerState& player = m_player.state();
-    if ((focus.hasFocus && focus.affordanceId == affordance.id) || player.activeTraversalId == affordance.id) {
-        return true;
-    }
 
-    return m_scene.job().phase(m_scene.worldState()) == FerryOfficeJobPhase::UseServiceRoute;
-}
-
-bool SandboxLayer::shouldDrawVehicleGuidance() const
-{
-    if (!m_vehicleAvailable) {
-        return false;
-    }
-    if (shouldDrawFullGuidance() || m_vehicle.state().occupied) {
-        return true;
-    }
-    if (m_runtimePolicy.guidancePolicy == SceneGuidancePolicy::AllAuthored) {
-        return true;
-    }
-
-    const FerryOfficeJobPhase phase = m_scene.job().phase(m_scene.worldState());
-    return phase == FerryOfficeJobPhase::UseServiceVehicle
-        || phase == FerryOfficeJobPhase::ReachDockRoad
-        || phase == FerryOfficeJobPhase::ConfirmServiceRun
-        || phase == FerryOfficeJobPhase::Complete;
+    SceneGuidanceContext context;
+    context.fullDebug = m_uiMode == engine::UiMode::Debug;
+    context.guidancePolicy = m_runtimePolicy.guidancePolicy;
+    context.ferryOfficePhase = phase;
+    context.activeRouteMarkerId = std::string(FerryOfficeActiveRouteMarkerId(m_scene.worldState(), phase));
+    context.activeObjectiveMarkerId = std::string(FerryOfficeActiveObjectiveMarkerId(m_scene.worldState(), phase));
+    context.hasInteractionFocus = interactionFocus.hasFocus;
+    context.focusedInteractableId = interactionFocus.interactableId;
+    context.hasTraversalFocus = traversalFocus.hasFocus;
+    context.focusedTraversalId = traversalFocus.affordanceId;
+    context.activeTraversalId = player.activeTraversalId;
+    context.serviceRouteUsed = m_scene.worldState().isFlagSet(WorldFlag::ServiceRouteUsed);
+    context.powerRestored = m_scene.worldState().isFlagSet(WorldFlag::PowerRestored);
+    context.routeOpened = m_scene.worldState().isFlagSet(WorldFlag::RouteOpened);
+    context.sliceReadyForExit = m_scene.isSliceReadyForExit();
+    context.sliceComplete = m_scene.isSliceComplete();
+    context.jobComplete = m_scene.isJobComplete();
+    context.serviceRunReadyForConfirmation = m_scene.job().isReadyForConfirmation(m_scene.worldState());
+    context.vehicleAvailable = m_vehicleAvailable;
+    context.vehicleOccupied = m_vehicle.state().occupied;
+    return context;
 }
 
 void SandboxLayer::drawInteractionDebug(engine::IRenderer& renderer)
 {
     const InteractionFocus& focus = m_scene.interactions().focus();
+    const SceneGuidanceContext guidance = buildSceneGuidanceContext();
     for (const Interactable& interactable : m_scene.interactions().interactables()) {
-        if (!shouldDrawInteractableMarker(interactable)) {
+        if (!ShouldDrawInteractableGuidanceMarker(guidance, interactable)) {
             continue;
         }
 
@@ -1211,10 +1116,11 @@ void SandboxLayer::drawSliceDebug(engine::IRenderer& renderer)
                   ? engine::Color {1.0f, 0.9f, 0.25f, 1.0f}
                   : engine::Color {0.45f, 0.45f, 0.55f, 1.0f});
     const engine::Color routeColor {0.70f, 0.92f, 1.0f, 1.0f};
+    const SceneGuidanceContext guidance = buildSceneGuidanceContext();
 
     if (m_sceneDefinitionLoaded) {
         for (const SceneObjectiveMarkerDefinition& marker : m_sceneDefinition.objectiveMarkers) {
-            if (!shouldDrawObjectiveMarker(marker.id)) {
+            if (!ShouldDrawObjectiveGuidanceMarker(guidance, marker.id)) {
                 continue;
             }
 
@@ -1237,7 +1143,7 @@ void SandboxLayer::drawSliceDebug(engine::IRenderer& renderer)
         }
 
         for (const SceneRouteMarkerDefinition& marker : m_sceneDefinition.routeMarkers) {
-            if (!shouldDrawRouteMarker(marker.id)) {
+            if (!ShouldDrawRouteGuidanceMarker(guidance, marker.id)) {
                 continue;
             }
 
@@ -1284,9 +1190,10 @@ void SandboxLayer::drawPlaytestGuidance(engine::IRenderer& renderer)
 
     const engine::Color routeColor {0.70f, 0.92f, 1.0f, 1.0f};
     const engine::Color objectiveColor {0.95f, 0.86f, 0.42f, 1.0f};
+    const SceneGuidanceContext guidance = buildSceneGuidanceContext();
 
     for (const SceneRouteMarkerDefinition& marker : m_sceneDefinition.routeMarkers) {
-        if (!shouldDrawRouteMarker(marker.id)) {
+        if (!ShouldDrawRouteGuidanceMarker(guidance, marker.id)) {
             continue;
         }
 
@@ -1296,7 +1203,7 @@ void SandboxLayer::drawPlaytestGuidance(engine::IRenderer& renderer)
     }
 
     for (const SceneObjectiveMarkerDefinition& marker : m_sceneDefinition.objectiveMarkers) {
-        if (!shouldDrawObjectiveMarker(marker.id)) {
+        if (!ShouldDrawObjectiveGuidanceMarker(guidance, marker.id)) {
             continue;
         }
 
@@ -1310,8 +1217,9 @@ void SandboxLayer::drawTraversalDebug(engine::IRenderer& renderer)
 {
     const TraversalFocus& focus = m_scene.traversal().focus();
     const PlayerState& player = m_player.state();
+    const SceneGuidanceContext guidance = buildSceneGuidanceContext();
     for (const TraversalAffordance& affordance : m_scene.traversal().affordances()) {
-        if (!shouldDrawTraversalMarker(affordance)) {
+        if (!ShouldDrawTraversalGuidanceMarker(guidance, affordance)) {
             continue;
         }
 
@@ -1367,7 +1275,8 @@ void SandboxLayer::drawVehicleDebug(engine::IRenderer& renderer)
     renderer.drawDebugSolidBox(vehicle.position + engine::Vec3 {0.0f, 0.86f, 0.0f}, m_vehicleCabinHalfExtents, ScaleColor(vehicleColor, 0.38f));
     renderer.drawDebugBox(vehicle.position + engine::Vec3 {0.0f, 0.86f, 0.0f}, m_vehicleCabinHalfExtents, vehicleColor);
 
-    if (!shouldDrawVehicleGuidance()) {
+    const SceneGuidanceContext guidance = buildSceneGuidanceContext();
+    if (!ShouldDrawVehicleGuidance(guidance)) {
         return;
     }
 

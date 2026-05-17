@@ -132,6 +132,7 @@ add_library(GamePrototype STATIC
     src/game/PlayerController.cpp
     src/game/SandboxLayer.cpp
     src/game/SceneDefinition.cpp
+    src/game/SceneGuidanceSurface.cpp
     src/game/SceneLoader.cpp
     src/game/ScenePresentation.cpp
     src/game/SceneRuntimePolicy.cpp
