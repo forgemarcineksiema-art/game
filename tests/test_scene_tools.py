@@ -88,6 +88,36 @@ class SceneToolTests(unittest.TestCase):
             mesh_instances["mesh-cinder-shore-shelf"]["replacesVisualPlaceholderId"],
         )
 
+    def test_veyra_cinder_harbor_landmark_risk_readability_pass_is_authored(self) -> None:
+        scene = scene_data.load_scene(self.pilot_scene_path)
+        mesh_assets = {asset["id"]: asset for asset in scene["meshAssets"]}
+        mesh_instances = {instance["id"]: instance for instance in scene["meshInstances"]}
+        material_keys = {material["key"] for material in scene["sceneMaterials"]}
+
+        for key in [
+            "beacon-amber-signal",
+            "cinder-mast-dark-metal",
+            "relay-oxidized-steel",
+            "cargo-warning-tarp",
+        ]:
+            self.assertIn(key, material_keys)
+
+        expected_assets = {
+            "cinder-harbor-overlook-mast-mesh": "assets/models/cinder_harbor_overlook_mast.gltf",
+            "cinder-harbor-relay-tower-mesh": "assets/models/cinder_harbor_relay_tower.gltf",
+            "cinder-harbor-cargo-tarp-mesh": "assets/models/cinder_harbor_cargo_tarp.gltf",
+            "cinder-harbor-route-beacon-mesh": "assets/models/cinder_harbor_route_beacon.gltf",
+        }
+        for asset_id, path in expected_assets.items():
+            self.assertEqual(path, mesh_assets[asset_id]["path"])
+            self.assertIn("Cinder Harbor", mesh_assets[asset_id]["provenance"])
+
+        self.assertEqual("landmark", mesh_instances["mesh-harbor-scar-overlook-mast"]["readabilityRole"])
+        self.assertEqual("landmark", mesh_instances["mesh-reach-relay-tower"]["readabilityRole"])
+        self.assertEqual("risk-site", mesh_instances["mesh-suspicious-cargo-tarp"]["readabilityRole"])
+        self.assertEqual("route-anchor", mesh_instances["mesh-low-beacon-route-anchor"]["readabilityRole"])
+        self.assertGreater(mesh_instances["mesh-harbor-scar-overlook-mast"]["scale"][1], 2.0)
+
     def test_veyra_reach_pilot_target_objective_references_authored_interactable(self) -> None:
         scene = scene_data.load_scene(self.pilot_scene_path)
         target_objective = scene["targetObjective"]
@@ -808,8 +838,12 @@ class SceneToolTests(unittest.TestCase):
         self.assertIsNotNone(files_by_path["assets/models/blender_ferry_notice_board.gltf"].bounds_min)
         self.assertIsNotNone(files_by_path["assets/models/blender_ferry_notice_board.gltf"].bounds_max)
         veyra_only_assets = {
+            "assets/models/cinder_harbor_cargo_tarp.gltf",
             "assets/models/cinder_harbor_ground_patch.gltf",
+            "assets/models/cinder_harbor_overlook_mast.gltf",
             "assets/models/cinder_harbor_road_plate.gltf",
+            "assets/models/cinder_harbor_relay_tower.gltf",
+            "assets/models/cinder_harbor_route_beacon.gltf",
             "assets/models/cinder_harbor_shore_shelf.gltf",
         }
         self.assertEqual(
@@ -842,8 +876,12 @@ class SceneToolTests(unittest.TestCase):
         result = scene_data.validate_asset_workflow(
             self.scene,
             additional_referenced_paths={
+                "assets/models/cinder_harbor_cargo_tarp.gltf",
                 "assets/models/cinder_harbor_ground_patch.gltf",
+                "assets/models/cinder_harbor_overlook_mast.gltf",
                 "assets/models/cinder_harbor_road_plate.gltf",
+                "assets/models/cinder_harbor_relay_tower.gltf",
+                "assets/models/cinder_harbor_route_beacon.gltf",
                 "assets/models/cinder_harbor_shore_shelf.gltf",
             },
         )

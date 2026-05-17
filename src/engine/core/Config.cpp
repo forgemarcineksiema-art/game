@@ -89,6 +89,8 @@ bool ParseQaCaptureState(std::string_view text)
         || text == "veyra-road-network"
         || text == "veyra-shoreline-horizon"
         || text == "veyra-landmark-overlook"
+        || text == "veyra-risk-cargo-site"
+        || text == "veyra-route-anchors"
         || text == "veyra-collision-edge";
 }
 
@@ -262,7 +264,7 @@ ConfigParseResult ParseArguments(int argc, const char* const* argv)
 
         if (ReadValue(argc, argv, index, argument, "--qa-capture-state", value)) {
             if (!ParseQaCaptureState(value)) {
-                result.errors.push_back("--qa-capture-state must be one of: relay-to-service-log, low-dock-drain-access, office-front-oblique, service-yard-vehicle-side, dock-road-wide, vehicle-dock-road-forward, vehicle-dock-road-reverse, veyra-start, veyra-road-network, veyra-shoreline-horizon, veyra-landmark-overlook, veyra-collision-edge.");
+                result.errors.push_back("--qa-capture-state must be one of: relay-to-service-log, low-dock-drain-access, office-front-oblique, service-yard-vehicle-side, dock-road-wide, vehicle-dock-road-forward, vehicle-dock-road-reverse, veyra-start, veyra-road-network, veyra-shoreline-horizon, veyra-landmark-overlook, veyra-risk-cargo-site, veyra-route-anchors, veyra-collision-edge.");
             } else {
                 result.config.qaCaptureState = value;
             }
@@ -330,7 +332,7 @@ std::string BuildHelpText()
         << "  --capture-dir <path>  Write one renderer-owned BMP capture into the directory.\n"
         << "  --qa-playthrough <name> Run a QA-only automated playthrough. Supported: ferry-office-service-call, veyra-target-objective-acquisition.\n"
         << "  --qa-playthrough-report <path> Write the QA playthrough JSON report.\n"
-        << "  --qa-capture-state <name> Preload a QA-only capture state. Supported: relay-to-service-log, low-dock-drain-access, office-front-oblique, service-yard-vehicle-side, dock-road-wide, vehicle-dock-road-forward, vehicle-dock-road-reverse, veyra-start, veyra-road-network, veyra-shoreline-horizon, veyra-landmark-overlook, veyra-collision-edge.\n"
+        << "  --qa-capture-state <name> Preload a QA-only capture state. Supported: relay-to-service-log, low-dock-drain-access, office-front-oblique, service-yard-vehicle-side, dock-road-wide, vehicle-dock-road-forward, vehicle-dock-road-reverse, veyra-start, veyra-road-network, veyra-shoreline-horizon, veyra-landmark-overlook, veyra-risk-cargo-site, veyra-route-anchors, veyra-collision-edge.\n"
         << "  --qa-physics-parity <name> Run QA-only physics parity/contact. Supported: ferry-office-collision, ferry-office-character-contact, ferry-office-vehicle-feasibility, ferry-office-vehicle-runtime-comparison.\n"
         << "  --qa-physics-report <path> Write the QA physics parity JSON report.\n"
         << "  --help                Show this help.\n";

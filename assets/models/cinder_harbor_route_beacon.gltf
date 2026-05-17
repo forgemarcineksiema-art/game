@@ -1,0 +1,90 @@
+{
+  "asset": {
+    "version": "2.0",
+    "generator": "Tidebreak tools/create_simple_prop_gltf.py v1.01 Cinder Harbor route beacon fallback helper",
+    "extras": {
+      "tidebreakSource": "project-original fallback geometry",
+      "notBlenderExport": true
+    }
+  },
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "mesh": 0,
+      "name": "cinder_harbor_route_beacon"
+    }
+  ],
+  "meshes": [
+    {
+      "name": "cinder_harbor_route_beacon",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0
+          },
+          "indices": 1,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 672,
+      "uri": "data:application/octet-stream;base64,7FE4vQAAAADsUTi97FE4PQAAAADsUTi97FE4PY/CdT/sUTi97FE4vY/CdT/sUTi97FE4vQAAAADsUTg97FE4PQAAAADsUTg97FE4PY/CdT/sUTg97FE4vY/CdT/sUTg9zcxMvq5HYT8K16O9zcxMPq5HYT8K16O9zcxMPrgehT8K16O9zcxMvrgehT8K16O9zcxMvq5HYT8K16M9zcxMPq5HYT8K16M9zcxMPrgehT8K16M9zcxMvrgehT8K16M9j8L1vVyPgj+PwnW9j8L1PVyPgj+PwnW9j8L1PYXrkT+PwnW9j8L1vYXrkT+PwnW9j8L1vVyPgj+PwnU9j8L1PVyPgj+PwnU9j8L1PYXrkT+PwnU9j8L1vYXrkT+PwnU9rkdhvgAAAADsUTi+rkdhPgAAAADsUTi+rkdhPgrXoz3sUTi+rkdhvgrXoz3sUTi+rkdhvgAAAADsUTg+rkdhPgAAAADsUTg+rkdhPgrXoz3sUTg+rkdhvgrXoz3sUTg+AAABAAIAAAACAAMABQAEAAcABQAHAAYABAAAAAMABAADAAcAAQAFAAYAAQAGAAIAAwACAAYAAwAGAAcABAAFAAEABAABAAAACAAJAAoACAAKAAsADQAMAA8ADQAPAA4ADAAIAAsADAALAA8ACQANAA4ACQAOAAoACwAKAA4ACwAOAA8ADAANAAkADAAJAAgAEAARABIAEAASABMAFQAUABcAFQAXABYAFAAQABMAFAATABcAEQAVABYAEQAWABIAEwASABYAEwAWABcAFAAVABEAFAARABAAGAAZABoAGAAaABsAHQAcAB8AHQAfAB4AHAAYABsAHAAbAB8AGQAdAB4AGQAeABoAGwAaAB4AGwAeAB8AHAAdABkAHAAZABgA"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 384,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 384,
+      "byteLength": 288,
+      "target": 34963
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 32,
+      "type": "VEC3",
+      "min": [
+        -0.22,
+        0.0,
+        -0.18
+      ],
+      "max": [
+        0.22,
+        1.14,
+        0.18
+      ]
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 0,
+      "componentType": 5123,
+      "count": 144,
+      "type": "SCALAR",
+      "min": [
+        0
+      ],
+      "max": [
+        31
+      ]
+    }
+  ]
+}

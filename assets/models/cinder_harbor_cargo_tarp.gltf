@@ -1,0 +1,90 @@
+{
+  "asset": {
+    "version": "2.0",
+    "generator": "Tidebreak tools/create_simple_prop_gltf.py v1.01 Cinder Harbor cargo tarp fallback helper",
+    "extras": {
+      "tidebreakSource": "project-original fallback geometry",
+      "notBlenderExport": true
+    }
+  },
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "mesh": 0,
+      "name": "cinder_harbor_cargo_tarp"
+    }
+  ],
+  "meshes": [
+    {
+      "name": "cinder_harbor_cargo_tarp",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0
+          },
+          "indices": 1,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 840,
+      "uri": "data:application/octet-stream;base64,hetRv83MTD3hehS/hetRP83MTD3hehS/hetRP83MTD3hehQ/hetRv83MTD3hehQ/Urgev+F6FD89Cte+UrgeP+F6FD89Cte+UrgeP+F6FD89Ctc+Urgev+F6FD89Ctc+zcxMvwrXIz2PwvW+CtcjvwrXIz2PwvW+Ctcjv83MTD6PwvW+zcxMv83MTD6PwvW+zcxMvwrXIz0K16O+CtcjvwrXIz0K16O+Ctcjv83MTD4K16O+zcxMv83MTD4K16O+CtcjPwrXIz2PwvW+zcxMPwrXIz2PwvW+zcxMP83MTD6PwvW+CtcjP83MTD6PwvW+CtcjPwrXIz0K16O+zcxMPwrXIz0K16O+zcxMP83MTD4K16O+CtcjP83MTD4K16O+Ctcjv5qZGT/sUbi+uB4Fv5qZGT/sUbi+uB4Fv1yPQj/sUbi+Ctcjv1yPQj/sUbi+Ctcjv5qZGT/sUbg+uB4Fv5qZGT/sUbg+uB4Fv1yPQj/sUbg+Ctcjv1yPQj/sUbg+uB4FP5qZGT/sUbi+CtcjP5qZGT/sUbi+CtcjP1yPQj/sUbi+uB4FP1yPQj/sUbi+uB4FP5qZGT/sUbg+CtcjP5qZGT/sUbg+CtcjP1yPQj/sUbg+uB4FP1yPQj/sUbg+AAABAAIAAAACAAMABAAHAAYABAAGAAUAAAAEAAUAAAAFAAEAAQAFAAYAAQAGAAIAAgAGAAcAAgAHAAMAAwAHAAQAAwAEAAAACAAJAAoACAAKAAsADQAMAA8ADQAPAA4ADAAIAAsADAALAA8ACQANAA4ACQAOAAoACwAKAA4ACwAOAA8ADAANAAkADAAJAAgAEAARABIAEAASABMAFQAUABcAFQAXABYAFAAQABMAFAATABcAEQAVABYAEQAWABIAEwASABYAEwAWABcAFAAVABEAFAARABAAGAAZABoAGAAaABsAHQAcAB8AHQAfAB4AHAAYABsAHAAbAB8AGQAdAB4AGQAeABoAGwAaAB4AGwAeAB8AHAAdABkAHAAZABgAIAAhACIAIAAiACMAJQAkACcAJQAnACYAJAAgACMAJAAjACcAIQAlACYAIQAmACIAIwAiACYAIwAmACcAJAAlACEAJAAhACAA"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 480,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 480,
+      "byteLength": 360,
+      "target": 34963
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 40,
+      "type": "VEC3",
+      "min": [
+        -0.82,
+        0.04,
+        -0.58
+      ],
+      "max": [
+        0.82,
+        0.76,
+        0.58
+      ]
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 0,
+      "componentType": 5123,
+      "count": 180,
+      "type": "SCALAR",
+      "min": [
+        0
+      ],
+      "max": [
+        39
+      ]
+    }
+  ]
+}

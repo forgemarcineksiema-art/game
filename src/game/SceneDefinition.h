@@ -60,6 +60,7 @@ struct SceneMeshInstanceDefinition {
     std::string colorKey;
     std::string replacesVisualPlaceholderId;
     std::string linkedColliderId;
+    std::string readabilityRole;
 };
 
 struct SceneInteractableDefinition {

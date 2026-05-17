@@ -309,6 +309,42 @@
     },
     {
       "format": "gltf",
+      "id": "cinder-harbor-overlook-mast-mesh",
+      "license": "project-original",
+      "path": "assets/models/cinder_harbor_overlook_mast.gltf",
+      "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v1.01 fallback Cinder Harbor overlook mast for landmark readability; not a Blender export.",
+      "units": "meter",
+      "upAxis": "Y"
+    },
+    {
+      "format": "gltf",
+      "id": "cinder-harbor-relay-tower-mesh",
+      "license": "project-original",
+      "path": "assets/models/cinder_harbor_relay_tower.gltf",
+      "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v1.01 fallback Cinder Harbor relay tower for route-facing industrial silhouette readability; not a Blender export.",
+      "units": "meter",
+      "upAxis": "Y"
+    },
+    {
+      "format": "gltf",
+      "id": "cinder-harbor-cargo-tarp-mesh",
+      "license": "project-original",
+      "path": "assets/models/cinder_harbor_cargo_tarp.gltf",
+      "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v1.01 fallback Cinder Harbor cargo tarp for risky target-site readability; not a Blender export.",
+      "units": "meter",
+      "upAxis": "Y"
+    },
+    {
+      "format": "gltf",
+      "id": "cinder-harbor-route-beacon-mesh",
+      "license": "project-original",
+      "path": "assets/models/cinder_harbor_route_beacon.gltf",
+      "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v1.01 fallback Cinder Harbor route beacon for authored turn/escape anchors; not a Blender export.",
+      "units": "meter",
+      "upAxis": "Y"
+    },
+    {
+      "format": "gltf",
       "id": "ferry-office-canopy-mesh",
       "license": "project-original",
       "path": "assets/models/ferry_office_canopy.gltf",
@@ -650,6 +686,23 @@
       "yawDegrees": 0.0
     },
     {
+      "assetId": "cinder-harbor-overlook-mast-mesh",
+      "colorKey": "cinder-mast-dark-metal",
+      "id": "mesh-harbor-scar-overlook-mast",
+      "position": [
+        7.3,
+        0.08,
+        4.95
+      ],
+      "readabilityRole": "landmark",
+      "scale": [
+        0.95,
+        2.2,
+        0.95
+      ],
+      "yawDegrees": -38.0
+    },
+    {
       "assetId": "utility-box-mesh",
       "colorKey": "oxidized-service-green",
       "id": "mesh-reach-relay-hut-body",
@@ -682,6 +735,23 @@
       "yawDegrees": -22.0
     },
     {
+      "assetId": "cinder-harbor-relay-tower-mesh",
+      "colorKey": "relay-oxidized-steel",
+      "id": "mesh-reach-relay-tower",
+      "position": [
+        5.82,
+        0.05,
+        3.02
+      ],
+      "readabilityRole": "landmark",
+      "scale": [
+        0.88,
+        1.08,
+        0.88
+      ],
+      "yawDegrees": -18.0
+    },
+    {
       "assetId": "unit-box-mesh",
       "colorKey": "mossy-service-crate",
       "id": "mesh-suspicious-cargo-cache",
@@ -712,6 +782,57 @@
         0.75
       ],
       "yawDegrees": 18.0
+    },
+    {
+      "assetId": "cinder-harbor-cargo-tarp-mesh",
+      "colorKey": "cargo-warning-tarp",
+      "id": "mesh-suspicious-cargo-tarp",
+      "position": [
+        0.38,
+        0.1,
+        1.04
+      ],
+      "readabilityRole": "risk-site",
+      "scale": [
+        1.15,
+        0.95,
+        1.05
+      ],
+      "yawDegrees": 18.0
+    },
+    {
+      "assetId": "cinder-harbor-route-beacon-mesh",
+      "colorKey": "beacon-amber-signal",
+      "id": "mesh-greywinch-route-anchor",
+      "position": [
+        -3.35,
+        0.05,
+        -2.0
+      ],
+      "readabilityRole": "route-anchor",
+      "scale": [
+        1.0,
+        1.35,
+        1.0
+      ],
+      "yawDegrees": 35.0
+    },
+    {
+      "assetId": "cinder-harbor-route-beacon-mesh",
+      "colorKey": "beacon-amber-signal",
+      "id": "mesh-low-beacon-route-anchor",
+      "position": [
+        -6.18,
+        0.05,
+        1.72
+      ],
+      "readabilityRole": "route-anchor",
+      "scale": [
+        1.0,
+        1.45,
+        1.0
+      ],
+      "yawDegrees": 75.0
     },
     {
       "assetId": "service-road-sign-mesh",
@@ -1258,6 +1379,46 @@
       ],
       "key": "warning-service-orange",
       "response": "painted"
+    },
+    {
+      "baseColor": [
+        0.95,
+        0.56,
+        0.12,
+        1.0
+      ],
+      "key": "beacon-amber-signal",
+      "response": "painted"
+    },
+    {
+      "baseColor": [
+        0.09,
+        0.11,
+        0.12,
+        1.0
+      ],
+      "key": "cinder-mast-dark-metal",
+      "response": "painted"
+    },
+    {
+      "baseColor": [
+        0.34,
+        0.44,
+        0.4,
+        1.0
+      ],
+      "key": "relay-oxidized-steel",
+      "response": "painted"
+    },
+    {
+      "baseColor": [
+        0.58,
+        0.27,
+        0.08,
+        1.0
+      ],
+      "key": "cargo-warning-tarp",
+      "response": "matte"
     },
     {
       "baseColor": [

@@ -330,6 +330,102 @@ def write_cinder_harbor_shore_shelf(output_path: pathlib.Path, overwrite: bool =
     )
 
 
+def write_cinder_harbor_overlook_mast(output_path: pathlib.Path, overwrite: bool = True) -> None:
+    if output_path.exists() and not overwrite:
+        raise FileExistsError(f"{output_path} already exists; pass --overwrite to replace it")
+
+    vertices: list[tuple[float, float, float]] = []
+    indices: list[int] = []
+    _append_box(vertices, indices, center=(0.0, 1.45, 0.0), half_extents=(0.08, 1.45, 0.08))
+    _append_box(vertices, indices, center=(0.0, 2.78, 0.0), half_extents=(0.42, 0.055, 0.055))
+    _append_box(vertices, indices, center=(0.0, 2.42, 0.0), half_extents=(0.32, 0.045, 0.045))
+    _append_box(vertices, indices, center=(-0.26, 2.60, 0.0), half_extents=(0.045, 0.36, 0.045))
+    _append_box(vertices, indices, center=(0.26, 2.60, 0.0), half_extents=(0.045, 0.36, 0.045))
+    _append_box(vertices, indices, center=(0.0, 3.02, 0.0), half_extents=(0.18, 0.12, 0.06))
+    _append_box(vertices, indices, center=(0.0, 0.04, 0.0), half_extents=(0.42, 0.04, 0.28))
+
+    _write_embedded_gltf(
+        output_path=output_path,
+        vertices=vertices,
+        indices=indices,
+        name="cinder_harbor_overlook_mast",
+        generator="Tidebreak tools/create_simple_prop_gltf.py v1.01 Cinder Harbor overlook mast fallback helper",
+    )
+
+
+def write_cinder_harbor_relay_tower(output_path: pathlib.Path, overwrite: bool = True) -> None:
+    if output_path.exists() and not overwrite:
+        raise FileExistsError(f"{output_path} already exists; pass --overwrite to replace it")
+
+    vertices: list[tuple[float, float, float]] = []
+    indices: list[int] = []
+    for x, z in [(-0.28, -0.20), (0.28, -0.20), (-0.20, 0.24), (0.20, 0.24)]:
+        _append_box(vertices, indices, center=(x, 1.55, z), half_extents=(0.045, 1.55, 0.045))
+    _append_box(vertices, indices, center=(0.0, 0.55, 0.02), half_extents=(0.38, 0.035, 0.035))
+    _append_box(vertices, indices, center=(0.0, 1.25, 0.02), half_extents=(0.32, 0.035, 0.035))
+    _append_box(vertices, indices, center=(0.0, 1.95, 0.02), half_extents=(0.26, 0.035, 0.035))
+    _append_box(vertices, indices, center=(0.0, 2.72, 0.02), half_extents=(0.20, 0.035, 0.035))
+    _append_box(vertices, indices, center=(0.0, 3.18, 0.0), half_extents=(0.42, 0.06, 0.05))
+    _append_box(vertices, indices, center=(0.0, 3.35, 0.0), half_extents=(0.08, 0.20, 0.08))
+
+    _write_embedded_gltf(
+        output_path=output_path,
+        vertices=vertices,
+        indices=indices,
+        name="cinder_harbor_relay_tower",
+        generator="Tidebreak tools/create_simple_prop_gltf.py v1.01 Cinder Harbor relay tower fallback helper",
+    )
+
+
+def write_cinder_harbor_cargo_tarp(output_path: pathlib.Path, overwrite: bool = True) -> None:
+    if output_path.exists() and not overwrite:
+        raise FileExistsError(f"{output_path} already exists; pass --overwrite to replace it")
+
+    vertices: list[tuple[float, float, float]] = []
+    indices: list[int] = []
+    _append_tapered_box(
+        vertices,
+        indices,
+        y_min=0.05,
+        y_max=0.58,
+        lower_half_extents=(0.82, 0.58),
+        upper_half_extents=(0.62, 0.42),
+        z_offset=0.0,
+    )
+    _append_box(vertices, indices, center=(-0.72, 0.12, -0.40), half_extents=(0.08, 0.08, 0.08))
+    _append_box(vertices, indices, center=(0.72, 0.12, -0.40), half_extents=(0.08, 0.08, 0.08))
+    _append_box(vertices, indices, center=(-0.58, 0.68, 0.0), half_extents=(0.06, 0.08, 0.36))
+    _append_box(vertices, indices, center=(0.58, 0.68, 0.0), half_extents=(0.06, 0.08, 0.36))
+
+    _write_embedded_gltf(
+        output_path=output_path,
+        vertices=vertices,
+        indices=indices,
+        name="cinder_harbor_cargo_tarp",
+        generator="Tidebreak tools/create_simple_prop_gltf.py v1.01 Cinder Harbor cargo tarp fallback helper",
+    )
+
+
+def write_cinder_harbor_route_beacon(output_path: pathlib.Path, overwrite: bool = True) -> None:
+    if output_path.exists() and not overwrite:
+        raise FileExistsError(f"{output_path} already exists; pass --overwrite to replace it")
+
+    vertices: list[tuple[float, float, float]] = []
+    indices: list[int] = []
+    _append_box(vertices, indices, center=(0.0, 0.48, 0.0), half_extents=(0.045, 0.48, 0.045))
+    _append_box(vertices, indices, center=(0.0, 0.96, 0.0), half_extents=(0.20, 0.08, 0.08))
+    _append_box(vertices, indices, center=(0.0, 1.08, 0.0), half_extents=(0.12, 0.06, 0.06))
+    _append_box(vertices, indices, center=(0.0, 0.04, 0.0), half_extents=(0.22, 0.04, 0.18))
+
+    _write_embedded_gltf(
+        output_path=output_path,
+        vertices=vertices,
+        indices=indices,
+        name="cinder_harbor_route_beacon",
+        generator="Tidebreak tools/create_simple_prop_gltf.py v1.01 Cinder Harbor route beacon fallback helper",
+    )
+
+
 def _write_embedded_gltf(
     output_path: pathlib.Path,
     vertices: list[tuple[float, float, float]],
@@ -432,6 +528,10 @@ def parse_args() -> argparse.Namespace:
             "cinder-harbor-ground-patch",
             "cinder-harbor-road-plate",
             "cinder-harbor-shore-shelf",
+            "cinder-harbor-overlook-mast",
+            "cinder-harbor-relay-tower",
+            "cinder-harbor-cargo-tarp",
+            "cinder-harbor-route-beacon",
         ),
         default="ferry-notice-board",
         help="Prop kind to generate.",
@@ -469,6 +569,14 @@ def main() -> int:
             write_cinder_harbor_road_plate(output_path, overwrite=args.overwrite)
         elif args.kind == "cinder-harbor-shore-shelf":
             write_cinder_harbor_shore_shelf(output_path, overwrite=args.overwrite)
+        elif args.kind == "cinder-harbor-overlook-mast":
+            write_cinder_harbor_overlook_mast(output_path, overwrite=args.overwrite)
+        elif args.kind == "cinder-harbor-relay-tower":
+            write_cinder_harbor_relay_tower(output_path, overwrite=args.overwrite)
+        elif args.kind == "cinder-harbor-cargo-tarp":
+            write_cinder_harbor_cargo_tarp(output_path, overwrite=args.overwrite)
+        elif args.kind == "cinder-harbor-route-beacon":
+            write_cinder_harbor_route_beacon(output_path, overwrite=args.overwrite)
         else:
             write_ferry_notice_board(output_path, overwrite=args.overwrite)
     except FileExistsError as exc:

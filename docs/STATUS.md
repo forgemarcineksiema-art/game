@@ -2,6 +2,53 @@
 
 Last updated: 2026-05-17
 
+## Cinder Harbor Landmark/Risk Readability Pass (2026-05-17)
+
+Goal:
+
+- Add the next runtime-visible Cinder Harbor world foundation step: stronger authored industrial landmarks, a readable risky cargo site, and route-facing anchors while preserving `data\worlds\veyra_reach` as the source of truth.
+
+Scope:
+
+- Added `readabilityPass` metadata to `data\worlds\veyra_reach\areas\cinder_harbor.area.json`.
+- Added new Veyra-only material keys: `beacon-amber-signal`, `cinder-mast-dark-metal`, `relay-oxidized-steel`, and `cargo-warning-tarp`.
+- Added four project-original fallback `.gltf` meshes through `tools\create_simple_prop_gltf.py`: `cinder_harbor_overlook_mast.gltf`, `cinder_harbor_relay_tower.gltf`, `cinder_harbor_cargo_tarp.gltf`, and `cinder_harbor_route_beacon.gltf`.
+- Regenerated `data\scenes\veyra_reach_pilot.scene.json` from world source. The scene now reports 22 scene materials, 27 mesh assets, 35 mesh instances, 12 world-art replacement meshes, 2 readability landmarks, 1 readability risk site, and 2 readability route anchors.
+- Extended scene mesh instances with optional `readabilityRole` and load-time parsing so generated Veyra instances can declare `landmark`, `risk-site`, or `route-anchor` roles.
+- Added Veyra QA capture states for `veyra-risk-cargo-site` and `veyra-route-anchors`.
+- Extended `tools\world_author.py` validation/report/preview output with readability pass checks, role counts, and a `Readability Anchors` preview layer.
+
+What is now real:
+
+- CONFIRMED: Veyra runtime scene generation still comes from `data\worlds\veyra_reach\world.json` and `data\worlds\veyra_reach\areas\cinder_harbor.area.json`; `python tools\world_author.py --check` reports no drift.
+- CONFIRMED: Cinder Harbor has project-original mesh-backed overlook mast, relay tower, suspicious cargo tarp, and route beacon assets with explicit provenance.
+- CONFIRMED: `build\world_preview\veyra_reach_report.json` reports `readabilityLandmarks=2`, `readabilityRiskSites=1`, and `readabilityRouteAnchors=2`.
+- CONFIRMED: Runtime capture evidence for the pass exists under `build\captures\cinder-landmark-risk-*.bmp` with `build\captures\cinder_harbor_landmark_risk_manifest.json`.
+- CONFIRMED: The `veyra-risk-cargo-site` capture applies the new QA state and reaches the `Suspicious Cargo Cache` prompt.
+- INFERRED: The world now has clearer destination/risk/route readability from several player-facing approaches.
+
+Known limits:
+
+- CONFIRMED: This remains fallback low-detail static mesh art, not final terrain, textures, PBR materials, lighting, animated water, mesh collision, traffic, AI, police, or combat.
+- CONFIRMED: `readabilityRole` is presentation/authoring metadata; it does not add gameplay AI or a generic mission framework.
+- UNVERIFIED: Human visual feel after this pass still needs manual playtest after reviewing the captures in motion.
+
+Validation snapshot:
+
+- GREEN: `python tests\test_world_author.py`.
+- GREEN: `python tests\test_scene_tools.py`.
+- GREEN: `python tools\world_author.py --check`.
+- GREEN: `python tools\world_author.py --preview-html build\world_preview\veyra_reach_preview.html --report-json build\world_preview\veyra_reach_report.json`.
+- GREEN: `python tools\runtime_scene_smoke.py --exe build\windows-vs2022-debug\Debug\EngineApp.exe --scene data\scenes\veyra_reach_pilot.scene.json --renderer gdi --ui-mode playtest --capture-frame build\captures\cinder-landmark-risk-runtime-smoke.bmp --report-json build\runtime\cinder-landmark-risk-smoke-report.json`.
+- GREEN: `cmake --build --preset windows-vs2022-debug --target EngineCoreTests EngineApp`.
+- GREEN: `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`.
+- GREEN: `scripts\build.ps1`.
+- GREEN: `scripts\verify.ps1` passed with 15/15 CTest green, scene validation, world-author drift check, preview/report generation, asset validation, world/slice report, mesh report, and Veyra runtime smoke.
+
+Next recommended goal:
+
+- Build the first compact Cinder Harbor crime/action route beat: a risky cargo approach, route-choice escape/recovery, and vehicle/on-foot proof through the authored road network. Do not spend the next major goal on another purely visual pass unless capture review exposes a blocking readability failure.
+
 ## Cinder Harbor World-Art Mesh/Material Pass (2026-05-17)
 
 Goal:
@@ -49,7 +96,7 @@ Validation snapshot:
 
 Next recommended goal:
 
-- Add a compact authored landmark/industrial silhouette pass for Cinder Harbor's overlook, relay hut, and risky cargo site, still driven from `data\worlds\veyra_reach`, after this mesh/material pass has fresh runtime captures.
+- COMPLETE: the next pass added Cinder Harbor landmark/risk/route readability meshes driven from `data\worlds\veyra_reach`. The following high-value step is a compact crime/action route beat, not another Ferry Office or marker-only loop.
 
 ## Tidebreak World Foundation: Veyra Reach / Cinder Harbor Reach (2026-05-17)
 

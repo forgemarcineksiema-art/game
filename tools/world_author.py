@@ -197,6 +197,20 @@ def build_preview_html(package: WorldPackage, scene: dict[str, Any]) -> str:
         )
     parts.append("</g>")
 
+    parts.append("<g id=\"Readability Anchors\">")
+    role_colors = {"landmark": "#17242a", "risk-site": "#b03a1f", "route-anchor": "#ffb13b"}
+    for instance in scene["meshInstances"]:
+        role = str(instance.get("readabilityRole", ""))
+        if not role:
+            continue
+        position = _vec3(instance.get("position"), "meshInstances.position")
+        fill = role_colors.get(role, "#22332f")
+        parts.append(
+            f"<rect x=\"{sx(position[0]) - 7:.1f}\" y=\"{sy(position[2]) - 7:.1f}\" "
+            f"width=\"14\" height=\"14\" fill=\"{fill}\" stroke=\"#fff5cf\" stroke-width=\"2\" opacity=\"0.94\" />"
+        )
+    parts.append("</g>")
+
     parts.append("<g id=\"Collision\">")
     for collider in scene["colliders"]:
         _rect(parts, collider, sx, sy, {"": "#cf4d34"}, opacity=0.35, stroke="#7c1e16")
@@ -237,6 +251,9 @@ def build_report(package: WorldPackage, scene: dict[str, Any], check: CheckResul
             "meshInstances": len(scene.get("meshInstances", [])),
             "worldArtReplacementMeshes": sum(1 for instance in _as_list(scene.get("meshInstances")) if "replacesVisualPlaceholderId" in _as_dict(instance)),
             "primaryWorldArtAssets": len(_primary_world_art_assets(package)),
+            "readabilityLandmarks": _readability_role_count(scene, "landmark"),
+            "readabilityRiskSites": _readability_role_count(scene, "risk-site"),
+            "readabilityRouteAnchors": _readability_role_count(scene, "route-anchor"),
             "interactables": len(scene.get("interactables", [])),
             "routes": len(scene.get("routeMarkers", [])),
             "objectiveMarkers": len(scene.get("objectiveMarkers", [])),
@@ -315,6 +332,7 @@ def _validate_world_package(package: WorldPackage) -> None:
         if not _as_list(area.get("roads")):
             raise WorldAuthorError(f"area {area.get('id', '<missing>')} must author roads.")
         _validate_world_art_pass(area, asset_ids)
+        _validate_readability_pass(area, asset_ids)
         _collect_ids(seen_source_ids, area.get("terrainPatches"), "terrainPatches")
         _collect_ids(seen_source_ids, area.get("roads"), "roads")
         _collect_ids(seen_source_ids, area.get("colliders"), "colliders")
@@ -370,6 +388,37 @@ def _validate_world_art_pass(area: dict[str, Any], asset_ids: set[str]) -> None:
     ]:
         if required_replacement not in replacement_ids:
             raise WorldAuthorError(f"area.worldArtPass is missing primary mesh replacement for '{required_replacement}'.")
+
+
+def _validate_readability_pass(area: dict[str, Any], asset_ids: set[str]) -> None:
+    if area.get("id") != "cinder-harbor":
+        return
+    pass_data = _as_dict(area.get("readabilityPass"))
+    if not pass_data:
+        raise WorldAuthorError("cinder-harbor area must declare readabilityPass.")
+    _required_string(pass_data, "id", "area.readabilityPass")
+    primary_asset_ids = _as_list(pass_data.get("primaryMeshAssetIds"))
+    if len(primary_asset_ids) < 4:
+        raise WorldAuthorError("area.readabilityPass.primaryMeshAssetIds must list at least four primary mesh assets.")
+    for asset_id in primary_asset_ids:
+        if not isinstance(asset_id, str) or asset_id not in asset_ids:
+            raise WorldAuthorError(f"area.readabilityPass.primaryMeshAssetIds references unknown mesh asset '{asset_id}'.")
+    proof_targets = {target for target in _as_list(pass_data.get("proofTargets")) if isinstance(target, str)}
+    for required_target in ["harbor-scar-overlook", "reach-relay-hut", "suspicious-cargo-cache", "route-anchors"]:
+        if required_target not in proof_targets:
+            raise WorldAuthorError(f"area.readabilityPass.proofTargets is missing '{required_target}'.")
+    roles = [
+        instance.get("readabilityRole")
+        for instance in _as_list(area.get("meshInstances"))
+        if isinstance(instance, dict) and isinstance(instance.get("readabilityRole"), str)
+    ]
+    for required_role in ["landmark", "risk-site", "route-anchor"]:
+        if required_role not in roles:
+            raise WorldAuthorError(f"area.readabilityPass is missing meshInstances readabilityRole '{required_role}'.")
+    if roles.count("landmark") < 2:
+        raise WorldAuthorError("area.readabilityPass must include at least two landmark readability meshes.")
+    if roles.count("route-anchor") < 2:
+        raise WorldAuthorError("area.readabilityPass must include at least two route-anchor readability meshes.")
 
 
 def _validate_generated_scene(scene: dict[str, Any]) -> None:
@@ -464,6 +513,10 @@ def _primary_world_art_assets(package: WorldPackage) -> set[str]:
             if isinstance(asset_id, str) and asset_id:
                 primary.add(asset_id)
     return primary
+
+
+def _readability_role_count(scene: dict[str, Any], role: str) -> int:
+    return sum(1 for instance in _as_list(scene.get("meshInstances")) if _as_dict(instance).get("readabilityRole") == role)
 
 
 def _unique_strings(items: Any, key: str, label: str) -> set[str]:

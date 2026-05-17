@@ -41,6 +41,7 @@ Required role values:
 - It carries one `targetObjective` gate bound to `Cinder Harbor Marker`.
 - It carries one `targetActionResponse` contract: `Suspicious Cargo Cache` triggers `cinder-local-alerted`, then `Harbor Scar Escape Marker` proves exit/recovery.
 - Its current mesh/material pass declares `worldArtPass` in area source and uses mesh instances with `replacesVisualPlaceholderId` to make Cinder Harbor ground, road plates, and shore shelf primary runtime art while leaving generated placeholders as underlay/validation evidence.
+- Its current readability pass declares `readabilityPass` in area source and uses mesh instances with `readabilityRole` values for `landmark`, `risk-site`, and `route-anchor`. Current authored anchors are Harbor Scar Overlook mast, Reach Relay Hut tower, Suspicious Cargo Cache tarp, Greywinch route beacon, and Low Beacon route beacon.
 
 ## Metadata Contract
 
@@ -75,7 +76,7 @@ python tools/world_author.py --check
 python tools/world_author.py --preview-html build/world_preview/veyra_reach_preview.html --report-json build/world_preview/veyra_reach_report.json
 ```
 
-The report should expose `worldArtReplacementMeshes` and `primaryWorldArtAssets` for Cinder Harbor. The preview should include a `World-Art Meshes` layer so terrain/road/collision/layout agreement can be checked without hand-editing the generated scene JSON.
+The report should expose `worldArtReplacementMeshes`, `primaryWorldArtAssets`, `readabilityLandmarks`, `readabilityRiskSites`, and `readabilityRouteAnchors` for Cinder Harbor. The preview should include `World-Art Meshes` and `Readability Anchors` layers so terrain/road/collision/layout/readability agreement can be checked without hand-editing the generated scene JSON.
 
 Use the world/slice report to compare scene roles:
 

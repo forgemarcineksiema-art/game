@@ -1,0 +1,90 @@
+{
+  "asset": {
+    "version": "2.0",
+    "generator": "Tidebreak tools/create_simple_prop_gltf.py v1.01 Cinder Harbor overlook mast fallback helper",
+    "extras": {
+      "tidebreakSource": "project-original fallback geometry",
+      "notBlenderExport": true
+    }
+  },
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "mesh": 0,
+      "name": "cinder_harbor_overlook_mast"
+    }
+  ],
+  "meshes": [
+    {
+      "name": "cinder_harbor_overlook_mast",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0
+          },
+          "indices": 1,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 1176,
+      "uri": "data:application/octet-stream;base64,CtejvQAAAAAK16O9CtejPQAAAAAK16O9CtejPZqZOUAK16O9CtejvZqZOUAK16O9CtejvQAAAAAK16M9CtejPQAAAAAK16M9CtejPZqZOUAK16M9CtejvZqZOUAK16M9PQrXvmZmLkCuR2G9PQrXPmZmLkCuR2G9PQrXPqRwNUCuR2G9PQrXvqRwNUCuR2G9PQrXvmZmLkCuR2E9PQrXPmZmLkCuR2E9PQrXPqRwNUCuR2E9PQrXvqRwNUCuR2E9CtejvgAAGEDsUTi9CtejPgAAGEDsUTi9CtejPo/CHUDsUTi9Ctejvo/CHUDsUTi9CtejvgAAGEDsUTg9CtejPgAAGEDsUTg9CtejPo/CHUDsUTg9Ctejvo/CHUDsUTg99iicvilcD0DsUTi99ihcvilcD0DsUTi99ihcvqRwPUDsUTi99iicvqRwPUDsUTi99iicvilcD0DsUTg99ihcvilcD0DsUTg99ihcvqRwPUDsUTg99iicvqRwPUDsUTg99ihcPilcD0DsUTi99iicPilcD0DsUTi99iicPqRwPUDsUTi99ihcPqRwPUDsUTi99ihcPilcD0DsUTg99iicPilcD0DsUTg99iicPqRwPUDsUTg99ihcPqRwPUDsUTg97FE4vpqZOUCPwnW97FE4PpqZOUCPwnW97FE4PsP1SECPwnW97FE4vsP1SECPwnW97FE4vpqZOUCPwnU97FE4PpqZOUCPwnU97FE4PsP1SECPwnU97FE4vsP1SECPwnU9PQrXvgAAAAApXI++PQrXPgAAAAApXI++PQrXPgrXoz0pXI++PQrXvgrXoz0pXI++PQrXvgAAAAApXI8+PQrXPgAAAAApXI8+PQrXPgrXoz0pXI8+PQrXvgrXoz0pXI8+AAABAAIAAAACAAMABQAEAAcABQAHAAYABAAAAAMABAADAAcAAQAFAAYAAQAGAAIAAwACAAYAAwAGAAcABAAFAAEABAABAAAACAAJAAoACAAKAAsADQAMAA8ADQAPAA4ADAAIAAsADAALAA8ACQANAA4ACQAOAAoACwAKAA4ACwAOAA8ADAANAAkADAAJAAgAEAARABIAEAASABMAFQAUABcAFQAXABYAFAAQABMAFAATABcAEQAVABYAEQAWABIAEwASABYAEwAWABcAFAAVABEAFAARABAAGAAZABoAGAAaABsAHQAcAB8AHQAfAB4AHAAYABsAHAAbAB8AGQAdAB4AGQAeABoAGwAaAB4AGwAeAB8AHAAdABkAHAAZABgAIAAhACIAIAAiACMAJQAkACcAJQAnACYAJAAgACMAJAAjACcAIQAlACYAIQAmACIAIwAiACYAIwAmACcAJAAlACEAJAAhACAAKAApACoAKAAqACsALQAsAC8ALQAvAC4ALAAoACsALAArAC8AKQAtAC4AKQAuACoAKwAqAC4AKwAuAC8ALAAtACkALAApACgAMAAxADIAMAAyADMANQA0ADcANQA3ADYANAAwADMANAAzADcAMQA1ADYAMQA2ADIAMwAyADYAMwA2ADcANAA1ADEANAAxADAA"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 672,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 672,
+      "byteLength": 504,
+      "target": 34963
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 56,
+      "type": "VEC3",
+      "min": [
+        -0.42,
+        0.0,
+        -0.28
+      ],
+      "max": [
+        0.42,
+        3.14,
+        0.28
+      ]
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 0,
+      "componentType": 5123,
+      "count": 252,
+      "type": "SCALAR",
+      "min": [
+        0
+      ],
+      "max": [
+        55
+      ]
+    }
+  ]
+}

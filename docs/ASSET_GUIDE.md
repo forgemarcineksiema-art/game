@@ -53,6 +53,10 @@ Scene data uses `colorKey` strings plus `sceneMaterials` presets, not final rend
 - `oil-slick-asphalt`: Cinder Harbor wet service-road plates.
 - `salt-cracked-concrete`: Cinder Harbor lay-by and utility-yard concrete.
 - `black-rock-shore`: Cinder Harbor rocky shoreline shelf.
+- `beacon-amber-signal`: Cinder Harbor route beacons and small warning/wayfinding anchors.
+- `cinder-mast-dark-metal`: Harbor Scar mast and dark industrial high-point silhouettes.
+- `relay-oxidized-steel`: Reach Relay utility tower and oxidized service structures.
+- `cargo-warning-tarp`: suspicious cargo/risk-site tarp and warning cover.
 - `weathered-yard-rail`: simple service-yard barriers.
 - `rusted-roof-trim`: rusty ferry-office silhouette accents.
 - `ferry-route-sign-blue`: dock-road/ferry-route sign cues.
@@ -90,6 +94,7 @@ v0.12-v0.18 supports a tiny static `.gltf` subset through `src/engine/assets/Sta
 - v0.88 adds `ferry_office_sign_panel.gltf` through the same fallback helper because the front sign board was the loudest remaining facade unit-box cue after the gate/frame passes.
 - v0.93 adds `ferry_office_service_panel.gltf` through the same fallback helper because the office-side service/control cue was still a generic utility-box reuse after the route-guidance pass.
 - v1.00 adds `cinder_harbor_ground_patch.gltf`, `cinder_harbor_road_plate.gltf`, and `cinder_harbor_shore_shelf.gltf` through the same fallback helper because Cinder Harbor's first Veyra world-art pass needed terrain/road/shore silhouettes without breaking the `data/worlds/veyra_reach` source-of-truth pipeline.
+- v1.01 adds `cinder_harbor_overlook_mast.gltf`, `cinder_harbor_relay_tower.gltf`, `cinder_harbor_cargo_tarp.gltf`, and `cinder_harbor_route_beacon.gltf` through the same fallback helper because Cinder Harbor needed runtime-visible landmark, risk-site, and route-anchor silhouettes while preserving the `data/worlds/veyra_reach` source-of-truth pipeline.
 - v0.20.1 adds `blender_ferry_notice_board.gltf` through `tools/blender/create_tidebreak_notice_board.py`. v0.27 adds `blender_cable_reel.gltf` through `tools/blender/create_tidebreak_cable_reel.py`. v0.42 adds `blender_wet_road_surface.gltf` through `tools/blender/create_tidebreak_wet_road_surface.py`. v0.43 adds `blender_harbor_backdrop.gltf` through `tools/blender/create_tidebreak_harbor_backdrop.py`. v0.44 adds `blender_harbor_water_surface.gltf` through `tools/blender/create_tidebreak_harbor_water_surface.py`. These scripts author in Tidebreak coordinates, map to Blender's Z-up space, export with Blender 5.1.1, and post-embed the buffer for the current loader subset.
 - Use meters, Y-up, +Z forward.
 - Keep placeholder meshes small, original, and clearly documented.

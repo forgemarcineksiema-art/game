@@ -242,6 +242,7 @@ SceneMeshInstanceDefinition ParseMeshInstance(const json& value, std::size_t ind
     instance.colorKey = ReadString(value, "colorKey", path);
     instance.replacesVisualPlaceholderId = ReadOptionalString(value, "replacesVisualPlaceholderId", path);
     instance.linkedColliderId = ReadOptionalString(value, "linkedColliderId", path);
+    instance.readabilityRole = ReadOptionalString(value, "readabilityRole", path);
     return instance;
 }
 

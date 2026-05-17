@@ -555,6 +555,24 @@ void TestQaCaptureStateArgumentsSelectMidChainRouteState()
         "TestQaCaptureStateArgumentsSelectMidChainRouteState",
         "Config should preserve the requested Veyra capture state.");
 
+    const char* veyraRiskArgv[] = {"EngineApp", "--qa-capture-state", "veyra-risk-cargo-site"};
+    const auto veyraRiskResult = engine::ParseArguments(3, veyraRiskArgv);
+    Expect(veyraRiskResult.errors.empty(),
+        "TestQaCaptureStateArgumentsSelectMidChainRouteState",
+        "QA capture state should accept the Veyra risk cargo site scenario.");
+    Expect(veyraRiskResult.config.qaCaptureState == "veyra-risk-cargo-site",
+        "TestQaCaptureStateArgumentsSelectMidChainRouteState",
+        "Config should preserve the requested Veyra risk cargo site capture state.");
+
+    const char* veyraAnchorArgv[] = {"EngineApp", "--qa-capture-state", "veyra-route-anchors"};
+    const auto veyraAnchorResult = engine::ParseArguments(3, veyraAnchorArgv);
+    Expect(veyraAnchorResult.errors.empty(),
+        "TestQaCaptureStateArgumentsSelectMidChainRouteState",
+        "QA capture state should accept the Veyra route anchors scenario.");
+    Expect(veyraAnchorResult.config.qaCaptureState == "veyra-route-anchors",
+        "TestQaCaptureStateArgumentsSelectMidChainRouteState",
+        "Config should preserve the requested Veyra route anchors capture state.");
+
     const char* badArgv[] = {"EngineApp", "--qa-capture-state", "unknown"};
     const auto badResult = engine::ParseArguments(3, badArgv);
     Expect(!badResult.errors.empty(),
@@ -1368,6 +1386,62 @@ void TestSceneLoaderLoadsPilotWorldArtMeshMaterialPass()
     Expect(hasReplacement("mesh-cinder-shore-shelf", "harbor-rock-shore", "black-rock-shore"),
         "TestSceneLoaderLoadsPilotWorldArtMeshMaterialPass",
         "Pilot scene should render the harbor edge as authored shore mesh art.");
+}
+
+void TestSceneLoaderLoadsPilotLandmarkRiskReadabilityPass()
+{
+    const SceneLoadResult result = LoadSceneDefinition(PilotScenePathForTests());
+
+    Expect(result.ok(),
+        "TestSceneLoaderLoadsPilotLandmarkRiskReadabilityPass",
+        "Pilot target-slice scene JSON should load successfully.");
+    if (!result.ok()) {
+        return;
+    }
+
+    auto hasAsset = [&result](std::string_view id, std::string_view path) {
+        for (const SceneMeshAssetDefinition& asset : result.scene.meshAssets) {
+            if (asset.id == id && asset.path.generic_string() == path) {
+                return true;
+            }
+        }
+        return false;
+    };
+    auto hasReadabilityRole = [&result](std::string_view id, std::string_view role, std::string_view colorKey) {
+        for (const SceneMeshInstanceDefinition& instance : result.scene.meshInstances) {
+            if (instance.id == id
+                && instance.readabilityRole == role
+                && instance.colorKey == colorKey) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    Expect(hasAsset("cinder-harbor-overlook-mast-mesh", "assets/models/cinder_harbor_overlook_mast.gltf"),
+        "TestSceneLoaderLoadsPilotLandmarkRiskReadabilityPass",
+        "Pilot scene should load the Cinder Harbor overlook mast asset from generated world source.");
+    Expect(hasAsset("cinder-harbor-relay-tower-mesh", "assets/models/cinder_harbor_relay_tower.gltf"),
+        "TestSceneLoaderLoadsPilotLandmarkRiskReadabilityPass",
+        "Pilot scene should load the Cinder Harbor relay tower asset from generated world source.");
+    Expect(hasAsset("cinder-harbor-cargo-tarp-mesh", "assets/models/cinder_harbor_cargo_tarp.gltf"),
+        "TestSceneLoaderLoadsPilotLandmarkRiskReadabilityPass",
+        "Pilot scene should load the Cinder Harbor cargo tarp asset from generated world source.");
+    Expect(hasAsset("cinder-harbor-route-beacon-mesh", "assets/models/cinder_harbor_route_beacon.gltf"),
+        "TestSceneLoaderLoadsPilotLandmarkRiskReadabilityPass",
+        "Pilot scene should load the Cinder Harbor route beacon asset from generated world source.");
+    Expect(hasReadabilityRole("mesh-harbor-scar-overlook-mast", "landmark", "cinder-mast-dark-metal"),
+        "TestSceneLoaderLoadsPilotLandmarkRiskReadabilityPass",
+        "Harbor Scar Overlook should expose a landmark readability mesh.");
+    Expect(hasReadabilityRole("mesh-reach-relay-tower", "landmark", "relay-oxidized-steel"),
+        "TestSceneLoaderLoadsPilotLandmarkRiskReadabilityPass",
+        "Reach Relay Hut should expose a tall relay-tower readability mesh.");
+    Expect(hasReadabilityRole("mesh-suspicious-cargo-tarp", "risk-site", "cargo-warning-tarp"),
+        "TestSceneLoaderLoadsPilotLandmarkRiskReadabilityPass",
+        "Suspicious Cargo Cache should expose a risk-site readability mesh.");
+    Expect(hasReadabilityRole("mesh-low-beacon-route-anchor", "route-anchor", "beacon-amber-signal"),
+        "TestSceneLoaderLoadsPilotLandmarkRiskReadabilityPass",
+        "Low Beacon Turn should expose a route-anchor readability mesh.");
 }
 
 void TestTargetSliceObjectiveRuntimeCompletesFromAuthoredInteractable()
@@ -6613,6 +6687,7 @@ int main()
     TestSceneLoaderLoadsPilotTargetObjectiveDefinition();
     TestSceneLoaderLoadsPilotTargetActionResponseDefinition();
     TestSceneLoaderLoadsPilotWorldArtMeshMaterialPass();
+    TestSceneLoaderLoadsPilotLandmarkRiskReadabilityPass();
     TestTargetSliceObjectiveRuntimeCompletesFromAuthoredInteractable();
     TestTargetSliceRuntimeTracksRiskyActionAndExitRecoverySeparately();
     TestPrototypeScenePilotSliceCompletesAuthoredObjectiveWithoutFerryOfficeJob();

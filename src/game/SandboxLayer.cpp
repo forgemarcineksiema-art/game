@@ -442,6 +442,16 @@ void SandboxLayer::applyQaCaptureState()
             engine::Logger::info("QA capture state applied: veyra-landmark-overlook.");
             return;
         }
+        if (m_qaCaptureState == "veyra-risk-cargo-site") {
+            applyVeyraCapturePose({0.0f, 0.0f, 0.15f}, 22.0f, 32.0f);
+            engine::Logger::info("QA capture state applied: veyra-risk-cargo-site.");
+            return;
+        }
+        if (m_qaCaptureState == "veyra-route-anchors") {
+            applyVeyraCapturePose({-4.65f, 0.0f, -1.7f}, 52.0f, 70.0f);
+            engine::Logger::info("QA capture state applied: veyra-route-anchors.");
+            return;
+        }
         if (m_qaCaptureState == "veyra-collision-edge") {
             applyVeyraCapturePose({1.35f, 0.0f, -0.95f}, 70.0f, 82.0f);
             engine::Logger::info("QA capture state applied: veyra-collision-edge.");

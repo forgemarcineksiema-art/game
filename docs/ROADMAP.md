@@ -4,7 +4,7 @@ This roadmap is intentionally realistic. The project is a custom engine workbenc
 
 ## Current World-Foundation Track
 
-Status: Veyra Reach now has its first authored runtime world foundation, Cinder Harbor Reach. The source of truth is `data/worlds/veyra_reach`, compiled by `tools/world_author.py` into `data/scenes/veyra_reach_pilot.scene.json`. Cinder Harbor now has a first mesh/material pass for ground patches, oil-slick road plates, cracked concrete, shoreline shelf, low-tide water, and hazard accents while preserving compiler/preview/capture proof. The next roadmap step should improve player-facing Cinder Harbor landmarks, risk/response readability, or a compact crime/action loop rather than returning to Ferry Office checklist growth.
+Status: Veyra Reach now has its first authored runtime world foundation, Cinder Harbor Reach. The source of truth is `data/worlds/veyra_reach`, compiled by `tools/world_author.py` into `data/scenes/veyra_reach_pilot.scene.json`. Cinder Harbor now has a first mesh/material pass for ground patches, oil-slick road plates, cracked concrete, shoreline shelf, low-tide water, and hazard accents, plus a landmark/risk/route readability pass for Harbor Scar Overlook, Reach Relay Hut, Suspicious Cargo Cache, Greywinch, and Low Beacon. The next roadmap step should be the first compact Cinder Harbor crime/action route beat with risk, route choice, and recovery proof rather than another Ferry Office checklist or marker-only loop.
 
 ## v0.1 - AI-Native Engine Foundation
 

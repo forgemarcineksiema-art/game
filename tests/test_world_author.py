@@ -82,6 +82,51 @@ class WorldAuthorTests(unittest.TestCase):
         self.assertGreaterEqual(report["counts"]["primaryWorldArtAssets"], 3)
         self.assertIn("World-Art Meshes", preview)
 
+    def test_cinder_harbor_readability_pass_compiles_landmark_risk_and_route_anchors(self) -> None:
+        package = world_author.load_world_package(self.world_root)
+        area = package.areas[0]
+
+        scene = world_author.compile_scene(package)
+        assets = {asset["id"]: asset for asset in scene["meshAssets"]}
+        instances = {instance["id"]: instance for instance in scene["meshInstances"]}
+        report = world_author.build_report(package, scene)
+        preview = world_author.build_preview_html(package, scene)
+
+        self.assertEqual("cinder-harbor-landmark-risk-readability-pass", area["readabilityPass"]["id"])
+        self.assertEqual(
+            {
+                "harbor-scar-overlook",
+                "reach-relay-hut",
+                "suspicious-cargo-cache",
+                "route-anchors",
+            },
+            set(area["readabilityPass"]["proofTargets"]),
+        )
+        for asset_id, path in {
+            "cinder-harbor-overlook-mast-mesh": "assets/models/cinder_harbor_overlook_mast.gltf",
+            "cinder-harbor-relay-tower-mesh": "assets/models/cinder_harbor_relay_tower.gltf",
+            "cinder-harbor-cargo-tarp-mesh": "assets/models/cinder_harbor_cargo_tarp.gltf",
+            "cinder-harbor-route-beacon-mesh": "assets/models/cinder_harbor_route_beacon.gltf",
+        }.items():
+            self.assertIn(asset_id, assets)
+            self.assertEqual(path, assets[asset_id]["path"])
+            self.assertIn("project-original", assets[asset_id]["license"])
+
+        expected_roles = {
+            "mesh-harbor-scar-overlook-mast": "landmark",
+            "mesh-reach-relay-tower": "landmark",
+            "mesh-suspicious-cargo-tarp": "risk-site",
+            "mesh-low-beacon-route-anchor": "route-anchor",
+            "mesh-greywinch-route-anchor": "route-anchor",
+        }
+        for instance_id, role in expected_roles.items():
+            self.assertEqual(role, instances[instance_id]["readabilityRole"])
+
+        self.assertGreaterEqual(report["counts"]["readabilityLandmarks"], 2)
+        self.assertGreaterEqual(report["counts"]["readabilityRiskSites"], 1)
+        self.assertGreaterEqual(report["counts"]["readabilityRouteAnchors"], 2)
+        self.assertIn("Readability Anchors", preview)
+
     def test_compiler_preserves_target_slice_action_contract(self) -> None:
         scene = world_author.compile_scene(world_author.load_world_package(self.world_root))
 

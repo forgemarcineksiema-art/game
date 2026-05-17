@@ -35,9 +35,12 @@ REQUIRED_IDS = {
 }
 
 KNOWN_COLOR_KEYS = {
+    "beacon-amber-signal",
+    "cargo-warning-tarp",
     "dark-service-asphalt",
     "black-rock-shore",
     "cinder-brush-ground",
+    "cinder-mast-dark-metal",
     "damp-service-concrete",
     "deep-harbor-blue",
     "dock-muted-sign-yellow",
@@ -55,6 +58,7 @@ KNOWN_COLOR_KEYS = {
     "oil-slick-asphalt",
     "office-muted-concrete",
     "oxidized-service-green",
+    "relay-oxidized-steel",
     "rusted-roof-trim",
     "salt-white-road-post",
     "salt-cracked-concrete",
