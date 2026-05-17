@@ -38,7 +38,17 @@ try {
         exit $LASTEXITCODE
     }
 
+    python tools\validate_scene.py data\scenes\veyra_reach_pilot.scene.json
+    if ($LASTEXITCODE -ne 0) {
+        exit $LASTEXITCODE
+    }
+
     python tools\validate_assets.py
+    if ($LASTEXITCODE -ne 0) {
+        exit $LASTEXITCODE
+    }
+
+    python tools\world_slice_report.py
     if ($LASTEXITCODE -ne 0) {
         exit $LASTEXITCODE
     }

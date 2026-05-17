@@ -79,18 +79,18 @@ WARNING: Building "a nicer real slice" with the current one-scene/one-integratio
 /goal Veyra Reach pilot slice architecture scaffold dla Tidebreak w C:\Users\Marcin\Documents\New project.
 
 Cel:
-Stworzyć minimalny, walidowany scaffold dla pierwszego target slice'u poza Ferry Office, bez udawania pełnej mapy ani nowej misji. Ferry Office ma zostać regression/debug testbedem. Nowy scaffold ma odpowiedzieć, gdzie i jak projekt zacznie budować faktyczny świat gry: osobny slice/package, podstawowe surface/road/collision/marker metadata, tool validation, i jasny boundary przed dalszym contentem.
+Stworzyc minimalny, walidowany scaffold dla pierwszego target slice'u poza Ferry Office, bez udawania pelnej mapy ani nowej misji. Ferry Office ma zostac regression/debug testbedem. Nowy scaffold ma odpowiedziec, gdzie i jak projekt zacznie budowac faktyczny swiat gry: osobny slice/package, podstawowe surface/road/collision/marker metadata, tool validation, i jasny boundary przed dalszym contentem.
 
 Dlaczego:
-Po naprawie i manualnym potwierdzeniu Jolt vehicle input/physics/camera aktywnym blockerem nie jest już vehicle feel. Aktywnym ryzykiem jest to, że każdy kolejny "world/content/terrain" pass na obecnej technologii stanie się tym samym płaskim debug playgroundem i dopchnie jeszcze więcej logiki do `SandboxLayer`, `FerryOfficeJob` oraz jednego scene JSON.
+Po naprawie i manualnym potwierdzeniu Jolt vehicle input/physics/camera aktywnym blockerem nie jest juz vehicle feel. Aktywnym ryzykiem jest to, ze kazdy kolejny "world/content/terrain" pass na obecnej technologii stanie sie tym samym plaskim debug playgroundem i dopchnie jeszcze wiecej logiki do `SandboxLayer`, `FerryOfficeJob` oraz jednego scene JSON.
 
 Zakres:
 - Przeczytaj `AGENTS.md`, `docs/AI_WORKFLOW.md`, `docs/CONTEXT_MAP.md`, `docs/GAME_DIRECTION.md`, `docs/VERTICAL_SLICE.md`, `docs/GAMEPLAY_REVIEW.md`, `docs/TECH_DEBT.md`, `docs/SCENE_AUTHORING.md`, `docs/ASSET_GUIDE.md`, `docs/ART_DIRECTION.md`, `docs/MESH_RENDERING.md`, `docs/reviews/first-real-slice-direction-gate.md`.
-- Zaprojektuj mały world/slice package contract dla drugiego target slice'u, bez pełnego edytora i bez mission frameworka.
-- Dodaj minimalny stub nowego target slice'u oddzielony od Ferry Office, np. `veyra_reach_pilot`, z metadanymi surface/road/collision/markers wystarczającymi do walidacji.
-- Rozszerz narzędzia raportujące/walidujące, żeby odróżniały Ferry Office regression scene od target slice scaffold.
-- Nie buduj nowej misji, nie rozbudowuj Ferry Office, nie rób terrain-only passu, nie rób asset/render rewrite.
-- Zaktualizuj `docs/STATUS.md` i dokument architektury/authoringu, żeby przyszłe runy nie wracały do "ulepszmy Ferry Office".
+- Zaprojektuj maly world/slice package contract dla drugiego target slice'u, bez pelnego edytora i bez mission frameworka.
+- Dodaj minimalny stub nowego target slice'u oddzielony od Ferry Office, np. `veyra_reach_pilot`, z metadanymi surface/road/collision/markers wystarczajacymi do walidacji.
+- Rozszerz narzedzia raportujace/walidujace, zeby odroznialy Ferry Office regression scene od target slice scaffold.
+- Nie buduj nowej misji, nie rozbudowuj Ferry Office, nie rob terrain-only passu, nie rob asset/render rewrite.
+- Zaktualizuj `docs/STATUS.md` i dokument architektury/authoringu, zeby przyszle runy nie wracaly do "ulepszmy Ferry Office".
 
 Walidacja:
 - `git status --short --branch`
@@ -99,9 +99,9 @@ Walidacja:
 - `python tools/validate_scene.py`
 - `python tools/scale_audit.py`
 - `python tools/mesh_report.py`
-- nowe/zmienione testy narzędzi
+- nowe/zmienione testy narzedzi
 - `scripts/verify.ps1`
 
 Stop rule:
-Zakończ dopiero, gdy istnieje oddzielny target-slice scaffold, Ferry Office nadal przechodzi walidację, narzędzia potrafią opisać oba światy/slice'y, `docs/STATUS.md` jest zaktualizowane, a repo jest committed/pushed tylko jeśli walidacja przejdzie i worktree jest scoped.
+Zakoncz dopiero, gdy istnieje oddzielny target-slice scaffold, Ferry Office nadal przechodzi walidacje, narzedzia potrafia opisac oba swiaty/slice'y, `docs/STATUS.md` jest zaktualizowane, a repo jest committed/pushed tylko jesli walidacja przejdzie i worktree jest scoped.
 ```

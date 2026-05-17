@@ -13,6 +13,12 @@ import asset_data
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DEFAULT_SCENE_PATH = ROOT / "data" / "scenes" / "ferry_office.scene.json"
+SCENES_DIR = ROOT / "data" / "scenes"
+
+KNOWN_SLICE_KINDS = {
+    "regression-testbed",
+    "target-slice-scaffold",
+}
 
 
 REQUIRED_IDS = {
@@ -122,6 +128,24 @@ def load_scene(path: str | pathlib.Path = DEFAULT_SCENE_PATH) -> dict[str, Any]:
     return scene
 
 
+def all_scene_paths(root: pathlib.Path = SCENES_DIR) -> list[pathlib.Path]:
+    return sorted(pathlib.Path(root).glob("*.scene.json"))
+
+
+def slice_metadata(scene: dict[str, Any]) -> dict[str, Any]:
+    metadata = _as_dict(scene.get("sliceMetadata"))
+    if metadata:
+        return metadata
+    if scene.get("id") == "ferry-office":
+        return {
+            "kind": "regression-testbed",
+            "worldId": "veyra-reach",
+            "sliceId": "ferry-office",
+            "status": "legacy-regression-scene",
+        }
+    return {}
+
+
 def collect_ids(scene: dict[str, Any]) -> set[str]:
     ids: set[str] = set()
     _add_id(ids, scene.get("id"))
@@ -166,6 +190,7 @@ def validate_scene(scene: dict[str, Any]) -> ValidationResult:
     _require_string(scene, "id", "scene", result)
     _require_string(scene, "name", "scene", result)
     _require_number(scene, "floorHeight", "scene", result)
+    _validate_slice_metadata(scene, result)
 
     units = _as_dict(scene.get("units"))
     for key in ["linear", "upAxis", "rightAxis", "forwardAxis"]:
@@ -341,12 +366,66 @@ def validate_scene(scene: dict[str, Any]) -> ValidationResult:
             if isinstance(reference, str) and reference and reference not in ids:
                 result.errors.append(f"{label}.{reference_key} references unknown id '{reference}'.")
 
-    for required_id in sorted(REQUIRED_IDS):
-        if required_id not in ids:
-            result.errors.append(f"Required id missing: {required_id}")
+    if _requires_ferry_office_ids(scene):
+        for required_id in sorted(REQUIRED_IDS):
+            if required_id not in ids:
+                result.errors.append(f"Required id missing: {required_id}")
+
+    if slice_metadata(scene).get("kind") == "target-slice-scaffold":
+        _validate_target_slice_counts(scene, result)
 
     result.warnings.extend(scale_warnings(scene))
     return result
+
+
+def _validate_slice_metadata(scene: dict[str, Any], result: ValidationResult) -> None:
+    metadata = _as_dict(scene.get("sliceMetadata"))
+    if not metadata:
+        if scene.get("id") != "ferry-office":
+            result.errors.append("scene.sliceMetadata is required for non-Ferry target scenes.")
+        return
+
+    label = "scene.sliceMetadata"
+    for key in ["kind", "worldId", "sliceId", "status", "role", "intent"]:
+        _require_string(metadata, key, label, result)
+    kind = metadata.get("kind")
+    if isinstance(kind, str) and kind not in KNOWN_SLICE_KINDS:
+        result.errors.append(f"{label}.kind must be one of {', '.join(sorted(KNOWN_SLICE_KINDS))}.")
+
+    for key in ["surfaceTags", "roadTags", "deferredSystems"]:
+        value = metadata.get(key)
+        if value is not None:
+            _validate_string_list(value, f"{label}.{key}", result)
+
+    collision_policy = metadata.get("collisionPolicy")
+    if collision_policy is not None:
+        policy = _as_dict(collision_policy)
+        for key in ["static", "dynamic", "vehicle"]:
+            _require_string(policy, key, f"{label}.collisionPolicy", result)
+
+    boundaries = metadata.get("authoringBoundaries")
+    if boundaries is not None:
+        boundary = _as_dict(boundaries)
+        for key in ["allowedNow", "deferred", "runtimeOwner"]:
+            _validate_string_list(boundary.get(key), f"{label}.authoringBoundaries.{key}", result)
+
+
+def _requires_ferry_office_ids(scene: dict[str, Any]) -> bool:
+    metadata = slice_metadata(scene)
+    return scene.get("id") == "ferry-office" or metadata.get("kind") == "regression-testbed"
+
+
+def _validate_target_slice_counts(scene: dict[str, Any], result: ValidationResult) -> None:
+    required_sections = {
+        "colliders": "target slice scaffold must author at least one collider.",
+        "visualPlaceholders": "target slice scaffold must author at least one visual placeholder.",
+        "interactables": "target slice scaffold must author at least one interaction marker.",
+        "routeMarkers": "target slice scaffold must author at least one route marker.",
+        "objectiveMarkers": "target slice scaffold must author at least one objective marker.",
+    }
+    for section, message in required_sections.items():
+        if not _as_list(scene.get(section)):
+            result.errors.append(message)
 
 
 def validate_asset_workflow(
@@ -608,6 +687,15 @@ def _validate_world_flag_list(value: Any, label: str, result: ValidationResult) 
             continue
         if item not in KNOWN_WORLD_FLAGS:
             result.errors.append(f"{label}[{index}] is unknown: {item}")
+
+
+def _validate_string_list(value: Any, label: str, result: ValidationResult) -> None:
+    if not isinstance(value, list) or not value:
+        result.errors.append(f"{label} must be a non-empty list of strings.")
+        return
+    for index, item in enumerate(value):
+        if not isinstance(item, str) or not item.strip():
+            result.errors.append(f"{label}[{index}] must be a non-empty string.")
 
 
 def _number_or_none(value: Any) -> float | None:

@@ -1,0 +1,138 @@
+{
+  "schemaVersion": 2,
+  "id": "veyra-reach-pilot",
+  "name": "Veyra Reach Pilot Slice",
+  "description": "Minimal target-slice scaffold for a non-Ferry Veyra Reach location. This is an authoring boundary proof, not a playable mission or production map.",
+  "sliceMetadata": {
+    "kind": "target-slice-scaffold",
+    "worldId": "veyra-reach",
+    "sliceId": "pilot-hillside-service-road",
+    "status": "scaffold-only",
+    "role": "first real target slice boundary outside Ferry Office",
+    "intent": "Prove where surface, road, collision, marker, and authoring metadata can live before adding new content.",
+    "surfaceTags": ["wet-asphalt", "hillside-ground", "service-concrete"],
+    "roadTags": ["narrow-service-road", "hillside-approach", "no-traffic"],
+    "deferredSystems": ["terrain-mesh", "road-spline", "mission-framework", "npc-ai", "traffic", "save-load", "production-materials"],
+    "collisionPolicy": {
+      "static": "AABB placeholders only",
+      "dynamic": "deferred",
+      "vehicle": "metadata only; no live route or vehicle spawn yet"
+    },
+    "authoringBoundaries": {
+      "allowedNow": ["scene identity", "player start", "surface intent", "road intent", "static collision placeholder", "route marker", "objective marker"],
+      "deferred": ["job chain", "new mission beat", "terrain system", "asset expansion", "renderer rewrite", "new runtime gameplay logic"],
+      "runtimeOwner": ["SceneLoader", "scene_data.py", "world_slice_report.py"]
+    }
+  },
+  "units": {
+    "linear": "meter",
+    "upAxis": "Y",
+    "rightAxis": "X",
+    "forwardAxis": "Z",
+    "coordinateNotes": "Positions use engine Vec3 order [x, y, z]. This scaffold stays near origin and does not imply final geography."
+  },
+  "floorHeight": 0.0,
+  "playerStart": {
+    "id": "pilot-player-start",
+    "position": [-2.0, 0.0, -1.5],
+    "yawDegrees": 35.0
+  },
+  "scaleReference": {
+    "playerHeight": 1.8,
+    "playerRadius": 0.35,
+    "vehicleLaneWidthMin": 3.0
+  },
+  "sceneMaterials": [
+    {
+      "key": "misty-island-ground",
+      "response": "matte",
+      "baseColor": [0.20, 0.28, 0.24, 1.0]
+    },
+    {
+      "key": "dark-service-asphalt",
+      "response": "wet",
+      "baseColor": [0.15, 0.18, 0.17, 1.0]
+    },
+    {
+      "key": "damp-service-concrete",
+      "response": "wet",
+      "baseColor": [0.18, 0.23, 0.22, 1.0]
+    },
+    {
+      "key": "warning-service-orange",
+      "response": "painted",
+      "baseColor": [0.82, 0.35, 0.12, 1.0]
+    }
+  ],
+  "colliders": [
+    {
+      "id": "pilot-road-edge-collider",
+      "kind": "box",
+      "center": [2.0, 0.4, 1.8],
+      "halfExtents": [0.25, 0.4, 3.2],
+      "blocksPlayer": true
+    }
+  ],
+  "visualPlaceholders": [
+    {
+      "id": "pilot-hillside-ground-pad",
+      "role": "target-slice-ground-intent",
+      "center": [0.0, -0.03, 0.0],
+      "halfExtents": [4.0, 0.03, 3.0],
+      "colorKey": "misty-island-ground"
+    },
+    {
+      "id": "pilot-service-road-pad",
+      "role": "target-slice-road-intent",
+      "center": [0.6, 0.01, 0.0],
+      "halfExtents": [1.35, 0.02, 3.0],
+      "colorKey": "dark-service-asphalt"
+    },
+    {
+      "id": "pilot-road-edge-warning",
+      "role": "target-slice-road-edge-intent",
+      "center": [2.0, 0.45, 1.8],
+      "halfExtents": [0.18, 0.45, 3.0],
+      "colorKey": "warning-service-orange"
+    }
+  ],
+  "meshAssets": [],
+  "meshInstances": [],
+  "interactables": [
+    {
+      "id": "pilot-service-marker",
+      "name": "Pilot Service Marker",
+      "prompt": "Inspect Pilot Slice Marker",
+      "type": "info",
+      "position": [1.0, 0.5, 2.4],
+      "radius": 1.2,
+      "message": "Target slice scaffold marker. No mission behavior yet."
+    }
+  ],
+  "traversalAffordances": [],
+  "vehicles": [],
+  "routeMarkers": [
+    {
+      "id": "route-pilot-start-to-service-marker",
+      "from": "pilot-start-marker",
+      "to": "pilot-service-marker",
+      "points": [
+        [-2.0, 0.05, -1.5],
+        [-0.5, 0.05, 0.0],
+        [1.0, 0.05, 2.4]
+      ]
+    }
+  ],
+  "objectiveMarkers": [
+    {
+      "id": "pilot-start-marker",
+      "label": "Pilot Slice Start",
+      "position": [-2.0, 0.2, -1.5]
+    },
+    {
+      "id": "pilot-service-objective-marker",
+      "label": "Pilot Service Marker",
+      "position": [1.0, 0.2, 2.4]
+    }
+  ]
+}

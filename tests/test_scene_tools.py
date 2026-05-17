@@ -18,11 +18,49 @@ import scene_data  # noqa: E402
 import mesh_report  # noqa: E402
 import check_blender  # noqa: E402
 import create_simple_prop_gltf  # noqa: E402
+import world_slice_report  # noqa: E402
 
 
 class SceneToolTests(unittest.TestCase):
     def setUp(self) -> None:
         self.scene = scene_data.load_scene(scene_data.DEFAULT_SCENE_PATH)
+        self.pilot_scene_path = ROOT / "data" / "scenes" / "veyra_reach_pilot.scene.json"
+
+    def test_veyra_reach_pilot_scene_exists_as_target_slice_scaffold(self) -> None:
+        scene = scene_data.load_scene(self.pilot_scene_path)
+        metadata = scene_data.slice_metadata(scene)
+
+        self.assertEqual("veyra-reach-pilot", scene["id"])
+        self.assertEqual("target-slice-scaffold", metadata["kind"])
+        self.assertEqual("veyra-reach", metadata["worldId"])
+        self.assertEqual("pilot-hillside-service-road", metadata["sliceId"])
+        self.assertIn("surfaceTags", metadata)
+        self.assertIn("roadTags", metadata)
+        self.assertIn("authoringBoundaries", metadata)
+
+    def test_veyra_reach_pilot_scene_validates_without_ferry_office_required_ids(self) -> None:
+        scene = scene_data.load_scene(self.pilot_scene_path)
+
+        result = scene_data.validate_scene(scene)
+
+        self.assertEqual([], result.errors)
+        self.assertNotIn("ferry-manifest", scene_data.collect_ids(scene))
+
+    def test_target_slice_scaffold_requires_metadata(self) -> None:
+        scene = scene_data.load_scene(self.pilot_scene_path)
+        del scene["sliceMetadata"]
+
+        result = scene_data.validate_scene(scene)
+
+        self.assertTrue(any("sliceMetadata" in error for error in result.errors))
+
+    def test_world_slice_report_lists_regression_and_target_scenes(self) -> None:
+        report = world_slice_report.build_report([scene_data.DEFAULT_SCENE_PATH, self.pilot_scene_path])
+        scenes_by_id = {entry.scene_id: entry for entry in report.scenes}
+
+        self.assertEqual("regression-testbed", scenes_by_id["ferry-office"].kind)
+        self.assertEqual("target-slice-scaffold", scenes_by_id["veyra-reach-pilot"].kind)
+        self.assertEqual("veyra-reach", scenes_by_id["veyra-reach-pilot"].world_id)
 
     def test_default_scene_validates_without_errors(self) -> None:
         result = scene_data.validate_scene(self.scene)

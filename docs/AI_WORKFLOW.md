@@ -41,6 +41,7 @@ python tools/scene_report.py
 python tools/validate_scene.py
 python tools/scale_audit.py
 python tools/mesh_report.py
+python tools/world_slice_report.py
 ```
 
 ## 2. Goal-Based Delivery

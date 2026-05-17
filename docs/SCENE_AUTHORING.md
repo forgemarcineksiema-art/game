@@ -6,11 +6,19 @@ v0.11 introduced scene data for Codex-friendly inspection and validation. v0.12 
 
 ## Scene Data Location
 
-Primary scene data:
+Primary regression scene data:
 
 ```text
 data/scenes/ferry_office.scene.json
 ```
+
+First target-slice scaffold:
+
+```text
+data/scenes/veyra_reach_pilot.scene.json
+```
+
+See `docs/WORLD_SLICE_AUTHORING.md` for the role split between Ferry Office as `regression-testbed` and new Veyra Reach target slices as `target-slice-scaffold`.
 
 Required tools:
 
@@ -20,6 +28,7 @@ python tools/validate_scene.py
 python tools/validate_assets.py
 python tools/scale_audit.py
 python tools/mesh_report.py
+python tools/world_slice_report.py
 ```
 
 ## Scene Data Contract
@@ -41,6 +50,8 @@ The Ferry Office scene file describes:
 - first driver/fixer job service-run marker and checkpoint,
 - route markers,
 - objective markers.
+
+New target-slice scaffolds should start smaller. They must define `sliceMetadata`, player start, surface/road intent, at least one collider, one visual placeholder, one route marker, one objective marker, and one debug interaction marker. They should not copy the Ferry Office job chain or add new `SandboxLayer` behavior.
 
 Use stable lowercase kebab-case ids. Do not rely on runtime add-order numeric ids.
 

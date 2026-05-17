@@ -2,6 +2,79 @@
 
 Last updated: 2026-05-17
 
+## Veyra Reach Pilot Slice Architecture Scaffold (2026-05-17)
+
+Goal:
+
+- Create the first validated target-slice scaffold outside Ferry Office.
+- Keep Ferry Office as `regression-testbed`, not as the first real game location.
+- Add enough metadata/tooling to describe surface, road, collision, route, marker, and authoring intent without adding a mission, terrain system, renderer rewrite, or Ferry Office content.
+
+Scope:
+
+- Added `data\scenes\veyra_reach_pilot.scene.json` as a minimal `target-slice-scaffold`.
+- Added `sliceMetadata` to `data\scenes\ferry_office.scene.json`, marking it as `regression-testbed`.
+- Added `tools\world_slice_report.py` to list scene roles and validation state across authored scenes.
+- Extended `tools\scene_data.py` validation for `sliceMetadata`, target-slice scaffold minimum sections, and non-Ferry scenes that should not require Ferry Office ids.
+- Updated `tests\test_scene_tools.py` with red/green coverage for the pilot scene and world/slice report.
+- Added `docs\WORLD_SLICE_AUTHORING.md` and updated `docs\SCENE_AUTHORING.md`.
+- Added the new scene/tool/doc to `tools\status_report.py`, `scripts\doctor.ps1`, and `scripts\verify.ps1`.
+- Cleaned the previous direction-gate prompt in `docs\reviews\first-real-slice-direction-gate.md` so it no longer contains mojibake.
+
+Evidence:
+
+- CONFIRMED: `python tests\test_scene_tools.py` passed, 55 tests.
+- CONFIRMED: `python tools\scene_report.py data\scenes\veyra_reach_pilot.scene.json` reports `veyra-reach-pilot` with 1 collider, 3 visual placeholders, 1 interactable, 1 route marker, and 2 objective markers.
+- CONFIRMED: `python tools\validate_scene.py data\scenes\ferry_office.scene.json` passed.
+- CONFIRMED: `python tools\validate_scene.py data\scenes\veyra_reach_pilot.scene.json` passed.
+- CONFIRMED: `python tools\scale_audit.py data\scenes\veyra_reach_pilot.scene.json` passed with no suspicious scale issues.
+- CONFIRMED: `python tools\world_slice_report.py` lists `ferry-office` as `regression-testbed` and `veyra-reach-pilot` as `target-slice-scaffold`, both with 0 validation errors.
+- CONFIRMED: `python tools\mesh_report.py` still passes on the Ferry Office asset workflow; the new pilot slice intentionally adds no mesh assets.
+- INTERPRETATION: this is an authoring/runtime boundary scaffold, not a new playable map or content beat.
+
+Remaining limits:
+
+- No runtime scene-switch UX was added.
+- `veyra-reach-pilot` is not a mission, not terrain, not a production map, and not a visual target.
+- The next implementation should decide the smallest runtime use of this scaffold, not immediately fill it with content.
+
+Validation commands:
+
+- RED: `python tests\test_scene_tools.py` initially failed with `ModuleNotFoundError: No module named 'world_slice_report'`.
+- GREEN: `python tests\test_scene_tools.py`: passed, 55 tests.
+- GREEN: `python tools\scene_report.py data\scenes\veyra_reach_pilot.scene.json`: passed.
+- GREEN: `python tools\validate_scene.py data\scenes\ferry_office.scene.json`: passed.
+- GREEN: `python tools\validate_scene.py data\scenes\veyra_reach_pilot.scene.json`: passed.
+- GREEN: `python tools\scale_audit.py data\scenes\veyra_reach_pilot.scene.json`: passed.
+- GREEN: `python tools\world_slice_report.py`: passed.
+- GREEN: `python tools\mesh_report.py`: passed on Ferry Office asset workflow.
+- GREEN: `python tools\status_report.py`: passed and lists the new doc, scene, and tool.
+- GREEN: `git diff --check`: passed; only expected CRLF warnings were printed.
+- GREEN: `scripts\verify.ps1`: passed after adding pilot-scene validation and `world_slice_report.py` to the standard gate.
+
+Next recommended goal:
+
+```text
+/goal Veyra Reach pilot runtime smoke/neutral presentation gate dla Tidebreak w C:\Users\Marcin\Documents\New project.
+
+Cel:
+Udowodnic, ze `data/scenes/veyra_reach_pilot.scene.json` nie jest tylko martwym JSON-em: runtime ma umiec zaladowac ten target-slice scaffold w neutralnym trybie bez Ferry Office objective/job text, bez nowych misji i bez rozbudowy mapy. Celem jest smoke/capture/report evidence dla drugiego slice'u, nie content.
+
+Zakres:
+- Zachowaj Ferry Office jako default regression scene.
+- Dodaj minimalny scene-role aware runtime/presentation path dla `target-slice-scaffold`, jesli obecny `SandboxLayer` pokazuje Ferry Office job text dla kazdej sceny.
+- Dodaj bounded smoke albo capture command dla `--scene data\scenes\veyra_reach_pilot.scene.json`.
+- Nie dodawaj misji, pojazdu, terrain systemu, assetow, renderer rewrite ani Ferry Office contentu.
+- Zaktualizuj docs/STATUS.md.
+
+Walidacja:
+- `python tests\test_scene_tools.py`
+- `python tools\world_slice_report.py`
+- `python tools\validate_scene.py data\scenes\veyra_reach_pilot.scene.json`
+- runtime smoke/capture dla `veyra_reach_pilot`
+- `scripts\verify.ps1`
+```
+
 ## First Real Slice Direction Gate (2026-05-17)
 
 Goal:

@@ -3,6 +3,27 @@
   "id": "ferry-office",
   "name": "The Ferry Office",
   "description": "Runtime source scene for the current Ferry Office, service-yard, dock-road, and first driver/fixer job prototype.",
+  "sliceMetadata": {
+    "kind": "regression-testbed",
+    "worldId": "veyra-reach",
+    "sliceId": "ferry-office",
+    "status": "active-regression-scene",
+    "role": "validated Ferry Office prototype and QA testbed",
+    "intent": "Preserve current build, scene, interaction, vehicle, camera, playthrough, capture, and collision evidence while future target slices develop separately.",
+    "surfaceTags": ["dock", "service-yard", "wet-road", "harbor-edge"],
+    "roadTags": ["service-yard-route", "dock-road", "short-vehicle-loop"],
+    "deferredSystems": ["production-map", "terrain-system", "mission-framework", "npc-ai", "traffic", "save-load"],
+    "collisionPolicy": {
+      "static": "scene-authored AABB placeholders",
+      "dynamic": "simple state-gated blockers only",
+      "vehicle": "current Ferry Office vehicle runtime QA and bounds evidence"
+    },
+    "authoringBoundaries": {
+      "allowedNow": ["regression fixtures", "QA capture states", "bug reproduction hooks"],
+      "deferred": ["new target content", "new mission chain", "terrain expansion", "world-response expansion"],
+      "runtimeOwner": ["SandboxLayer", "FerryOfficeJob", "SceneLoader"]
+    }
+  },
   "units": {
     "linear": "meter",
     "upAxis": "Y",
