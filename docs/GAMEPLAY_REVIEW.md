@@ -160,23 +160,23 @@ Improve:
 
 ## Next Recommended Direction
 
-Do not treat another Relay Service Log prop as the default next move. It is defensible only if a capture shows that specific destination is unreadable.
+Do not treat another Ferry Office endpoint, prop, route cue, low-dock reaction, or terrain/readability pass as the default next move. Ferry Office is now a regression/debug testbed, not the first real game location.
 
-After v0.96, the better vehicle direction is:
-
-```text
-Jolt Live-Driving Promotion/Tuning Pass
-```
-
-Use the v0.96 driving-feel evidence as the baseline: Jolt passed route, reverse, brake, steering, camera, obstacle, and playthrough checks, but remains slower than deterministic on the authored checkpoint route. Tune or promote Jolt deliberately; do not spend the next vehicle pass polishing deterministic in isolation unless the fallback itself regresses.
-
-If capture evidence shows the new Low Dock Drain access consequence is hard to read, the strongest alternate is:
+After the post-v0.99 Jolt input-semantics fix and manual play confirmation, the better direction is:
 
 ```text
-v0.96 Low Dock Access Readability Pass
+Veyra Reach Pilot Slice Architecture Scaffold
 ```
 
-Keep that alternate bounded to in-world readability and validation; do not add another administrative endpoint.
+Use the Ferry Office evidence as the regression baseline, not the content target. The next goal should create a small, validated boundary for a second target slice/world package: enough metadata and tooling for surface/road/collision/marker intent, while explicitly avoiding a full map, mission framework, editor, terrain-only pass, or asset/render rewrite.
+
+The strongest alternate is not another world-response beat in the current scene. It is a narrower architecture cleanup only if the new scaffold would otherwise force more location-specific policy into `SandboxLayer`, `FerryOfficeJob`, or one growing scene JSON.
+
+```text
+Scene/World Authoring Boundary Split
+```
+
+Keep that alternate bounded to data/tooling boundaries. Do not start an ECS, mission editor, broad content rewrite, or generic engine rewrite.
 
 ## Review Questions Before Any Next Goal
 

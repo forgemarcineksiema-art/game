@@ -2,6 +2,37 @@
 
 Last updated: 2026-05-17
 
+## First Real Slice Direction Gate (2026-05-17)
+
+Goal:
+
+- Start the next autonomous goal after manual confirmation that current Jolt vehicle input/physics/camera feel is good.
+- Separate Ferry Office as a regression/debug testbed from the actual next target game slice.
+- Choose the next implementation direction without reacting narrowly to terrain, content, polish, or "world response" language.
+
+Scope:
+
+- Added `docs\reviews\first-real-slice-direction-gate.md`.
+- Added `docs\superpowers\plans\2026-05-17-first-real-slice-direction-gate.md`.
+- Updated `docs\GAMEPLAY_REVIEW.md`, `docs\TECH_DEBT.md`, and `docs\CONTEXT_MAP.md` so future autonomous runs do not fall back to stale Jolt/live-driving or Ferry Office polish recommendations.
+
+Decision:
+
+- BET: next implementation goal should be `Veyra Reach pilot slice architecture scaffold`.
+- CONFIRMED: Ferry Office remains valuable as a regression/debug testbed for build, scene data, interaction, Jolt vehicle runtime, camera, playthrough QA, visual capture, and authored collision evidence.
+- WARNING: the next goal should not be another Ferry Office endpoint, world-response pass, prop/readability pass, or terrain-only implementation.
+- INTERPRETATION: the active risk is architectural/product-direction drift: without a separate slice/world boundary, the next "real world" attempt will become the same flat debug playground with more content and more pressure on `SandboxLayer`, `FerryOfficeJob`, and one scene JSON.
+
+Recommended next prompt:
+
+- Use `docs\reviews\first-real-slice-direction-gate.md` section `Prompt For The Next Goal`.
+
+Validation commands:
+
+- GREEN: `python tools\status_report.py`: passed and reported only this goal's docs changes.
+- GREEN: `git diff --check`: passed; only expected CRLF warnings were printed.
+- GREEN: `scripts\verify.ps1`: passed; doctor/configure/build succeeded, default CTest passed 11/11, scene validation passed, asset validation passed, mesh report passed, and null-renderer smoke loaded Ferry Office.
+
 ## Jolt Vehicle Input Semantics Truth/Fix + Post-v0.99 Re-baseline (2026-05-17)
 
 Goal:
