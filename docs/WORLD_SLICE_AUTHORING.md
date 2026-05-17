@@ -36,11 +36,11 @@ Required role values:
 
 - Role: `target-slice-scaffold`, but status is now `authored-world-foundation`.
 - Runtime place: Veyra Reach - Cinder Harbor.
-- Purpose: prove Cinder Harbor Reach as a coastal/industrial remote-crime area with terrain patches, road ribbons, shoreline/water/backdrop cues, named places, authored colliders, landmarks, interactables, routes, and objective markers.
+- Purpose: prove Cinder Harbor Reach as a coastal/industrial remote-crime area with terrain patches, road ribbons, mesh-backed ground/road/shore presentation, shoreline/water/backdrop cues, named places, authored colliders, landmarks, interactables, routes, and objective markers.
 - It is not a full mission, city, terrain engine, traffic/AI pass, police/combat system, or final-art pass.
 - It carries one `targetObjective` gate bound to `Cinder Harbor Marker`.
 - It carries one `targetActionResponse` contract: `Suspicious Cargo Cache` triggers `cinder-local-alerted`, then `Harbor Scar Escape Marker` proves exit/recovery.
-- Its next useful evolution should improve authored world art/terrain/road presentation while preserving the world-source pipeline.
+- Its current mesh/material pass declares `worldArtPass` in area source and uses mesh instances with `replacesVisualPlaceholderId` to make Cinder Harbor ground, road plates, and shore shelf primary runtime art while leaving generated placeholders as underlay/validation evidence.
 
 ## Metadata Contract
 
@@ -75,6 +75,8 @@ python tools/world_author.py --check
 python tools/world_author.py --preview-html build/world_preview/veyra_reach_preview.html --report-json build/world_preview/veyra_reach_report.json
 ```
 
+The report should expose `worldArtReplacementMeshes` and `primaryWorldArtAssets` for Cinder Harbor. The preview should include a `World-Art Meshes` layer so terrain/road/collision/layout agreement can be checked without hand-editing the generated scene JSON.
+
 Use the world/slice report to compare scene roles:
 
 ```powershell
@@ -89,7 +91,7 @@ python tools/runtime_scene_smoke.py --exe build/windows-vs2022-debug/Debug/Engin
 
 For `target-slice-scaffold`, runtime smoke must also expose `targetObjective=` evidence. A smoke output that only says "neutral slice markers" is no longer enough.
 
-`tools/mesh_report.py` can be run on meshless target slices. It should print that project model files are not referenced by that specific scene, but zero Veyra meshes are valid until a goal explicitly adds authored mesh assets.
+`tools/mesh_report.py` can be run on meshless target slices. It should print that project model files are not referenced by that specific scene, but Cinder Harbor now has Veyra-only mesh assets that should be referenced by `data/scenes/veyra_reach_pilot.scene.json`, not by Ferry Office.
 
 Use the target-slice objective QA gate to prove the Veyra marker can be reached and completed through recorded live-like player input:
 

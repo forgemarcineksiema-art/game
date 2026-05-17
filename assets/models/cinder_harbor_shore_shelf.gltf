@@ -1,0 +1,90 @@
+{
+  "asset": {
+    "version": "2.0",
+    "generator": "Tidebreak tools/create_simple_prop_gltf.py v1.00 Cinder Harbor shore shelf fallback helper",
+    "extras": {
+      "tidebreakSource": "project-original fallback geometry",
+      "notBlenderExport": true
+    }
+  },
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "mesh": 0,
+      "name": "cinder_harbor_shore_shelf"
+    }
+  ],
+  "meshes": [
+    {
+      "name": "cinder_harbor_shore_shelf",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0
+          },
+          "indices": 1,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 768,
+      "uri": "data:application/octet-stream;base64,KVyPv4/Cdb0pXI++j8J1P4/Cdb3sUbi+4XqUP4/Cdb0K16O8w/UoP4/Cdb17FK4+7FE4vo/Cdb09Ctc+uB6Fv4/Cdb0K1yM+KVyPv4/CdT0pXI++j8J1P4/CdT3sUbi+4XqUP4/CdT0K16O8w/UoP4/CdT17FK4+7FE4vo/CdT09Ctc+uB6Fv4/CdT0K1yM+cT1Kv4/CdT0pXI+9Urievo/CdT0pXI+9UrievuxROD4pXI+9cT1Kv+xROD4pXI+9cT1Kv4/CdT24HgU+Urievo/CdT24HgU+UrievuxROD64HgU+cT1Kv+xROD64HgU+CtejPI/CdT0fhWu+w/UoP4/CdT0fhWu+w/UoPwrXIz4fhWu+CtejPArXIz4fhWu+CtejPI/CdT0K1yM8w/UoP4/CdT0K1yM8w/UoPwrXIz4K1yM8CtejPArXIz4K1yM8MzMzP4/CdT2PwvU816NwP4/CdT2PwvU816NwP5qZGT6PwvU8MzMzP5qZGT6PwvU8MzMzP4/CdT0fhWs+16NwP4/CdT0fhWs+16NwP5qZGT4fhWs+MzMzP5qZGT4fhWs+BgAHAAgAAAACAAEABgAIAAkAAAADAAIABgAJAAoAAAAEAAMABgAKAAsAAAAFAAQAAAABAAcAAAAHAAYAAQACAAgAAQAIAAcAAgADAAkAAgAJAAgAAwAEAAoAAwAKAAkABAAFAAsABAALAAoABQAAAAYABQAGAAsADAANAA4ADAAOAA8AEQAQABMAEQATABIAEAAMAA8AEAAPABMADQARABIADQASAA4ADwAOABIADwASABMAEAARAA0AEAANAAwAFAAVABYAFAAWABcAGQAYABsAGQAbABoAGAAUABcAGAAXABsAFQAZABoAFQAaABYAFwAWABoAFwAaABsAGAAZABUAGAAVABQAHAAdAB4AHAAeAB8AIQAgACMAIQAjACIAIAAcAB8AIAAfACMAHQAhACIAHQAiAB4AHwAeACIAHwAiACMAIAAhAB0AIAAdABwA"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 432,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 432,
+      "byteLength": 336,
+      "target": 34963
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 36,
+      "type": "VEC3",
+      "min": [
+        -1.12,
+        -0.06,
+        -0.36
+      ],
+      "max": [
+        1.16,
+        0.18,
+        0.42
+      ]
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 0,
+      "componentType": 5123,
+      "count": 168,
+      "type": "SCALAR",
+      "min": [
+        0
+      ],
+      "max": [
+        35
+      ]
+    }
+  ]
+}

@@ -282,6 +282,33 @@
     },
     {
       "format": "gltf",
+      "id": "cinder-harbor-ground-patch-mesh",
+      "license": "project-original",
+      "path": "assets/models/cinder_harbor_ground_patch.gltf",
+      "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v1.00 fallback Cinder Harbor irregular ground patch; not a Blender export.",
+      "units": "meter",
+      "upAxis": "Y"
+    },
+    {
+      "format": "gltf",
+      "id": "cinder-harbor-road-plate-mesh",
+      "license": "project-original",
+      "path": "assets/models/cinder_harbor_road_plate.gltf",
+      "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v1.00 fallback Cinder Harbor wet road plate; not a Blender export.",
+      "units": "meter",
+      "upAxis": "Y"
+    },
+    {
+      "format": "gltf",
+      "id": "cinder-harbor-shore-shelf-mesh",
+      "license": "project-original",
+      "path": "assets/models/cinder_harbor_shore_shelf.gltf",
+      "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v1.00 fallback Cinder Harbor rocky shore shelf; not a Blender export.",
+      "units": "meter",
+      "upAxis": "Y"
+    },
+    {
+      "format": "gltf",
       "id": "ferry-office-canopy-mesh",
       "license": "project-original",
       "path": "assets/models/ferry_office_canopy.gltf",
@@ -355,104 +382,212 @@
   ],
   "meshInstances": [
     {
-      "assetId": "blender-wet-road-surface-mesh",
-      "colorKey": "dark-service-asphalt",
-      "id": "mesh-greywinch-road-surface-a",
+      "assetId": "cinder-harbor-ground-patch-mesh",
+      "colorKey": "cinder-brush-ground",
+      "id": "mesh-cinder-ground-west",
+      "position": [
+        -5.4,
+        0.01,
+        -1.8
+      ],
+      "replacesVisualPlaceholderId": "veyra-hillside-ground-west",
+      "scale": [
+        4.0,
+        1.0,
+        4.2
+      ],
+      "yawDegrees": -8.0
+    },
+    {
+      "assetId": "cinder-harbor-ground-patch-mesh",
+      "colorKey": "cinder-brush-ground",
+      "id": "mesh-cinder-ground-east",
+      "position": [
+        3.9,
+        0.01,
+        1.7
+      ],
+      "replacesVisualPlaceholderId": "veyra-hillside-ground-east",
+      "scale": [
+        4.8,
+        1.0,
+        4.0
+      ],
+      "yawDegrees": 13.0
+    },
+    {
+      "assetId": "cinder-harbor-ground-patch-mesh",
+      "colorKey": "salt-cracked-concrete",
+      "id": "mesh-cinder-saltbreak-concrete",
+      "position": [
+        0.55,
+        0.03,
+        1.18
+      ],
+      "replacesVisualPlaceholderId": "saltbreak-layby-concrete",
+      "scale": [
+        1.45,
+        1.0,
+        1.0
+      ],
+      "yawDegrees": 8.0
+    },
+    {
+      "assetId": "cinder-harbor-ground-patch-mesh",
+      "colorKey": "salt-cracked-concrete",
+      "id": "mesh-cinder-old-pump-yard",
+      "position": [
+        4.9,
+        0.03,
+        2.5
+      ],
+      "replacesVisualPlaceholderId": "old-pump-cut-yard",
+      "scale": [
+        1.9,
+        1.0,
+        1.35
+      ],
+      "yawDegrees": -18.0
+    },
+    {
+      "assetId": "cinder-harbor-shore-shelf-mesh",
+      "colorKey": "black-rock-shore",
+      "id": "mesh-cinder-shore-shelf",
+      "position": [
+        1.6,
+        0.04,
+        5.55
+      ],
+      "replacesVisualPlaceholderId": "harbor-rock-shore",
+      "scale": [
+        6.4,
+        1.0,
+        1.15
+      ],
+      "yawDegrees": 2.0
+    },
+    {
+      "assetId": "cinder-harbor-road-plate-mesh",
+      "colorKey": "oil-slick-asphalt",
+      "id": "mesh-cinder-greywinch-road-a",
       "position": [
         -4.9,
-        0.03,
+        0.06,
         -3.15
       ],
+      "replacesVisualPlaceholderId": "greywinch-service-road-surface-1",
       "scale": [
-        2.8,
+        2.15,
         1.0,
-        2.4
+        1.55
       ],
       "yawDegrees": 35.0
     },
     {
-      "assetId": "blender-wet-road-surface-mesh",
-      "colorKey": "dark-service-asphalt",
-      "id": "mesh-greywinch-road-surface-b",
+      "assetId": "cinder-harbor-road-plate-mesh",
+      "colorKey": "oil-slick-asphalt",
+      "id": "mesh-cinder-greywinch-road-b",
       "position": [
         -1.95,
-        0.03,
+        0.06,
         -1.55
       ],
+      "replacesVisualPlaceholderId": "greywinch-service-road-surface-2",
       "scale": [
-        2.6,
+        2.05,
         1.0,
-        2.1
+        1.45
       ],
       "yawDegrees": 62.0
     },
     {
-      "assetId": "blender-wet-road-surface-mesh",
-      "colorKey": "dark-service-asphalt",
-      "id": "mesh-stormwall-bend-road-surface",
+      "assetId": "cinder-harbor-road-plate-mesh",
+      "colorKey": "oil-slick-asphalt",
+      "id": "mesh-cinder-stormwall-road",
       "position": [
         1.0,
-        0.03,
+        0.06,
         -0.85
       ],
+      "replacesVisualPlaceholderId": "greywinch-service-road-surface-3",
       "scale": [
-        3.0,
+        2.4,
         1.0,
-        1.6
+        1.15
       ],
       "yawDegrees": 88.0
     },
     {
-      "assetId": "blender-wet-road-surface-mesh",
-      "colorKey": "dark-service-asphalt",
-      "id": "mesh-old-pump-road-surface",
+      "assetId": "cinder-harbor-road-plate-mesh",
+      "colorKey": "oil-slick-asphalt",
+      "id": "mesh-cinder-old-pump-road-a",
+      "position": [
+        3.25,
+        0.06,
+        -0.05
+      ],
+      "replacesVisualPlaceholderId": "greywinch-service-road-surface-4",
+      "scale": [
+        1.7,
+        1.0,
+        1.3
+      ],
+      "yawDegrees": 38.0
+    },
+    {
+      "assetId": "cinder-harbor-road-plate-mesh",
+      "colorKey": "oil-slick-asphalt",
+      "id": "mesh-cinder-old-pump-road-b",
       "position": [
         4.2,
-        0.03,
+        0.06,
         1.45
       ],
+      "replacesVisualPlaceholderId": "old-pump-cut-access-surface-2",
       "scale": [
-        2.6,
+        2.05,
         1.0,
-        2.0
+        1.45
       ],
       "yawDegrees": 42.0
     },
     {
-      "assetId": "blender-wet-road-surface-mesh",
-      "colorKey": "dark-service-asphalt",
-      "id": "mesh-causeway-spur-surface",
+      "assetId": "cinder-harbor-road-plate-mesh",
+      "colorKey": "oil-slick-asphalt",
+      "id": "mesh-cinder-causeway-road",
       "position": [
         -1.65,
-        0.03,
+        0.06,
         2.2
       ],
+      "replacesVisualPlaceholderId": "cracked-causeway-spur-surface-2",
       "scale": [
-        2.1,
+        1.7,
         1.0,
-        2.8
+        2.05
       ],
       "yawDegrees": -12.0
     },
     {
-      "assetId": "blender-wet-road-surface-mesh",
-      "colorKey": "dark-service-asphalt",
-      "id": "mesh-low-beacon-escape-surface",
+      "assetId": "cinder-harbor-road-plate-mesh",
+      "colorKey": "oil-slick-asphalt",
+      "id": "mesh-cinder-low-beacon-road",
       "position": [
         -4.45,
-        0.04,
+        0.07,
         1.1
       ],
+      "replacesVisualPlaceholderId": "low-beacon-escape-route-surface-2",
       "scale": [
-        2.0,
+        1.65,
         1.0,
-        2.8
+        2.0
       ],
       "yawDegrees": 85.0
     },
     {
       "assetId": "blender-harbor-water-surface-mesh",
-      "colorKey": "deep-harbor-blue",
+      "colorKey": "low-tide-water",
       "id": "mesh-cinder-harbor-water-near",
       "position": [
         -2.4,
@@ -468,7 +603,7 @@
     },
     {
       "assetId": "blender-harbor-water-surface-mesh",
-      "colorKey": "deep-harbor-blue",
+      "colorKey": "low-tide-water",
       "id": "mesh-cinder-harbor-water-east",
       "position": [
         4.4,
@@ -564,7 +699,7 @@
     },
     {
       "assetId": "service-barrier-mesh",
-      "colorKey": "warning-service-orange",
+      "colorKey": "hazard-rust-red",
       "id": "mesh-suspicious-cache-cover",
       "position": [
         0.35,
@@ -1016,12 +1151,32 @@
     },
     {
       "baseColor": [
+        0.16,
+        0.25,
+        0.2,
+        1.0
+      ],
+      "key": "cinder-brush-ground",
+      "response": "matte"
+    },
+    {
+      "baseColor": [
         0.12,
         0.15,
         0.15,
         1.0
       ],
       "key": "dark-service-asphalt",
+      "response": "wet"
+    },
+    {
+      "baseColor": [
+        0.07,
+        0.09,
+        0.1,
+        1.0
+      ],
+      "key": "oil-slick-asphalt",
       "response": "wet"
     },
     {
@@ -1036,12 +1191,42 @@
     },
     {
       "baseColor": [
+        0.33,
+        0.36,
+        0.31,
+        1.0
+      ],
+      "key": "salt-cracked-concrete",
+      "response": "matte"
+    },
+    {
+      "baseColor": [
         0.08,
         0.25,
         0.33,
         1.0
       ],
       "key": "deep-harbor-blue",
+      "response": "wet"
+    },
+    {
+      "baseColor": [
+        0.05,
+        0.2,
+        0.27,
+        1.0
+      ],
+      "key": "low-tide-water",
+      "response": "wet"
+    },
+    {
+      "baseColor": [
+        0.12,
+        0.13,
+        0.12,
+        1.0
+      ],
+      "key": "black-rock-shore",
       "response": "wet"
     },
     {
@@ -1072,6 +1257,16 @@
         1.0
       ],
       "key": "warning-service-orange",
+      "response": "painted"
+    },
+    {
+      "baseColor": [
+        0.62,
+        0.18,
+        0.09,
+        1.0
+      ],
+      "key": "hazard-rust-red",
       "response": "painted"
     },
     {
@@ -1223,7 +1418,7 @@
         -0.04,
         -1.8
       ],
-      "colorKey": "misty-island-ground",
+      "colorKey": "cinder-brush-ground",
       "halfExtents": [
         4.2,
         0.04,
@@ -1238,7 +1433,7 @@
         -0.04,
         1.7
       ],
-      "colorKey": "misty-island-ground",
+      "colorKey": "cinder-brush-ground",
       "halfExtents": [
         5.2,
         0.04,
@@ -1253,7 +1448,7 @@
         -0.01,
         1.18
       ],
-      "colorKey": "damp-service-concrete",
+      "colorKey": "salt-cracked-concrete",
       "halfExtents": [
         1.65,
         0.03,
@@ -1268,7 +1463,7 @@
         -0.01,
         2.5
       ],
-      "colorKey": "damp-service-concrete",
+      "colorKey": "salt-cracked-concrete",
       "halfExtents": [
         2.1,
         0.03,
@@ -1283,7 +1478,7 @@
         -0.02,
         5.55
       ],
-      "colorKey": "wet-timber",
+      "colorKey": "black-rock-shore",
       "halfExtents": [
         7.8,
         0.04,
@@ -1298,7 +1493,7 @@
         -0.05,
         7.0
       ],
-      "colorKey": "deep-harbor-blue",
+      "colorKey": "low-tide-water",
       "halfExtents": [
         8.3,
         0.03,
@@ -1328,7 +1523,7 @@
         0.0,
         -3.2
       ],
-      "colorKey": "dark-service-asphalt",
+      "colorKey": "oil-slick-asphalt",
       "halfExtents": [
         2.8,
         0.025,
@@ -1343,7 +1538,7 @@
         0.0,
         -1.55
       ],
-      "colorKey": "dark-service-asphalt",
+      "colorKey": "oil-slick-asphalt",
       "halfExtents": [
         2.75,
         0.025,
@@ -1358,7 +1553,7 @@
         0.0,
         -0.85
       ],
-      "colorKey": "dark-service-asphalt",
+      "colorKey": "oil-slick-asphalt",
       "halfExtents": [
         2.7,
         0.025,
@@ -1373,7 +1568,7 @@
         0.0,
         -0.05
       ],
-      "colorKey": "dark-service-asphalt",
+      "colorKey": "oil-slick-asphalt",
       "halfExtents": [
         2.55,
         0.025,
@@ -1388,7 +1583,7 @@
         0.0,
         0.1
       ],
-      "colorKey": "dark-service-asphalt",
+      "colorKey": "oil-slick-asphalt",
       "halfExtents": [
         1.4,
         0.025,
@@ -1403,7 +1598,7 @@
         0.0,
         2.225
       ],
-      "colorKey": "dark-service-asphalt",
+      "colorKey": "oil-slick-asphalt",
       "halfExtents": [
         1.5,
         0.025,
@@ -1418,7 +1613,7 @@
         0.0,
         3.85
       ],
-      "colorKey": "dark-service-asphalt",
+      "colorKey": "oil-slick-asphalt",
       "halfExtents": [
         2.0,
         0.025,
@@ -1433,7 +1628,7 @@
         0.0,
         -0.15
       ],
-      "colorKey": "dark-service-asphalt",
+      "colorKey": "oil-slick-asphalt",
       "halfExtents": [
         2.0,
         0.025,
@@ -1448,7 +1643,7 @@
         0.0,
         1.425
       ],
-      "colorKey": "dark-service-asphalt",
+      "colorKey": "oil-slick-asphalt",
       "halfExtents": [
         1.875,
         0.025,
@@ -1463,7 +1658,7 @@
         0.0,
         2.85
       ],
-      "colorKey": "dark-service-asphalt",
+      "colorKey": "oil-slick-asphalt",
       "halfExtents": [
         1.9,
         0.025,
@@ -1478,7 +1673,7 @@
         0.0,
         1.05
       ],
-      "colorKey": "dark-service-asphalt",
+      "colorKey": "oil-slick-asphalt",
       "halfExtents": [
         2.2,
         0.025,
@@ -1493,7 +1688,7 @@
         0.0,
         1.175
       ],
-      "colorKey": "dark-service-asphalt",
+      "colorKey": "oil-slick-asphalt",
       "halfExtents": [
         2.175,
         0.025,
@@ -1508,7 +1703,7 @@
         0.0,
         0.8
       ],
-      "colorKey": "dark-service-asphalt",
+      "colorKey": "oil-slick-asphalt",
       "halfExtents": [
         1.675,
         0.025,

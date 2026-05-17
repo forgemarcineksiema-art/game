@@ -1320,6 +1320,56 @@ void TestSceneLoaderLoadsPilotTargetActionResponseDefinition()
         "Pilot action response should expose a local response state id.");
 }
 
+void TestSceneLoaderLoadsPilotWorldArtMeshMaterialPass()
+{
+    const SceneLoadResult result = LoadSceneDefinition(PilotScenePathForTests());
+
+    Expect(result.ok(),
+        "TestSceneLoaderLoadsPilotWorldArtMeshMaterialPass",
+        "Pilot target-slice scene JSON should load successfully.");
+    if (!result.ok()) {
+        return;
+    }
+
+    auto hasAsset = [&result](std::string_view id, std::string_view path) {
+        for (const SceneMeshAssetDefinition& asset : result.scene.meshAssets) {
+            if (asset.id == id && asset.path.generic_string() == path) {
+                return true;
+            }
+        }
+        return false;
+    };
+    auto hasReplacement = [&result](std::string_view id, std::string_view replacement, std::string_view colorKey) {
+        for (const SceneMeshInstanceDefinition& instance : result.scene.meshInstances) {
+            if (instance.id == id
+                && instance.replacesVisualPlaceholderId == replacement
+                && instance.colorKey == colorKey) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    Expect(hasAsset("cinder-harbor-ground-patch-mesh", "assets/models/cinder_harbor_ground_patch.gltf"),
+        "TestSceneLoaderLoadsPilotWorldArtMeshMaterialPass",
+        "Pilot scene should load the Cinder Harbor ground mesh asset from generated world source.");
+    Expect(hasAsset("cinder-harbor-road-plate-mesh", "assets/models/cinder_harbor_road_plate.gltf"),
+        "TestSceneLoaderLoadsPilotWorldArtMeshMaterialPass",
+        "Pilot scene should load the Cinder Harbor road plate mesh asset from generated world source.");
+    Expect(hasAsset("cinder-harbor-shore-shelf-mesh", "assets/models/cinder_harbor_shore_shelf.gltf"),
+        "TestSceneLoaderLoadsPilotWorldArtMeshMaterialPass",
+        "Pilot scene should load the Cinder Harbor shore shelf mesh asset from generated world source.");
+    Expect(hasReplacement("mesh-cinder-ground-west", "veyra-hillside-ground-west", "cinder-brush-ground"),
+        "TestSceneLoaderLoadsPilotWorldArtMeshMaterialPass",
+        "Pilot scene should render Cinder Harbor ground as primary mesh replacement art.");
+    Expect(hasReplacement("mesh-cinder-greywinch-road-a", "greywinch-service-road-surface-1", "oil-slick-asphalt"),
+        "TestSceneLoaderLoadsPilotWorldArtMeshMaterialPass",
+        "Pilot scene should render Cinder Harbor roads as primary mesh replacement art.");
+    Expect(hasReplacement("mesh-cinder-shore-shelf", "harbor-rock-shore", "black-rock-shore"),
+        "TestSceneLoaderLoadsPilotWorldArtMeshMaterialPass",
+        "Pilot scene should render the harbor edge as authored shore mesh art.");
+}
+
 void TestTargetSliceObjectiveRuntimeCompletesFromAuthoredInteractable()
 {
     const SceneLoadResult result = LoadSceneDefinition(PilotScenePathForTests());
@@ -6562,6 +6612,7 @@ int main()
     TestSceneLoaderLoadsPilotSliceMetadata();
     TestSceneLoaderLoadsPilotTargetObjectiveDefinition();
     TestSceneLoaderLoadsPilotTargetActionResponseDefinition();
+    TestSceneLoaderLoadsPilotWorldArtMeshMaterialPass();
     TestTargetSliceObjectiveRuntimeCompletesFromAuthoredInteractable();
     TestTargetSliceRuntimeTracksRiskyActionAndExitRecoverySeparately();
     TestPrototypeScenePilotSliceCompletesAuthoredObjectiveWithoutFerryOfficeJob();

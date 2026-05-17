@@ -28,7 +28,7 @@ The game does not need to be urban or gangster by default. Tidebreak can move be
 - Active playtest route guidance makes the long chain less dependent on F1/debug mode.
 - Visual smoke and playthrough QA give enough automated evidence to make provisional game decisions without waiting for manual review.
 - Jolt vehicle evidence is strong enough to treat Jolt as the preferred production vehicle-runtime candidate, while deterministic remains the safe direct-app and QA baseline/fallback.
-- Veyra now has Cinder Harbor Reach as the first authored runtime world foundation: source world data, generated scene, connected roads, terrain/shore/backdrop cues, landmarks, target objective, risky cargo response, preview/report, and capture proof separate from Ferry Office assumptions.
+- Veyra now has Cinder Harbor Reach as the first authored runtime world foundation: source world data, generated scene, connected roads, mesh-backed terrain/road/shore presentation, stronger material keys, backdrop cues, landmarks, target objective, risky cargo response, preview/report, and capture proof separate from Ferry Office assumptions.
 
 ## Main Gameplay Problems
 

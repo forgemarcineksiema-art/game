@@ -43,8 +43,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "scene",
         nargs="?",
-        default=str(scene_data.DEFAULT_SCENE_PATH),
-        help="Scene JSON path. Defaults to data/scenes/ferry_office.scene.json.",
+        default=None,
+        help="Scene JSON path. Defaults to data/scenes/ferry_office.scene.json and uses every scene as the asset reference catalog.",
     )
     parser.add_argument(
         "--models-dir",
@@ -63,6 +63,8 @@ def load_gltf_counts(path: pathlib.Path) -> tuple[int | None, int | None, str | 
 def build_mesh_report(
     scene: dict[str, Any],
     models_dir: pathlib.Path = asset_data.DEFAULT_MODELS_DIR,
+    additional_referenced_paths: set[str] | None = None,
+    additional_assets_by_path: dict[str, list[dict[str, Any]]] | None = None,
 ) -> MeshReport:
     usage: dict[str, int] = {}
     for instance in _as_list(scene.get("meshInstances")):
@@ -72,6 +74,11 @@ def build_mesh_report(
             usage[asset_id] = usage.get(asset_id, 0) + 1
 
     assets_by_path = asset_data.scene_asset_paths(scene, models_dir)
+    for path, assets in (additional_assets_by_path or {}).items():
+        if path not in assets_by_path:
+            assets_by_path[path] = list(assets)
+    additional_referenced_paths = set(additional_referenced_paths or set())
+    additional_referenced_paths.update((additional_assets_by_path or {}).keys())
     reports: list[MeshFileReport] = []
     for path in asset_data.model_files(models_dir):
         relative_path = asset_data.display_path(path, models_dir)
@@ -82,7 +89,7 @@ def build_mesh_report(
             MeshFileReport(
                 relative_path=relative_path,
                 suffix=path.suffix.lower(),
-                referenced=bool(scene_assets),
+                referenced=bool(scene_assets) or relative_path in additional_referenced_paths,
                 asset_ids=asset_ids,
                 use_count=sum(usage.get(asset_id, 0) for asset_id in asset_ids),
                 license=_first_string(scene_assets, "license"),
@@ -98,13 +105,21 @@ def build_mesh_report(
         )
 
     has_scene_meshes = bool(_as_list(scene.get("meshAssets")) or _as_list(scene.get("meshInstances")))
-    validation = scene_data.validate_asset_workflow(scene, models_dir=models_dir) if has_scene_meshes else scene_data.ValidationResult()
+    validation = (
+        scene_data.validate_asset_workflow(
+            scene,
+            models_dir=models_dir,
+            additional_referenced_paths=additional_referenced_paths,
+        )
+        if has_scene_meshes
+        else scene_data.ValidationResult()
+    )
     return MeshReport(files=reports, validation_errors=validation.errors, validation_warnings=validation.warnings)
 
 
 def main() -> int:
     args = parse_args()
-    scene_path = pathlib.Path(args.scene)
+    scene_path = pathlib.Path(args.scene) if args.scene else scene_data.DEFAULT_SCENE_PATH
     models_dir = pathlib.Path(args.models_dir)
     try:
         scene = scene_data.load_scene(scene_path)
@@ -113,7 +128,13 @@ def main() -> int:
         return 1
 
     scene_validation = scene_data.validate_scene(scene)
-    report = build_mesh_report(scene, models_dir=models_dir)
+    additional_assets_by_path = _reference_catalog_assets(models_dir, scene_path) if args.scene is None else {}
+    report = build_mesh_report(
+        scene,
+        models_dir=models_dir,
+        additional_referenced_paths=set(additional_assets_by_path),
+        additional_assets_by_path=additional_assets_by_path,
+    )
     print("Tidebreak mesh report")
     print(f"scene: {scene.get('id', scene_path)}")
     print(f"meshAssets: {len(scene.get('meshAssets', []))}")
@@ -154,6 +175,20 @@ def main() -> int:
         return 1
 
     return 0
+
+
+def _reference_catalog_assets(models_dir: pathlib.Path, primary_scene_path: pathlib.Path) -> dict[str, list[dict[str, Any]]]:
+    referenced: dict[str, list[dict[str, Any]]] = {}
+    for scene_path in sorted(scene_data.SCENES_DIR.glob("*.scene.json")):
+        if scene_path.resolve() == primary_scene_path.resolve():
+            continue
+        try:
+            scene = scene_data.load_scene(scene_path)
+        except (OSError, ValueError):
+            continue
+        for path, assets in asset_data.scene_asset_paths(scene, models_dir).items():
+            referenced.setdefault(path, []).extend(assets)
+    return referenced
 
 
 def _first_string(items: list[dict[str, Any]], key: str) -> str | None:

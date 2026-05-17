@@ -181,6 +181,22 @@ def build_preview_html(package: WorldPackage, scene: dict[str, Any]) -> str:
         parts.append(f"<polyline points=\"{points}\" fill=\"none\" stroke=\"#f2d36b\" stroke-width=\"3\" opacity=\"0.85\" />")
     parts.append("</g>")
 
+    parts.append("<g id=\"World-Art Meshes\">")
+    for instance in scene["meshInstances"]:
+        if "replacesVisualPlaceholderId" not in instance:
+            continue
+        position = _vec3(instance.get("position"), "meshInstances.position")
+        scale = _vec3(instance.get("scale"), "meshInstances.scale")
+        fill = material_colors.get(str(instance.get("colorKey", "")), "#36433e")
+        radius_x = max(8.0, abs(scale[0]) * 10.0)
+        radius_z = max(5.0, abs(scale[2]) * 8.0)
+        parts.append(
+            f"<ellipse cx=\"{sx(position[0]):.1f}\" cy=\"{sy(position[2]):.1f}\" "
+            f"rx=\"{radius_x:.1f}\" ry=\"{radius_z:.1f}\" fill=\"{fill}\" stroke=\"#eef2c9\" "
+            "stroke-width=\"2\" opacity=\"0.82\" />"
+        )
+    parts.append("</g>")
+
     parts.append("<g id=\"Collision\">")
     for collider in scene["colliders"]:
         _rect(parts, collider, sx, sy, {"": "#cf4d34"}, opacity=0.35, stroke="#7c1e16")
@@ -219,6 +235,8 @@ def build_report(package: WorldPackage, scene: dict[str, Any], check: CheckResul
             "visualPlaceholders": len(scene.get("visualPlaceholders", [])),
             "meshAssets": len(scene.get("meshAssets", [])),
             "meshInstances": len(scene.get("meshInstances", [])),
+            "worldArtReplacementMeshes": sum(1 for instance in _as_list(scene.get("meshInstances")) if "replacesVisualPlaceholderId" in _as_dict(instance)),
+            "primaryWorldArtAssets": len(_primary_world_art_assets(package)),
             "interactables": len(scene.get("interactables", [])),
             "routes": len(scene.get("routeMarkers", [])),
             "objectiveMarkers": len(scene.get("objectiveMarkers", [])),
@@ -296,6 +314,7 @@ def _validate_world_package(package: WorldPackage) -> None:
             raise WorldAuthorError(f"area {area.get('id', '<missing>')} must author terrainPatches.")
         if not _as_list(area.get("roads")):
             raise WorldAuthorError(f"area {area.get('id', '<missing>')} must author roads.")
+        _validate_world_art_pass(area, asset_ids)
         _collect_ids(seen_source_ids, area.get("terrainPatches"), "terrainPatches")
         _collect_ids(seen_source_ids, area.get("roads"), "roads")
         _collect_ids(seen_source_ids, area.get("colliders"), "colliders")
@@ -323,6 +342,34 @@ def _validate_world_package(package: WorldPackage) -> None:
     for required in ["greywinch-service-road", "stormwall-bend", "harbor-scar-overlook"]:
         if required not in place_ids:
             raise WorldAuthorError(f"world.places is missing required place '{required}'.")
+
+
+def _validate_world_art_pass(area: dict[str, Any], asset_ids: set[str]) -> None:
+    if area.get("id") != "cinder-harbor":
+        return
+    pass_data = _as_dict(area.get("worldArtPass"))
+    if not pass_data:
+        raise WorldAuthorError("cinder-harbor area must declare worldArtPass.")
+    _required_string(pass_data, "id", "area.worldArtPass")
+    primary_asset_ids = _as_list(pass_data.get("primaryMeshAssetIds"))
+    if len(primary_asset_ids) < 3:
+        raise WorldAuthorError("area.worldArtPass.primaryMeshAssetIds must list at least three primary mesh assets.")
+    for asset_id in primary_asset_ids:
+        if not isinstance(asset_id, str) or asset_id not in asset_ids:
+            raise WorldAuthorError(f"area.worldArtPass.primaryMeshAssetIds references unknown mesh asset '{asset_id}'.")
+    replacement_ids = {
+        instance.get("replacesVisualPlaceholderId")
+        for instance in _as_list(area.get("meshInstances"))
+        if isinstance(instance, dict) and isinstance(instance.get("replacesVisualPlaceholderId"), str)
+    }
+    for required_replacement in [
+        "veyra-hillside-ground-west",
+        "veyra-hillside-ground-east",
+        "harbor-rock-shore",
+        "greywinch-service-road-surface-1",
+    ]:
+        if required_replacement not in replacement_ids:
+            raise WorldAuthorError(f"area.worldArtPass is missing primary mesh replacement for '{required_replacement}'.")
 
 
 def _validate_generated_scene(scene: dict[str, Any]) -> None:
@@ -408,6 +455,15 @@ def _rgb(color: list[Any]) -> str:
     g = max(0, min(255, int(float(color[1]) * 255)))
     b = max(0, min(255, int(float(color[2]) * 255)))
     return f"rgb({r},{g},{b})"
+
+
+def _primary_world_art_assets(package: WorldPackage) -> set[str]:
+    primary: set[str] = set()
+    for area in package.areas:
+        for asset_id in _as_list(_as_dict(area.get("worldArtPass")).get("primaryMeshAssetIds")):
+            if isinstance(asset_id, str) and asset_id:
+                primary.add(asset_id)
+    return primary
 
 
 def _unique_strings(items: Any, key: str, label: str) -> set[str]:

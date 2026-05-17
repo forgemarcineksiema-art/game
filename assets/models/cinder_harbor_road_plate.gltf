@@ -1,0 +1,90 @@
+{
+  "asset": {
+    "version": "2.0",
+    "generator": "Tidebreak tools/create_simple_prop_gltf.py v1.00 Cinder Harbor road plate fallback helper",
+    "extras": {
+      "tidebreakSource": "project-original fallback geometry",
+      "notBlenderExport": true
+    }
+  },
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "mesh": 0,
+      "name": "cinder_harbor_road_plate"
+    }
+  ],
+  "meshes": [
+    {
+      "name": "cinder_harbor_road_plate",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0
+          },
+          "indices": 1,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 840,
+      "uri": "data:application/octet-stream;base64,4XoUvwAAAAAAAIC/4XoUPwAAAAAAAIC/4XoUP6abxDwAAIC/4XoUv6abxDwAAIC/4XoUvwAAAAAAAIA/4XoUPwAAAAAAAIA/4XoUP6abxDwAAIA/4XoUv6abxDwAAIA/7FE4v6abxDsfhWu/mpkZv6abxDsfhWu/mpkZv5ZDCz0fhWu/7FE4v5ZDCz0fhWu/7FE4v6abxDsfhWs/mpkZv6abxDsfhWs/mpkZv5ZDCz0fhWs/7FE4v5ZDCz0fhWs/mpkZP6abxDsfhWu/7FE4P6abxDsfhWu/7FE4P5ZDCz0fhWu/mpkZP5ZDCz0fhWu/mpkZP6abxDsfhWs/7FE4P6abxDsfhWs/7FE4P5ZDCz0fhWs/mpkZP5ZDCz0fhWs/j8L1vLx0kzzsUbi+j8L1PLx0kzzsUbi+j8L1POOlGz3sUbi+j8L1vOOlGz3sUbi+j8L1vLx0kzwAAAAAj8L1PLx0kzwAAAAAj8L1POOlGz0AAAAAj8L1vOOlGz0AAAAAj8L1vLx0kzzNzMw9j8L1PLx0kzzNzMw9j8L1POOlGz3NzMw9j8L1vOOlGz3NzMw9j8L1vLx0kzxxPQo/j8L1PLx0kzxxPQo/j8L1POOlGz1xPQo/j8L1vOOlGz1xPQo/AAABAAIAAAACAAMABQAEAAcABQAHAAYABAAAAAMABAADAAcAAQAFAAYAAQAGAAIAAwACAAYAAwAGAAcABAAFAAEABAABAAAACAAJAAoACAAKAAsADQAMAA8ADQAPAA4ADAAIAAsADAALAA8ACQANAA4ACQAOAAoACwAKAA4ACwAOAA8ADAANAAkADAAJAAgAEAARABIAEAASABMAFQAUABcAFQAXABYAFAAQABMAFAATABcAEQAVABYAEQAWABIAEwASABYAEwAWABcAFAAVABEAFAARABAAGAAZABoAGAAaABsAHQAcAB8AHQAfAB4AHAAYABsAHAAbAB8AGQAdAB4AGQAeABoAGwAaAB4AGwAeAB8AHAAdABkAHAAZABgAIAAhACIAIAAiACMAJQAkACcAJQAnACYAJAAgACMAJAAjACcAIQAlACYAIQAmACIAIwAiACYAIwAmACcAJAAlACEAJAAhACAA"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 480,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 480,
+      "byteLength": 360,
+      "target": 34963
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 40,
+      "type": "VEC3",
+      "min": [
+        -0.72,
+        0.0,
+        -1.0
+      ],
+      "max": [
+        0.72,
+        0.038,
+        1.0
+      ]
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 0,
+      "componentType": 5123,
+      "count": 180,
+      "type": "SCALAR",
+      "min": [
+        0
+      ],
+      "max": [
+        39
+      ]
+    }
+  ]
+}

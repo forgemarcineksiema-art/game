@@ -15,6 +15,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 
 import scene_data  # noqa: E402
+import asset_data  # noqa: E402
 import mesh_report  # noqa: E402
 import check_blender  # noqa: E402
 import create_simple_prop_gltf  # noqa: E402
@@ -45,6 +46,47 @@ class SceneToolTests(unittest.TestCase):
 
         self.assertEqual([], result.errors)
         self.assertNotIn("ferry-manifest", scene_data.collect_ids(scene))
+
+    def test_veyra_cinder_harbor_world_art_mesh_material_pass_is_authored(self) -> None:
+        scene = scene_data.load_scene(self.pilot_scene_path)
+        mesh_assets = {asset["id"]: asset for asset in scene["meshAssets"]}
+        mesh_instances = {instance["id"]: instance for instance in scene["meshInstances"]}
+        material_keys = {material["key"] for material in scene["sceneMaterials"]}
+
+        for key in [
+            "cinder-brush-ground",
+            "oil-slick-asphalt",
+            "salt-cracked-concrete",
+            "black-rock-shore",
+            "low-tide-water",
+            "hazard-rust-red",
+        ]:
+            self.assertIn(key, material_keys)
+
+        self.assertEqual(
+            "assets/models/cinder_harbor_ground_patch.gltf",
+            mesh_assets["cinder-harbor-ground-patch-mesh"]["path"],
+        )
+        self.assertEqual(
+            "assets/models/cinder_harbor_road_plate.gltf",
+            mesh_assets["cinder-harbor-road-plate-mesh"]["path"],
+        )
+        self.assertEqual(
+            "assets/models/cinder_harbor_shore_shelf.gltf",
+            mesh_assets["cinder-harbor-shore-shelf-mesh"]["path"],
+        )
+        self.assertEqual(
+            "veyra-hillside-ground-west",
+            mesh_instances["mesh-cinder-ground-west"]["replacesVisualPlaceholderId"],
+        )
+        self.assertEqual(
+            "greywinch-service-road-surface-1",
+            mesh_instances["mesh-cinder-greywinch-road-a"]["replacesVisualPlaceholderId"],
+        )
+        self.assertEqual(
+            "harbor-rock-shore",
+            mesh_instances["mesh-cinder-shore-shelf"]["replacesVisualPlaceholderId"],
+        )
 
     def test_veyra_reach_pilot_target_objective_references_authored_interactable(self) -> None:
         scene = scene_data.load_scene(self.pilot_scene_path)
@@ -765,7 +807,25 @@ class SceneToolTests(unittest.TestCase):
         self.assertIsNotNone(files_by_path["assets/models/ferry_notice_board.gltf"].bounds_max)
         self.assertIsNotNone(files_by_path["assets/models/blender_ferry_notice_board.gltf"].bounds_min)
         self.assertIsNotNone(files_by_path["assets/models/blender_ferry_notice_board.gltf"].bounds_max)
-        self.assertEqual([], [file.relative_path for file in report.files if file.suffix == ".gltf" and not file.referenced])
+        veyra_only_assets = {
+            "assets/models/cinder_harbor_ground_patch.gltf",
+            "assets/models/cinder_harbor_road_plate.gltf",
+            "assets/models/cinder_harbor_shore_shelf.gltf",
+        }
+        self.assertEqual(
+            [],
+            [
+                file.relative_path
+                for file in report.files
+                if file.suffix == ".gltf" and not file.referenced and file.relative_path not in veyra_only_assets
+            ],
+        )
+
+        veyra_report = mesh_report.build_mesh_report(scene_data.load_scene(self.pilot_scene_path))
+        veyra_files = {file.relative_path: file for file in veyra_report.files}
+        for asset_path in veyra_only_assets:
+            self.assertTrue(veyra_files[asset_path].referenced)
+            self.assertGreater(veyra_files[asset_path].vertex_count or 0, 0)
 
     def test_mesh_report_allows_meshless_target_slice_scene(self) -> None:
         scene = copy.deepcopy(self.scene)
@@ -777,6 +837,30 @@ class SceneToolTests(unittest.TestCase):
 
         self.assertEqual([], report.validation_errors)
         self.assertTrue(any(file.suffix == ".gltf" and not file.referenced for file in report.files))
+
+    def test_asset_workflow_accepts_assets_referenced_by_another_scene_catalog(self) -> None:
+        result = scene_data.validate_asset_workflow(
+            self.scene,
+            additional_referenced_paths={
+                "assets/models/cinder_harbor_ground_patch.gltf",
+                "assets/models/cinder_harbor_road_plate.gltf",
+                "assets/models/cinder_harbor_shore_shelf.gltf",
+            },
+        )
+
+        self.assertEqual([], result.errors)
+
+    def test_mesh_report_can_show_cross_scene_asset_provenance(self) -> None:
+        veyra_scene = scene_data.load_scene(self.pilot_scene_path)
+        report = mesh_report.build_mesh_report(
+            self.scene,
+            additional_assets_by_path=asset_data.scene_asset_paths(veyra_scene),
+        )
+        files = {file.relative_path: file for file in report.files}
+
+        self.assertEqual([], report.validation_errors)
+        self.assertEqual("project-original", files["assets/models/cinder_harbor_road_plate.gltf"].license)
+        self.assertIn("Cinder Harbor", files["assets/models/cinder_harbor_road_plate.gltf"].provenance or "")
 
     def test_blender_check_reports_missing_command_without_throwing(self) -> None:
         result = check_blender.check_blender("__definitely_missing_blender_for_tidebreak_tests__")

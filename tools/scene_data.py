@@ -36,6 +36,8 @@ REQUIRED_IDS = {
 
 KNOWN_COLOR_KEYS = {
     "dark-service-asphalt",
+    "black-rock-shore",
+    "cinder-brush-ground",
     "damp-service-concrete",
     "deep-harbor-blue",
     "dock-muted-sign-yellow",
@@ -45,13 +47,17 @@ KNOWN_COLOR_KEYS = {
     "ferry-office-drain-log-state",
     "ferry-office-handoff-state",
     "ferry-route-sign-blue",
+    "hazard-rust-red",
+    "low-tide-water",
     "low-dock-drain-state",
     "misty-island-ground",
     "mossy-service-crate",
+    "oil-slick-asphalt",
     "office-muted-concrete",
     "oxidized-service-green",
     "rusted-roof-trim",
     "salt-white-road-post",
+    "salt-cracked-concrete",
     "service-gate-state",
     "service-vehicle-cabin-placeholder",
     "service-vehicle-placeholder",
@@ -499,10 +505,14 @@ def _validate_target_action_response(scene: dict[str, Any], result: ValidationRe
 def validate_asset_workflow(
     scene: dict[str, Any],
     models_dir: pathlib.Path = asset_data.DEFAULT_MODELS_DIR,
+    additional_referenced_paths: set[str] | None = None,
 ) -> ValidationResult:
     result = ValidationResult()
     models_dir = pathlib.Path(models_dir)
     scene_paths = asset_data.scene_asset_paths(scene, models_dir)
+    referenced_paths = set(scene_paths)
+    if additional_referenced_paths:
+        referenced_paths.update(additional_referenced_paths)
     scanned_paths: dict[str, pathlib.Path] = {}
     scanned_metadata: dict[str, asset_data.GltfMetadata] = {}
 
@@ -513,7 +523,7 @@ def validate_asset_workflow(
         if suffix == ".glb":
             result.errors.append(f"unsupported .glb model file: {relative_path}")
             continue
-        if suffix == ".gltf" and relative_path not in scene_paths:
+        if suffix == ".gltf" and relative_path not in referenced_paths:
             result.errors.append(f"unreferenced model asset file: {relative_path}")
         metadata = asset_data.load_gltf_metadata(path)
         scanned_metadata[relative_path] = metadata

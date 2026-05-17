@@ -1,8 +1,8 @@
 # Asset Guide
 
-Last updated: 2026-05-16
+Last updated: 2026-05-17
 
-This guide defines Tidebreak's early asset and scale conventions. v0.44 still does not add a full asset pipeline, but the project now has a tiny static `.gltf` prop/surface/backdrop path for original placeholder meshes, stronger asset workflow validation, an honest Blender availability check, a fallback prop generator, and several controlled Blender-exported proof meshes.
+This guide defines Tidebreak's early asset and scale conventions. v1.00 still does not add a full asset pipeline, but the project now has a tiny static `.gltf` prop/surface/backdrop/world-art path for original placeholder meshes, stronger asset workflow validation, an honest Blender availability check, a fallback prop generator, and several controlled Blender-exported proof meshes.
 
 ## Units And Axes
 
@@ -47,12 +47,18 @@ Scene data uses `colorKey` strings plus `sceneMaterials` presets, not final rend
 - `office-muted-concrete`: worn public-service building surfaces.
 - `damp-service-concrete`: maintenance-side service pads.
 - `deep-harbor-blue`: water-edge bands.
+- `low-tide-water`: darker Cinder Harbor water surfaces.
 - `misty-island-ground`: distant low island/harbor backdrop silhouettes.
+- `cinder-brush-ground`: Cinder Harbor hillside/brush ground patches.
+- `oil-slick-asphalt`: Cinder Harbor wet service-road plates.
+- `salt-cracked-concrete`: Cinder Harbor lay-by and utility-yard concrete.
+- `black-rock-shore`: Cinder Harbor rocky shoreline shelf.
 - `weathered-yard-rail`: simple service-yard barriers.
 - `rusted-roof-trim`: rusty ferry-office silhouette accents.
 - `ferry-route-sign-blue`: dock-road/ferry-route sign cues.
 - `salt-white-road-post`: pale road-edge posts against the dark dock road.
 - `warning-service-orange`: low service barriers and practical caution cues.
+- `hazard-rust-red`: Cinder Harbor risky cargo/industrial hazard accents.
 
 `sceneMaterials` maps each used key to a normalized base color and a tiny response family: `wet`, `matte`, or `painted`. Future renderer work can promote these presets into richer material assets, but the current path is still flat placeholder geometry with presentation shading only.
 
@@ -83,12 +89,13 @@ v0.12-v0.18 supports a tiny static `.gltf` subset through `src/engine/assets/Sta
 - v0.87 adds `ferry_office_facade_frame.gltf` through the same fallback helper because the surrounding Ferry Office wall and entry-post pair still read as broad unit-box blockout around the improved gate/canopy.
 - v0.88 adds `ferry_office_sign_panel.gltf` through the same fallback helper because the front sign board was the loudest remaining facade unit-box cue after the gate/frame passes.
 - v0.93 adds `ferry_office_service_panel.gltf` through the same fallback helper because the office-side service/control cue was still a generic utility-box reuse after the route-guidance pass.
+- v1.00 adds `cinder_harbor_ground_patch.gltf`, `cinder_harbor_road_plate.gltf`, and `cinder_harbor_shore_shelf.gltf` through the same fallback helper because Cinder Harbor's first Veyra world-art pass needed terrain/road/shore silhouettes without breaking the `data/worlds/veyra_reach` source-of-truth pipeline.
 - v0.20.1 adds `blender_ferry_notice_board.gltf` through `tools/blender/create_tidebreak_notice_board.py`. v0.27 adds `blender_cable_reel.gltf` through `tools/blender/create_tidebreak_cable_reel.py`. v0.42 adds `blender_wet_road_surface.gltf` through `tools/blender/create_tidebreak_wet_road_surface.py`. v0.43 adds `blender_harbor_backdrop.gltf` through `tools/blender/create_tidebreak_harbor_backdrop.py`. v0.44 adds `blender_harbor_water_surface.gltf` through `tools/blender/create_tidebreak_harbor_water_surface.py`. These scripts author in Tidebreak coordinates, map to Blender's Z-up space, export with Blender 5.1.1, and post-embed the buffer for the current loader subset.
 - Use meters, Y-up, +Z forward.
 - Keep placeholder meshes small, original, and clearly documented.
 - Add `license` and `provenance` for every scene `meshAssets` entry.
 - Run `python tools/validate_assets.py` and `python tools/mesh_report.py` after adding or moving mesh references.
-- Every committed `.gltf` under `assets/models` should be referenced by scene data. Keep work-in-progress exports outside the repo until they are ready to be documented and validated.
+- Every committed `.gltf` under `assets/models` should be referenced by scene data. Veyra-only assets may be unreferenced by Ferry Office, but they must be referenced by `data/scenes/veyra_reach_pilot.scene.json` after `tools/world_author.py --write-scene`. Keep work-in-progress exports outside the repo until they are ready to be documented and validated.
 
 Still deferred:
 

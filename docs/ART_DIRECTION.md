@@ -20,7 +20,7 @@ Veyra Reach should suggest:
 - narrow roads, dock edges, service yards, hillside access paths,
 - a place that remembers repairs, shortcuts, blocked routes, and favors.
 
-Current runtime foundation: Cinder Harbor Reach is the first authored Veyra location. It should read as a coastal/industrial remote-crime edge: Greywinch Service Road, Saltbreak Lay-by, Stormwall Bend, Old Pump Cut, Reach Relay Hut, Cracked Causeway Spur, Low Beacon Turn, Harbor Scar Overlook, and West Ferry Spur. The current art is still placeholder-grade, but it must be composed as a place: connected roads, shore/water/backdrop, industrial silhouettes, road-edge posts/barriers, cargo/cache risk, and readable overlook/relay landmarks.
+Current runtime foundation: Cinder Harbor Reach is the first authored Veyra location. It should read as a coastal/industrial remote-crime edge: Greywinch Service Road, Saltbreak Lay-by, Stormwall Bend, Old Pump Cut, Reach Relay Hut, Cracked Causeway Spur, Low Beacon Turn, Harbor Scar Overlook, and West Ferry Spur. The current art is still placeholder-grade, but it is now composed as a place with mesh-backed ground patches, oil-slick road plates, black-rock shore shelf, connected roads, shore/water/backdrop, industrial silhouettes, road-edge posts/barriers, cargo/cache risk, and readable overlook/relay landmarks.
 
 The sky/horizon proof is currently a pale renderer clear color plus authored horizon, water, and backdrop geometry. Do not describe this as a real skybox, weather, lighting, or atmospheric renderer.
 
@@ -161,3 +161,7 @@ v0.44 gives the three existing water-edge bands a shallow static ripple surface 
 ## v0.93 Ferry Office Service Panel Observation
 
 v0.93 replaces the office-side service/control panel's generic utility-box reuse with a small non-text panel mesh. It is still fallback placeholder geometry, but the raised frame, breaker bars, and conduit cue make the office controls read more like a practical service place while preserving the no-readable-text/no-branding rule.
+
+## v1.00 Cinder Harbor Mesh/Material Observation
+
+v1.00 gives Cinder Harbor its first Veyra-specific mesh/material pass: irregular ground patches, compact road plates with edge/seam geometry, and a rocky shore shelf now replace the most important generated terrain/road/shore placeholders visually. The pass keeps the runtime scene generated from `data/worlds/veyra_reach`, and uses material keys such as `cinder-brush-ground`, `oil-slick-asphalt`, `salt-cracked-concrete`, `black-rock-shore`, and `low-tide-water`. This is a stronger authored world read, not final terrain, textures, lighting, water, road physics, mesh collision, or production art.

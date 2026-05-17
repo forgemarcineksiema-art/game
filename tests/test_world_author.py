@@ -37,6 +37,51 @@ class WorldAuthorTests(unittest.TestCase):
         self.assertGreaterEqual(len(scene["routeMarkers"]), 4)
         self.assertGreaterEqual(len(scene["objectiveMarkers"]), 8)
 
+    def test_cinder_harbor_world_art_pass_compiles_primary_mesh_replacements(self) -> None:
+        package = world_author.load_world_package(self.world_root)
+
+        scene = world_author.compile_scene(package)
+        assets = {asset["id"]: asset for asset in scene["meshAssets"]}
+        replacements = {
+            instance["replacesVisualPlaceholderId"]: instance
+            for instance in scene["meshInstances"]
+            if "replacesVisualPlaceholderId" in instance
+        }
+
+        for asset_id, path in {
+            "cinder-harbor-ground-patch-mesh": "assets/models/cinder_harbor_ground_patch.gltf",
+            "cinder-harbor-road-plate-mesh": "assets/models/cinder_harbor_road_plate.gltf",
+            "cinder-harbor-shore-shelf-mesh": "assets/models/cinder_harbor_shore_shelf.gltf",
+        }.items():
+            self.assertIn(asset_id, assets)
+            self.assertEqual(path, assets[asset_id]["path"])
+            self.assertIn("project-original", assets[asset_id]["license"])
+
+        for placeholder_id in [
+            "veyra-hillside-ground-west",
+            "veyra-hillside-ground-east",
+            "saltbreak-layby-concrete",
+            "old-pump-cut-yard",
+            "harbor-rock-shore",
+            "greywinch-service-road-surface-1",
+            "greywinch-service-road-surface-2",
+            "old-pump-cut-access-surface-2",
+        ]:
+            self.assertIn(placeholder_id, replacements)
+
+    def test_cinder_harbor_world_art_pass_is_declared_in_area_source_and_report(self) -> None:
+        package = world_author.load_world_package(self.world_root)
+        area = package.areas[0]
+
+        scene = world_author.compile_scene(package)
+        report = world_author.build_report(package, scene)
+        preview = world_author.build_preview_html(package, scene)
+
+        self.assertEqual("cinder-harbor-first-world-art-mesh-material-pass", area["worldArtPass"]["id"])
+        self.assertGreaterEqual(report["counts"]["worldArtReplacementMeshes"], 10)
+        self.assertGreaterEqual(report["counts"]["primaryWorldArtAssets"], 3)
+        self.assertIn("World-Art Meshes", preview)
+
     def test_compiler_preserves_target_slice_action_contract(self) -> None:
         scene = world_author.compile_scene(world_author.load_world_package(self.world_root))
 

@@ -2,6 +2,55 @@
 
 Last updated: 2026-05-17
 
+## Cinder Harbor World-Art Mesh/Material Pass (2026-05-17)
+
+Goal:
+
+- Replace the loudest Cinder Harbor placeholder terrain/road ribbons with a stronger first world-art mesh/material pass while preserving `data\worlds\veyra_reach` as the source of truth.
+
+Scope:
+
+- Added `worldArtPass` metadata to `data\worlds\veyra_reach\areas\cinder_harbor.area.json`.
+- Added new Veyra-only material keys: `cinder-brush-ground`, `oil-slick-asphalt`, `salt-cracked-concrete`, `black-rock-shore`, `low-tide-water`, and `hazard-rust-red`.
+- Added three project-original fallback `.gltf` meshes through `tools\create_simple_prop_gltf.py`: `cinder_harbor_ground_patch.gltf`, `cinder_harbor_road_plate.gltf`, and `cinder_harbor_shore_shelf.gltf`.
+- Regenerated `data\scenes\veyra_reach_pilot.scene.json` from world source. The scene now reports 18 scene materials, 23 mesh assets, 30 mesh instances, and 12 world-art replacement meshes.
+- Extended `tools\world_author.py` preview/report output with a `World-Art Meshes` layer plus `worldArtReplacementMeshes` and `primaryWorldArtAssets` counts.
+- Kept visual placeholders as generated underlay/validation/collision-readable layout; the primary Cinder Harbor terrain/road/shore presentation is now mesh-backed through `replacesVisualPlaceholderId`.
+
+What is now real:
+
+- CONFIRMED: Veyra runtime scene generation still comes from `data\worlds\veyra_reach\world.json` and `data\worlds\veyra_reach\areas\cinder_harbor.area.json`; `python tools\world_author.py --check` reports no drift.
+- CONFIRMED: Cinder Harbor has project-original mesh-backed ground, road plates, and shore shelf assets with explicit provenance.
+- CONFIRMED: `build\world_preview\veyra_reach_report.json` reports `worldArtReplacementMeshes=12` and `primaryWorldArtAssets=3`.
+- CONFIRMED: Runtime capture evidence for the pass exists under `build\captures\cinder-world-art-*.bmp` with `build\captures\cinder_harbor_world_art_manifest.json`.
+- INFERRED: The world reads less like flat placeholder ribbons because roads/terrain/shore now have authored mesh silhouettes and stronger material separation.
+
+Known limits:
+
+- CONFIRMED: This is still fallback low-detail static mesh art, not final terrain, road splines, textures, PBR materials, lighting, water simulation, mesh collision, traffic, AI, or combat.
+- CONFIRMED: Ferry Office does not reference the Veyra-only Cinder Harbor mesh assets; Veyra scene/mesh reports are the proof path for those files.
+- UNVERIFIED: Human visual feel after this pass still needs manual playtest after capture review.
+
+Validation snapshot:
+
+- GREEN: `python tests\test_world_author.py`.
+- GREEN: `python tests\test_scene_tools.py`.
+- GREEN: `python tools\world_author.py --check`.
+- GREEN: `python tools\world_author.py --preview-html build\world_preview\veyra_reach_preview.html --report-json build\world_preview\veyra_reach_report.json`.
+- GREEN: `python tools\validate_scene.py data\scenes\veyra_reach_pilot.scene.json`.
+- GREEN: `python tools\validate_assets.py data\scenes\veyra_reach_pilot.scene.json`.
+- GREEN: `python tools\mesh_report.py data\scenes\veyra_reach_pilot.scene.json`.
+- GREEN: `python tools\mesh_report.py`.
+- GREEN: `python tools\runtime_scene_smoke.py --exe build\windows-vs2022-debug\Debug\EngineApp.exe --scene data\scenes\veyra_reach_pilot.scene.json --renderer gdi --ui-mode playtest --capture-frame build\captures\cinder-world-art-runtime-smoke.bmp --report-json build\runtime\cinder-world-art-smoke-report.json`.
+- GREEN: `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`.
+- GREEN: `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`.
+- GREEN: `scripts\build.ps1`.
+- GREEN: `scripts\verify.ps1`.
+
+Next recommended goal:
+
+- Add a compact authored landmark/industrial silhouette pass for Cinder Harbor's overlook, relay hut, and risky cargo site, still driven from `data\worlds\veyra_reach`, after this mesh/material pass has fresh runtime captures.
+
 ## Tidebreak World Foundation: Veyra Reach / Cinder Harbor Reach (2026-05-17)
 
 Goal:

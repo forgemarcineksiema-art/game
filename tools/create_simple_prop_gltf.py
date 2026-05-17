@@ -258,6 +258,78 @@ def write_service_yard_cart_wheel(output_path: pathlib.Path, overwrite: bool = T
     )
 
 
+def write_cinder_harbor_ground_patch(output_path: pathlib.Path, overwrite: bool = True) -> None:
+    if output_path.exists() and not overwrite:
+        raise FileExistsError(f"{output_path} already exists; pass --overwrite to replace it")
+
+    vertices: list[tuple[float, float, float]] = []
+    indices: list[int] = []
+    _append_prism_polygon(
+        vertices,
+        indices,
+        points=[(-0.92, -0.68), (0.78, -0.78), (1.05, -0.15), (0.86, 0.62), (0.12, 0.82), (-0.84, 0.56), (-1.06, -0.08)],
+        y_min=-0.035,
+        y_max=0.035,
+    )
+    _append_box(vertices, indices, center=(-0.34, 0.065, 0.22), half_extents=(0.34, 0.035, 0.16))
+    _append_box(vertices, indices, center=(0.48, 0.060, -0.24), half_extents=(0.24, 0.030, 0.12))
+
+    _write_embedded_gltf(
+        output_path=output_path,
+        vertices=vertices,
+        indices=indices,
+        name="cinder_harbor_ground_patch",
+        generator="Tidebreak tools/create_simple_prop_gltf.py v1.00 Cinder Harbor ground fallback helper",
+    )
+
+
+def write_cinder_harbor_road_plate(output_path: pathlib.Path, overwrite: bool = True) -> None:
+    if output_path.exists() and not overwrite:
+        raise FileExistsError(f"{output_path} already exists; pass --overwrite to replace it")
+
+    vertices: list[tuple[float, float, float]] = []
+    indices: list[int] = []
+    _append_box(vertices, indices, center=(0.0, 0.012, 0.0), half_extents=(0.58, 0.012, 1.0))
+    _append_box(vertices, indices, center=(-0.66, 0.020, 0.0), half_extents=(0.06, 0.014, 0.92))
+    _append_box(vertices, indices, center=(0.66, 0.020, 0.0), half_extents=(0.06, 0.014, 0.92))
+    _append_box(vertices, indices, center=(0.0, 0.028, -0.18), half_extents=(0.030, 0.010, 0.18))
+    _append_box(vertices, indices, center=(0.0, 0.028, 0.32), half_extents=(0.030, 0.010, 0.22))
+
+    _write_embedded_gltf(
+        output_path=output_path,
+        vertices=vertices,
+        indices=indices,
+        name="cinder_harbor_road_plate",
+        generator="Tidebreak tools/create_simple_prop_gltf.py v1.00 Cinder Harbor road plate fallback helper",
+    )
+
+
+def write_cinder_harbor_shore_shelf(output_path: pathlib.Path, overwrite: bool = True) -> None:
+    if output_path.exists() and not overwrite:
+        raise FileExistsError(f"{output_path} already exists; pass --overwrite to replace it")
+
+    vertices: list[tuple[float, float, float]] = []
+    indices: list[int] = []
+    _append_prism_polygon(
+        vertices,
+        indices,
+        points=[(-1.12, -0.28), (0.96, -0.36), (1.16, -0.02), (0.66, 0.34), (-0.18, 0.42), (-1.04, 0.16)],
+        y_min=-0.060,
+        y_max=0.060,
+    )
+    _append_box(vertices, indices, center=(-0.55, 0.120, 0.03), half_extents=(0.24, 0.060, 0.10))
+    _append_box(vertices, indices, center=(0.34, 0.110, -0.11), half_extents=(0.32, 0.050, 0.12))
+    _append_box(vertices, indices, center=(0.82, 0.105, 0.13), half_extents=(0.12, 0.045, 0.10))
+
+    _write_embedded_gltf(
+        output_path=output_path,
+        vertices=vertices,
+        indices=indices,
+        name="cinder_harbor_shore_shelf",
+        generator="Tidebreak tools/create_simple_prop_gltf.py v1.00 Cinder Harbor shore shelf fallback helper",
+    )
+
+
 def _write_embedded_gltf(
     output_path: pathlib.Path,
     vertices: list[tuple[float, float, float]],
@@ -357,6 +429,9 @@ def parse_args() -> argparse.Namespace:
             "service-yard-cart-body",
             "service-yard-cart-cabin",
             "service-yard-cart-wheel",
+            "cinder-harbor-ground-patch",
+            "cinder-harbor-road-plate",
+            "cinder-harbor-shore-shelf",
         ),
         default="ferry-notice-board",
         help="Prop kind to generate.",
@@ -388,6 +463,12 @@ def main() -> int:
             write_service_yard_cart_cabin(output_path, overwrite=args.overwrite)
         elif args.kind == "service-yard-cart-wheel":
             write_service_yard_cart_wheel(output_path, overwrite=args.overwrite)
+        elif args.kind == "cinder-harbor-ground-patch":
+            write_cinder_harbor_ground_patch(output_path, overwrite=args.overwrite)
+        elif args.kind == "cinder-harbor-road-plate":
+            write_cinder_harbor_road_plate(output_path, overwrite=args.overwrite)
+        elif args.kind == "cinder-harbor-shore-shelf":
+            write_cinder_harbor_shore_shelf(output_path, overwrite=args.overwrite)
         else:
             write_ferry_notice_board(output_path, overwrite=args.overwrite)
     except FileExistsError as exc:
@@ -524,6 +605,33 @@ def _append_wheel_cylinder(
         indices.extend([left_a, right_a, right_b, left_a, right_b, left_b])
         indices.extend([left_center, left_b, left_a])
         indices.extend([right_center, right_a, right_b])
+
+
+def _append_prism_polygon(
+    vertices: list[tuple[float, float, float]],
+    indices: list[int],
+    points: list[tuple[float, float]],
+    y_min: float,
+    y_max: float,
+) -> None:
+    base_index = len(vertices)
+    for x, z in points:
+        vertices.append((x, y_min, z))
+    for x, z in points:
+        vertices.append((x, y_max, z))
+
+    count = len(points)
+    for index in range(1, count - 1):
+        indices.extend([base_index + count, base_index + count + index, base_index + count + index + 1])
+        indices.extend([base_index, base_index + index + 1, base_index + index])
+
+    for index in range(count):
+        next_index = (index + 1) % count
+        bottom_a = base_index + index
+        bottom_b = base_index + next_index
+        top_a = base_index + count + index
+        top_b = base_index + count + next_index
+        indices.extend([bottom_a, bottom_b, top_b, bottom_a, top_b, top_a])
 
 
 def _align4(value: int) -> int:
