@@ -4954,6 +4954,23 @@ void TestFerryOfficeVehicleRuntimeComparisonQaWritesReport()
             "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
             "Broad-route check should identify the authored edge contacted after the reverse/readability segment.");
     }
+    Expect(result.extendedRouteChecks.size() == 2,
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Runtime comparison QA should include deterministic and adapter extended recorded-input route checks.");
+    for (const auto& check : result.extendedRouteChecks) {
+        Expect(check.passed && check.inputRecorded && check.authoredRouteId == "route-long-authored-driving-evidence",
+            "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+            check.message);
+        Expect(check.turnCount >= 3 && check.routeProgressMeters >= 12.0f && check.frameCount >= 360,
+            "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+            "Extended-route check should cover a longer authored route with several turns.");
+        Expect(check.reverseCompleted && check.cameraResetApplied && check.readabilityStableAfterReset,
+            "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+            "Extended-route check should prove reverse plus camera reset/readability evidence.");
+        Expect(check.roadEdgeCollisionBacked && check.edgeContactFrames > 0 && !check.blockedEdgeId.empty(),
+            "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+            "Extended-route check should include authored road-edge response evidence.");
+    }
     Expect(result.maxPositionDelta <= 0.75f,
         "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
         "Simple runtime adapter should stay close to the deterministic fallback path.");
@@ -4964,9 +4981,9 @@ void TestFerryOfficeVehicleRuntimeComparisonQaWritesReport()
     std::ifstream input(reportPath);
     const nlohmann::json report = nlohmann::json::parse(input);
     input.close();
-    Expect(report["schema"] == "v0.36-ferry-office-vehicle-runtime-comparison",
+    Expect(report["schema"] == "v0.37-ferry-office-vehicle-runtime-comparison",
         "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
-        "Vehicle runtime comparison report should use the v0.36 schema.");
+        "Vehicle runtime comparison report should use the v0.37 schema.");
     Expect(report["scenario"] == "ferry-office-vehicle-runtime-comparison",
         "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
         "Vehicle runtime comparison report should expose the scenario.");
@@ -5034,6 +5051,18 @@ void TestFerryOfficeVehicleRuntimeComparisonQaWritesReport()
             && report["broadRouteChecks"][0].contains("maxCameraYawDeltaDegrees"),
         "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
         "Broad-route checks should include collision response, turn/reverse, and camera readability telemetry.");
+    Expect(report["extendedRouteChecks"].size() == 2,
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Runtime comparison report should expose extended recorded-input route evidence.");
+    Expect(report["extendedRouteChecks"][0].contains("inputScriptName")
+            && report["extendedRouteChecks"][0].contains("inputRecorded")
+            && report["extendedRouteChecks"][0].contains("authoredRouteId")
+            && report["extendedRouteChecks"][0].contains("turnCount")
+            && report["extendedRouteChecks"][0].contains("cameraResetApplied")
+            && report["extendedRouteChecks"][0].contains("readabilityStableAfterReset")
+            && report["extendedRouteChecks"][0].contains("roadEdgeCollisionBacked"),
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Extended-route checks should include recorded-input, camera reset, and authored road-edge telemetry.");
 
     std::filesystem::remove(reportPath);
 }

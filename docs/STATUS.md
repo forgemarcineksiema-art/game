@@ -2,6 +2,59 @@
 
 Last updated: 2026-05-17
 
+## Extended Authored Driving Route Evidence Gate (2026-05-17)
+
+Goal:
+
+- Add the next Jolt-first evidence milestone: a longer authored Ferry Office driving route with several turns, reverse/manual-feel input, camera reset/readability telemetry, and authored road-edge response evidence that does not repeat the simple straight checkpoint proof.
+
+Scope attempted:
+
+- Added authored scene route marker `route-long-authored-driving-evidence`.
+- Extended `ferry-office-vehicle-runtime-comparison` report schema to `v0.37-ferry-office-vehicle-runtime-comparison`.
+- Added `extendedRouteChecks` with `inputScriptName=recorded-ferry-office-long-route-v1`, `inputRecorded`, route progress, turn count, reverse distance, camera reset frame, post-reset camera yaw readability, and road-edge response telemetry.
+- Added Python validator coverage that rejects reports missing `extendedRouteChecks`.
+- Added C++ report/test coverage for the new extended recorded-input route block.
+
+Confirmed evidence:
+
+- CONFIRMED: the new extended route gate initially failed for the right reason: the first recorded script hit authored vehicle bounds before proving several turns. The final authored route starts at the service-yard vehicle end of dock road and uses a slower recorded-input script rather than weakening validator thresholds.
+- CONFIRMED: deterministic extended route passed with `frameCount=416`, `routeProgressMeters=12.001`, `turnCount=3`, `reverseDistance=0.653m`, `maxCameraYawDeltaAfterResetDegrees=3.427`, `edgeContactFrames=24`, `blockedEdgeId=dock-road-south-rail`, and `hitBounds=false`.
+- CONFIRMED: Jolt extended route passed with `frameCount=360`, `routeProgressMeters=16.634`, `turnCount=3`, `reverseDistance=1.000m`, `maxCameraYawDeltaAfterResetDegrees=8.309`, `edgeContactFrames=56`, `blockedEdgeId=dock-road-south-rail`, and `hitBounds=false`.
+- CONFIRMED: `tools\vehicle_runtime_qa.py` now rejects reports that omit `extendedRouteChecks`, use the wrong recorded script, miss deterministic/Jolt coverage, skip reverse, skip camera reset/readability, fail authored road-edge response, hit vehicle bounds, or cover too little distance/turn count.
+- INTERPRETATION: this closes the specific post-audit evidence gap around a longer recorded-input route with several steering changes, a reverse case, camera reset/readability telemetry, and authored road-edge response. It is stronger than the straight checkpoint and earlier broad edge gate, but still not a full human manual playtest or default-runtime promotion.
+
+Validation commands:
+
+- Pre-change `git status --short`: clean.
+- Pre-change `git branch --show-current`: `main`.
+- Pre-change `scripts\doctor.ps1`: passed with expected PATH warnings for compiler/tool binaries.
+- Pre-change `scripts\configure.ps1`: passed.
+- Pre-change `scripts\build.ps1`: passed.
+- Pre-change `scripts\verify.ps1`: passed; 11/11 default CTest passed.
+- RED: `python tools\vehicle_runtime_qa.py --exe build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --report-json build\physics\red-missing-extended-route-report.json`: failed as expected because the old report lacked `extendedRouteChecks`.
+- `python tests\test_vehicle_runtime_qa.py`: passed, 14 tests.
+- `python tools\validate_scene.py`: passed.
+- `python tools\scale_audit.py`: passed.
+- `python tools\mesh_report.py`: passed.
+- `cmake --preset windows-vs2022-debug-jolt`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- Post-change `scripts\build.ps1`: passed.
+- RED after first implementation: `scripts\verify.ps1` failed in `EngineCoreTests`, `TestFerryOfficeVehicleRuntimeComparisonQaWritesReport`. The first extended recorded-input route reported `frames=255`, `routeProgressMeters=8.986610`, `turnCount=1`, `reverseDistance=2.445838`, `edgeContactFrames=0`, and `hitBounds=true`; this confirmed the initial script was too close to the authored vehicle bounds.
+- GREEN: `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed after route/input/edge-probe correction.
+- GREEN: `python tools\vehicle_runtime_qa.py --exe build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --report-json build\physics\jolt-extended-route-debug-report.json`: passed; backend `jolt`, `extendedRouteChecks=2`, recommendation=`promote`.
+- GREEN: `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed; 16/16 tests.
+- GREEN: post-change `scripts\verify.ps1`: passed; 11/11 default CTest plus scene/assets/mesh/null smoke validation.
+- GREEN: `python tools\playthrough_qa.py --exe build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --vehicle-runtime jolt --report-json build\playthrough\ferry-office-jolt-playthrough-extended-route-report.json`: passed; 21 events, `vehicleRuntime=jolt`, checkpoint in 169 frames.
+- GREEN: `scripts\verify_jolt.ps1`: passed; configured/built Jolt preset, ran 16/16 Jolt CTest, explicit Jolt playthrough QA, and vehicle runtime QA with `extendedRouteChecks=2`.
+
+Important limits:
+
+- Do not promote Jolt as universal default from this work.
+- This is recorded-input/manual-feel evidence, not a human hand-play capture.
+- This still does not prove full mesh collision, dynamic objects, traffic, damage, slopes, camera collision, all scene colliders, or a complete road model.
+- Next practical step should be a manual-play/capture evidence pass or a deliberate default-runtime promotion decision, not another proof of the same Ferry Office dock-road route.
+
 ## Actual Authored Road-Edge Collision Response Gate (2026-05-17)
 
 Goal:

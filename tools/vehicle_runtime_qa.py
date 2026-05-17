@@ -13,7 +13,7 @@ from typing import Any
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SCENARIO = "ferry-office-vehicle-runtime-comparison"
-SCHEMA = "v0.36-ferry-office-vehicle-runtime-comparison"
+SCHEMA = "v0.37-ferry-office-vehicle-runtime-comparison"
 MAX_POSITION_DELTA = 4.0
 MAX_YAW_DELTA_DEGREES = 130.0
 MAX_SPEED_DELTA = 5.0
@@ -320,6 +320,74 @@ def _require_broad_route_checks(report: dict[str, Any]) -> list[dict[str, Any]]:
     return checks
 
 
+def _require_extended_route_checks(report: dict[str, Any]) -> list[dict[str, Any]]:
+    checks = report.get("extendedRouteChecks")
+    if not isinstance(checks, list) or len(checks) < 2:
+        raise ValueError("Vehicle runtime report is missing extended-route recorded-input checks.")
+
+    backends = set()
+    input_script_names = set()
+    for check in checks:
+        if not isinstance(check, dict):
+            raise ValueError(f"Vehicle runtime extended-route check is invalid: {check}")
+        backends.add(str(check.get("backend", "")))
+        input_script_names.add(str(check.get("inputScriptName", "")))
+        for key in (
+            "passed",
+            "inputRecorded",
+            "reverseCompleted",
+            "cameraResetApplied",
+            "readabilityStableAfterReset",
+            "roadEdgeCollisionBacked",
+        ):
+            if check.get(key) is not True:
+                raise ValueError(f"Vehicle runtime extended-route check failed {key}: {check}")
+        if str(check.get("authoredRouteId", "")) != "route-long-authored-driving-evidence":
+            raise ValueError(f"Vehicle runtime extended-route check has unexpected authored route id: {check}")
+        for key in (
+            "frameCount",
+            "routeProgressMeters",
+            "turnCount",
+            "reverseDistance",
+            "cameraResetFrame",
+            "maxCameraYawDeltaBeforeResetDegrees",
+            "maxCameraYawDeltaAfterResetDegrees",
+            "edgeContactFrames",
+            "blockedEdgeId",
+            "finalPosition",
+            "finalYawDegrees",
+        ):
+            if key not in check:
+                raise ValueError(f"Vehicle runtime extended-route check is missing telemetry: {check}")
+        authored_edge_ids = check.get("authoredEdgeIds")
+        if not isinstance(authored_edge_ids, list) or len(authored_edge_ids) < 2:
+            raise ValueError(f"Vehicle runtime extended-route check is missing authored edge ids: {check}")
+        if str(check.get("blockedEdgeId", "")) not in authored_edge_ids:
+            raise ValueError(f"Vehicle runtime extended-route check did not identify an authored edge response: {check}")
+        if int(check.get("frameCount", 0)) < 360:
+            raise ValueError(f"Vehicle runtime extended-route check is too short for a longer route: {check}")
+        if float(check.get("routeProgressMeters", 0.0)) < 12.0:
+            raise ValueError(f"Vehicle runtime extended-route check did not cover enough route distance: {check}")
+        if int(check.get("turnCount", 0)) < 3:
+            raise ValueError(f"Vehicle runtime extended-route check did not include several turns: {check}")
+        if float(check.get("reverseDistance", 0.0)) < 0.35:
+            raise ValueError(f"Vehicle runtime extended-route check did not include a meaningful reverse case: {check}")
+        if int(check.get("cameraResetFrame", 0)) <= 0:
+            raise ValueError(f"Vehicle runtime extended-route check did not record a camera reset frame: {check}")
+        if float(check.get("maxCameraYawDeltaAfterResetDegrees", 999.0)) > 18.0:
+            raise ValueError(f"Vehicle runtime extended-route camera readability after reset exceeded threshold: {check}")
+        if int(check.get("edgeContactFrames", 0)) <= 0:
+            raise ValueError(f"Vehicle runtime extended-route never exercised authored edge response: {check}")
+        if check.get("hitBounds") is True:
+            raise ValueError(f"Vehicle runtime extended-route check hit vehicle bounds: {check}")
+
+    if "deterministic" not in backends or "jolt" not in backends:
+        raise ValueError(f"Vehicle runtime extended-route checks must include deterministic and jolt backends: {sorted(backends)}")
+    if input_script_names != {"recorded-ferry-office-long-route-v1"}:
+        raise ValueError(f"Vehicle runtime extended-route checks must share the recorded input script: {sorted(input_script_names)}")
+    return checks
+
+
 def load_and_validate_report(report_path: pathlib.Path) -> dict[str, Any]:
     if not report_path.exists():
         raise FileNotFoundError(f"Vehicle runtime comparison report was not created: {report_path}")
@@ -361,6 +429,7 @@ def load_and_validate_report(report_path: pathlib.Path) -> dict[str, Any]:
         raise ValueError(f"Vehicle runtime report has invalid recommendation: {comparison.get('recommendation')}")
     _require_road_edge_checks(report)
     _require_broad_route_checks(report)
+    _require_extended_route_checks(report)
     return report
 
 
@@ -406,6 +475,7 @@ def run_vehicle_runtime(exe: pathlib.Path, scene: pathlib.Path, report_path: pat
         f"routePaceProbes={len(report['routePaceProbes'])}, "
         f"roadEdgeChecks={len(report['roadEdgeChecks'])}, "
         f"broadRouteChecks={len(report['broadRouteChecks'])}, "
+        f"extendedRouteChecks={len(report['extendedRouteChecks'])}, "
         f"maxPositionDelta={comparison['maxPositionDelta']:.2f}, "
         f"recommendation={comparison['recommendation']}, "
         f"report={report_path}"
