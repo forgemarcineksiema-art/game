@@ -2,6 +2,10 @@
 
 This roadmap is intentionally realistic. The project is a custom engine workbench, not an attempt to recreate the full scope of any commercial game.
 
+## Current World-Foundation Track
+
+Status: Veyra Reach now has its first authored runtime world foundation, Cinder Harbor Reach. The source of truth is `data/worlds/veyra_reach`, compiled by `tools/world_author.py` into `data/scenes/veyra_reach_pilot.scene.json`. The next roadmap step should improve authored world art/terrain/road presentation and keep the compiler/preview/capture proof intact, rather than returning to Ferry Office checklist growth.
+
 ## v0.1 - AI-Native Engine Foundation
 
 - CMake C++20 skeleton.

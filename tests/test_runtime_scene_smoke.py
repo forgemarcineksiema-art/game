@@ -1,4 +1,4 @@
-"""Unit tests for neutral runtime scene smoke validation."""
+﻿"""Unit tests for neutral runtime scene smoke validation."""
 
 from __future__ import annotations
 
@@ -60,8 +60,8 @@ class RuntimeSceneSmokeTests(unittest.TestCase):
             [
                 "[info] Loaded runtime scene data: veyra-reach-pilot from data/scenes/veyra_reach_pilot.scene.json",
                 "Scene: Veyra Reach Pilot Slice | role=target-slice-scaffold",
-                "Objective: Inspect the Pilot Service Marker to confirm the target-slice objective gate.",
-                "Status: targetObjective=inspect-pilot-service-marker complete=false | colliders=1 | interactables=1 | routes=1 | markers=2 | vehicle=none",
+                "Objective: Inspect the Cinder Harbor Marker to confirm the target-slice objective gate.",
+                "Status: targetObjective=inspect-cinder-cache-marker complete=false | colliders=1 | interactables=1 | routes=1 | markers=2 | vehicle=none",
             ]
         )
 

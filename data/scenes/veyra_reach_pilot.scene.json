@@ -1,187 +1,1521 @@
 {
-  "schemaVersion": 2,
-  "id": "veyra-reach-pilot",
-  "name": "Veyra Reach Pilot Slice",
-  "description": "Minimal target-slice scaffold for a non-Ferry Veyra Reach location. This is an authoring boundary proof, not a playable mission or production map.",
-  "sliceMetadata": {
-    "kind": "target-slice-scaffold",
-    "worldId": "veyra-reach",
-    "sliceId": "pilot-hillside-service-road",
-    "status": "scaffold-only",
-    "role": "first real target slice boundary outside Ferry Office",
-    "intent": "Prove where surface, road, collision, marker, and authoring metadata can live before adding new content.",
-    "surfaceTags": ["wet-asphalt", "hillside-ground", "service-concrete"],
-    "roadTags": ["narrow-service-road", "hillside-approach", "no-traffic"],
-    "deferredSystems": ["terrain-mesh", "road-spline", "mission-framework", "npc-ai", "traffic", "save-load", "production-materials"],
-    "collisionPolicy": {
-      "static": "AABB placeholders only",
-      "dynamic": "deferred",
-      "vehicle": "metadata only; no live route or vehicle spawn yet"
+  "colliders": [
+    {
+      "blocksPlayer": true,
+      "center": [
+        2.0,
+        0.4,
+        -0.8
+      ],
+      "halfExtents": [
+        0.25,
+        0.4,
+        2.2
+      ],
+      "id": "pilot-road-edge-collider",
+      "kind": "box"
     },
-    "authoringBoundaries": {
-      "allowedNow": ["scene identity", "player start", "surface intent", "road intent", "static collision placeholder", "route marker", "objective marker"],
-      "deferred": ["job chain", "new mission beat", "terrain system", "asset expansion", "renderer rewrite", "new runtime gameplay logic"],
-      "runtimeOwner": ["SceneLoader", "scene_data.py", "world_slice_report.py"]
+    {
+      "blocksPlayer": true,
+      "center": [
+        2.8,
+        0.42,
+        4.78
+      ],
+      "halfExtents": [
+        3.8,
+        0.42,
+        0.16
+      ],
+      "id": "stormwall-bend-shore-rail",
+      "kind": "box"
+    },
+    {
+      "blocksPlayer": true,
+      "center": [
+        -8.35,
+        0.55,
+        -0.75
+      ],
+      "halfExtents": [
+        0.2,
+        0.55,
+        3.2
+      ],
+      "id": "west-ferry-spur-boundary",
+      "kind": "box"
+    },
+    {
+      "blocksPlayer": true,
+      "center": [
+        6.92,
+        0.55,
+        2.45
+      ],
+      "halfExtents": [
+        0.2,
+        0.55,
+        1.9
+      ],
+      "id": "old-pump-cut-yard-wall",
+      "kind": "box"
+    },
+    {
+      "blocksPlayer": true,
+      "center": [
+        5.35,
+        0.55,
+        4.15
+      ],
+      "halfExtents": [
+        1.0,
+        0.55,
+        0.18
+      ],
+      "id": "reach-relay-hut-backstop",
+      "kind": "box"
+    },
+    {
+      "blocksPlayer": true,
+      "center": [
+        7.7,
+        0.55,
+        5.6
+      ],
+      "halfExtents": [
+        2.2,
+        0.55,
+        0.18
+      ],
+      "id": "harbor-overlook-drop-edge",
+      "kind": "box"
+    },
+    {
+      "blocksPlayer": true,
+      "center": [
+        0.38,
+        0.34,
+        1.05
+      ],
+      "halfExtents": [
+        0.55,
+        0.34,
+        0.42
+      ],
+      "id": "saltbreak-cache-crate-collision",
+      "kind": "box"
+    },
+    {
+      "blocksPlayer": true,
+      "center": [
+        -6.2,
+        0.42,
+        2.15
+      ],
+      "halfExtents": [
+        1.6,
+        0.42,
+        0.14
+      ],
+      "id": "low-beacon-turn-post-line",
+      "kind": "box"
     }
-  },
-  "units": {
-    "linear": "meter",
-    "upAxis": "Y",
-    "rightAxis": "X",
-    "forwardAxis": "Z",
-    "coordinateNotes": "Positions use engine Vec3 order [x, y, z]. This scaffold stays near origin and does not imply final geography."
-  },
+  ],
+  "description": "Generated runtime scene for Cinder Harbor Reach, the first authored Veyra world foundation.",
   "floorHeight": 0.0,
-  "playerStart": {
-    "id": "pilot-player-start",
-    "position": [-2.0, 0.0, -1.5],
-    "yawDegrees": 35.0
+  "generatedFrom": {
+    "areas": [
+      "data/worlds/veyra_reach/areas/cinder_harbor.area.json"
+    ],
+    "world": "data/worlds/veyra_reach/world.json"
   },
+  "id": "veyra-reach-pilot",
+  "interactables": [
+    {
+      "id": "cinder-cache-marker",
+      "message": "Cinder Harbor Reach confirmed as the first authored Veyra world foundation.",
+      "name": "Cinder Harbor Marker",
+      "position": [
+        -1.35,
+        0.5,
+        2.75
+      ],
+      "prompt": "Confirm Cinder Harbor Reach",
+      "radius": 1.2,
+      "type": "info"
+    },
+    {
+      "id": "suspicious-cargo-cache",
+      "message": "Suspicious cargo cache disturbed; local response triggered.",
+      "name": "Suspicious Cargo Cache",
+      "position": [
+        0.4,
+        0.5,
+        1.05
+      ],
+      "prompt": "Disturb Suspicious Cargo Cache",
+      "radius": 1.1,
+      "type": "info"
+    },
+    {
+      "id": "harbor-scar-escape-marker",
+      "message": "Harbor Scar escape route confirmed.",
+      "name": "Harbor Scar Escape Marker",
+      "position": [
+        -1.2,
+        0.5,
+        1.9
+      ],
+      "prompt": "Confirm Harbor Scar Escape",
+      "radius": 1.2,
+      "type": "info"
+    }
+  ],
+  "meshAssets": [
+    {
+      "format": "gltf",
+      "id": "unit-box-mesh",
+      "license": "project-original",
+      "path": "assets/models/unit_box.gltf",
+      "provenance": "Created in-repo for the v0.12 static mesh render spike.",
+      "units": "meter",
+      "upAxis": "Y"
+    },
+    {
+      "format": "gltf",
+      "id": "service-road-sign-mesh",
+      "license": "project-original",
+      "path": "assets/models/service_road_sign.gltf",
+      "provenance": "Generated in-repo for the v0.18 Tidebreak service-road prop style spike.",
+      "units": "meter",
+      "upAxis": "Y"
+    },
+    {
+      "format": "gltf",
+      "id": "road-edge-post-mesh",
+      "license": "project-original",
+      "path": "assets/models/road_edge_post.gltf",
+      "provenance": "Generated in-repo for the v0.18 Tidebreak service-road prop style spike.",
+      "units": "meter",
+      "upAxis": "Y"
+    },
+    {
+      "format": "gltf",
+      "id": "service-barrier-mesh",
+      "license": "project-original",
+      "path": "assets/models/service_barrier.gltf",
+      "provenance": "Generated in-repo for the v0.18 Tidebreak service-road prop style spike.",
+      "units": "meter",
+      "upAxis": "Y"
+    },
+    {
+      "format": "gltf",
+      "id": "utility-box-mesh",
+      "license": "project-original",
+      "path": "assets/models/utility_box.gltf",
+      "provenance": "Generated in-repo for the v0.18 Tidebreak service-road prop style spike.",
+      "units": "meter",
+      "upAxis": "Y"
+    },
+    {
+      "format": "gltf",
+      "id": "ferry-notice-board-mesh",
+      "license": "project-original",
+      "path": "assets/models/ferry_notice_board.gltf",
+      "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v0.20 fallback static prop because Blender was unavailable; not a Blender export.",
+      "units": "meter",
+      "upAxis": "Y"
+    },
+    {
+      "format": "gltf",
+      "id": "clearance-tag-mesh",
+      "license": "project-original",
+      "path": "assets/models/clearance_tag.gltf",
+      "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v0.58 fallback clearance-tag prop because Blender was unnecessary for this tiny endpoint cue; not a Blender export.",
+      "units": "meter",
+      "upAxis": "Y"
+    },
+    {
+      "format": "gltf",
+      "id": "blender-ferry-notice-board-mesh",
+      "license": "project-original",
+      "path": "assets/models/blender_ferry_notice_board.gltf",
+      "provenance": "Authored procedurally by tools/blender/create_tidebreak_notice_board.py and exported headlessly by Blender 5.1.1 during v0.20.1.",
+      "units": "meter",
+      "upAxis": "Y"
+    },
+    {
+      "format": "gltf",
+      "id": "blender-cable-reel-mesh",
+      "license": "project-original",
+      "path": "assets/models/blender_cable_reel.gltf",
+      "provenance": "Authored procedurally by tools/blender/create_tidebreak_cable_reel.py and exported headlessly by Blender 5.1.1 during v0.27.",
+      "units": "meter",
+      "upAxis": "Y"
+    },
+    {
+      "format": "gltf",
+      "id": "blender-wet-road-surface-mesh",
+      "license": "project-original",
+      "path": "assets/models/blender_wet_road_surface.gltf",
+      "provenance": "Authored procedurally by tools/blender/create_tidebreak_wet_road_surface.py and exported headlessly by Blender 5.1.1 during v0.42.",
+      "units": "meter",
+      "upAxis": "Y"
+    },
+    {
+      "format": "gltf",
+      "id": "blender-harbor-backdrop-mesh",
+      "license": "project-original",
+      "path": "assets/models/blender_harbor_backdrop.gltf",
+      "provenance": "Authored procedurally by tools/blender/create_tidebreak_harbor_backdrop.py and exported headlessly by Blender 5.1.1 during v0.43.",
+      "units": "meter",
+      "upAxis": "Y"
+    },
+    {
+      "format": "gltf",
+      "id": "blender-harbor-water-surface-mesh",
+      "license": "project-original",
+      "path": "assets/models/blender_harbor_water_surface.gltf",
+      "provenance": "Authored procedurally by tools/blender/create_tidebreak_harbor_water_surface.py and exported headlessly by Blender 5.1.1 during v0.44.",
+      "units": "meter",
+      "upAxis": "Y"
+    },
+    {
+      "format": "gltf",
+      "id": "ferry-office-canopy-mesh",
+      "license": "project-original",
+      "path": "assets/models/ferry_office_canopy.gltf",
+      "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v0.81 fallback Ferry Office canopy; not a Blender export.",
+      "units": "meter",
+      "upAxis": "Y"
+    },
+    {
+      "format": "gltf",
+      "id": "service-yard-cart-body-mesh",
+      "license": "project-original",
+      "path": "assets/models/service_yard_cart_body.gltf",
+      "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v0.84 fallback service-yard cart body; not a Blender export.",
+      "units": "meter",
+      "upAxis": "Y"
+    },
+    {
+      "format": "gltf",
+      "id": "service-yard-cart-cabin-mesh",
+      "license": "project-original",
+      "path": "assets/models/service_yard_cart_cabin.gltf",
+      "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v0.84 fallback service-yard cart cabin; not a Blender export.",
+      "units": "meter",
+      "upAxis": "Y"
+    },
+    {
+      "format": "gltf",
+      "id": "service-yard-cart-wheel-mesh",
+      "license": "project-original",
+      "path": "assets/models/service_yard_cart_wheel.gltf",
+      "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v0.84 fallback rounded wheel; not a Blender export.",
+      "units": "meter",
+      "upAxis": "Y"
+    },
+    {
+      "format": "gltf",
+      "id": "ferry-office-service-gate-mesh",
+      "license": "project-original",
+      "path": "assets/models/ferry_office_service_gate.gltf",
+      "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v0.85 fallback Ferry Office service gate; not a Blender export.",
+      "units": "meter",
+      "upAxis": "Y"
+    },
+    {
+      "format": "gltf",
+      "id": "ferry-office-facade-frame-mesh",
+      "license": "project-original",
+      "path": "assets/models/ferry_office_facade_frame.gltf",
+      "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v0.87 fallback Ferry Office facade frame; not a Blender export.",
+      "units": "meter",
+      "upAxis": "Y"
+    },
+    {
+      "format": "gltf",
+      "id": "ferry-office-sign-panel-mesh",
+      "license": "project-original",
+      "path": "assets/models/ferry_office_sign_panel.gltf",
+      "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v0.88 fallback Ferry Office sign panel; not a Blender export.",
+      "units": "meter",
+      "upAxis": "Y"
+    },
+    {
+      "format": "gltf",
+      "id": "ferry-office-service-panel-mesh",
+      "license": "project-original",
+      "path": "assets/models/ferry_office_service_panel.gltf",
+      "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v0.93 fallback Ferry Office service panel; not a Blender export.",
+      "units": "meter",
+      "upAxis": "Y"
+    }
+  ],
+  "meshInstances": [
+    {
+      "assetId": "blender-wet-road-surface-mesh",
+      "colorKey": "dark-service-asphalt",
+      "id": "mesh-greywinch-road-surface-a",
+      "position": [
+        -4.9,
+        0.03,
+        -3.15
+      ],
+      "scale": [
+        2.8,
+        1.0,
+        2.4
+      ],
+      "yawDegrees": 35.0
+    },
+    {
+      "assetId": "blender-wet-road-surface-mesh",
+      "colorKey": "dark-service-asphalt",
+      "id": "mesh-greywinch-road-surface-b",
+      "position": [
+        -1.95,
+        0.03,
+        -1.55
+      ],
+      "scale": [
+        2.6,
+        1.0,
+        2.1
+      ],
+      "yawDegrees": 62.0
+    },
+    {
+      "assetId": "blender-wet-road-surface-mesh",
+      "colorKey": "dark-service-asphalt",
+      "id": "mesh-stormwall-bend-road-surface",
+      "position": [
+        1.0,
+        0.03,
+        -0.85
+      ],
+      "scale": [
+        3.0,
+        1.0,
+        1.6
+      ],
+      "yawDegrees": 88.0
+    },
+    {
+      "assetId": "blender-wet-road-surface-mesh",
+      "colorKey": "dark-service-asphalt",
+      "id": "mesh-old-pump-road-surface",
+      "position": [
+        4.2,
+        0.03,
+        1.45
+      ],
+      "scale": [
+        2.6,
+        1.0,
+        2.0
+      ],
+      "yawDegrees": 42.0
+    },
+    {
+      "assetId": "blender-wet-road-surface-mesh",
+      "colorKey": "dark-service-asphalt",
+      "id": "mesh-causeway-spur-surface",
+      "position": [
+        -1.65,
+        0.03,
+        2.2
+      ],
+      "scale": [
+        2.1,
+        1.0,
+        2.8
+      ],
+      "yawDegrees": -12.0
+    },
+    {
+      "assetId": "blender-wet-road-surface-mesh",
+      "colorKey": "dark-service-asphalt",
+      "id": "mesh-low-beacon-escape-surface",
+      "position": [
+        -4.45,
+        0.04,
+        1.1
+      ],
+      "scale": [
+        2.0,
+        1.0,
+        2.8
+      ],
+      "yawDegrees": 85.0
+    },
+    {
+      "assetId": "blender-harbor-water-surface-mesh",
+      "colorKey": "deep-harbor-blue",
+      "id": "mesh-cinder-harbor-water-near",
+      "position": [
+        -2.4,
+        0.0,
+        6.75
+      ],
+      "scale": [
+        5.0,
+        1.0,
+        2.0
+      ],
+      "yawDegrees": 0.0
+    },
+    {
+      "assetId": "blender-harbor-water-surface-mesh",
+      "colorKey": "deep-harbor-blue",
+      "id": "mesh-cinder-harbor-water-east",
+      "position": [
+        4.4,
+        0.0,
+        6.85
+      ],
+      "scale": [
+        5.0,
+        1.0,
+        2.0
+      ],
+      "yawDegrees": 0.0
+    },
+    {
+      "assetId": "blender-harbor-backdrop-mesh",
+      "colorKey": "misty-island-ground",
+      "id": "mesh-veyra-horizon-west",
+      "position": [
+        -3.5,
+        0.05,
+        8.55
+      ],
+      "scale": [
+        6.0,
+        1.0,
+        2.0
+      ],
+      "yawDegrees": 0.0
+    },
+    {
+      "assetId": "blender-harbor-backdrop-mesh",
+      "colorKey": "misty-island-ground",
+      "id": "mesh-veyra-horizon-east",
+      "position": [
+        4.2,
+        0.05,
+        8.62
+      ],
+      "scale": [
+        6.0,
+        1.0,
+        2.4
+      ],
+      "yawDegrees": 0.0
+    },
+    {
+      "assetId": "utility-box-mesh",
+      "colorKey": "oxidized-service-green",
+      "id": "mesh-reach-relay-hut-body",
+      "position": [
+        5.3,
+        0.04,
+        3.15
+      ],
+      "scale": [
+        1.6,
+        1.25,
+        1.3
+      ],
+      "yawDegrees": -22.0
+    },
+    {
+      "assetId": "ferry-office-canopy-mesh",
+      "colorKey": "rusted-roof-trim",
+      "id": "mesh-reach-relay-hut-roof",
+      "position": [
+        5.3,
+        1.05,
+        3.15
+      ],
+      "scale": [
+        0.45,
+        0.45,
+        0.35
+      ],
+      "yawDegrees": -22.0
+    },
+    {
+      "assetId": "unit-box-mesh",
+      "colorKey": "mossy-service-crate",
+      "id": "mesh-suspicious-cargo-cache",
+      "position": [
+        0.38,
+        0.34,
+        1.05
+      ],
+      "scale": [
+        1.1,
+        0.68,
+        0.84
+      ],
+      "yawDegrees": 18.0
+    },
+    {
+      "assetId": "service-barrier-mesh",
+      "colorKey": "warning-service-orange",
+      "id": "mesh-suspicious-cache-cover",
+      "position": [
+        0.35,
+        0.82,
+        1.02
+      ],
+      "scale": [
+        0.85,
+        0.55,
+        0.75
+      ],
+      "yawDegrees": 18.0
+    },
+    {
+      "assetId": "service-road-sign-mesh",
+      "colorKey": "ferry-route-sign-blue",
+      "id": "mesh-harbor-scar-overlook-sign",
+      "position": [
+        7.0,
+        0.02,
+        4.8
+      ],
+      "scale": [
+        1.2,
+        1.15,
+        1.0
+      ],
+      "yawDegrees": -45.0
+    },
+    {
+      "assetId": "service-road-sign-mesh",
+      "colorKey": "ferry-route-sign-blue",
+      "id": "mesh-low-beacon-turn-sign",
+      "position": [
+        -6.25,
+        0.02,
+        1.9
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "yawDegrees": 75.0
+    },
+    {
+      "assetId": "road-edge-post-mesh",
+      "colorKey": "salt-white-road-post",
+      "id": "mesh-stormwall-post-a",
+      "position": [
+        1.9,
+        0.02,
+        1.15
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "yawDegrees": 0.0
+    },
+    {
+      "assetId": "road-edge-post-mesh",
+      "colorKey": "salt-white-road-post",
+      "id": "mesh-stormwall-post-b",
+      "position": [
+        2.05,
+        0.02,
+        -0.3
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "yawDegrees": 0.0
+    },
+    {
+      "assetId": "road-edge-post-mesh",
+      "colorKey": "salt-white-road-post",
+      "id": "mesh-stormwall-post-c",
+      "position": [
+        2.1,
+        0.02,
+        -1.75
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "yawDegrees": 0.0
+    },
+    {
+      "assetId": "service-barrier-mesh",
+      "colorKey": "weathered-yard-rail",
+      "id": "mesh-shore-rail-a",
+      "position": [
+        0.3,
+        0.02,
+        4.7
+      ],
+      "scale": [
+        1.4,
+        1.0,
+        1.0
+      ],
+      "yawDegrees": 90.0
+    },
+    {
+      "assetId": "service-barrier-mesh",
+      "colorKey": "weathered-yard-rail",
+      "id": "mesh-shore-rail-b",
+      "position": [
+        3.5,
+        0.02,
+        4.75
+      ],
+      "scale": [
+        1.4,
+        1.0,
+        1.0
+      ],
+      "yawDegrees": 90.0
+    },
+    {
+      "assetId": "blender-cable-reel-mesh",
+      "colorKey": "weathered-yard-rail",
+      "id": "mesh-old-pump-cable-reel",
+      "position": [
+        4.45,
+        0.03,
+        2.2
+      ],
+      "scale": [
+        0.9,
+        0.9,
+        0.9
+      ],
+      "yawDegrees": 35.0
+    },
+    {
+      "assetId": "ferry-office-service-panel-mesh",
+      "colorKey": "oxidized-service-green",
+      "id": "mesh-old-pump-service-panel",
+      "position": [
+        5.7,
+        0.05,
+        2.25
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "yawDegrees": -75.0
+    },
+    {
+      "assetId": "ferry-notice-board-mesh",
+      "colorKey": "wet-timber",
+      "id": "mesh-cracked-causeway-board",
+      "position": [
+        -2.75,
+        0.03,
+        3.85
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "yawDegrees": -35.0
+    }
+  ],
+  "name": "Veyra Reach - Cinder Harbor",
+  "objectiveMarkers": [
+    {
+      "id": "veyra-start-marker",
+      "label": "Greywinch Service Road Start",
+      "position": [
+        -6.0,
+        0.2,
+        -4.0
+      ]
+    },
+    {
+      "id": "stormwall-bend-marker",
+      "label": "Stormwall Bend",
+      "position": [
+        2.0,
+        0.2,
+        -0.8
+      ]
+    },
+    {
+      "id": "saltbreak-layby-marker",
+      "label": "Saltbreak Lay-by",
+      "position": [
+        0.6,
+        0.2,
+        1.1
+      ]
+    },
+    {
+      "id": "cinder-cache-objective-marker",
+      "label": "Cinder Harbor Marker",
+      "position": [
+        -1.35,
+        0.2,
+        2.75
+      ]
+    },
+    {
+      "id": "suspicious-cargo-marker",
+      "label": "Suspicious Cargo Cache",
+      "position": [
+        0.4,
+        0.2,
+        1.05
+      ]
+    },
+    {
+      "id": "harbor-scar-escape-objective-marker",
+      "label": "Harbor Scar Escape Marker",
+      "position": [
+        -1.2,
+        0.2,
+        1.9
+      ]
+    },
+    {
+      "id": "old-pump-cut-marker",
+      "label": "Old Pump Cut",
+      "position": [
+        4.85,
+        0.2,
+        2.35
+      ]
+    },
+    {
+      "id": "reach-relay-hut-marker",
+      "label": "Reach Relay Hut",
+      "position": [
+        5.3,
+        0.2,
+        3.15
+      ]
+    },
+    {
+      "id": "cracked-causeway-marker",
+      "label": "Cracked Causeway Spur",
+      "position": [
+        -1.9,
+        0.2,
+        3.35
+      ]
+    },
+    {
+      "id": "low-beacon-turn-marker",
+      "label": "Low Beacon Turn",
+      "position": [
+        -6.2,
+        0.2,
+        1.2
+      ]
+    },
+    {
+      "id": "harbor-scar-overlook-marker",
+      "label": "Harbor Scar Overlook",
+      "position": [
+        7.4,
+        0.2,
+        5.0
+      ]
+    },
+    {
+      "id": "west-ferry-spur-marker",
+      "label": "West Ferry Spur",
+      "position": [
+        -7.4,
+        0.2,
+        -0.5
+      ]
+    }
+  ],
+  "playerStart": {
+    "id": "veyra-player-start",
+    "position": [
+      -6.0,
+      0.0,
+      -4.0
+    ],
+    "yawDegrees": 38.0
+  },
+  "routeMarkers": [
+    {
+      "from": "veyra-start-marker",
+      "id": "route-veyra-start-to-stormwall",
+      "points": [
+        [
+          -6.0,
+          0.05,
+          -4.0
+        ],
+        [
+          -3.4,
+          0.05,
+          -2.2
+        ],
+        [
+          -0.7,
+          0.05,
+          -0.9
+        ],
+        [
+          2.0,
+          0.05,
+          -0.8
+        ]
+      ],
+      "to": "stormwall-bend-marker"
+    },
+    {
+      "from": "stormwall-bend-marker",
+      "id": "route-stormwall-to-saltbreak-cache",
+      "points": [
+        [
+          2.0,
+          0.05,
+          -0.8
+        ],
+        [
+          1.2,
+          0.05,
+          0.2
+        ],
+        [
+          0.4,
+          0.05,
+          1.05
+        ]
+      ],
+      "to": "suspicious-cargo-cache"
+    },
+    {
+      "from": "suspicious-cargo-cache",
+      "id": "route-cache-to-harbor-scar-escape",
+      "points": [
+        [
+          0.4,
+          0.05,
+          1.05
+        ],
+        [
+          -0.45,
+          0.05,
+          1.55
+        ],
+        [
+          -1.2,
+          0.05,
+          1.9
+        ]
+      ],
+      "to": "harbor-scar-escape-marker"
+    },
+    {
+      "from": "harbor-scar-escape-marker",
+      "id": "route-cache-to-cinder-confirm",
+      "points": [
+        [
+          -1.2,
+          0.05,
+          1.9
+        ],
+        [
+          -1.3,
+          0.05,
+          2.35
+        ],
+        [
+          -1.35,
+          0.05,
+          2.75
+        ]
+      ],
+      "to": "cinder-cache-marker"
+    },
+    {
+      "from": "stormwall-bend-marker",
+      "id": "route-stormwall-to-old-pump-cut",
+      "points": [
+        [
+          2.0,
+          0.05,
+          -0.8
+        ],
+        [
+          3.4,
+          0.05,
+          0.55
+        ],
+        [
+          4.85,
+          0.05,
+          2.35
+        ]
+      ],
+      "to": "old-pump-cut-marker"
+    },
+    {
+      "from": "cracked-causeway-marker",
+      "id": "route-causeway-to-low-beacon",
+      "points": [
+        [
+          -1.9,
+          0.05,
+          3.35
+        ],
+        [
+          -3.5,
+          0.05,
+          1.0
+        ],
+        [
+          -6.2,
+          0.05,
+          1.2
+        ]
+      ],
+      "to": "low-beacon-turn-marker"
+    }
+  ],
   "scaleReference": {
     "playerHeight": 1.8,
     "playerRadius": 0.35,
     "vehicleLaneWidthMin": 3.0
   },
-  "targetObjective": {
-    "id": "inspect-pilot-service-marker",
-    "objectiveText": "Inspect the Pilot Service Marker to confirm the target-slice objective gate.",
-    "debugObjectiveText": "Inspect pilot-service-marker to complete the authored target-slice objective.",
-    "completionInteractableName": "Pilot Service Marker",
-    "completionSummary": "consequence=pilot-marker-confirmed",
-    "completionEventText": "Target-slice objective confirmed: pilot-service-marker"
-  },
-  "targetActionResponse": {
-    "id": "pilot-cache-risk-response",
-    "riskyInteractableName": "Suspicious Cargo Cache",
-    "responseStateId": "pilot-local-alerted",
-    "responseSummary": "response=pilot-local-alerted",
-    "responseEventText": "Suspicious cargo cache disturbed; local response triggered.",
-    "exitInteractableName": "Pilot Escape Marker",
-    "exitRecoveryStateId": "pilot-escape-confirmed",
-    "exitSummary": "exit=pilot-escape-confirmed",
-    "exitEventText": "Pilot escape route confirmed."
-  },
   "sceneMaterials": [
     {
+      "baseColor": [
+        0.2,
+        0.28,
+        0.24,
+        1.0
+      ],
       "key": "misty-island-ground",
-      "response": "matte",
-      "baseColor": [0.20, 0.28, 0.24, 1.0]
+      "response": "matte"
     },
     {
+      "baseColor": [
+        0.12,
+        0.15,
+        0.15,
+        1.0
+      ],
       "key": "dark-service-asphalt",
-      "response": "wet",
-      "baseColor": [0.15, 0.18, 0.17, 1.0]
+      "response": "wet"
     },
     {
+      "baseColor": [
+        0.24,
+        0.29,
+        0.28,
+        1.0
+      ],
       "key": "damp-service-concrete",
-      "response": "wet",
-      "baseColor": [0.18, 0.23, 0.22, 1.0]
+      "response": "wet"
     },
     {
-      "key": "warning-service-orange",
-      "response": "painted",
-      "baseColor": [0.82, 0.35, 0.12, 1.0]
-    }
-  ],
-  "colliders": [
+      "baseColor": [
+        0.08,
+        0.25,
+        0.33,
+        1.0
+      ],
+      "key": "deep-harbor-blue",
+      "response": "wet"
+    },
     {
-      "id": "pilot-road-edge-collider",
-      "kind": "box",
-      "center": [2.0, 0.4, 1.8],
-      "halfExtents": [0.25, 0.4, 3.2],
-      "blocksPlayer": true
+      "baseColor": [
+        0.47,
+        0.52,
+        0.45,
+        1.0
+      ],
+      "key": "weathered-yard-rail",
+      "response": "painted"
+    },
+    {
+      "baseColor": [
+        0.76,
+        0.77,
+        0.7,
+        1.0
+      ],
+      "key": "salt-white-road-post",
+      "response": "painted"
+    },
+    {
+      "baseColor": [
+        0.82,
+        0.35,
+        0.12,
+        1.0
+      ],
+      "key": "warning-service-orange",
+      "response": "painted"
+    },
+    {
+      "baseColor": [
+        0.22,
+        0.47,
+        0.38,
+        1.0
+      ],
+      "key": "oxidized-service-green",
+      "response": "painted"
+    },
+    {
+      "baseColor": [
+        0.24,
+        0.34,
+        0.18,
+        1.0
+      ],
+      "key": "mossy-service-crate",
+      "response": "matte"
+    },
+    {
+      "baseColor": [
+        0.3,
+        0.22,
+        0.16,
+        1.0
+      ],
+      "key": "wet-timber",
+      "response": "wet"
+    },
+    {
+      "baseColor": [
+        0.1,
+        0.26,
+        0.48,
+        1.0
+      ],
+      "key": "ferry-route-sign-blue",
+      "response": "painted"
+    },
+    {
+      "baseColor": [
+        0.5,
+        0.2,
+        0.1,
+        1.0
+      ],
+      "key": "rusted-roof-trim",
+      "response": "painted"
     }
   ],
+  "schemaVersion": 2,
+  "sliceMetadata": {
+    "authoringBoundaries": {
+      "allowedNow": [
+        "world source data",
+        "generated runtime scene",
+        "terrain patches",
+        "road ribbons",
+        "road-edge collision",
+        "landmark art anchors",
+        "target action response"
+      ],
+      "deferred": [
+        "mission framework",
+        "traffic",
+        "NPCs",
+        "police AI",
+        "terrain engine",
+        "PBR materials",
+        "streaming world"
+      ],
+      "runtimeOwner": [
+        "tools/world_author.py",
+        "SceneLoader",
+        "scene_data.py",
+        "runtime_scene_smoke.py"
+      ]
+    },
+    "collisionPolicy": {
+      "dynamic": "deferred",
+      "static": "AABB colliders generated from road-edge, yard, shoreline, and boundary authoring.",
+      "vehicle": "route/road intent only; no Veyra live vehicle spawn in this milestone"
+    },
+    "deferredSystems": [
+      "heightfield-terrain",
+      "road-spline-mesh",
+      "traffic",
+      "npc-ai",
+      "police-ai",
+      "combat",
+      "save-load",
+      "production-materials"
+    ],
+    "intent": "Prove terrain, roads, shoreline, landmarks, risky target, escape route, and generated source-of-truth workflow.",
+    "kind": "target-slice-scaffold",
+    "roadTags": [
+      "connected-service-road",
+      "hillside-bend",
+      "narrow-shore-edge",
+      "escape-spur"
+    ],
+    "role": "first runtime-visible authored Veyra Reach location",
+    "sliceId": "cinder-harbor-reach",
+    "status": "authored-world-foundation",
+    "surfaceTags": [
+      "wet-asphalt",
+      "hillside-ground",
+      "service-concrete",
+      "rock-shore",
+      "harbor-water"
+    ],
+    "worldId": "veyra-reach"
+  },
+  "targetActionResponse": {
+    "exitEventText": "Harbor Scar escape route confirmed.",
+    "exitInteractableName": "Harbor Scar Escape Marker",
+    "exitRecoveryStateId": "harbor-scar-escape-confirmed",
+    "exitSummary": "exit=harbor-scar-escape-confirmed",
+    "id": "cinder-cache-risk-response",
+    "responseEventText": "Suspicious cargo cache disturbed; Cinder Harbor local response triggered.",
+    "responseStateId": "cinder-local-alerted",
+    "responseSummary": "response=cinder-local-alerted",
+    "riskyInteractableName": "Suspicious Cargo Cache"
+  },
+  "targetObjective": {
+    "completionEventText": "Target-slice objective confirmed: cinder-harbor-marker",
+    "completionInteractableName": "Cinder Harbor Marker",
+    "completionSummary": "consequence=cinder-harbor-confirmed",
+    "debugObjectiveText": "Trigger the Cinder Harbor target marker after risky-action and escape proof.",
+    "id": "inspect-cinder-cache-marker",
+    "objectiveText": "Reach Cinder Harbor, read the cargo cache, and confirm the authored Veyra world foundation."
+  },
+  "traversalAffordances": [],
+  "units": {
+    "coordinateNotes": "Positions use engine Vec3 order [x, y, z]. This generated scene stays near origin but covers a larger authored pilot area than the old scaffold.",
+    "forwardAxis": "Z",
+    "linear": "meter",
+    "rightAxis": "X",
+    "upAxis": "Y"
+  },
+  "vehicles": [],
   "visualPlaceholders": [
     {
-      "id": "pilot-hillside-ground-pad",
-      "role": "target-slice-ground-intent",
-      "center": [0.0, -0.03, 0.0],
-      "halfExtents": [4.0, 0.03, 3.0],
-      "colorKey": "misty-island-ground"
+      "center": [
+        -5.4,
+        -0.04,
+        -1.8
+      ],
+      "colorKey": "misty-island-ground",
+      "halfExtents": [
+        4.2,
+        0.04,
+        4.5
+      ],
+      "id": "veyra-hillside-ground-west",
+      "role": "veyra-terrain-brush-hillside-west"
     },
     {
-      "id": "pilot-service-road-pad",
-      "role": "target-slice-road-intent",
-      "center": [0.6, 0.01, 0.0],
-      "halfExtents": [1.35, 0.02, 3.0],
-      "colorKey": "dark-service-asphalt"
+      "center": [
+        3.9,
+        -0.04,
+        1.7
+      ],
+      "colorKey": "misty-island-ground",
+      "halfExtents": [
+        5.2,
+        0.04,
+        4.4
+      ],
+      "id": "veyra-hillside-ground-east",
+      "role": "veyra-terrain-brush-hillside-east"
     },
     {
-      "id": "pilot-road-edge-warning",
-      "role": "target-slice-road-edge-intent",
-      "center": [2.0, 0.45, 1.8],
-      "halfExtents": [0.18, 0.45, 3.0],
-      "colorKey": "warning-service-orange"
-    }
-  ],
-  "meshAssets": [],
-  "meshInstances": [],
-  "interactables": [
-    {
-      "id": "pilot-service-marker",
-      "name": "Pilot Service Marker",
-      "prompt": "Inspect Pilot Slice Marker",
-      "type": "info",
-      "position": [1.0, 0.5, 2.4],
-      "radius": 1.2,
-      "message": "Pilot slice marker inspected; target-slice objective gate confirmed."
+      "center": [
+        0.55,
+        -0.01,
+        1.18
+      ],
+      "colorKey": "damp-service-concrete",
+      "halfExtents": [
+        1.65,
+        0.03,
+        1.12
+      ],
+      "id": "saltbreak-layby-concrete",
+      "role": "veyra-terrain-Saltbreak-Lay-by-concrete"
     },
     {
-      "id": "pilot-suspicious-cargo-cache",
-      "name": "Suspicious Cargo Cache",
-      "prompt": "Disturb Suspicious Cargo Cache",
-      "type": "info",
-      "position": [0.4, 0.5, 1.05],
-      "radius": 1.1,
-      "message": "Suspicious cargo cache disturbed; local response triggered."
+      "center": [
+        4.9,
+        -0.01,
+        2.5
+      ],
+      "colorKey": "damp-service-concrete",
+      "halfExtents": [
+        2.1,
+        0.03,
+        1.55
+      ],
+      "id": "old-pump-cut-yard",
+      "role": "veyra-terrain-Old-Pump-Cut-utility-yard"
     },
     {
-      "id": "pilot-escape-marker",
-      "name": "Pilot Escape Marker",
-      "prompt": "Confirm Pilot Escape Route",
-      "type": "info",
-      "position": [-1.2, 0.5, 1.9],
-      "radius": 1.2,
-      "message": "Pilot escape route confirmed."
-    }
-  ],
-  "traversalAffordances": [],
-  "vehicles": [],
-  "routeMarkers": [
-    {
-      "id": "route-pilot-start-to-service-marker",
-      "from": "pilot-start-marker",
-      "to": "pilot-service-marker",
-      "points": [
-        [-2.0, 0.05, -1.5],
-        [-0.5, 0.05, 0.0],
-        [0.4, 0.05, 1.05],
-        [-1.2, 0.05, 1.9],
-        [1.0, 0.05, 2.4]
-      ]
-    }
-  ],
-  "objectiveMarkers": [
-    {
-      "id": "pilot-start-marker",
-      "label": "Pilot Slice Start",
-      "position": [-2.0, 0.2, -1.5]
+      "center": [
+        1.6,
+        -0.02,
+        5.55
+      ],
+      "colorKey": "wet-timber",
+      "halfExtents": [
+        7.8,
+        0.04,
+        0.55
+      ],
+      "id": "harbor-rock-shore",
+      "role": "veyra-terrain-Harbor-Scar-shore-rock"
     },
     {
-      "id": "pilot-service-objective-marker",
-      "label": "Pilot Service Marker",
-      "position": [1.0, 0.2, 2.4]
+      "center": [
+        1.6,
+        -0.05,
+        7.0
+      ],
+      "colorKey": "deep-harbor-blue",
+      "halfExtents": [
+        8.3,
+        0.03,
+        1.25
+      ],
+      "id": "cinder-harbor-water",
+      "role": "veyra-terrain-Cinder-Harbor-water"
     },
     {
-      "id": "pilot-risky-action-marker",
-      "label": "Suspicious Cargo Cache",
-      "position": [0.4, 0.2, 1.05]
+      "center": [
+        1.8,
+        0.22,
+        8.7
+      ],
+      "colorKey": "misty-island-ground",
+      "halfExtents": [
+        8.8,
+        0.24,
+        0.18
+      ],
+      "id": "distant-veyra-horizon",
+      "role": "veyra-terrain-distant-Veyra-horizon"
     },
     {
-      "id": "pilot-exit-recovery-marker",
-      "label": "Pilot Escape Marker",
-      "position": [-1.2, 0.2, 1.9]
+      "center": [
+        -4.8,
+        0.0,
+        -3.2
+      ],
+      "colorKey": "dark-service-asphalt",
+      "halfExtents": [
+        2.8,
+        0.025,
+        2.4
+      ],
+      "id": "greywinch-service-road-surface-1",
+      "role": "veyra-road-ribbon"
+    },
+    {
+      "center": [
+        -2.05,
+        0.0,
+        -1.55
+      ],
+      "colorKey": "dark-service-asphalt",
+      "halfExtents": [
+        2.75,
+        0.025,
+        2.05
+      ],
+      "id": "greywinch-service-road-surface-2",
+      "role": "veyra-road-ribbon"
+    },
+    {
+      "center": [
+        0.6,
+        0.0,
+        -0.85
+      ],
+      "colorKey": "dark-service-asphalt",
+      "halfExtents": [
+        2.7,
+        0.025,
+        1.45
+      ],
+      "id": "greywinch-service-road-surface-3",
+      "role": "veyra-road-ribbon"
+    },
+    {
+      "center": [
+        3.05,
+        0.0,
+        -0.05
+      ],
+      "colorKey": "dark-service-asphalt",
+      "halfExtents": [
+        2.55,
+        0.025,
+        2.15
+      ],
+      "id": "greywinch-service-road-surface-4",
+      "role": "veyra-road-ribbon"
+    },
+    {
+      "center": [
+        -0.95,
+        0.0,
+        0.1
+      ],
+      "colorKey": "dark-service-asphalt",
+      "halfExtents": [
+        1.4,
+        0.025,
+        2.15
+      ],
+      "id": "cracked-causeway-spur-surface-1",
+      "role": "veyra-road-ribbon"
+    },
+    {
+      "center": [
+        -1.55,
+        0.0,
+        2.225
+      ],
+      "colorKey": "dark-service-asphalt",
+      "halfExtents": [
+        1.5,
+        0.025,
+        2.275
+      ],
+      "id": "cracked-causeway-spur-surface-2",
+      "role": "veyra-road-ribbon"
+    },
+    {
+      "center": [
+        -2.75,
+        0.0,
+        3.85
+      ],
+      "colorKey": "dark-service-asphalt",
+      "halfExtents": [
+        2.0,
+        0.025,
+        1.65
+      ],
+      "id": "cracked-causeway-spur-surface-3",
+      "role": "veyra-road-ribbon"
+    },
+    {
+      "center": [
+        2.7,
+        0.0,
+        -0.15
+      ],
+      "colorKey": "dark-service-asphalt",
+      "halfExtents": [
+        2.0,
+        0.025,
+        1.85
+      ],
+      "id": "old-pump-cut-access-surface-1",
+      "role": "veyra-road-ribbon"
+    },
+    {
+      "center": [
+        4.175,
+        0.0,
+        1.425
+      ],
+      "colorKey": "dark-service-asphalt",
+      "halfExtents": [
+        1.875,
+        0.025,
+        2.125
+      ],
+      "id": "old-pump-cut-access-surface-2",
+      "role": "veyra-road-ribbon"
+    },
+    {
+      "center": [
+        5.55,
+        0.0,
+        2.85
+      ],
+      "colorKey": "dark-service-asphalt",
+      "halfExtents": [
+        1.9,
+        0.025,
+        1.7
+      ],
+      "id": "old-pump-cut-access-surface-3",
+      "role": "veyra-road-ribbon"
+    },
+    {
+      "center": [
+        -2.35,
+        0.0,
+        1.05
+      ],
+      "colorKey": "dark-service-asphalt",
+      "halfExtents": [
+        2.2,
+        0.025,
+        1.1
+      ],
+      "id": "low-beacon-escape-route-surface-1",
+      "role": "veyra-road-ribbon"
+    },
+    {
+      "center": [
+        -4.625,
+        0.0,
+        1.175
+      ],
+      "colorKey": "dark-service-asphalt",
+      "halfExtents": [
+        2.175,
+        0.025,
+        1.225
+      ],
+      "id": "low-beacon-escape-route-surface-2",
+      "role": "veyra-road-ribbon"
+    },
+    {
+      "center": [
+        -6.375,
+        0.0,
+        0.8
+      ],
+      "colorKey": "dark-service-asphalt",
+      "halfExtents": [
+        1.675,
+        0.025,
+        1.6
+      ],
+      "id": "low-beacon-escape-route-surface-3",
+      "role": "veyra-road-ribbon"
     }
   ]
 }

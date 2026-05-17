@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """Run and validate the Veyra target-slice live objective acquisition QA."""
 
 from __future__ import annotations
@@ -18,15 +18,15 @@ SCENARIO = "veyra-target-objective-acquisition"
 SCHEMA = "v0.99-target-slice-objective-acquisition-qa"
 INPUT_SCRIPT_NAME = "recorded-veyra-target-objective-v1"
 SCENE_ID = "veyra-reach-pilot"
-OBJECTIVE_ID = "inspect-pilot-service-marker"
-FOCUS_NAME = "Pilot Service Marker"
-FOCUS_PROMPT = "Inspect Pilot Slice Marker"
+OBJECTIVE_ID = "inspect-cinder-cache-marker"
+FOCUS_NAME = "Cinder Harbor Marker"
+FOCUS_PROMPT = "Confirm Cinder Harbor Reach"
 CONTACT_COLLIDER_NAME = "pilot-road-edge-collider"
-RISKY_ACTION_ID = "pilot-cache-risk-response"
+RISKY_ACTION_ID = "cinder-cache-risk-response"
 RISKY_ACTION_NAME = "Suspicious Cargo Cache"
-LOCAL_RESPONSE_STATE_ID = "pilot-local-alerted"
-EXIT_RECOVERY_STATE_ID = "pilot-escape-confirmed"
-EXIT_RECOVERY_NAME = "Pilot Escape Marker"
+LOCAL_RESPONSE_STATE_ID = "cinder-local-alerted"
+EXIT_RECOVERY_STATE_ID = "harbor-scar-escape-confirmed"
+EXIT_RECOVERY_NAME = "Harbor Scar Escape Marker"
 FORBIDDEN_TERMS = runtime_scene_smoke.DEFAULT_FORBIDDEN_TARGET_SLICE_TERMS + ["Ferry Office"]
 
 
@@ -169,7 +169,7 @@ def load_and_validate_report(report_path: pathlib.Path) -> dict[str, Any]:
     ]:
         _require(expected in completion_summary, f"Target-slice completion summary is missing {expected}.")
     _require(
-        "pilot-service-marker" in completion_event_text,
+        "cinder-harbor-marker" in completion_event_text,
         f"Target-slice completion event does not name the authored marker: {completion_event_text}",
     )
 

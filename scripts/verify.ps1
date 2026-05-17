@@ -43,6 +43,16 @@ try {
         exit $LASTEXITCODE
     }
 
+    python tools\world_author.py --check
+    if ($LASTEXITCODE -ne 0) {
+        exit $LASTEXITCODE
+    }
+
+    python tools\world_author.py --preview-html build\world_preview\veyra_reach_preview.html --report-json build\world_preview\veyra_reach_report.json
+    if ($LASTEXITCODE -ne 0) {
+        exit $LASTEXITCODE
+    }
+
     python tools\validate_assets.py
     if ($LASTEXITCODE -ne 0) {
         exit $LASTEXITCODE

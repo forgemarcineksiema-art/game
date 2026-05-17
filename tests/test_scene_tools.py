@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """Tests for Tidebreak scene data tools."""
 
 from __future__ import annotations
@@ -33,7 +33,7 @@ class SceneToolTests(unittest.TestCase):
         self.assertEqual("veyra-reach-pilot", scene["id"])
         self.assertEqual("target-slice-scaffold", metadata["kind"])
         self.assertEqual("veyra-reach", metadata["worldId"])
-        self.assertEqual("pilot-hillside-service-road", metadata["sliceId"])
+        self.assertEqual("cinder-harbor-reach", metadata["sliceId"])
         self.assertIn("surfaceTags", metadata)
         self.assertIn("roadTags", metadata)
         self.assertIn("authoringBoundaries", metadata)
@@ -53,8 +53,8 @@ class SceneToolTests(unittest.TestCase):
         result = scene_data.validate_scene(scene)
 
         self.assertEqual([], result.errors)
-        self.assertEqual("inspect-pilot-service-marker", target_objective["id"])
-        self.assertEqual("Pilot Service Marker", target_objective["completionInteractableName"])
+        self.assertEqual("inspect-cinder-cache-marker", target_objective["id"])
+        self.assertEqual("Cinder Harbor Marker", target_objective["completionInteractableName"])
 
     def test_target_slice_objective_rejects_unknown_interactable_name(self) -> None:
         scene = scene_data.load_scene(self.pilot_scene_path)

@@ -2,6 +2,63 @@
 
 Last updated: 2026-05-17
 
+## Tidebreak World Foundation: Veyra Reach / Cinder Harbor Reach (2026-05-17)
+
+Goal:
+
+- Turn Veyra Reach from a target-slice scaffold into the first runtime-visible authored world foundation: Cinder Harbor Reach.
+- Make world/area authoring data the source of truth and keep `data\scenes\veyra_reach_pilot.scene.json` as a generated runtime artifact.
+
+Scope:
+
+- Added `data\worlds\veyra_reach\world.json` and `data\worlds\veyra_reach\areas\cinder_harbor.area.json`.
+- Added `tools\world_author.py` with deterministic compile, drift check, preview HTML, JSON report, and CLI.
+- Generated `data\scenes\veyra_reach_pilot.scene.json` with `generatedFrom`, 12 scene materials, 8 authored colliders, 20 visual placeholders, 20 mesh assets, 24 mesh instances, 3 interactables, 6 route markers, 12 objective markers, `targetObjective`, and `targetActionResponse`.
+- Added Veyra QA capture states: `veyra-start`, `veyra-road-network`, `veyra-shoreline-horizon`, `veyra-landmark-overlook`, and `veyra-collision-edge`.
+- Wired `world_author.py --check` and preview/report generation into `scripts\verify.ps1`; added world authoring files/tool to doctor/status checks.
+
+What is now real:
+
+- CONFIRMED: Cinder Harbor Reach is visible in runtime through authored terrain/road/shore/horizon/landmark placeholders and project-owned mesh assets.
+- CONFIRMED: The generated scene is not the manual source of truth; drift is detected by `python tools\world_author.py --check` and `python tests\test_world_author.py`.
+- CONFIRMED: Runtime capture states were applied and wrote BMPs under `build\captures`.
+- INFERRED: Veyra now has the first usable world-foundation pipeline for future region editing.
+
+Known limits:
+
+- CONFIRMED: Sky is still renderer clear color plus authored horizon/backdrop/water geometry, not a real skybox shader or atmosphere system.
+- CONFIRMED: Terrain and roads are authored patches/ribbons/placeholders, not heightfield terrain, splines, textures, PBR, traffic, AI, combat, or a city.
+- CONFIRMED: Existing project-original meshes are reused with authored placement/provenance; no new external/ripped assets were added.
+
+Capture/report artifacts:
+
+- CONFIRMED: `build\world_preview\veyra_reach_preview.html`.
+- CONFIRMED: `build\world_preview\veyra_reach_report.json`.
+- CONFIRMED: `build\runtime\veyra-reach-pilot-smoke-report.json`.
+- CONFIRMED: `build\captures\veyra_reach_capture_manifest.json`.
+- CONFIRMED: `build\captures\veyra-start.bmp`, `veyra-road-network.bmp`, `veyra-shoreline-horizon.bmp`, `veyra-landmark-overlook.bmp`, `veyra-collision-edge.bmp`, and `veyra-reach-pilot-runtime-smoke.bmp`.
+
+Validation snapshot:
+
+- GREEN: `python tests\test_world_author.py`.
+- GREEN: `python tests\test_scene_tools.py`.
+- GREEN: `python tests\test_runtime_scene_smoke.py`.
+- GREEN: `python tests\test_target_slice_objective_qa.py`.
+- GREEN: `python tools\world_author.py --check`.
+- GREEN: `python tools\world_author.py --preview-html build\world_preview\veyra_reach_preview.html --report-json build\world_preview\veyra_reach_report.json`.
+- GREEN: `python tools\validate_scene.py data\scenes\veyra_reach_pilot.scene.json`.
+- GREEN: `python tools\scale_audit.py data\scenes\veyra_reach_pilot.scene.json`.
+- GREEN: `python tools\mesh_report.py data\scenes\veyra_reach_pilot.scene.json`.
+- GREEN: `python tools\runtime_scene_smoke.py --exe build\windows-vs2022-debug\Debug\EngineApp.exe --scene data\scenes\veyra_reach_pilot.scene.json --renderer gdi --ui-mode playtest --capture-frame build\captures\veyra-reach-pilot-runtime-smoke.bmp --report-json build\runtime\veyra-reach-pilot-smoke-report.json`.
+- GREEN: `cmake --build --preset windows-vs2022-debug --target EngineCoreTests EngineApp`.
+- GREEN: `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`.
+- GREEN: `scripts\build.ps1`.
+- GREEN: `scripts\verify.ps1` passed with 15/15 CTest green, scene validation, world-author drift check, preview/report generation, asset validation, world/slice report, mesh report, and Veyra runtime smoke.
+
+Next recommended goal:
+
+- Replace the authored placeholder terrain/road ribbons with the first compact world-art mesh/material upgrade for Cinder Harbor Reach, while keeping `data\worlds\veyra_reach` as the source of truth.
+
 ## Veyra Risky Action Response Contract (2026-05-17)
 
 Goal:

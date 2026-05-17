@@ -1,6 +1,6 @@
 # Art Direction
 
-Last updated: 2026-05-16
+Last updated: 2026-05-17
 
 This document gives Tidebreak a practical visual target before real assets exist. It is not a final art bible and does not authorize final art, textures, materials, lighting, or a renderer overhaul.
 
@@ -19,6 +19,10 @@ Veyra Reach should suggest:
 - practical public buildings rather than glossy tourist spaces,
 - narrow roads, dock edges, service yards, hillside access paths,
 - a place that remembers repairs, shortcuts, blocked routes, and favors.
+
+Current runtime foundation: Cinder Harbor Reach is the first authored Veyra location. It should read as a coastal/industrial remote-crime edge: Greywinch Service Road, Saltbreak Lay-by, Stormwall Bend, Old Pump Cut, Reach Relay Hut, Cracked Causeway Spur, Low Beacon Turn, Harbor Scar Overlook, and West Ferry Spur. The current art is still placeholder-grade, but it must be composed as a place: connected roads, shore/water/backdrop, industrial silhouettes, road-edge posts/barriers, cargo/cache risk, and readable overlook/relay landmarks.
+
+The sky/horizon proof is currently a pale renderer clear color plus authored horizon, water, and backdrop geometry. Do not describe this as a real skybox, weather, lighting, or atmospheric renderer.
 
 ## Ferry Office Mood
 
@@ -80,6 +84,8 @@ For this project, "not placeholder-looking" first means:
 - readable route guidance,
 - coherent color keys,
 - no random shapes without purpose.
+
+For Cinder Harbor Reach specifically, a placeholder is acceptable only if it has authored identity and spatial purpose: terrain patch, road ribbon, shoreline/water/backdrop, road edge, utility/relay landmark, cargo/yard cue, or route/collision proof. Random debug boxes, isolated markers, and empty pads are not acceptable as the final result of a world-foundation goal.
 
 It does not yet mean final textures, hero assets, cinematic lighting, or detailed meshes.
 

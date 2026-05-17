@@ -546,6 +546,15 @@ void TestQaCaptureStateArgumentsSelectMidChainRouteState()
         "TestQaCaptureStateArgumentsSelectMidChainRouteState",
         "Config should preserve the requested vehicle capture state.");
 
+    const char* veyraArgv[] = {"EngineApp", "--qa-capture-state", "veyra-road-network"};
+    const auto veyraResult = engine::ParseArguments(3, veyraArgv);
+    Expect(veyraResult.errors.empty(),
+        "TestQaCaptureStateArgumentsSelectMidChainRouteState",
+        "QA capture state should accept the Veyra road-network scenario.");
+    Expect(veyraResult.config.qaCaptureState == "veyra-road-network",
+        "TestQaCaptureStateArgumentsSelectMidChainRouteState",
+        "Config should preserve the requested Veyra capture state.");
+
     const char* badArgv[] = {"EngineApp", "--qa-capture-state", "unknown"};
     const auto badResult = engine::ParseArguments(3, badArgv);
     Expect(!badResult.errors.empty(),
@@ -1279,13 +1288,13 @@ void TestSceneLoaderLoadsPilotTargetObjectiveDefinition()
     Expect(result.ok(),
         "TestSceneLoaderLoadsPilotTargetObjectiveDefinition",
         "Pilot target-slice scene JSON should load successfully.");
-    Expect(result.scene.targetObjective.id == "inspect-pilot-service-marker",
+    Expect(result.scene.targetObjective.id == "inspect-cinder-cache-marker",
         "TestSceneLoaderLoadsPilotTargetObjectiveDefinition",
         "Pilot target-slice should expose an authored objective id.");
-    Expect(result.scene.targetObjective.completionInteractableName == "Pilot Service Marker",
+    Expect(result.scene.targetObjective.completionInteractableName == "Cinder Harbor Marker",
         "TestSceneLoaderLoadsPilotTargetObjectiveDefinition",
         "Pilot target-slice objective should bind completion to an authored interactable name.");
-    Expect(result.scene.targetObjective.objectiveText.find("Pilot Service Marker") != std::string::npos,
+    Expect(result.scene.targetObjective.objectiveText.find("Cinder Harbor") != std::string::npos,
         "TestSceneLoaderLoadsPilotTargetObjectiveDefinition",
         "Pilot target-slice objective should be authored text, not a hardcoded neutral placeholder.");
 }
@@ -1297,16 +1306,16 @@ void TestSceneLoaderLoadsPilotTargetActionResponseDefinition()
     Expect(result.ok(),
         "TestSceneLoaderLoadsPilotTargetActionResponseDefinition",
         "Pilot target-slice scene JSON should load successfully.");
-    Expect(result.scene.targetActionResponse.id == "pilot-cache-risk-response",
+    Expect(result.scene.targetActionResponse.id == "cinder-cache-risk-response",
         "TestSceneLoaderLoadsPilotTargetActionResponseDefinition",
         "Pilot target-slice should expose an authored risky action response id.");
     Expect(result.scene.targetActionResponse.riskyInteractableName == "Suspicious Cargo Cache",
         "TestSceneLoaderLoadsPilotTargetActionResponseDefinition",
         "Pilot action response should bind the risky action to an authored interactable.");
-    Expect(result.scene.targetActionResponse.exitInteractableName == "Pilot Escape Marker",
+    Expect(result.scene.targetActionResponse.exitInteractableName == "Harbor Scar Escape Marker",
         "TestSceneLoaderLoadsPilotTargetActionResponseDefinition",
         "Pilot action response should bind recovery/exit to an authored interactable.");
-    Expect(result.scene.targetActionResponse.responseStateId == "pilot-local-alerted",
+    Expect(result.scene.targetActionResponse.responseStateId == "cinder-local-alerted",
         "TestSceneLoaderLoadsPilotTargetActionResponseDefinition",
         "Pilot action response should expose a local response state id.");
 }
@@ -1333,14 +1342,14 @@ void TestTargetSliceObjectiveRuntimeCompletesFromAuthoredInteractable()
         "Target-slice objective summary should report the incomplete state.");
 
     const TargetSliceObjectiveState complete =
-        BuildTargetSliceObjectiveState(result.scene, "Pilot Service Marker");
+        BuildTargetSliceObjectiveState(result.scene, "Cinder Harbor Marker");
     Expect(complete.complete,
         "TestTargetSliceObjectiveRuntimeCompletesFromAuthoredInteractable",
         "Target-slice objective should complete from the authored interactable name.");
     Expect(complete.completionSummary.find("complete=true") != std::string::npos,
         "TestTargetSliceObjectiveRuntimeCompletesFromAuthoredInteractable",
         "Target-slice objective summary should report the complete state.");
-    Expect(complete.completionEventText.find("pilot-service-marker") != std::string::npos,
+    Expect(complete.completionEventText.find("cinder-harbor-marker") != std::string::npos,
         "TestTargetSliceObjectiveRuntimeCompletesFromAuthoredInteractable",
         "Target-slice objective completion should expose authored consequence evidence.");
 }
@@ -1373,22 +1382,22 @@ void TestTargetSliceRuntimeTracksRiskyActionAndExitRecoverySeparately()
     Expect(!state.complete && !state.exitRecovered,
         "TestTargetSliceRuntimeTracksRiskyActionAndExitRecoverySeparately",
         "Risky action should not complete the target objective or exit recovery by itself.");
-    Expect(state.completionSummary.find("riskyAction=pilot-cache-risk-response") != std::string::npos,
+    Expect(state.completionSummary.find("riskyAction=cinder-cache-risk-response") != std::string::npos,
         "TestTargetSliceRuntimeTracksRiskyActionAndExitRecoverySeparately",
         "Target-slice summary should report the risky action id separately.");
-    Expect(state.completionSummary.find("responseState=pilot-local-alerted") != std::string::npos,
+    Expect(state.completionSummary.find("responseState=cinder-local-alerted") != std::string::npos,
         "TestTargetSliceRuntimeTracksRiskyActionAndExitRecoverySeparately",
         "Target-slice summary should report the local response state.");
 
     state = BuildTargetSliceObjectiveState(
         result.scene,
-        "Pilot Service Marker",
+        "Cinder Harbor Marker",
         "Suspicious Cargo Cache",
-        "Pilot Escape Marker");
+        "Harbor Scar Escape Marker");
     Expect(state.complete && state.riskyActionComplete && state.localResponseActive && state.exitRecovered,
         "TestTargetSliceRuntimeTracksRiskyActionAndExitRecoverySeparately",
         "Target-slice runtime should track objective completion, risky action, response, and exit recovery.");
-    Expect(state.completionSummary.find("exitRecovery=pilot-escape-confirmed") != std::string::npos,
+    Expect(state.completionSummary.find("exitRecovery=harbor-scar-escape-confirmed") != std::string::npos,
         "TestTargetSliceRuntimeTracksRiskyActionAndExitRecoverySeparately",
         "Target-slice summary should report exit/recovery evidence.");
 }
@@ -1407,13 +1416,13 @@ void TestPrototypeScenePilotSliceCompletesAuthoredObjectiveWithoutFerryOfficeJob
     Expect(!scene.isSliceComplete(),
         "TestPrototypeScenePilotSliceCompletesAuthoredObjectiveWithoutFerryOfficeJob",
         "Pilot target-slice should start incomplete.");
-    Expect(scene.currentJobObjectiveText().find("Pilot Service Marker") != std::string::npos,
+    Expect(scene.currentJobObjectiveText().find("Cinder Harbor") != std::string::npos,
         "TestPrototypeScenePilotSliceCompletesAuthoredObjectiveWithoutFerryOfficeJob",
         "Pilot target-slice should present authored objective text.");
 
     InteractionResult interaction;
     interaction.triggered = true;
-    interaction.name = "Pilot Service Marker";
+    interaction.name = "Cinder Harbor Marker";
     interaction.message = "Pilot marker inspected.";
     const bool changed = scene.applyInteractionResult(interaction);
 
@@ -1423,7 +1432,7 @@ void TestPrototypeScenePilotSliceCompletesAuthoredObjectiveWithoutFerryOfficeJob
     Expect(scene.isSliceComplete(),
         "TestPrototypeScenePilotSliceCompletesAuthoredObjectiveWithoutFerryOfficeJob",
         "Pilot target-slice should complete after the authored marker interaction.");
-    Expect(scene.completionSummary().find("targetObjective=inspect-pilot-service-marker") != std::string::npos,
+    Expect(scene.completionSummary().find("targetObjective=inspect-cinder-cache-marker") != std::string::npos,
         "TestPrototypeScenePilotSliceCompletesAuthoredObjectiveWithoutFerryOfficeJob",
         "Pilot target-slice completion summary should identify the authored target objective.");
     Expect(!scene.isJobComplete(),
@@ -1445,14 +1454,14 @@ void TestPrototypeScenePilotSliceRequiresRiskyActionBeforeActionResponseComplete
 
     InteractionResult objectiveInteraction;
     objectiveInteraction.triggered = true;
-    objectiveInteraction.name = "Pilot Service Marker";
+    objectiveInteraction.name = "Cinder Harbor Marker";
     objectiveInteraction.message = "Pilot marker inspected.";
     scene.applyInteractionResult(objectiveInteraction);
 
     Expect(scene.isSliceComplete(),
         "TestPrototypeScenePilotSliceRequiresRiskyActionBeforeActionResponseComplete",
         "The target objective can still complete through its authored marker.");
-    Expect(scene.completionSummary().find("riskyAction=pilot-cache-risk-response complete=false") != std::string::npos,
+    Expect(scene.completionSummary().find("riskyAction=cinder-cache-risk-response complete=false") != std::string::npos,
         "TestPrototypeScenePilotSliceRequiresRiskyActionBeforeActionResponseComplete",
         "Objective completion alone must not claim risky action response completion.");
 
@@ -1462,17 +1471,17 @@ void TestPrototypeScenePilotSliceRequiresRiskyActionBeforeActionResponseComplete
     riskyInteraction.message = "Cargo cache disturbed.";
     scene.applyInteractionResult(riskyInteraction);
 
-    Expect(scene.completionSummary().find("responseState=pilot-local-alerted active=true") != std::string::npos,
+    Expect(scene.completionSummary().find("responseState=cinder-local-alerted active=true") != std::string::npos,
         "TestPrototypeScenePilotSliceRequiresRiskyActionBeforeActionResponseComplete",
         "Risky action should activate local response state separately from objective completion.");
 
     InteractionResult exitInteraction;
     exitInteraction.triggered = true;
-    exitInteraction.name = "Pilot Escape Marker";
+    exitInteraction.name = "Harbor Scar Escape Marker";
     exitInteraction.message = "Escape route confirmed.";
     scene.applyInteractionResult(exitInteraction);
 
-    Expect(scene.completionSummary().find("exitRecovery=pilot-escape-confirmed complete=true") != std::string::npos,
+    Expect(scene.completionSummary().find("exitRecovery=harbor-scar-escape-confirmed complete=true") != std::string::npos,
         "TestPrototypeScenePilotSliceRequiresRiskyActionBeforeActionResponseComplete",
         "Exit/recovery should be reported after the authored escape marker.");
     Expect(!scene.isJobComplete(),
@@ -1859,7 +1868,7 @@ void TestNeutralSceneRuntimeSurfaceBuildsPresentationWithoutFerryOfficeTerms()
 {
     NeutralSceneRuntimeView view;
     view.sceneDefinitionLoaded = true;
-    view.sceneName = "Veyra Reach Pilot Slice";
+    view.sceneName = "Veyra Reach - Cinder Harbor";
     view.sceneRole = "target-slice-scaffold";
     view.objectiveText = "Inspect neutral slice markers; no authored job is active.";
     view.colliderCount = 1;
@@ -1870,7 +1879,7 @@ void TestNeutralSceneRuntimeSurfaceBuildsPresentationWithoutFerryOfficeTerms()
 
     const std::string text = BuildNeutralScenePresentationText(view, false);
 
-    Expect(text.find("Scene: Veyra Reach Pilot Slice | role=target-slice-scaffold") != std::string::npos,
+    Expect(text.find("Scene: Veyra Reach - Cinder Harbor | role=target-slice-scaffold") != std::string::npos,
         "TestNeutralSceneRuntimeSurfaceBuildsPresentationWithoutFerryOfficeTerms",
         "Neutral presentation should identify the loaded target slice.");
     Expect(text.find("Objective: Inspect neutral slice markers; no authored job is active.") != std::string::npos,
@@ -1897,7 +1906,7 @@ void TestNeutralSceneRuntimeSurfaceBuildsDebugWithoutFerryOfficeTelemetry()
     view.sceneId = "veyra-reach-pilot";
     view.sceneRole = "target-slice-scaffold";
     view.worldId = "veyra-reach";
-    view.sliceId = "pilot-hillside-service-road";
+    view.sliceId = "cinder-harbor-reach";
     view.objectiveText = "Neutral target-slice scaffold loaded.";
     view.completionSummary = "complete=false role=neutral-target-slice";
     view.playerPosition = {-2.0f, 0.0f, -1.5f};
@@ -3351,10 +3360,10 @@ void TestSandboxLayerPilotSliceUsesNeutralPresentation()
     const std::string text = layer.debugText();
     layer.onDetach();
 
-    Expect(text.find("Scene: Veyra Reach Pilot Slice | role=target-slice-scaffold") != std::string::npos,
+    Expect(text.find("Scene: Veyra Reach - Cinder Harbor | role=target-slice-scaffold") != std::string::npos,
         "TestSandboxLayerPilotSliceUsesNeutralPresentation",
         "Pilot runtime smoke text should identify the target slice instead of the Ferry Office job.");
-    Expect(text.find("Status: complete=false role=target-slice-authored-objective targetObjective=inspect-pilot-service-marker consequence=pilot-marker-confirmed riskyAction=pilot-cache-risk-response complete=false responseState=pilot-local-alerted active=false exitRecovery=pilot-escape-confirmed complete=false response=pilot-local-alerted exit=pilot-escape-confirmed | colliders=1 | interactables=3 | routes=1 | markers=4 | vehicle=none") != std::string::npos,
+    Expect(text.find("Status: complete=false role=target-slice-authored-objective targetObjective=inspect-cinder-cache-marker consequence=cinder-harbor-confirmed riskyAction=cinder-cache-risk-response complete=false responseState=cinder-local-alerted active=false exitRecovery=harbor-scar-escape-confirmed complete=false response=cinder-local-alerted exit=harbor-scar-escape-confirmed | colliders=8 | interactables=3 | routes=6 | markers=12 | vehicle=none") != std::string::npos,
         "TestSandboxLayerPilotSliceUsesNeutralPresentation",
         "Pilot runtime smoke text should report neutral scene counts and no inherited vehicle.");
     Expect(text.find("Ferry Office") == std::string::npos,
@@ -3381,7 +3390,7 @@ void TestSandboxLayerPilotSliceDebugTextAvoidsFerryOfficeTelemetry()
     Expect(text.find("scene=veyra-reach-pilot loaded=yes role=target-slice-scaffold") != std::string::npos,
         "TestSandboxLayerPilotSliceDebugTextAvoidsFerryOfficeTelemetry",
         "Pilot debug text should identify the target-slice role.");
-    Expect(text.find("sceneCounts=colliders:1 interactables:3 routes:1 markers:4 vehicle:none") != std::string::npos,
+    Expect(text.find("sceneCounts=colliders:8 interactables:3 routes:6 markers:12 vehicle:none") != std::string::npos,
         "TestSandboxLayerPilotSliceDebugTextAvoidsFerryOfficeTelemetry",
         "Pilot debug text should expose neutral scene counts instead of Ferry Office job telemetry.");
     Expect(text.find("roadSegment=dock-road") == std::string::npos,
@@ -5342,19 +5351,19 @@ void TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesRepo
     Expect(result.objectiveComplete,
         "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
         "The recorded input path should complete the authored target objective.");
-    Expect(result.focusName == "Pilot Service Marker",
+    Expect(result.focusName == "Cinder Harbor Marker",
         "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
         "The focus evidence should identify the authored marker.");
-    Expect(result.focusPrompt == "Inspect Pilot Slice Marker",
+    Expect(result.focusPrompt == "Confirm Cinder Harbor Reach",
         "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
         "The focus evidence should expose the authored prompt.");
     Expect(result.framesToFocus > 0 && result.framesToInteract >= result.framesToFocus,
         "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
         "The report should contain live route timing evidence.");
-    Expect(result.completionSummary.find("targetObjective=inspect-pilot-service-marker") != std::string::npos,
+    Expect(result.completionSummary.find("targetObjective=inspect-cinder-cache-marker") != std::string::npos,
         "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
         "The report should expose the completed authored objective id.");
-    Expect(result.completionEventText.find("pilot-service-marker") != std::string::npos,
+    Expect(result.completionEventText.find("cinder-harbor-marker") != std::string::npos,
         "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
         "The report should expose authored completion event evidence.");
     Expect(std::filesystem::exists(reportPath),
@@ -5373,7 +5382,7 @@ void TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesRepo
         Expect(report["input"]["scriptName"] == "recorded-veyra-target-objective-v1",
             "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
             "The report should record the input script name.");
-        Expect(report["focus"]["name"] == "Pilot Service Marker",
+        Expect(report["focus"]["name"] == "Cinder Harbor Marker",
             "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
             "The report should expose the focused authored marker.");
         Expect(report["contact"]["hit"] == true,

@@ -1,0 +1,100 @@
+{
+  "id": "veyra-reach",
+  "name": "Veyra Reach",
+  "description": "First authored Tidebreak world region: a coastal industrial reach with risky service roads, harbor edges, utility landmarks, and escape routes.",
+  "scene": {
+    "schemaVersion": 2,
+    "id": "veyra-reach-pilot",
+    "name": "Veyra Reach - Cinder Harbor",
+    "description": "Generated runtime scene for Cinder Harbor Reach, the first authored Veyra world foundation.",
+    "sliceMetadata": {
+      "kind": "target-slice-scaffold",
+      "worldId": "veyra-reach",
+      "sliceId": "cinder-harbor-reach",
+      "status": "authored-world-foundation",
+      "role": "first runtime-visible authored Veyra Reach location",
+      "intent": "Prove terrain, roads, shoreline, landmarks, risky target, escape route, and generated source-of-truth workflow.",
+      "surfaceTags": ["wet-asphalt", "hillside-ground", "service-concrete", "rock-shore", "harbor-water"],
+      "roadTags": ["connected-service-road", "hillside-bend", "narrow-shore-edge", "escape-spur"],
+      "deferredSystems": ["heightfield-terrain", "road-spline-mesh", "traffic", "npc-ai", "police-ai", "combat", "save-load", "production-materials"],
+      "collisionPolicy": {
+        "static": "AABB colliders generated from road-edge, yard, shoreline, and boundary authoring.",
+        "dynamic": "deferred",
+        "vehicle": "route/road intent only; no Veyra live vehicle spawn in this milestone"
+      },
+      "authoringBoundaries": {
+        "allowedNow": ["world source data", "generated runtime scene", "terrain patches", "road ribbons", "road-edge collision", "landmark art anchors", "target action response"],
+        "deferred": ["mission framework", "traffic", "NPCs", "police AI", "terrain engine", "PBR materials", "streaming world"],
+        "runtimeOwner": ["tools/world_author.py", "SceneLoader", "scene_data.py", "runtime_scene_smoke.py"]
+      }
+    },
+    "units": {
+      "linear": "meter",
+      "upAxis": "Y",
+      "rightAxis": "X",
+      "forwardAxis": "Z",
+      "coordinateNotes": "Positions use engine Vec3 order [x, y, z]. This generated scene stays near origin but covers a larger authored pilot area than the old scaffold."
+    },
+    "floorHeight": 0.0,
+    "playerStart": {
+      "id": "veyra-player-start",
+      "position": [-6.0, 0.0, -4.0],
+      "yawDegrees": 38.0
+    },
+    "scaleReference": {
+      "playerHeight": 1.8,
+      "playerRadius": 0.35,
+      "vehicleLaneWidthMin": 3.0
+    }
+  },
+  "materials": [
+    {"key": "misty-island-ground", "response": "matte", "baseColor": [0.20, 0.28, 0.24, 1.0]},
+    {"key": "dark-service-asphalt", "response": "wet", "baseColor": [0.12, 0.15, 0.15, 1.0]},
+    {"key": "damp-service-concrete", "response": "wet", "baseColor": [0.24, 0.29, 0.28, 1.0]},
+    {"key": "deep-harbor-blue", "response": "wet", "baseColor": [0.08, 0.25, 0.33, 1.0]},
+    {"key": "weathered-yard-rail", "response": "painted", "baseColor": [0.47, 0.52, 0.45, 1.0]},
+    {"key": "salt-white-road-post", "response": "painted", "baseColor": [0.76, 0.77, 0.70, 1.0]},
+    {"key": "warning-service-orange", "response": "painted", "baseColor": [0.82, 0.35, 0.12, 1.0]},
+    {"key": "oxidized-service-green", "response": "painted", "baseColor": [0.22, 0.47, 0.38, 1.0]},
+    {"key": "mossy-service-crate", "response": "matte", "baseColor": [0.24, 0.34, 0.18, 1.0]},
+    {"key": "wet-timber", "response": "wet", "baseColor": [0.30, 0.22, 0.16, 1.0]},
+    {"key": "ferry-route-sign-blue", "response": "painted", "baseColor": [0.10, 0.26, 0.48, 1.0]},
+    {"key": "rusted-roof-trim", "response": "painted", "baseColor": [0.50, 0.20, 0.10, 1.0]}
+  ],
+  "meshAssets": [
+    {"id": "unit-box-mesh", "path": "assets/models/unit_box.gltf", "format": "gltf", "units": "meter", "upAxis": "Y", "license": "project-original", "provenance": "Created in-repo for the v0.12 static mesh render spike."},
+    {"id": "service-road-sign-mesh", "path": "assets/models/service_road_sign.gltf", "format": "gltf", "units": "meter", "upAxis": "Y", "license": "project-original", "provenance": "Generated in-repo for the v0.18 Tidebreak service-road prop style spike."},
+    {"id": "road-edge-post-mesh", "path": "assets/models/road_edge_post.gltf", "format": "gltf", "units": "meter", "upAxis": "Y", "license": "project-original", "provenance": "Generated in-repo for the v0.18 Tidebreak service-road prop style spike."},
+    {"id": "service-barrier-mesh", "path": "assets/models/service_barrier.gltf", "format": "gltf", "units": "meter", "upAxis": "Y", "license": "project-original", "provenance": "Generated in-repo for the v0.18 Tidebreak service-road prop style spike."},
+    {"id": "utility-box-mesh", "path": "assets/models/utility_box.gltf", "format": "gltf", "units": "meter", "upAxis": "Y", "license": "project-original", "provenance": "Generated in-repo for the v0.18 Tidebreak service-road prop style spike."},
+    {"id": "ferry-notice-board-mesh", "path": "assets/models/ferry_notice_board.gltf", "format": "gltf", "units": "meter", "upAxis": "Y", "license": "project-original", "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v0.20 fallback static prop because Blender was unavailable; not a Blender export."},
+    {"id": "clearance-tag-mesh", "path": "assets/models/clearance_tag.gltf", "format": "gltf", "units": "meter", "upAxis": "Y", "license": "project-original", "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v0.58 fallback clearance-tag prop because Blender was unnecessary for this tiny endpoint cue; not a Blender export."},
+    {"id": "blender-ferry-notice-board-mesh", "path": "assets/models/blender_ferry_notice_board.gltf", "format": "gltf", "units": "meter", "upAxis": "Y", "license": "project-original", "provenance": "Authored procedurally by tools/blender/create_tidebreak_notice_board.py and exported headlessly by Blender 5.1.1 during v0.20.1."},
+    {"id": "blender-cable-reel-mesh", "path": "assets/models/blender_cable_reel.gltf", "format": "gltf", "units": "meter", "upAxis": "Y", "license": "project-original", "provenance": "Authored procedurally by tools/blender/create_tidebreak_cable_reel.py and exported headlessly by Blender 5.1.1 during v0.27."},
+    {"id": "blender-wet-road-surface-mesh", "path": "assets/models/blender_wet_road_surface.gltf", "format": "gltf", "units": "meter", "upAxis": "Y", "license": "project-original", "provenance": "Authored procedurally by tools/blender/create_tidebreak_wet_road_surface.py and exported headlessly by Blender 5.1.1 during v0.42."},
+    {"id": "blender-harbor-backdrop-mesh", "path": "assets/models/blender_harbor_backdrop.gltf", "format": "gltf", "units": "meter", "upAxis": "Y", "license": "project-original", "provenance": "Authored procedurally by tools/blender/create_tidebreak_harbor_backdrop.py and exported headlessly by Blender 5.1.1 during v0.43."},
+    {"id": "blender-harbor-water-surface-mesh", "path": "assets/models/blender_harbor_water_surface.gltf", "format": "gltf", "units": "meter", "upAxis": "Y", "license": "project-original", "provenance": "Authored procedurally by tools/blender/create_tidebreak_harbor_water_surface.py and exported headlessly by Blender 5.1.1 during v0.44."},
+    {"id": "ferry-office-canopy-mesh", "path": "assets/models/ferry_office_canopy.gltf", "format": "gltf", "units": "meter", "upAxis": "Y", "license": "project-original", "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v0.81 fallback Ferry Office canopy; not a Blender export."},
+    {"id": "service-yard-cart-body-mesh", "path": "assets/models/service_yard_cart_body.gltf", "format": "gltf", "units": "meter", "upAxis": "Y", "license": "project-original", "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v0.84 fallback service-yard cart body; not a Blender export."},
+    {"id": "service-yard-cart-cabin-mesh", "path": "assets/models/service_yard_cart_cabin.gltf", "format": "gltf", "units": "meter", "upAxis": "Y", "license": "project-original", "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v0.84 fallback service-yard cart cabin; not a Blender export."},
+    {"id": "service-yard-cart-wheel-mesh", "path": "assets/models/service_yard_cart_wheel.gltf", "format": "gltf", "units": "meter", "upAxis": "Y", "license": "project-original", "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v0.84 fallback rounded wheel; not a Blender export."},
+    {"id": "ferry-office-service-gate-mesh", "path": "assets/models/ferry_office_service_gate.gltf", "format": "gltf", "units": "meter", "upAxis": "Y", "license": "project-original", "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v0.85 fallback Ferry Office service gate; not a Blender export."},
+    {"id": "ferry-office-facade-frame-mesh", "path": "assets/models/ferry_office_facade_frame.gltf", "format": "gltf", "units": "meter", "upAxis": "Y", "license": "project-original", "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v0.87 fallback Ferry Office facade frame; not a Blender export."},
+    {"id": "ferry-office-sign-panel-mesh", "path": "assets/models/ferry_office_sign_panel.gltf", "format": "gltf", "units": "meter", "upAxis": "Y", "license": "project-original", "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v0.88 fallback Ferry Office sign panel; not a Blender export."},
+    {"id": "ferry-office-service-panel-mesh", "path": "assets/models/ferry_office_service_panel.gltf", "format": "gltf", "units": "meter", "upAxis": "Y", "license": "project-original", "provenance": "Generated in-repo by tools/create_simple_prop_gltf.py as a v0.93 fallback Ferry Office service panel; not a Blender export."}
+  ],
+  "places": [
+    {"id": "greywinch-service-road", "name": "Greywinch Service Road", "position": [-3.0, 0.0, -2.0]},
+    {"id": "saltbreak-lay-by", "name": "Saltbreak Lay-by", "position": [0.6, 0.0, 1.1]},
+    {"id": "stormwall-bend", "name": "Stormwall Bend", "position": [2.0, 0.0, -0.8]},
+    {"id": "old-pump-cut", "name": "Old Pump Cut", "position": [4.8, 0.0, 1.8]},
+    {"id": "reach-relay-hut", "name": "Reach Relay Hut", "position": [5.3, 0.0, 3.2]},
+    {"id": "cracked-causeway-spur", "name": "Cracked Causeway Spur", "position": [-1.7, 0.0, 3.4]},
+    {"id": "low-beacon-turn", "name": "Low Beacon Turn", "position": [-6.2, 0.0, 1.2]},
+    {"id": "harbor-scar-overlook", "name": "Harbor Scar Overlook", "position": [7.8, 0.0, 5.2]},
+    {"id": "west-ferry-spur", "name": "West Ferry Spur", "position": [-7.4, 0.0, -0.5]}
+  ],
+  "areaFiles": [
+    "areas/cinder_harbor.area.json"
+  ]
+}

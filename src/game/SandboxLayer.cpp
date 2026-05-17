@@ -416,6 +416,38 @@ void SandboxLayer::applyQaCaptureState()
     if (m_qaCaptureState.empty()) {
         return;
     }
+    const auto applyVeyraCapturePose = [this](engine::Vec3 position, float yawDegrees, float cameraYawDegrees) {
+        m_player.setPosition(position);
+        m_player.setFacingYawRadians(engine::Radians(yawDegrees));
+        m_camera.setYawRadians(engine::Radians(cameraYawDegrees));
+    };
+    if (!m_sceneRuntime.policy.usesFerryOfficeBehavior && m_sceneDefinition.id == "veyra-reach-pilot") {
+        if (m_qaCaptureState == "veyra-start") {
+            applyVeyraCapturePose({-6.0f, 0.0f, -4.0f}, 38.0f, 42.0f);
+            engine::Logger::info("QA capture state applied: veyra-start.");
+            return;
+        }
+        if (m_qaCaptureState == "veyra-road-network") {
+            applyVeyraCapturePose({-1.8f, 0.0f, -1.1f}, 76.0f, 98.0f);
+            engine::Logger::info("QA capture state applied: veyra-road-network.");
+            return;
+        }
+        if (m_qaCaptureState == "veyra-shoreline-horizon") {
+            applyVeyraCapturePose({2.15f, 0.0f, 3.0f}, 22.0f, 30.0f);
+            engine::Logger::info("QA capture state applied: veyra-shoreline-horizon.");
+            return;
+        }
+        if (m_qaCaptureState == "veyra-landmark-overlook") {
+            applyVeyraCapturePose({5.7f, 0.0f, 3.65f}, -36.0f, -28.0f);
+            engine::Logger::info("QA capture state applied: veyra-landmark-overlook.");
+            return;
+        }
+        if (m_qaCaptureState == "veyra-collision-edge") {
+            applyVeyraCapturePose({1.35f, 0.0f, -0.95f}, 70.0f, 82.0f);
+            engine::Logger::info("QA capture state applied: veyra-collision-edge.");
+            return;
+        }
+    }
     if (!m_sceneRuntime.policy.usesFerryOfficeBehavior) {
         engine::Logger::warning("QA capture state ignored for non-Ferry runtime scene: " + m_qaCaptureState);
         return;

@@ -2,7 +2,16 @@
 
 Last updated: 2026-05-17
 
-Purpose: define the first boundary between Ferry Office as a regression scene and future Veyra Reach target slices. This document does not authorize a full map, mission framework, terrain system, editor, NPC AI, traffic, production art, or renderer rewrite.
+Purpose: define the boundary between Ferry Office as a regression scene and Veyra Reach as the first authored world foundation. This document does not authorize a full city, mission framework, terrain engine, NPC AI, traffic, production art, or renderer rewrite.
+
+Veyra source of truth now lives in:
+
+```text
+data/worlds/veyra_reach/world.json
+data/worlds/veyra_reach/areas/cinder_harbor.area.json
+```
+
+`data/scenes/veyra_reach_pilot.scene.json` is generated from those files by `tools/world_author.py`. Do not hand-author Veyra layout, roads, collision, landmarks, or target-response links primarily in the generated scene JSON.
 
 Post-v0.99 direction rebaseline: future target slices should serve Tidebreak as a narrative vehicle/crime/action sandbox, not as a service-work checklist. A target slice can be coastal, industrial, rural, resort-like, or urban depending on location. The common contract is risk, vehicle/space meaning, local response, and consequence.
 
@@ -25,12 +34,13 @@ Required role values:
 
 `veyra-reach-pilot`
 
-- Role: `target-slice-scaffold`.
-- Purpose: prove a second slice can exist outside Ferry Office with its own surface, road, collision, route, and marker intent.
-- It is not a mission, map expansion, terrain implementation, art pass, or new runtime gameplay chain.
-- It now carries one `targetObjective` gate bound to the existing Pilot Service Marker. This proves authored objective/consequence runtime for a target slice; it is still not a mission system.
-- It now carries one `targetActionResponse` contract: `Suspicious Cargo Cache` triggers `pilot-local-alerted`, then `Pilot Escape Marker` proves exit/recovery. This is a testable runtime response contract, not a police/AI/mission framework.
-- Its next useful evolution should make that response visible and spatially meaningful, not add a prettier scaffold or another neutral `E` prompt.
+- Role: `target-slice-scaffold`, but status is now `authored-world-foundation`.
+- Runtime place: Veyra Reach - Cinder Harbor.
+- Purpose: prove Cinder Harbor Reach as a coastal/industrial remote-crime area with terrain patches, road ribbons, shoreline/water/backdrop cues, named places, authored colliders, landmarks, interactables, routes, and objective markers.
+- It is not a full mission, city, terrain engine, traffic/AI pass, police/combat system, or final-art pass.
+- It carries one `targetObjective` gate bound to `Cinder Harbor Marker`.
+- It carries one `targetActionResponse` contract: `Suspicious Cargo Cache` triggers `cinder-local-alerted`, then `Harbor Scar Escape Marker` proves exit/recovery.
+- Its next useful evolution should improve authored world art/terrain/road presentation while preserving the world-source pipeline.
 
 ## Metadata Contract
 
@@ -58,6 +68,13 @@ python tools/validate_scene.py data/scenes/veyra_reach_pilot.scene.json
 python tools/scale_audit.py data/scenes/veyra_reach_pilot.scene.json
 ```
 
+Use the world authoring compiler for Veyra:
+
+```powershell
+python tools/world_author.py --check
+python tools/world_author.py --preview-html build/world_preview/veyra_reach_preview.html --report-json build/world_preview/veyra_reach_report.json
+```
+
 Use the world/slice report to compare scene roles:
 
 ```powershell
@@ -80,14 +97,14 @@ Use the target-slice objective QA gate to prove the Veyra marker can be reached 
 python tools/target_slice_objective_qa.py --exe build/windows-vs2022-debug/Debug/EngineApp.exe --scene data/scenes/veyra_reach_pilot.scene.json
 ```
 
-This gate must report recorded input script name, authored `pilot-road-edge-collider` contact, contact push/normal, recovery timing, frames to focus, frames to interact, focus name/prompt, interaction result, and `targetObjective=inspect-pilot-service-marker` completion evidence. It is not proof that Veyra is playable as a world.
+This gate must report recorded input script name, authored `pilot-road-edge-collider` contact, contact push/normal, recovery timing, frames to focus, frames to interact, focus name/prompt, interaction result, and `targetObjective=inspect-cinder-cache-marker` completion evidence. It proves a risky target-slice contract, not a complete game loop.
 
 For Veyra, the same gate must also report:
 
-- `riskyAction.id=pilot-cache-risk-response`,
+- `riskyAction.id=cinder-cache-risk-response`,
 - `riskyAction.interactableName=Suspicious Cargo Cache`,
-- `localResponse.stateId=pilot-local-alerted`,
-- `exitRecovery.stateId=pilot-escape-confirmed`,
+- `localResponse.stateId=cinder-local-alerted`,
+- `exitRecovery.stateId=harbor-scar-escape-confirmed`,
 - final summary evidence for `riskyAction=`, `responseState=`, and `exitRecovery=`.
 
 Objective completion alone is stale evidence for the target slice. A report that reaches only `Pilot Service Marker` without risky-action/local-response/exit-recovery proof should fail.

@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-17
 
-v0.11 introduced scene data for Codex-friendly inspection and validation. v0.12 added mesh asset and mesh instance references. v0.12.1 expanded the Ferry Office mesh set for a focused prop/scale pass. v0.14 added the first dock road segment as authored placeholders and route markers. v0.15 makes `data/scenes/ferry_office.scene.json` the runtime source of truth for current layout data while keeping Tidebreak-specific behavior in C++. v0.18 adds the first original service-road prop-kit meshes and keeps them scene-authored. v0.20 adds one fallback-generated ferry notice board because Blender was unavailable; its provenance must stay explicit. v0.20.1 adds one real Blender-exported notice-board prop and keeps it scene-authored too. v0.42 adds a Blender-authored wet-road surface mesh for the service-yard, dock-road, and turn-around presentation slabs. v0.43 adds a Blender-authored harbor backdrop mesh around existing water-edge bands. v0.44 adds a Blender-authored harbor water surface mesh over those water-edge bands. v0.84 adds fallback-generated service-yard cart body/cab/wheel meshes to reduce the visible unit-box vehicle cluster while preserving the authored vehicle collider. v0.85 adds a fallback-generated service-gate mesh to replace the visible gate slab/slat cluster while preserving the authored route collider. v0.87 adds a fallback-generated facade-frame mesh to replace the broad Ferry Office wall and entry-post blockout while preserving authored collision and route space. v0.88 adds a fallback-generated non-text sign-panel mesh for the front facade sign cue. v0.90 adds a tiny visual placeholder state cue beside the Ferry Office Drain Log. v0.93 adds a fallback-generated non-text service-panel mesh for the office-side service/control cue. v0.99+ adds a minimal `targetObjective` gate for target-slice scaffolds so Veyra can prove authored objective/consequence runtime without using `FerryOfficeJob`.
+v0.11 introduced scene data for Codex-friendly inspection and validation. v0.12 added mesh asset and mesh instance references. v0.12.1 expanded the Ferry Office mesh set for a focused prop/scale pass. v0.14 added the first dock road segment as authored placeholders and route markers. v0.15 makes `data/scenes/ferry_office.scene.json` the runtime source of truth for current layout data while keeping Tidebreak-specific behavior in C++. v0.18 adds the first original service-road prop-kit meshes and keeps them scene-authored. v0.20 adds one fallback-generated ferry notice board because Blender was unavailable; its provenance must stay explicit. v0.20.1 adds one real Blender-exported notice-board prop and keeps it scene-authored too. v0.42 adds a Blender-authored wet-road surface mesh for the service-yard, dock-road, and turn-around presentation slabs. v0.43 adds a Blender-authored harbor backdrop mesh around existing water-edge bands. v0.44 adds a Blender-authored harbor water surface mesh over those water-edge bands. v0.84 adds fallback-generated service-yard cart body/cab/wheel meshes to reduce the visible unit-box vehicle cluster while preserving the authored vehicle collider. v0.85 adds a fallback-generated service-gate mesh to replace the visible gate slab/slat cluster while preserving the authored route collider. v0.87 adds a fallback-generated facade-frame mesh to replace the broad Ferry Office wall and entry-post blockout while preserving authored collision and route space. v0.88 adds a fallback-generated non-text sign-panel mesh for the front facade sign cue. v0.90 adds a tiny visual placeholder state cue beside the Ferry Office Drain Log. v0.93 adds a fallback-generated non-text service-panel mesh for the office-side service/control cue. v0.99+ adds a minimal `targetObjective` gate for target-slice scaffolds so Veyra can prove authored objective/consequence runtime without using `FerryOfficeJob`. The Veyra world-foundation pass adds `tools/world_author.py`; Veyra layout is now compiled from world/area data, and the runtime scene is generated.
 
 ## Scene Data Location
 
@@ -18,6 +18,13 @@ First target-slice scaffold:
 data/scenes/veyra_reach_pilot.scene.json
 ```
 
+Veyra authoring source:
+
+```text
+data/worlds/veyra_reach/world.json
+data/worlds/veyra_reach/areas/cinder_harbor.area.json
+```
+
 See `docs/WORLD_SLICE_AUTHORING.md` for the role split between Ferry Office as `regression-testbed` and new Veyra Reach target slices as `target-slice-scaffold`.
 
 Required tools:
@@ -31,6 +38,7 @@ python tools/mesh_report.py
 python tools/world_slice_report.py
 python tools/runtime_scene_smoke.py
 python tools/target_slice_objective_qa.py
+python tools/world_author.py --check
 ```
 
 ## Scene Data Contract
@@ -53,7 +61,7 @@ The Ferry Office scene file describes:
 - route markers,
 - objective markers.
 
-New target-slice scaffolds should start smaller. They must define `sliceMetadata`, player start, surface/road intent, at least one collider, one visual placeholder, one route marker, one objective marker, one debug interaction marker, and one `targetObjective` gate bound to an existing interactable. They should not copy the Ferry Office job chain or add new `SandboxLayer` behavior.
+New target-slice scaffolds should start smaller. Veyra is no longer authored primarily as a one-off scene JSON: change its terrain patches, roads, collision, landmarks, interactables, route markers, objective markers, `targetObjective`, and `targetActionResponse` in `data/worlds/veyra_reach`, then regenerate the runtime scene. Future target slices should follow that split when they need map-like world data.
 
 Use stable lowercase kebab-case ids. Do not rely on runtime add-order numeric ids.
 
