@@ -7,6 +7,7 @@
 #include "game/FerryOfficePhysicsParity.h"
 #include "game/FerryOfficePlaythroughQa.h"
 #include "game/FerryOfficeVehiclePhysicsQa.h"
+#include "game/TargetSliceObjectiveQa.h"
 
 #include <iostream>
 #include <memory>
@@ -28,6 +29,18 @@ int main(int argc, const char* const* argv)
     }
 
     if (parseResult.config.qaPlaythroughRequested()) {
+        if (parseResult.config.qaPlaythrough == "veyra-target-objective-acquisition") {
+            const auto result = RunTargetSliceObjectiveAcquisitionQa(
+                parseResult.config.scenePath,
+                parseResult.config.qaPlaythroughReportPath);
+            if (result.passed) {
+                engine::Logger::info("QA playthrough passed: " + result.reportPath.string());
+                return 0;
+            }
+            engine::Logger::error("QA playthrough failed: " + result.error);
+            return 11;
+        }
+
         const auto result = RunFerryOfficeServiceCallPlaythroughQa(
             parseResult.config.scenePath,
             parseResult.config.qaPlaythroughReportPath,

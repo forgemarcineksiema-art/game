@@ -238,10 +238,10 @@ ConfigParseResult ParseArguments(int argc, const char* const* argv)
         }
 
         if (ReadValue(argc, argv, index, argument, "--qa-playthrough", value)) {
-            if (value == "ferry-office-service-call") {
+            if (value == "ferry-office-service-call" || value == "veyra-target-objective-acquisition") {
                 result.config.qaPlaythrough = value;
             } else {
-                result.errors.push_back("--qa-playthrough must be: ferry-office-service-call.");
+                result.errors.push_back("--qa-playthrough must be one of: ferry-office-service-call, veyra-target-objective-acquisition.");
             }
             continue;
         }
@@ -323,7 +323,7 @@ std::string BuildHelpText()
         << "  --scene <path>        Runtime scene JSON path.\n"
         << "  --capture-frame <path> Write one renderer-owned BMP capture to the exact path.\n"
         << "  --capture-dir <path>  Write one renderer-owned BMP capture into the directory.\n"
-        << "  --qa-playthrough <name> Run a QA-only automated playthrough. Supported: ferry-office-service-call.\n"
+        << "  --qa-playthrough <name> Run a QA-only automated playthrough. Supported: ferry-office-service-call, veyra-target-objective-acquisition.\n"
         << "  --qa-playthrough-report <path> Write the QA playthrough JSON report.\n"
         << "  --qa-capture-state <name> Preload a QA-only capture state. Supported: relay-to-service-log, low-dock-drain-access, office-front-oblique, service-yard-vehicle-side, dock-road-wide, vehicle-dock-road-forward, vehicle-dock-road-reverse.\n"
         << "  --qa-physics-parity <name> Run QA-only physics parity/contact. Supported: ferry-office-collision, ferry-office-character-contact, ferry-office-vehicle-feasibility, ferry-office-vehicle-runtime-comparison.\n"

@@ -30,6 +30,7 @@ python tools/scale_audit.py
 python tools/mesh_report.py
 python tools/world_slice_report.py
 python tools/runtime_scene_smoke.py
+python tools/target_slice_objective_qa.py
 ```
 
 ## Scene Data Contract
@@ -100,7 +101,7 @@ Target-slice scaffolds can declare a single `targetObjective` object for the cur
 - `completionInteractableName`,
 - `completionEventText`.
 
-Optional `completionSummary` can add a short consequence tag. `completionInteractableName` must match an authored interactable `name`; `tools/validate_scene.py` rejects missing links. This is not a mission framework, branching quest system, or world-flag scripting model.
+Optional `completionSummary` can add a short consequence tag. `completionInteractableName` must match an authored interactable `name`; `tools/validate_scene.py` rejects missing links. Use `tools/target_slice_objective_qa.py` when the objective must prove recorded live-like focus/interact/completion evidence. This is not a mission framework, branching quest system, or world-flag scripting model.
 
 ## Adding Or Moving Objects
 

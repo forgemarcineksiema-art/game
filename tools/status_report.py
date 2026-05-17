@@ -83,6 +83,7 @@ def main() -> int:
         "tools/runtime_scene_smoke.py",
         "tools/capture_visual_smoke.py",
         "tools/playthrough_qa.py",
+        "tools/target_slice_objective_qa.py",
         "tools/physics_parity_qa.py",
         "tools/character_contact_qa.py",
         "tools/vehicle_physics_qa.py",

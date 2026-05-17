@@ -2,6 +2,63 @@
 
 Last updated: 2026-05-17
 
+## Target-Slice Live Objective Acquisition Gate (2026-05-17)
+
+Goal:
+
+- Prove the current Veyra target-slice objective can be acquired and completed through a recorded live-like player route, focus acquisition, prompt validation, and interact input.
+- Keep Ferry Office as regression/debug testbed and avoid another content, terrain, vehicle, renderer, or polish pass.
+
+Scope:
+
+- Added `TargetSliceObjectiveQa` in `src\game\TargetSliceObjectiveQa.h/.cpp`.
+- Added `tools\target_slice_objective_qa.py` and `tests\test_target_slice_objective_qa.py`.
+- Added `EngineApp --qa-playthrough veyra-target-objective-acquisition`.
+- Added CTest entries for the Python wrapper and the real `EngineApp` smoke gate.
+- Updated `docs\SCENE_AUTHORING.md`, `docs\WORLD_SLICE_AUTHORING.md`, and `tools\status_report.py`.
+
+Evidence:
+
+- CONFIRMED: Baseline `git status --short --branch` was clean on `main...origin/main`.
+- CONFIRMED: Baseline `git branch --show-current` returned `main`.
+- CONFIRMED: Baseline `python tools\status_report.py`, `scripts\doctor.ps1`, `scripts\configure.ps1`, and `scripts\build.ps1` passed before implementation.
+- CONFIRMED: RED `cmake --build --preset windows-vs2022-debug --target EngineCoreTests` failed before implementation with missing `game/TargetSliceObjectiveQa.h`.
+- CONFIRMED: RED `python tests\test_target_slice_objective_qa.py` failed before implementation with `ModuleNotFoundError: No module named 'target_slice_objective_qa'`.
+- CONFIRMED: GREEN `cmake --build --preset windows-vs2022-debug --target EngineCoreTests EngineApp` passed.
+- CONFIRMED: GREEN `python tests\test_target_slice_objective_qa.py` passed, 3 tests.
+- CONFIRMED: GREEN `build\windows-vs2022-debug\Debug\EngineCoreTests.exe` passed.
+- CONFIRMED: GREEN `python tools\target_slice_objective_qa.py --exe build\windows-vs2022-debug\Debug\EngineApp.exe --scene data\scenes\veyra_reach_pilot.scene.json --report-json build\playthroughs\veyra-target-objective-acquisition-report.json` passed. Report evidence: `framesToFocus=57`, `framesToInteract=58`, focus `Pilot Service Marker`, prompt `Inspect Pilot Slice Marker`, `targetObjective=inspect-pilot-service-marker`.
+- CONFIRMED: GREEN focused `ctest --preset windows-vs2022-debug --output-on-failure -R "TargetSliceObjectiveQa|EngineCoreTests"` passed, 3/3 tests.
+- CONFIRMED: GREEN final `scripts\verify.ps1` passed after implementation; CTest 14/14 passed including `TargetSliceObjectiveQaTests` and `TargetSliceObjectiveQaSmoke`.
+
+Remaining limits:
+
+- This still does not make Veyra a playable game slice.
+- It proves one recorded route to one authored marker. It does not prove terrain variety, local world response, character presence, mission flow, NPCs, traffic, production art, or broad exploration.
+- It uses a deterministic QA route and player controller input, not manual feel evidence.
+- It is stronger than direct `PrototypeScene::applyInteractionResult` proof, but still a bounded gate.
+
+Validation commands:
+
+- GREEN: `git status --short --branch`.
+- GREEN: `git branch --show-current`.
+- GREEN: `python tools\status_report.py`.
+- GREEN: `scripts\doctor.ps1`.
+- GREEN: `scripts\configure.ps1`.
+- GREEN: `scripts\build.ps1`.
+- RED: `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: missing `game/TargetSliceObjectiveQa.h` before implementation.
+- RED: `python tests\test_target_slice_objective_qa.py`: missing `target_slice_objective_qa` before implementation.
+- GREEN: `cmake --build --preset windows-vs2022-debug --target EngineCoreTests EngineApp`.
+- GREEN: `python tests\test_target_slice_objective_qa.py`.
+- GREEN: `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`.
+- GREEN: `python tools\target_slice_objective_qa.py --exe build\windows-vs2022-debug\Debug\EngineApp.exe --scene data\scenes\veyra_reach_pilot.scene.json --report-json build\playthroughs\veyra-target-objective-acquisition-report.json`.
+- GREEN: `ctest --preset windows-vs2022-debug --output-on-failure -R "TargetSliceObjectiveQa|EngineCoreTests"`.
+- GREEN: `scripts\verify.ps1`.
+
+Next recommended goal:
+
+Do not move directly into broad world/content/polish. The next useful goal should harden the target-slice runtime surface around player-world contact and readable local feedback in Veyra, still using one small authored area and explicit evidence.
+
 ## Target-Slice Authored Objective Runtime Gate (2026-05-17)
 
 Goal:

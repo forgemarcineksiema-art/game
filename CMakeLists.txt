@@ -140,6 +140,7 @@ add_library(GamePrototype STATIC
     src/game/SceneRuntimePolicy.cpp
     src/game/SceneRuntimeSurface.cpp
     src/game/TargetSliceObjectiveRuntime.cpp
+    src/game/TargetSliceObjectiveQa.cpp
     src/game/PrototypeScene.cpp
     src/game/PrototypeWorld.cpp
     src/game/ThirdPersonCamera.cpp
@@ -238,6 +239,11 @@ if(ENGINE_BUILD_TESTS)
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_vehicle_runtime_qa.py
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
+    add_test(
+        NAME TargetSliceObjectiveQaTests
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_target_slice_objective_qa.py
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    )
     if(ENGINE_ENABLE_JOLT_PHYSICS)
         add_test(
             NAME FerryOfficeJoltPhysicsParitySmoke
@@ -293,6 +299,15 @@ if(ENGINE_BUILD_TESTS)
             ${CMAKE_CURRENT_SOURCE_DIR}/tools/playthrough_qa.py
             --exe $<TARGET_FILE:EngineApp>
             --report-json ${CMAKE_CURRENT_BINARY_DIR}/playthroughs/ferry-office-service-call-report.json
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+    add_test(
+        NAME TargetSliceObjectiveQaSmoke
+        COMMAND
+            ${Python3_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/tools/target_slice_objective_qa.py
+            --exe $<TARGET_FILE:EngineApp>
+            --report-json ${CMAKE_CURRENT_BINARY_DIR}/playthroughs/veyra-target-objective-acquisition-report.json
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
 endif()

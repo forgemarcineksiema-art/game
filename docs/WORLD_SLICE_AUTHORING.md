@@ -68,6 +68,14 @@ python tools/runtime_scene_smoke.py --exe build/windows-vs2022-debug/Debug/Engin
 
 For `target-slice-scaffold`, runtime smoke must also expose `targetObjective=` evidence. A smoke output that only says "neutral slice markers" is no longer enough.
 
+Use the target-slice objective QA gate to prove the Veyra marker can be reached and completed through recorded live-like player input:
+
+```powershell
+python tools/target_slice_objective_qa.py --exe build/windows-vs2022-debug/Debug/EngineApp.exe --scene data/scenes/veyra_reach_pilot.scene.json
+```
+
+This gate must report recorded input script name, frames to focus, frames to interact, focus name/prompt, interaction result, and `targetObjective=inspect-pilot-service-marker` completion evidence. It is not proof that Veyra is playable as a world.
+
 Expected current roles:
 
 - `ferry-office`: `regression-testbed`
@@ -115,4 +123,5 @@ A new target slice is acceptable only when:
 - it does not require new `SandboxLayer` gameplay logic,
 - it loads through `tools/runtime_scene_smoke.py` without Ferry Office job text,
 - it exposes `targetObjective=` runtime evidence for any authored target objective,
+- it passes `tools/target_slice_objective_qa.py` when the authored target objective is meant to be player-acquirable,
 - `scripts/verify.ps1` passes.

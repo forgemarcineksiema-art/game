@@ -32,6 +32,7 @@
 #include "game/SceneRuntimePolicy.h"
 #include "game/SceneRuntimeSurface.h"
 #include "game/TargetSliceObjectiveRuntime.h"
+#include "game/TargetSliceObjectiveQa.h"
 #include "game/ThirdPersonCamera.h"
 #include "game/TraversalSystem.h"
 #include "game/VehicleController.h"
@@ -382,6 +383,25 @@ void TestQaPlaythroughArgumentsSelectScenarioAndReportPath()
         "Config should preserve the requested QA playthrough report path.");
 }
 
+void TestQaPlaythroughArgumentsSelectVeyraTargetObjectiveScenario()
+{
+    const char* argv[] = {
+        "EngineApp",
+        "--qa-playthrough",
+        "veyra-target-objective-acquisition",
+        "--qa-playthrough-report",
+        "build/playthroughs/veyra-target-objective-acquisition-report.json",
+    };
+    const auto result = engine::ParseArguments(5, argv);
+
+    Expect(result.errors.empty(),
+        "TestQaPlaythroughArgumentsSelectVeyraTargetObjectiveScenario",
+        "Veyra target objective acquisition should be a supported QA playthrough scenario.");
+    Expect(result.config.qaPlaythrough == "veyra-target-objective-acquisition",
+        "TestQaPlaythroughArgumentsSelectVeyraTargetObjectiveScenario",
+        "Config should preserve the Veyra target objective acquisition scenario.");
+}
+
 void TestQaPlaythroughArgumentsRejectUnknownScenario()
 {
     const char* argv[] = {"EngineApp", "--qa-playthrough", "job-two"};
@@ -402,6 +422,9 @@ void TestHelpTextMentionsQaPlaythroughFlags()
     Expect(help.find("--qa-playthrough-report") != std::string::npos,
         "TestHelpTextMentionsQaPlaythroughFlags",
         "Help text should document the QA playthrough report flag.");
+    Expect(help.find("veyra-target-objective-acquisition") != std::string::npos,
+        "TestHelpTextMentionsQaPlaythroughFlags",
+        "Help text should document the Veyra target objective acquisition QA scenario.");
 }
 
 void TestQaPhysicsParityArgumentsSelectScenarioAndReportPath()
@@ -5153,6 +5176,78 @@ void TestFerryOfficePlaythroughQaCompletesJobAndWritesReport()
     std::filesystem::remove(reportPath);
 }
 
+void TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport()
+{
+    const std::filesystem::path reportPath =
+        std::filesystem::temp_directory_path() / "tidebreak-veyra-target-objective-acquisition-report.json";
+    std::filesystem::remove(reportPath);
+
+    const TargetSliceObjectiveQaResult result =
+        RunTargetSliceObjectiveAcquisitionQa(PilotScenePathForTests(), reportPath);
+
+    Expect(result.passed,
+        "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
+        result.error.empty() ? "Veyra target objective acquisition should pass through live-like input." : result.error);
+    Expect(result.sceneId == "veyra-reach-pilot",
+        "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
+        "The target-slice QA should run against the Veyra pilot scene.");
+    Expect(result.inputScriptName == "recorded-veyra-target-objective-v1",
+        "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
+        "The target-slice QA should identify the recorded input script.");
+    Expect(result.focusAcquired,
+        "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
+        "The recorded input path should acquire focus through InteractionSystem.");
+    Expect(result.interactionTriggered,
+        "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
+        "The recorded input path should trigger interactPressed through InteractionSystem.");
+    Expect(result.objectiveComplete,
+        "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
+        "The recorded input path should complete the authored target objective.");
+    Expect(result.focusName == "Pilot Service Marker",
+        "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
+        "The focus evidence should identify the authored marker.");
+    Expect(result.focusPrompt == "Inspect Pilot Slice Marker",
+        "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
+        "The focus evidence should expose the authored prompt.");
+    Expect(result.framesToFocus > 0 && result.framesToInteract >= result.framesToFocus,
+        "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
+        "The report should contain live route timing evidence.");
+    Expect(result.completionSummary.find("targetObjective=inspect-pilot-service-marker") != std::string::npos,
+        "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
+        "The report should expose the completed authored objective id.");
+    Expect(result.completionEventText.find("pilot-service-marker") != std::string::npos,
+        "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
+        "The report should expose authored completion event evidence.");
+    Expect(std::filesystem::exists(reportPath),
+        "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
+        "The target-slice QA should write a report artifact.");
+
+    {
+        std::ifstream input(reportPath);
+        const nlohmann::json report = nlohmann::json::parse(input);
+        Expect(report["schema"] == "v0.99-target-slice-objective-acquisition-qa",
+            "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
+            "The target-slice QA report should use the target acquisition schema.");
+        Expect(report["passed"] == true,
+            "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
+            "The target-slice QA report should mark the run as passed.");
+        Expect(report["input"]["scriptName"] == "recorded-veyra-target-objective-v1",
+            "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
+            "The report should record the input script name.");
+        Expect(report["focus"]["name"] == "Pilot Service Marker",
+            "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
+            "The report should expose the focused authored marker.");
+        Expect(report["final"]["objectiveComplete"] == true,
+            "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
+            "The report should expose final target objective completion.");
+        Expect(report.dump().find("Ferry Office") == std::string::npos,
+            "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
+            "The Veyra target-slice report should not use Ferry Office wording as proof.");
+    }
+
+    std::filesystem::remove(reportPath);
+}
+
 void TestFerryOfficePhysicsParityBuildsSceneStaticWorldAndWritesReport()
 {
     const std::filesystem::path reportPath =
@@ -6270,6 +6365,7 @@ int main()
     TestCaptureArgumentsRejectAmbiguousDestination();
     TestHelpTextMentionsCaptureFlags();
     TestQaPlaythroughArgumentsSelectScenarioAndReportPath();
+    TestQaPlaythroughArgumentsSelectVeyraTargetObjectiveScenario();
     TestQaPlaythroughArgumentsRejectUnknownScenario();
     TestHelpTextMentionsQaPlaythroughFlags();
     TestQaPhysicsParityArgumentsSelectScenarioAndReportPath();
@@ -6426,6 +6522,7 @@ int main()
     TestMaintenanceBoxIsNotFocusedBeforeServiceVault();
     TestFerryOfficeLoopCanCompleteThroughSceneSystems();
     TestFerryOfficePlaythroughQaCompletesJobAndWritesReport();
+    TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport();
     TestFerryOfficePhysicsParityBuildsSceneStaticWorldAndWritesReport();
     TestFerryOfficePhysicsParityHandlesUnavailableJoltExplicitly();
     TestFerryOfficeCharacterContactQaComparesPlayerProxyAndWritesReport();
