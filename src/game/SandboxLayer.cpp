@@ -354,12 +354,14 @@ void SandboxLayer::loadSceneDefinition()
     const SceneLoadResult loadedScene = LoadSceneDefinition(resolvedScenePath);
     if (!loadedScene.ok()) {
         m_sceneDefinitionLoaded = false;
+        m_runtimePolicy = BuildSceneRuntimePolicy(false, m_sceneDefinition);
         engine::Logger::warning("Runtime scene load failed; using built-in Ferry Office fallback. " + loadedScene.error);
         return;
     }
 
     m_sceneDefinition = loadedScene.scene;
     m_sceneDefinitionLoaded = true;
+    m_runtimePolicy = BuildSceneRuntimePolicy(true, m_sceneDefinition);
     m_scene.loadFromDefinition(m_sceneDefinition);
     engine::Logger::info("Loaded runtime scene data: " + m_sceneDefinition.id + " from " + resolvedScenePath.string());
 }
@@ -391,7 +393,7 @@ void SandboxLayer::configureRuntimeFromScene()
         return;
     }
 
-    if (m_sceneDefinitionLoaded && IsTargetSliceScaffoldScene(m_sceneDefinition)) {
+    if (!m_runtimePolicy.allowsFallbackVehicle) {
         m_vehicleAvailable = false;
         m_vehicleRuntimeText = "none";
         m_vehiclePhysicsBackendText = "none";
@@ -414,7 +416,7 @@ void SandboxLayer::applyQaCaptureState()
     if (m_qaCaptureState.empty()) {
         return;
     }
-    if (!isFerryOfficeRuntimeScene()) {
+    if (!m_runtimePolicy.usesFerryOfficeBehavior) {
         engine::Logger::warning("QA capture state ignored for non-Ferry runtime scene: " + m_qaCaptureState);
         return;
     }
@@ -623,7 +625,7 @@ void SandboxLayer::onRender(engine::IRenderer& renderer)
         drawPlayerPresentation(renderer);
     }
     if (fullDebug) {
-        if (isFerryOfficeRuntimeScene()) {
+        if (m_runtimePolicy.drawsWorldStateDebug) {
             drawWorldStateDebug(renderer);
         }
         drawSliceDebug(renderer);
@@ -669,7 +671,7 @@ void SandboxLayer::updateDebugText()
 
 std::string SandboxLayer::buildPresentationText(bool minimal) const
 {
-    if (isTargetSliceRuntimeScene()) {
+    if (m_runtimePolicy.usesNeutralPresentation) {
         return buildNeutralScenePresentationText(minimal);
     }
 
@@ -779,7 +781,7 @@ std::string SandboxLayer::buildNeutralScenePresentationText(bool minimal) const
 
 std::string SandboxLayer::buildFullDebugText() const
 {
-    if (isTargetSliceRuntimeScene()) {
+    if (m_runtimePolicy.usesNeutralPresentation) {
         return buildNeutralSceneDebugText();
     }
 
@@ -935,7 +937,7 @@ bool SandboxLayer::shouldDrawRouteMarker(std::string_view routeId) const
     if (shouldDrawFullGuidance()) {
         return true;
     }
-    if (!isFerryOfficeRuntimeScene()) {
+    if (m_runtimePolicy.guidancePolicy == SceneGuidancePolicy::AllAuthored) {
         return true;
     }
 
@@ -947,7 +949,7 @@ bool SandboxLayer::shouldDrawObjectiveMarker(std::string_view markerId) const
     if (shouldDrawFullGuidance()) {
         return true;
     }
-    if (!isFerryOfficeRuntimeScene()) {
+    if (m_runtimePolicy.guidancePolicy == SceneGuidancePolicy::AllAuthored) {
         return true;
     }
 
@@ -979,7 +981,7 @@ bool SandboxLayer::shouldDrawInteractableMarker(const Interactable& interactable
     if (shouldDrawFullGuidance()) {
         return true;
     }
-    if (!isFerryOfficeRuntimeScene()) {
+    if (m_runtimePolicy.guidancePolicy == SceneGuidancePolicy::AllAuthored) {
         return true;
     }
 
@@ -1019,7 +1021,7 @@ bool SandboxLayer::shouldDrawTraversalMarker(const TraversalAffordance& affordan
     if (shouldDrawFullGuidance()) {
         return true;
     }
-    if (!isFerryOfficeRuntimeScene()) {
+    if (m_runtimePolicy.guidancePolicy == SceneGuidancePolicy::AllAuthored) {
         return true;
     }
 
@@ -1040,22 +1042,15 @@ bool SandboxLayer::shouldDrawVehicleGuidance() const
     if (shouldDrawFullGuidance() || m_vehicle.state().occupied) {
         return true;
     }
+    if (m_runtimePolicy.guidancePolicy == SceneGuidancePolicy::AllAuthored) {
+        return true;
+    }
 
     const FerryOfficeJobPhase phase = m_scene.job().phase(m_scene.worldState());
     return phase == FerryOfficeJobPhase::UseServiceVehicle
         || phase == FerryOfficeJobPhase::ReachDockRoad
         || phase == FerryOfficeJobPhase::ConfirmServiceRun
         || phase == FerryOfficeJobPhase::Complete;
-}
-
-bool SandboxLayer::isFerryOfficeRuntimeScene() const
-{
-    return !m_sceneDefinitionLoaded || IsFerryOfficeRegressionScene(m_sceneDefinition);
-}
-
-bool SandboxLayer::isTargetSliceRuntimeScene() const
-{
-    return m_sceneDefinitionLoaded && IsTargetSliceScaffoldScene(m_sceneDefinition);
 }
 
 void SandboxLayer::drawInteractionDebug(engine::IRenderer& renderer)
@@ -1294,7 +1289,7 @@ void SandboxLayer::drawSliceDebug(engine::IRenderer& renderer)
                 renderer.drawDebugLine(marker.points[index - 1], marker.points[index], routeColor);
             }
         }
-        if (!isFerryOfficeRuntimeScene()) {
+        if (!m_runtimePolicy.usesFerryOfficeBehavior) {
             return;
         }
     } else {

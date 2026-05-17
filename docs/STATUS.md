@@ -2,6 +2,78 @@
 
 Last updated: 2026-05-17
 
+## Scene-Role Runtime Policy Boundary (2026-05-17)
+
+Goal:
+
+- Start and execute the next system goal after the Veyra target-slice hardening.
+- Move the smallest scene-role runtime policy out of scattered direct checks in `SandboxLayer`.
+- Keep Ferry Office as a regression-testbed/fallback path and Veyra as a neutral target-slice scaffold without adding content, terrain, mission beats, map work, assets, renderer rewrites, or polish.
+
+Scope:
+
+- Added `SceneRuntimePolicy` in `src\game\SceneRuntimePolicy.h/.cpp`.
+- `SceneRuntimePolicy` now classifies fallback/no loaded scene, Ferry Office regression-testbed scenes, Veyra target-slice scaffold scenes, and generic loaded authored scenes.
+- Replaced direct role checks in `SandboxLayer` for fallback vehicle, QA capture state, neutral presentation/debug text, world-state debug drawing, route/objective/interactable/traversal guidance, and vehicle guidance.
+- Added regression tests in `tests\EngineCoreTests.cpp` for fallback, Ferry Office, Veyra target-slice, and generic loaded scene policy.
+- Saved the exact goal prompt and plan in `docs\superpowers\plans\2026-05-17-scene-runtime-policy-boundary.md`.
+
+Evidence:
+
+- CONFIRMED: RED `cmake --build --preset windows-vs2022-debug --target EngineCoreTests` failed before implementation with `fatal error C1083: Cannot open include file: 'game/SceneRuntimePolicy.h': No such file or directory`.
+- CONFIRMED: GREEN `cmake --build --preset windows-vs2022-debug --target EngineCoreTests` passed after adding the policy module.
+- CONFIRMED: GREEN `build\windows-vs2022-debug\Debug\EngineCoreTests.exe` passed after adding policy tests and wiring `SandboxLayer`.
+- CONFIRMED: GREEN `python tests\test_runtime_scene_smoke.py` passed, 4 tests.
+- CONFIRMED: GREEN `cmake --build --preset windows-vs2022-debug --target EngineCoreTests EngineApp` passed.
+- CONFIRMED: GREEN `python tools\runtime_scene_smoke.py --exe build\windows-vs2022-debug\Debug\EngineApp.exe --scene data\scenes\veyra_reach_pilot.scene.json --ui-mode debug --report-json build\runtime\veyra-reach-pilot-debug-smoke-report.json` passed.
+
+Remaining limits:
+
+- This is an architecture boundary, not evidence that Veyra is a playable world or that Ferry Office should be improved as a game map.
+- `SandboxLayer` still contains too much renderer/debug/gameplay glue; this goal only removed the role-policy ambiguity that was already blocking sane target-slice work.
+- Scene roles are still coarse: Ferry Office regression-testbed, neutral authored scene, and fallback. There is no full scene runtime architecture or target-world authoring system yet.
+
+Validation commands:
+
+- GREEN: `git status --short --branch`: clean before work on `main...origin/main`.
+- GREEN: `git branch --show-current`: `main`.
+- GREEN: `python tools\status_report.py`: passed before work.
+- GREEN: `scripts\doctor.ps1`: passed before work with expected optional PATH warnings.
+- GREEN: `scripts\configure.ps1`: passed before work.
+- GREEN: `scripts\build.ps1`: passed before work.
+- GREEN: `scripts\verify.ps1`: passed before work.
+- RED: `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: missing `game/SceneRuntimePolicy.h` before implementation.
+- GREEN: `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`.
+- GREEN: `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`.
+- GREEN: `python tests\test_runtime_scene_smoke.py`.
+- GREEN: `cmake --build --preset windows-vs2022-debug --target EngineCoreTests EngineApp`.
+- GREEN: `python tools\runtime_scene_smoke.py --exe build\windows-vs2022-debug\Debug\EngineApp.exe --scene data\scenes\veyra_reach_pilot.scene.json --ui-mode debug --report-json build\runtime\veyra-reach-pilot-debug-smoke-report.json`.
+- GREEN: `scripts\verify.ps1`: passed after code, tests, docs, runtime smoke, scene validation, asset validation, mesh/world reports, standard smoke, Ferry Office playthrough smoke, and CTest 12/12.
+
+Next recommended goal:
+
+```text
+/goal Scene runtime extraction seam audit + first split dla Tidebreak w C:\Users\Marcin\Documents\New project.
+
+Cel:
+Po SceneRuntimePolicy nie dodawac contentu ani terrainu. Zrobic pierwszy maly, dowodowy split `SandboxLayer`: wydzielic neutral target-slice presentation/debug/guidance surface albo Ferry Office regression-testbed adapter tak, zeby przyszly prawdziwy slice nie dziedziczyl kolejnych ukrytych zaleznosci od Ferry Office.
+
+Dlaczego:
+SceneRuntimePolicy zamknela decyzje "jaka rola sceny?", ale nie rozdzielila wykonania tych rol. Najwieksze aktualne ryzyko systemowe to nadal jeden plik, ktory miesza scene loading, Ferry Office job chain, debug rendering, vehicle fallback, neutral slice presentation i guidance. Przed swiatem/contentem trzeba najpierw miec miejsce, do ktorego ten swiat moze wejsc bez udawania Ferry Office.
+
+Non-goals:
+- Nie rob mapy, terenu, road systemu, asset passu, misji, NPC ani polishu.
+- Nie przepisuj calego `SandboxLayer`.
+- Nie usuwaj Ferry Office jako regression-testbedu.
+
+Walidacja:
+- `python tests\test_runtime_scene_smoke.py`
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests EngineApp`
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`
+- Veyra debug runtime smoke
+- `scripts\verify.ps1`
+```
+
 ## Veyra Reach Pilot Runtime-To-Authoring Split Hardening (2026-05-17)
 
 Goal:

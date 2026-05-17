@@ -26,6 +26,7 @@
 #include "game/SceneDefinition.h"
 #include "game/SceneLoader.h"
 #include "game/ScenePresentation.h"
+#include "game/SceneRuntimePolicy.h"
 #include "game/ThirdPersonCamera.h"
 #include "game/TraversalSystem.h"
 #include "game/VehicleController.h"
@@ -1241,6 +1242,99 @@ void TestSceneLoaderLoadsPilotSliceMetadata()
     Expect(result.scene.vehicles.empty(),
         "TestSceneLoaderLoadsPilotSliceMetadata",
         "Pilot scaffold should not silently inherit a Ferry Office service vehicle.");
+}
+
+void TestSceneRuntimePolicyKeepsFallbackAsFerryOfficeRegression()
+{
+    SceneDefinition unloadedScene;
+    const SceneRuntimePolicy policy = BuildSceneRuntimePolicy(false, unloadedScene);
+
+    Expect(policy.usesFerryOfficeBehavior,
+        "TestSceneRuntimePolicyKeepsFallbackAsFerryOfficeRegression",
+        "The built-in fallback should preserve Ferry Office regression behavior.");
+    Expect(!policy.usesNeutralPresentation,
+        "TestSceneRuntimePolicyKeepsFallbackAsFerryOfficeRegression",
+        "Fallback should keep the established Ferry Office debug/presentation path.");
+    Expect(policy.allowsFallbackVehicle,
+        "TestSceneRuntimePolicyKeepsFallbackAsFerryOfficeRegression",
+        "Fallback should keep the service-yard vehicle fallback.");
+    Expect(policy.drawsWorldStateDebug,
+        "TestSceneRuntimePolicyKeepsFallbackAsFerryOfficeRegression",
+        "Fallback should keep Ferry Office world-state debug evidence.");
+    Expect(policy.guidancePolicy == SceneGuidancePolicy::FerryOfficeActive,
+        "TestSceneRuntimePolicyKeepsFallbackAsFerryOfficeRegression",
+        "Fallback should use Ferry Office active route/objective guidance policy.");
+}
+
+void TestSceneRuntimePolicyClassifiesRegressionAndTargetSliceRoles()
+{
+    const SceneLoadResult ferry = LoadSceneDefinition(DefaultScenePathForTests());
+    const SceneLoadResult pilot = LoadSceneDefinition(PilotScenePathForTests());
+    Expect(ferry.ok() && pilot.ok(),
+        "TestSceneRuntimePolicyClassifiesRegressionAndTargetSliceRoles",
+        "Scene fixtures should load before runtime policy checks.");
+    if (!ferry.ok() || !pilot.ok()) {
+        return;
+    }
+
+    const SceneRuntimePolicy ferryPolicy = BuildSceneRuntimePolicy(true, ferry.scene);
+    Expect(ferryPolicy.usesFerryOfficeBehavior,
+        "TestSceneRuntimePolicyClassifiesRegressionAndTargetSliceRoles",
+        "Ferry Office regression-testbed should use Ferry Office behavior.");
+    Expect(!ferryPolicy.usesNeutralPresentation,
+        "TestSceneRuntimePolicyClassifiesRegressionAndTargetSliceRoles",
+        "Ferry Office regression-testbed should not use neutral target-slice presentation.");
+    Expect(ferryPolicy.allowsFallbackVehicle,
+        "TestSceneRuntimePolicyClassifiesRegressionAndTargetSliceRoles",
+        "Ferry Office regression-testbed should allow the historical fallback vehicle path.");
+    Expect(ferryPolicy.drawsWorldStateDebug,
+        "TestSceneRuntimePolicyClassifiesRegressionAndTargetSliceRoles",
+        "Ferry Office regression-testbed should draw world-state debug evidence.");
+    Expect(ferryPolicy.guidancePolicy == SceneGuidancePolicy::FerryOfficeActive,
+        "TestSceneRuntimePolicyClassifiesRegressionAndTargetSliceRoles",
+        "Ferry Office regression-testbed should use active Ferry Office route/objective guidance.");
+
+    const SceneRuntimePolicy pilotPolicy = BuildSceneRuntimePolicy(true, pilot.scene);
+    Expect(!pilotPolicy.usesFerryOfficeBehavior,
+        "TestSceneRuntimePolicyClassifiesRegressionAndTargetSliceRoles",
+        "Target-slice scaffold should not use Ferry Office behavior.");
+    Expect(pilotPolicy.usesNeutralPresentation,
+        "TestSceneRuntimePolicyClassifiesRegressionAndTargetSliceRoles",
+        "Target-slice scaffold should use neutral presentation.");
+    Expect(!pilotPolicy.allowsFallbackVehicle,
+        "TestSceneRuntimePolicyClassifiesRegressionAndTargetSliceRoles",
+        "Target-slice scaffold should not inherit the fallback service vehicle.");
+    Expect(!pilotPolicy.drawsWorldStateDebug,
+        "TestSceneRuntimePolicyClassifiesRegressionAndTargetSliceRoles",
+        "Target-slice scaffold should not draw Ferry Office world-state debug evidence.");
+    Expect(pilotPolicy.guidancePolicy == SceneGuidancePolicy::AllAuthored,
+        "TestSceneRuntimePolicyClassifiesRegressionAndTargetSliceRoles",
+        "Target-slice scaffold should show its authored route/objective markers without Ferry Office job gating.");
+}
+
+void TestSceneRuntimePolicyTreatsUnknownLoadedSceneAsNeutral()
+{
+    SceneDefinition genericScene;
+    genericScene.id = "generic-authored-scene";
+    genericScene.sliceMetadata.kind = "experimental-sandbox";
+
+    const SceneRuntimePolicy policy = BuildSceneRuntimePolicy(true, genericScene);
+
+    Expect(!policy.usesFerryOfficeBehavior,
+        "TestSceneRuntimePolicyTreatsUnknownLoadedSceneAsNeutral",
+        "A loaded non-regression scene should not silently borrow Ferry Office behavior.");
+    Expect(policy.usesNeutralPresentation,
+        "TestSceneRuntimePolicyTreatsUnknownLoadedSceneAsNeutral",
+        "A loaded non-regression scene should use neutral presentation until a stronger role exists.");
+    Expect(!policy.allowsFallbackVehicle,
+        "TestSceneRuntimePolicyTreatsUnknownLoadedSceneAsNeutral",
+        "A loaded non-regression scene should not inherit the service-yard fallback vehicle.");
+    Expect(!policy.drawsWorldStateDebug,
+        "TestSceneRuntimePolicyTreatsUnknownLoadedSceneAsNeutral",
+        "A loaded non-regression scene should not draw Ferry Office world-state debug evidence.");
+    Expect(policy.guidancePolicy == SceneGuidancePolicy::AllAuthored,
+        "TestSceneRuntimePolicyTreatsUnknownLoadedSceneAsNeutral",
+        "A loaded non-regression scene should use neutral authored guidance.");
 }
 
 void TestSceneLoaderLoadsV018VisualIdentityPropKit()
@@ -5751,6 +5845,9 @@ int main()
     TestStaticMeshBuildsTransformedTriangleList();
     TestSceneLoaderLoadsDefaultFerryOfficeScene();
     TestSceneLoaderLoadsPilotSliceMetadata();
+    TestSceneRuntimePolicyKeepsFallbackAsFerryOfficeRegression();
+    TestSceneRuntimePolicyClassifiesRegressionAndTargetSliceRoles();
+    TestSceneRuntimePolicyTreatsUnknownLoadedSceneAsNeutral();
     TestSceneLoaderLoadsV018VisualIdentityPropKit();
     TestSceneLoaderLoadsFirstJobMarkers();
     TestSceneLoaderLoadsDockRoadRelayBeat();
