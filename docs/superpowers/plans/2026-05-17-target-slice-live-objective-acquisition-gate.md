@@ -34,7 +34,7 @@
 - [x] Add the Python wrapper and CTest entry.
 - [x] Update docs/status with evidence and remaining limits.
 - [x] Run focused validation and full `scripts/verify.ps1`.
-- [ ] Commit/push only if validation passes and worktree is scoped.
+- [x] Commit/push only if validation passes and worktree is scoped.
 
 ## Acceptance
 
