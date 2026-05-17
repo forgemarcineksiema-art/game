@@ -503,6 +503,15 @@ void TestQaCaptureStateArgumentsSelectMidChainRouteState()
         "TestQaCaptureStateArgumentsSelectMidChainRouteState",
         "Config should preserve the requested low dock drain access capture state.");
 
+    const char* vehicleArgv[] = {"EngineApp", "--qa-capture-state", "vehicle-dock-road-forward"};
+    const auto vehicleResult = engine::ParseArguments(3, vehicleArgv);
+    Expect(vehicleResult.errors.empty(),
+        "TestQaCaptureStateArgumentsSelectMidChainRouteState",
+        "QA capture state should accept the vehicle dock-road scenario.");
+    Expect(vehicleResult.config.qaCaptureState == "vehicle-dock-road-forward",
+        "TestQaCaptureStateArgumentsSelectMidChainRouteState",
+        "Config should preserve the requested vehicle capture state.");
+
     const char* badArgv[] = {"EngineApp", "--qa-capture-state", "unknown"};
     const auto badResult = engine::ParseArguments(3, badArgv);
     Expect(!badResult.errors.empty(),
@@ -2729,6 +2738,38 @@ void TestSandboxLayerQaCaptureStateDrawsLowDockDrainAccessGuidance()
     Expect(text.find("low dock drain") != std::string::npos,
         "TestSandboxLayerQaCaptureStateDrawsLowDockDrainAccessGuidance",
         "QA capture state should preload the opened-access follow-up step that points to the Low Dock Drain.");
+}
+
+void TestSandboxLayerQaCaptureStateDrawsVehicleDockRoadPerspective()
+{
+    SandboxLayer layer(
+        DefaultScenePathForTests(),
+        engine::UiMode::Playtest,
+        engine::physics::PhysicsBackend::Simple,
+        false,
+        "vehicle-dock-road-forward");
+    layer.onAttach();
+
+    engine::InputState input;
+    layer.onUpdate(0.016, input);
+    CountingRenderer renderer;
+    renderer.initialize({});
+    renderer.beginFrame(1);
+    layer.onRender(renderer);
+    renderer.endFrame();
+    const std::string text = layer.debugText();
+    layer.onDetach();
+
+    const engine::Color routeColor {0.70f, 0.92f, 1.0f, 1.0f};
+    Expect(CountLinesWithColor(renderer, routeColor) > 0,
+        "TestSandboxLayerQaCaptureStateDrawsVehicleDockRoadPerspective",
+        "Vehicle QA capture state should still draw the active dock-road route guidance in playtest mode.");
+    Expect(text.find("mode=driving") != std::string::npos,
+        "TestSandboxLayerQaCaptureStateDrawsVehicleDockRoadPerspective",
+        "Vehicle QA capture state should put the presentation overlay into driving mode.");
+    Expect(text.find("Drive: speed=") != std::string::npos,
+        "TestSandboxLayerQaCaptureStateDrawsVehicleDockRoadPerspective",
+        "Vehicle QA capture state should expose driving HUD text for the capture.");
 }
 
 void TestSandboxLayerDebugTextPreservesFullTelemetry()
@@ -5489,6 +5530,7 @@ int main()
     TestSandboxLayerPlaytestKeepsRouteDebugHiddenAfterManifest();
     TestSandboxLayerQaCaptureStateDrawsMidChainRouteGuidance();
     TestSandboxLayerQaCaptureStateDrawsLowDockDrainAccessGuidance();
+    TestSandboxLayerQaCaptureStateDrawsVehicleDockRoadPerspective();
     TestSandboxLayerDebugTextPreservesFullTelemetry();
     TestSandboxLayerMinimalTextStaysSmallButUseful();
     TestSandboxLayerF1TogglesBetweenPlaytestAndDebugText();

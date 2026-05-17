@@ -78,7 +78,13 @@ bool ParseVehicleRuntime(std::string_view text, bool& adapterEnabled, physics::P
 
 bool ParseQaCaptureState(std::string_view text)
 {
-    return text == "relay-to-service-log" || text == "low-dock-drain-access";
+    return text == "relay-to-service-log"
+        || text == "low-dock-drain-access"
+        || text == "office-front-oblique"
+        || text == "service-yard-vehicle-side"
+        || text == "dock-road-wide"
+        || text == "vehicle-dock-road-forward"
+        || text == "vehicle-dock-road-reverse";
 }
 
 } // namespace
@@ -251,7 +257,7 @@ ConfigParseResult ParseArguments(int argc, const char* const* argv)
 
         if (ReadValue(argc, argv, index, argument, "--qa-capture-state", value)) {
             if (!ParseQaCaptureState(value)) {
-                result.errors.push_back("--qa-capture-state must be one of: relay-to-service-log, low-dock-drain-access.");
+                result.errors.push_back("--qa-capture-state must be one of: relay-to-service-log, low-dock-drain-access, office-front-oblique, service-yard-vehicle-side, dock-road-wide, vehicle-dock-road-forward, vehicle-dock-road-reverse.");
             } else {
                 result.config.qaCaptureState = value;
             }
@@ -319,7 +325,7 @@ std::string BuildHelpText()
         << "  --capture-dir <path>  Write one renderer-owned BMP capture into the directory.\n"
         << "  --qa-playthrough <name> Run a QA-only automated playthrough. Supported: ferry-office-service-call.\n"
         << "  --qa-playthrough-report <path> Write the QA playthrough JSON report.\n"
-        << "  --qa-capture-state <name> Preload a QA-only capture state. Supported: relay-to-service-log, low-dock-drain-access.\n"
+        << "  --qa-capture-state <name> Preload a QA-only capture state. Supported: relay-to-service-log, low-dock-drain-access, office-front-oblique, service-yard-vehicle-side, dock-road-wide, vehicle-dock-road-forward, vehicle-dock-road-reverse.\n"
         << "  --qa-physics-parity <name> Run QA-only physics parity/contact. Supported: ferry-office-collision, ferry-office-character-contact, ferry-office-vehicle-feasibility, ferry-office-vehicle-runtime-comparison.\n"
         << "  --qa-physics-report <path> Write the QA physics parity JSON report.\n"
         << "  --help                Show this help.\n";

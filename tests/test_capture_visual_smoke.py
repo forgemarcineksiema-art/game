@@ -190,9 +190,40 @@ class CaptureVisualSmokeTests(unittest.TestCase):
             ["--qa-capture-state", "low-dock-drain-access"],
             capture_visual_smoke.qa_capture_state_args("low-dock-drain-access"),
         )
+        self.assertEqual(
+            ["--qa-capture-state", "office-front-oblique"],
+            capture_visual_smoke.qa_capture_state_args("office-front-oblique"),
+        )
+        self.assertEqual(
+            ["--qa-capture-state", "service-yard-vehicle-side"],
+            capture_visual_smoke.qa_capture_state_args("service-yard-vehicle-side"),
+        )
+        self.assertEqual(
+            ["--qa-capture-state", "dock-road-wide"],
+            capture_visual_smoke.qa_capture_state_args("dock-road-wide"),
+        )
+        self.assertEqual(
+            ["--qa-capture-state", "vehicle-dock-road-forward"],
+            capture_visual_smoke.qa_capture_state_args("vehicle-dock-road-forward"),
+        )
+        self.assertEqual(
+            ["--qa-capture-state", "vehicle-dock-road-reverse"],
+            capture_visual_smoke.qa_capture_state_args("vehicle-dock-road-reverse"),
+        )
 
         with self.assertRaisesRegex(ValueError, "scenario"):
             capture_visual_smoke.qa_capture_state_args("unknown")
+
+    def test_capture_filename_keeps_legacy_names_and_labels_new_perspectives(self) -> None:
+        self.assertEqual("v0.31-gdi-capture.bmp", capture_visual_smoke.capture_filename("initial", "gdi"))
+        self.assertEqual(
+            "v0.94-relay-to-service-log-gdi-capture.bmp",
+            capture_visual_smoke.capture_filename("relay-to-service-log", "gdi"),
+        )
+        self.assertEqual(
+            "perspective-vehicle-dock-road-forward-gdi-capture.bmp",
+            capture_visual_smoke.capture_filename("vehicle-dock-road-forward", "gdi"),
+        )
 
 
 if __name__ == "__main__":

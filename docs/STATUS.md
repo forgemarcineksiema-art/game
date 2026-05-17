@@ -2,6 +2,45 @@
 
 Last updated: 2026-05-17
 
+## Multi-Perspective Visual Capture Pass (2026-05-17)
+
+Goal:
+
+- Produce a broader visual capture set from project tools instead of relying on one initial gameplay screenshot.
+- Add repeatable QA capture states for different Ferry Office camera/place/vehicle views.
+- Improve capture tooling when the existing harness could not request vehicle runtime or UI mode explicitly.
+
+Scope:
+
+- Added QA capture states: `office-front-oblique`, `service-yard-vehicle-side`, `dock-road-wide`, `vehicle-dock-road-forward`, and `vehicle-dock-road-reverse`.
+- Extended `tools\capture_visual_smoke.py` with those scenarios plus `--vehicle-runtime <deterministic|preferred|jolt>` and `--ui-mode <playtest|debug|minimal>`.
+- Kept legacy scenario output names for `initial`, `relay-to-service-log`, and `low-dock-drain-access`.
+- Hid the on-foot player presentation proxy while the service vehicle is occupied; otherwise the car-camera capture showed a standing player proxy in the vehicle view.
+
+Capture evidence:
+
+- CONFIRMED: GDI captures passed for `initial`, `office-front-oblique`, `service-yard-vehicle-side`, `dock-road-wide`, `vehicle-dock-road-forward`, `vehicle-dock-road-reverse`, `relay-to-service-log`, and `low-dock-drain-access` under `build\captures\multi-perspective-2026-05-17\`.
+- CONFIRMED: additional deterministic-pose vehicle captures passed for `vehicle-dock-road-forward` and `vehicle-dock-road-reverse` so the overlay shows meaningful drive/reverse speed instead of a static Jolt preferred-runtime zero-speed capture.
+- CONFIRMED: `vehicle-dock-road-forward-debug` passed and shows the debug vehicle proxy/body and full vehicle telemetry from the vehicle camera mode.
+- INTERPRETATION: the new captures prove broader visual coverage and expose the real presentation gap: playtest mode can show the route and markers, but the service vehicle still does not read strongly enough as a playable object without debug overlay help.
+
+Validation commands:
+
+- `python tests\test_capture_visual_smoke.py`: passed, 8 tests.
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests EngineApp`: passed.
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- `cmake --build --preset windows-vs2022-debug-jolt --target EngineApp`: passed.
+- `python tools\capture_visual_smoke.py ...` multi-perspective GDI capture loop: passed for all requested scenarios.
+- `python tools\capture_visual_smoke.py --scenario vehicle-dock-road-forward --renderer gdi --vehicle-runtime deterministic --ui-mode debug ...`: passed.
+- `scripts\verify.ps1`: passed; 11/11 default CTest plus scene/assets/mesh/null-smoke validation.
+- `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed; 16/16 tests.
+
+Important limits:
+
+- This is capture/tooling evidence, not a visual polish pass.
+- The captures still show a debug/prototype presentation: text-led goals, flat placeholder materials, sparse atmosphere, and weak vehicle identity in normal playtest mode.
+- A single readability pass will not make this look finished. The next visual work should be a focused vehicle/HUD/camera presentation milestone, not more proof that the renderer can output nonblank frames.
+
 ## Default Runtime Promotion Decision (2026-05-17)
 
 Decision:

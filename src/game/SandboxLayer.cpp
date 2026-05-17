@@ -334,14 +334,14 @@ void SandboxLayer::onAttach()
     engine::Logger::info("Sandbox layer attached.");
     loadSceneDefinition();
     configureRuntimeFromScene();
-    applyQaCaptureState();
-    m_player.setWorld(&m_scene.world());
     m_onFootCameraSettings = m_camera.settings();
     m_vehicleCameraSettings = m_onFootCameraSettings;
     m_vehicleCameraSettings.distance = 6.75f;
     m_vehicleCameraSettings.heightOffset = 1.95f;
     m_vehicleCameraSettings.smoothing = 9.0f;
     m_vehicleCameraSettings.targetYawFollowStrength = 5.0f;
+    applyQaCaptureState();
+    m_player.setWorld(&m_scene.world());
     setupVehiclePhysicsWorld();
     setupVehicleRuntimeAdapter();
     loadStaticMeshAssets();
@@ -410,35 +410,27 @@ void SandboxLayer::applyQaCaptureState()
     const auto setFlag = [&state](WorldFlag flag) {
         state.setFlag(flag, true, "QA capture state");
     };
-
-    if (m_qaCaptureState == "relay-to-service-log") {
+    const auto setServiceRouteOpen = [&setFlag]() {
         setFlag(WorldFlag::FerryOfficeJobStarted);
         setFlag(WorldFlag::ManifestCollected);
         setFlag(WorldFlag::ServiceRouteUsed);
         setFlag(WorldFlag::MaintenanceBoxInspected);
         setFlag(WorldFlag::PowerRestored);
         setFlag(WorldFlag::RouteOpened);
+    };
+    const auto setServiceRunComplete = [&setFlag, &setServiceRouteOpen]() {
+        setServiceRouteOpen();
         setFlag(WorldFlag::ServiceVehicleUsed);
         setFlag(WorldFlag::DockRoadReached);
         setFlag(WorldFlag::ServiceRunConfirmed);
         setFlag(WorldFlag::FerryOfficeJobComplete);
+    };
+    const auto setRelayReady = [&setFlag, &setServiceRunComplete]() {
+        setServiceRunComplete();
         setFlag(WorldFlag::DockRoadRelayReset);
-        m_player.setPosition({17.45f, 0.0f, 0.05f});
-        m_player.setFacingYawRadians(0.0f);
-        m_camera.setYawRadians(0.0f);
-        engine::Logger::info("QA capture state applied: relay-to-service-log.");
-    } else if (m_qaCaptureState == "low-dock-drain-access") {
-        setFlag(WorldFlag::FerryOfficeJobStarted);
-        setFlag(WorldFlag::ManifestCollected);
-        setFlag(WorldFlag::ServiceRouteUsed);
-        setFlag(WorldFlag::MaintenanceBoxInspected);
-        setFlag(WorldFlag::PowerRestored);
-        setFlag(WorldFlag::RouteOpened);
-        setFlag(WorldFlag::ServiceVehicleUsed);
-        setFlag(WorldFlag::DockRoadReached);
-        setFlag(WorldFlag::ServiceRunConfirmed);
-        setFlag(WorldFlag::FerryOfficeJobComplete);
-        setFlag(WorldFlag::DockRoadRelayReset);
+    };
+    const auto setLowDockReady = [&setFlag, &setRelayReady]() {
+        setRelayReady();
         setFlag(WorldFlag::DockRoadRelayLogged);
         setFlag(WorldFlag::DockRoadClearanceTagged);
         setFlag(WorldFlag::HarborPartsPickedUp);
@@ -447,10 +439,55 @@ void SandboxLayer::applyQaCaptureState()
         setFlag(WorldFlag::FerryOfficeHandoffFiled);
         setFlag(WorldFlag::StormPumpReset);
         setFlag(WorldFlag::StormPumpTicketClosed);
+    };
+    const auto applyVehicleCapturePose = [this](engine::Vec3 position, float yawRadians, float speed, float throttle, float brake, float steer) {
+        m_vehicle.applyRuntimeState(position, yawRadians, speed, throttle, brake, steer, false);
+        m_vehicle.setOccupiedForTesting(true);
+        m_player.setPosition(position - m_vehicle.right() * 0.20f);
+        m_player.setFacingYawRadians(yawRadians);
+        applyCameraSettingsForMode(true);
+        m_camera.setYawRadians(yawRadians);
+    };
+
+    if (m_qaCaptureState == "relay-to-service-log") {
+        setRelayReady();
+        m_player.setPosition({17.45f, 0.0f, 0.05f});
+        m_player.setFacingYawRadians(0.0f);
+        m_camera.setYawRadians(0.0f);
+        engine::Logger::info("QA capture state applied: relay-to-service-log.");
+    } else if (m_qaCaptureState == "low-dock-drain-access") {
+        setLowDockReady();
         m_player.setPosition({18.75f, 0.0f, -2.05f});
         m_player.setFacingYawRadians(0.0f);
         m_camera.setYawRadians(0.0f);
         engine::Logger::info("QA capture state applied: low-dock-drain-access.");
+    } else if (m_qaCaptureState == "office-front-oblique") {
+        m_player.setPosition({1.15f, 0.0f, -1.35f});
+        m_player.setFacingYawRadians(engine::Radians(28.0f));
+        m_camera.setYawRadians(engine::Radians(38.0f));
+        engine::Logger::info("QA capture state applied: office-front-oblique.");
+    } else if (m_qaCaptureState == "service-yard-vehicle-side") {
+        setServiceRouteOpen();
+        m_player.setPosition({5.10f, 0.0f, -2.35f});
+        m_player.setFacingYawRadians(engine::Radians(92.0f));
+        m_camera.setYawRadians(engine::Radians(105.0f));
+        engine::Logger::info("QA capture state applied: service-yard-vehicle-side.");
+    } else if (m_qaCaptureState == "dock-road-wide") {
+        setServiceRunComplete();
+        m_player.setPosition({13.60f, 0.0f, -2.30f});
+        m_player.setFacingYawRadians(engine::Radians(86.0f));
+        m_camera.setYawRadians(engine::Radians(125.0f));
+        engine::Logger::info("QA capture state applied: dock-road-wide.");
+    } else if (m_qaCaptureState == "vehicle-dock-road-forward") {
+        setServiceRouteOpen();
+        setFlag(WorldFlag::ServiceVehicleUsed);
+        applyVehicleCapturePose({13.20f, 0.0f, -2.30f}, engine::Radians(88.0f), 2.25f, 0.65f, 0.0f, 0.18f);
+        engine::Logger::info("QA capture state applied: vehicle-dock-road-forward.");
+    } else if (m_qaCaptureState == "vehicle-dock-road-reverse") {
+        setServiceRouteOpen();
+        setFlag(WorldFlag::ServiceVehicleUsed);
+        applyVehicleCapturePose({17.45f, 0.0f, -2.20f}, engine::Radians(-92.0f), -0.85f, -0.45f, 0.0f, -0.40f);
+        engine::Logger::info("QA capture state applied: vehicle-dock-road-reverse.");
     }
     m_scene.syncWorldStateColliders();
 }
@@ -566,7 +603,9 @@ void SandboxLayer::onRender(engine::IRenderer& renderer)
             renderer.drawDebugBox(collider.bounds.center, collider.bounds.halfExtents, ColliderWireColor(collider, routeOpened));
         }
     }
-    drawPlayerPresentation(renderer);
+    if (!m_vehicle.state().occupied) {
+        drawPlayerPresentation(renderer);
+    }
     if (fullDebug) {
         drawWorldStateDebug(renderer);
         drawSliceDebug(renderer);

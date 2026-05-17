@@ -16,6 +16,30 @@ from typing import Any
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DEFAULT_EXE = ROOT / "build" / "windows-vs2022-debug" / "Debug" / "EngineApp.exe"
 DEFAULT_SCENE = ROOT / "data" / "scenes" / "ferry_office.scene.json"
+CAPTURE_SCENARIOS = (
+    "initial",
+    "office-front-oblique",
+    "service-yard-vehicle-side",
+    "dock-road-wide",
+    "vehicle-dock-road-forward",
+    "vehicle-dock-road-reverse",
+    "relay-to-service-log",
+    "low-dock-drain-access",
+)
+CAPTURE_STATE_BY_SCENARIO = {
+    "office-front-oblique": "office-front-oblique",
+    "service-yard-vehicle-side": "service-yard-vehicle-side",
+    "dock-road-wide": "dock-road-wide",
+    "vehicle-dock-road-forward": "vehicle-dock-road-forward",
+    "vehicle-dock-road-reverse": "vehicle-dock-road-reverse",
+    "relay-to-service-log": "relay-to-service-log",
+    "low-dock-drain-access": "low-dock-drain-access",
+}
+CAPTURE_PREFIX_BY_SCENARIO = {
+    "initial": "v0.31",
+    "relay-to-service-log": "v0.94",
+    "low-dock-drain-access": "v0.95",
+}
 
 
 @dataclass(frozen=True)
@@ -250,11 +274,16 @@ def read_bmp_stats(path: pathlib.Path) -> dict[str, Any]:
 def qa_capture_state_args(scenario: str) -> list[str]:
     if scenario == "initial":
         return []
-    if scenario == "relay-to-service-log":
-        return ["--qa-capture-state", "relay-to-service-log"]
-    if scenario == "low-dock-drain-access":
-        return ["--qa-capture-state", "low-dock-drain-access"]
+    if scenario in CAPTURE_STATE_BY_SCENARIO:
+        return ["--qa-capture-state", CAPTURE_STATE_BY_SCENARIO[scenario]]
     raise ValueError(f"Unsupported capture scenario '{scenario}'.")
+
+
+def capture_filename(scenario: str, renderer: str) -> str:
+    if scenario == "initial":
+        return f"{CAPTURE_PREFIX_BY_SCENARIO[scenario]}-{renderer}-capture.bmp"
+    prefix = CAPTURE_PREFIX_BY_SCENARIO.get(scenario, "perspective")
+    return f"{prefix}-{scenario}-{renderer}-capture.bmp"
 
 
 def run_capture(
@@ -265,6 +294,8 @@ def run_capture(
     frames: int,
     thresholds: VisualThresholds,
     scenario: str = "initial",
+    vehicle_runtime: str = "preferred",
+    ui_mode: str = "playtest",
 ) -> dict[str, Any]:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     if output_path.exists():
@@ -275,7 +306,9 @@ def run_capture(
         "--renderer",
         renderer,
         "--ui-mode",
-        "playtest",
+        ui_mode,
+        "--vehicle-runtime",
+        vehicle_runtime,
         "--scene",
         str(scene),
         "--frames",
@@ -295,6 +328,8 @@ def run_capture(
 
     stats = analyze_bmp_capture(output_path, thresholds)
     stats["renderer"] = renderer
+    stats["uiMode"] = ui_mode
+    stats["vehicleRuntimeRequest"] = vehicle_runtime
     validate_capture_stats(stats, thresholds, renderer)
     print(
         f"{renderer}: {stats['width']}x{stats['height']}, "
@@ -319,12 +354,24 @@ def main() -> int:
     parser.add_argument("--frames", type=int, default=6, help="Bounded run length; capture occurs after a stable frame.")
     parser.add_argument(
         "--scenario",
-        choices=("initial", "relay-to-service-log", "low-dock-drain-access"),
+        choices=CAPTURE_SCENARIOS,
         default="initial",
         help=(
-            "Capture state to preload. 'relay-to-service-log' checks mid-chain route guidance; "
-            "'low-dock-drain-access' checks the v0.95 opened-access consequence."
+            "Capture state to preload. Includes initial, Ferry Office, service-yard, dock-road, "
+            "vehicle camera, and late-chain route views."
         ),
+    )
+    parser.add_argument(
+        "--vehicle-runtime",
+        choices=("deterministic", "preferred", "jolt"),
+        default="preferred",
+        help="Vehicle runtime request forwarded to EngineApp for capture runs.",
+    )
+    parser.add_argument(
+        "--ui-mode",
+        choices=("playtest", "debug", "minimal"),
+        default="playtest",
+        help="Overlay mode forwarded to EngineApp for capture runs.",
     )
     parser.add_argument("--expected-width", type=int, default=1280, help="Expected capture width.")
     parser.add_argument("--expected-height", type=int, default=720, help="Expected capture height.")
@@ -353,10 +400,7 @@ def main() -> int:
     try:
         captures: dict[str, dict[str, Any]] = {}
         for renderer in renderers:
-            capture_name = f"v0.31-{renderer}-capture.bmp"
-            if args.scenario != "initial":
-                milestone = "v0.95" if args.scenario == "low-dock-drain-access" else "v0.94"
-                capture_name = f"{milestone}-{args.scenario}-{renderer}-capture.bmp"
+            capture_name = capture_filename(args.scenario, renderer)
             captures[renderer] = run_capture(
                 exe,
                 scene,
@@ -365,6 +409,8 @@ def main() -> int:
                 args.frames,
                 thresholds,
                 args.scenario,
+                args.vehicle_runtime,
+                args.ui_mode,
             )
         parity = compare_capture_parity(captures)
         write_report(report_path, captures, parity, args.scenario)
