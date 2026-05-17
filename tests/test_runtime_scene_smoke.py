@@ -35,6 +35,26 @@ class RuntimeSceneSmokeTests(unittest.TestCase):
         self.assertTrue(any("Ferry Office" in failure for failure in result.failures))
         self.assertTrue(any("Job:" in failure for failure in result.failures))
 
+    def test_target_slice_output_rejects_ferry_office_debug_telemetry_leak(self) -> None:
+        output = "\n".join(
+            [
+                "[info] Loaded runtime scene data: veyra-reach-pilot from data/scenes/veyra_reach_pilot.scene.json",
+                "scene=veyra-reach-pilot loaded=yes roadSegment=dock-road roadBounds=(-9.50,-7.50)-(9.50,8.50)",
+                "worldState={powerRestored=false manifestCollected=false serviceRunConfirmed=false}",
+            ]
+        )
+
+        result = runtime_scene_smoke.validate_runtime_output(
+            output,
+            expected_scene_id="veyra-reach-pilot",
+            expected_kind="target-slice-scaffold",
+            forbidden_terms=runtime_scene_smoke.DEFAULT_FORBIDDEN_TARGET_SLICE_TERMS,
+        )
+
+        self.assertFalse(result.passed)
+        self.assertTrue(any("roadSegment=dock-road" in failure for failure in result.failures))
+        self.assertTrue(any("worldState={" in failure for failure in result.failures))
+
     def test_target_slice_output_passes_with_neutral_overlay(self) -> None:
         output = "\n".join(
             [

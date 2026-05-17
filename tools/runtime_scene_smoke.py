@@ -18,8 +18,12 @@ DEFAULT_FORBIDDEN_TARGET_SLICE_TERMS = [
     "Ferry Manifest",
     "service call",
     "Job:",
+    "jobObjective=",
     "service gate=",
     "power=offline",
+    "roadSegment=dock-road",
+    "roadBounds=",
+    "worldState={",
 ]
 
 
@@ -62,11 +66,14 @@ def run_runtime_smoke(
     capture_frame: pathlib.Path | None = None,
     frames: int = 3,
     renderer: str = "null",
+    ui_mode: str = "playtest",
 ) -> tuple[subprocess.CompletedProcess[str], RuntimeSmokeValidation]:
     command = [
         str(exe),
         "--renderer",
         renderer,
+        "--ui-mode",
+        ui_mode,
         "--frames",
         str(frames),
         "--scene",
@@ -108,12 +115,14 @@ def build_report(
     expected_scene_id: str,
     expected_kind: str,
     capture_frame: pathlib.Path | None,
+    ui_mode: str,
 ) -> dict[str, object]:
     return {
         "schema": "tidebreak.runtimeSceneSmoke.v1",
         "scene": str(scene),
         "expectedSceneId": expected_scene_id,
         "expectedKind": expected_kind,
+        "uiMode": ui_mode,
         "exitCode": completed.returncode,
         "passed": validation.passed,
         "failures": validation.failures,
@@ -149,6 +158,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--expected-kind", default="target-slice-scaffold")
     parser.add_argument("--frames", type=int, default=3)
     parser.add_argument("--renderer", default="null", choices=["null", "gdi", "dx11"])
+    parser.add_argument("--ui-mode", default="playtest", choices=["playtest", "debug", "minimal"])
     parser.add_argument("--capture-frame", default="", help="Optional renderer-owned BMP capture path.")
     parser.add_argument("--report-json", default="", help="Optional JSON report output path.")
     args = parser.parse_args(argv)
@@ -162,6 +172,7 @@ def main(argv: list[str] | None = None) -> int:
         capture_frame=capture_frame,
         frames=args.frames,
         renderer=args.renderer,
+        ui_mode=args.ui_mode,
     )
     _print_report(
         completed,
@@ -180,6 +191,7 @@ def main(argv: list[str] | None = None) -> int:
             expected_scene_id=args.expected_scene_id,
             expected_kind=args.expected_kind,
             capture_frame=capture_frame,
+            ui_mode=args.ui_mode,
         )
         report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
     return 0 if validation.passed else 1

@@ -34,6 +34,7 @@ public:
 private:
     void updateDebugText();
     std::string buildFullDebugText() const;
+    std::string buildNeutralSceneDebugText() const;
     std::string buildPresentationText(bool minimal) const;
     std::string buildNeutralScenePresentationText(bool minimal) const;
     void toggleDebugUiMode();

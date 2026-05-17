@@ -2,6 +2,86 @@
 
 Last updated: 2026-05-17
 
+## Veyra Reach Pilot Runtime-To-Authoring Split Hardening (2026-05-17)
+
+Goal:
+
+- Close the next architecture/evidence gap after the neutral runtime smoke.
+- Ensure the `target-slice-scaffold` path does not rely on hidden Ferry Office `SandboxLayer` fallback wording, dock-road telemetry, service-yard vehicle bounds, or Ferry Office world-state/job debug output.
+- Keep this as a runtime/evidence boundary hardening goal, not content, terrain, mission, map, asset, renderer, or polish work.
+
+Scope:
+
+- Added signaled red/green coverage for target-slice debug text in `tests\EngineCoreTests.cpp`.
+- Expanded `tools\runtime_scene_smoke.py` forbidden target-slice terms to catch debug telemetry leaks such as `roadSegment=dock-road`, `roadBounds=`, `jobObjective=`, and `worldState={`.
+- Added `--ui-mode` support to `tools\runtime_scene_smoke.py` so the same scene gate can validate playtest and debug presentation explicitly.
+- Added a neutral target-slice debug text path in `SandboxLayer` that reports scene role, world/slice id, player/camera telemetry, neutral scene counts, and `vehicle:none` without Ferry Office job/world-state/road-test rows.
+- Added a debug-mode Veyra pilot smoke gate to `scripts\verify.ps1`.
+- Preserved Ferry Office debug telemetry and playthrough behavior.
+
+Evidence:
+
+- CONFIRMED: Baseline `build\windows-vs2022-debug\Debug\EngineApp.exe --renderer null --smoke-test --frames 3 --scene data\scenes\veyra_reach_pilot.scene.json --ui-mode debug` leaked `roadSegment=dock-road`, `roadBounds=(-9.50,-7.50)-(9.50,8.50)`, `jobObjective=...`, and Ferry Office `worldState={powerRestored=false ...}` while reporting `scene=veyra-reach-pilot`.
+- CONFIRMED: RED `python tests\test_runtime_scene_smoke.py` failed because the smoke validator did not reject `roadSegment=dock-road`/`worldState={` target-slice debug leaks.
+- CONFIRMED: RED `build\windows-vs2022-debug\Debug\EngineCoreTests.exe` failed `TestSandboxLayerPilotSliceDebugTextAvoidsFerryOfficeTelemetry` with six target-slice debug telemetry failures.
+- CONFIRMED: GREEN `python tests\test_runtime_scene_smoke.py` passed, 4 tests.
+- CONFIRMED: GREEN `cmake --build --preset windows-vs2022-debug --target EngineCoreTests EngineApp` passed.
+- CONFIRMED: GREEN `build\windows-vs2022-debug\Debug\EngineCoreTests.exe` passed.
+- CONFIRMED: GREEN `python tools\runtime_scene_smoke.py --exe build\windows-vs2022-debug\Debug\EngineApp.exe --scene data\scenes\veyra_reach_pilot.scene.json --renderer gdi --ui-mode playtest --capture-frame build\captures\veyra-reach-pilot-runtime-smoke.bmp --report-json build\runtime\veyra-reach-pilot-smoke-report.json` passed.
+- CONFIRMED: GREEN `python tools\runtime_scene_smoke.py --exe build\windows-vs2022-debug\Debug\EngineApp.exe --scene data\scenes\veyra_reach_pilot.scene.json --ui-mode debug --report-json build\runtime\veyra-reach-pilot-debug-smoke-report.json` passed.
+
+Remaining limits:
+
+- This still does not make Veyra Reach a playable location, terrain system, real road system, mission slice, or art target.
+- `SandboxLayer` still owns too many unrelated runtime decisions; this goal only split the proven target-slice debug/presentation leak.
+- The pilot scene remains a tiny scaffold with neutral authoring evidence, not a game experience.
+
+Validation commands:
+
+- GREEN: `git status --short --branch`: clean before work on `main...origin/main`.
+- GREEN: `git branch --show-current`: `main`.
+- GREEN: `python tools\status_report.py`: passed before work.
+- GREEN: `scripts\doctor.ps1`: passed with expected PATH warnings for optional compiler/tool binaries.
+- GREEN: `scripts\configure.ps1`: passed.
+- GREEN: `scripts\build.ps1`: passed.
+- GREEN: `scripts\verify.ps1`: passed before changes.
+- RED/GREEN: `python tests\test_runtime_scene_smoke.py`.
+- RED/GREEN: `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`.
+- GREEN: target-slice playtest runtime smoke/capture report at `build\runtime\veyra-reach-pilot-smoke-report.json`.
+- GREEN: target-slice debug runtime smoke report at `build\runtime\veyra-reach-pilot-debug-smoke-report.json`.
+- GREEN: `scripts\verify.ps1`: passed after code, tests, docs, playtest smoke/capture, debug smoke/report, and standard Ferry Office smoke; CTest passed 12/12.
+
+Next recommended goal:
+
+```text
+/goal Scene-role runtime policy boundary dla Tidebreak w C:\Users\Marcin\Documents\New project.
+
+Cel:
+Wyciagnac najmniejsza jawna scene-role runtime policy poza bezposrednie if-y w `SandboxLayer`, tak zeby Ferry Office regression-testbed i Veyra target-slice scaffold mialy testowalny kontrakt: fallback vehicle, world-state debug, job presentation, route/objective guidance i neutral debug/presentation nie moga dryfowac przez przypadek.
+
+Dlaczego:
+Po Veyra pilot smoke i runtime-to-authoring split hardening wiemy, ze drugi slice moze wejsc do runtime bez najglosniejszych Ferry Office leakow, ale decyzje nadal sa rozproszone w `SandboxLayer`. To jest ryzyko systemowe przed jakimkolwiek prawdziwym kawalkiem swiata: kazdy nowy slice bedzie kusil kolejnymi specjalnymi if-ami.
+
+Zakres:
+- Dodaj maly `SceneRuntimePolicy`/helper albo rownowazny modul w `src/game`, ktory na podstawie `SceneDefinition` odpowiada na pytania: czy uzyc Ferry Office behavior, czy target-slice neutral presentation, czy fallback vehicle jest dozwolony, czy world-state debug ma byc rysowany, jaki tryb route/objective guidance obowiazuje.
+- Przepnij tylko istniejace decyzje w `SandboxLayer`, ktore dotycza roli sceny; nie przenos calego pliku.
+- Dodaj testy dla `regression-testbed`, `target-slice-scaffold` i fallback/default behavior.
+- Zachowaj Ferry Office playthrough QA oraz Veyra runtime smoke/capture.
+- Zaktualizuj `docs/STATUS.md`.
+
+Non-goals:
+- Nie dodawaj mapy, terrainu, contentu, misji, assetow, NPC, traffic, edytora ani renderer rewrite.
+- Nie rozbudowuj Veyra pilot scene.
+- Nie refaktoruj calego `SandboxLayer`.
+
+Walidacja:
+- `python tests\test_runtime_scene_smoke.py`
+- `cmake --build --preset windows-vs2022-debug --target EngineCoreTests EngineApp`
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`
+- `python tools\runtime_scene_smoke.py --exe build\windows-vs2022-debug\Debug\EngineApp.exe --scene data\scenes\veyra_reach_pilot.scene.json --ui-mode debug --report-json build\runtime\veyra-reach-pilot-debug-smoke-report.json`
+- `scripts\verify.ps1`
+```
+
 ## Veyra Reach Pilot Runtime Smoke / Neutral Presentation Gate (2026-05-17)
 
 Goal:

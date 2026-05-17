@@ -2671,6 +2671,36 @@ void TestSandboxLayerPilotSliceUsesNeutralPresentation()
         "Pilot target slice must not expose Ferry Office service-gate state.");
 }
 
+void TestSandboxLayerPilotSliceDebugTextAvoidsFerryOfficeTelemetry()
+{
+    SandboxLayer layer(PilotScenePathForTests(), engine::UiMode::Debug);
+    layer.onAttach();
+
+    engine::InputState input;
+    layer.onUpdate(0.016, input);
+    const std::string text = layer.debugText();
+    layer.onDetach();
+
+    Expect(text.find("scene=veyra-reach-pilot loaded=yes role=target-slice-scaffold") != std::string::npos,
+        "TestSandboxLayerPilotSliceDebugTextAvoidsFerryOfficeTelemetry",
+        "Pilot debug text should identify the target-slice role.");
+    Expect(text.find("sceneCounts=colliders:1 interactables:1 routes:1 markers:2 vehicle:none") != std::string::npos,
+        "TestSandboxLayerPilotSliceDebugTextAvoidsFerryOfficeTelemetry",
+        "Pilot debug text should expose neutral scene counts instead of Ferry Office job telemetry.");
+    Expect(text.find("roadSegment=dock-road") == std::string::npos,
+        "TestSandboxLayerPilotSliceDebugTextAvoidsFerryOfficeTelemetry",
+        "Pilot debug text must not claim the Ferry Office dock-road segment.");
+    Expect(text.find("roadBounds=") == std::string::npos,
+        "TestSandboxLayerPilotSliceDebugTextAvoidsFerryOfficeTelemetry",
+        "Pilot debug text must not expose service-yard vehicle bounds.");
+    Expect(text.find("jobObjective=") == std::string::npos,
+        "TestSandboxLayerPilotSliceDebugTextAvoidsFerryOfficeTelemetry",
+        "Pilot debug text must not expose Ferry Office job wording.");
+    Expect(text.find("worldState={powerRestored") == std::string::npos,
+        "TestSandboxLayerPilotSliceDebugTextAvoidsFerryOfficeTelemetry",
+        "Pilot debug text must not expose Ferry Office world-state flags.");
+}
+
 void TestSandboxLayerPlaytestDefersFutureRouteGuidanceAtStart()
 {
     SandboxLayer layer(DefaultScenePathForTests(), engine::UiMode::Playtest);
@@ -5765,6 +5795,7 @@ int main()
     TestSandboxLayerDebugRenderKeepsRawDebugScaffolding();
     TestSandboxLayerPlaytestTextPrioritizesObjectiveAndPrompt();
     TestSandboxLayerPilotSliceUsesNeutralPresentation();
+    TestSandboxLayerPilotSliceDebugTextAvoidsFerryOfficeTelemetry();
     TestSandboxLayerPlaytestDefersFutureRouteGuidanceAtStart();
     TestSandboxLayerDebugPreservesFullRouteGuidanceAtStart();
     TestSandboxLayerUsesScenePlayerStartYawForInitialComposition();
