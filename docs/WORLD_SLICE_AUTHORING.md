@@ -59,6 +59,12 @@ Use the world/slice report to compare scene roles:
 python tools/world_slice_report.py
 ```
 
+Use the runtime smoke gate to prove the pilot slice is not dead JSON and does not leak Ferry Office presentation:
+
+```powershell
+python tools/runtime_scene_smoke.py --exe build/windows-vs2022-debug/Debug/EngineApp.exe --scene data/scenes/veyra_reach_pilot.scene.json
+```
+
 Expected current roles:
 
 - `ferry-office`: `regression-testbed`
@@ -77,6 +83,7 @@ Allowed in a target-slice scaffold:
 - objective markers,
 - one debug interaction marker,
 - validation and reporting tests.
+- neutral runtime smoke/capture evidence.
 
 Deferred:
 
@@ -90,6 +97,8 @@ Deferred:
 - broad asset pipeline changes,
 - renderer rewrite,
 - `SandboxLayer` location-specific gameplay chains.
+- inherited Ferry Office objective/job overlay.
+- inherited Ferry Office service vehicle fallback.
 
 ## Acceptance
 
@@ -100,4 +109,5 @@ A new target slice is acceptable only when:
 - Ferry Office validation remains unchanged,
 - it does not add new Ferry Office content,
 - it does not require new `SandboxLayer` gameplay logic,
+- it loads through `tools/runtime_scene_smoke.py` without Ferry Office job text,
 - `scripts/verify.ps1` passes.

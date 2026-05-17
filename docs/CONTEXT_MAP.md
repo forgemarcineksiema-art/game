@@ -21,7 +21,7 @@ Recent history forms a clear arc:
 - v0.33: Jolt static scene-query parity QA.
 - v0.34: Jolt character/contact probe QA.
 - v0.45-v0.99: Jolt vehicle runtime controls, service-run route proxy, route-pace tuning, deterministic service-vehicle runtime playthrough QA, opt-in Jolt first-job live-loop QA, the Dock Road Relay follow-up beat, relay/log/clearance endpoint consequences, compact playtest follow-up text, camera-aware obstacle-proxy vehicle steering evidence, a clearance-tag visual cue, a tiny original clearance-tag mesh prop, Jolt obstacle-progress tuning, a compact Harbor Parts return micro-slice, a follow-up next-step readability line, scene-authored action bindings for simple/gated flag beats, a Ferry Office Work Board signoff endpoint, a Ferry Office handoff note endpoint, collision-backed obstacle replay telemetry in vehicle runtime QA, a dynamic handoff-filed visual state cue, a storm pump job seed, a provisional Jolt vehicle-runtime direction decision, visible storm pump/ticket state cues, a preferred play-wrapper runtime trial for Jolt-enabled executables, a Low Dock Drain clear-tag follow-up, a Ferry Office Drain Log closeout, a visible office-side Drain Log state cue, a refreshed preferred Jolt evidence decision, active late-chain route guidance in playtest mode, a purpose-built office-side service-panel mesh cue, QA-only mid-chain route capture evidence for the Relay Service Log state, a state-controlled Low Dock Drain access barrier that opens after the Storm Pump Ticket closes, Jolt-first driving-feel checks for route, brake, reverse, steering, and camera behavior, tighter live vehicle camera follow, Jolt route-pace sensitivity probes, and a conservative Jolt straight-drive assist.
-- Post-v0.99: `docs\GAMEPLAY_REVIEW.md` remains the gameplay diagnosis gate. Jolt is the preferred production vehicle-runtime candidate; deterministic is the baseline/fallback. Subsequent gates added explicit Jolt playthrough coverage, authored road-edge evidence, broader/extended recorded-input vehicle routes, sign-sensitive input semantics checks, and manual confirmation that current Jolt vehicle input/physics/camera feel is good in the Ferry Office playtest path. Ferry Office is now treated as a regression/debug testbed, not the first real game location. `data\scenes\veyra_reach_pilot.scene.json` is the first separate target-slice scaffold, and `tools\world_slice_report.py` reports the `regression-testbed` versus `target-slice-scaffold` split before new content, terrain, or local world-response work.
+- Post-v0.99: `docs\GAMEPLAY_REVIEW.md` remains the gameplay diagnosis gate. Jolt is the preferred production vehicle-runtime candidate; deterministic is the baseline/fallback. Subsequent gates added explicit Jolt playthrough coverage, authored road-edge evidence, broader/extended recorded-input vehicle routes, sign-sensitive input semantics checks, and manual confirmation that current Jolt vehicle input/physics/camera feel is good in the Ferry Office playtest path. Ferry Office is now treated as a regression/debug testbed, not the first real game location. `data\scenes\veyra_reach_pilot.scene.json` is the first separate target-slice scaffold, `tools\world_slice_report.py` reports the `regression-testbed` versus `target-slice-scaffold` split, and `tools\runtime_scene_smoke.py` proves the pilot scene can load with neutral runtime presentation before new content, terrain, or local world-response work.
 
 ## Architecture Map
 
@@ -95,6 +95,7 @@ Recent history forms a clear arc:
 - Minimal target-slice scaffold outside Ferry Office.
 - Its `sliceMetadata.kind` is `target-slice-scaffold`.
 - It authors player start, surface/road intent, one collider, three visual placeholders, one interaction marker, one route marker, and two objective markers without mesh assets, vehicles, traversal, mission/job logic, or `SandboxLayer` behavior.
+- Runtime smoke now loads it with neutral target-slice presentation, no Ferry Office job row, and no inherited service-yard vehicle fallback.
 
 `src/game/PrototypeWorld.*`
 
@@ -180,12 +181,14 @@ python tools/validate_scene.py
 python tools/validate_assets.py
 python tools/scale_audit.py
 python tools/mesh_report.py
+python tools/world_slice_report.py
 ```
 
 Runtime/visual/behavior QA:
 
 ```powershell
 python tools/playthrough_qa.py
+python tools/runtime_scene_smoke.py
 python tools/capture_visual_smoke.py
 python tools/capture_visual_smoke.py --scenario relay-to-service-log --report-json build\captures\capture_visual_smoke_midchain_report.json
 ```

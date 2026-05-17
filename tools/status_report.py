@@ -80,6 +80,7 @@ def main() -> int:
         "tools/scale_audit.py",
         "tools/mesh_report.py",
         "tools/world_slice_report.py",
+        "tools/runtime_scene_smoke.py",
         "tools/capture_visual_smoke.py",
         "tools/playthrough_qa.py",
         "tools/physics_parity_qa.py",

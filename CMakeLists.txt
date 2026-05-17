@@ -203,6 +203,11 @@ if(ENGINE_BUILD_TESTS)
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
     add_test(
+        NAME RuntimeSceneSmokeTests
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_runtime_scene_smoke.py
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+    add_test(
         NAME PlaythroughQaTests
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_playthrough_qa.py
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}

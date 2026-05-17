@@ -378,6 +378,7 @@ void SandboxLayer::configureRuntimeFromScene()
         : nullptr;
 
     if (vehicle) {
+        m_vehicleAvailable = true;
         vehicleSettings.enterRadius = vehicle->enterRadius;
         vehicleSettings.boundsMinX = vehicle->boundsMin.x;
         vehicleSettings.boundsMaxX = vehicle->boundsMax.x;
@@ -390,6 +391,14 @@ void SandboxLayer::configureRuntimeFromScene()
         return;
     }
 
+    if (m_sceneDefinitionLoaded && IsTargetSliceScaffoldScene(m_sceneDefinition)) {
+        m_vehicleAvailable = false;
+        m_vehicleRuntimeText = "none";
+        m_vehiclePhysicsBackendText = "none";
+        return;
+    }
+
+    m_vehicleAvailable = true;
     vehicleSettings.boundsMinX = ServiceYardBoundsMinX;
     vehicleSettings.boundsMaxX = ServiceYardBoundsMaxX;
     vehicleSettings.boundsMinZ = ServiceYardBoundsMinZ;
@@ -403,6 +412,10 @@ void SandboxLayer::configureRuntimeFromScene()
 void SandboxLayer::applyQaCaptureState()
 {
     if (m_qaCaptureState.empty()) {
+        return;
+    }
+    if (!isFerryOfficeRuntimeScene()) {
+        engine::Logger::warning("QA capture state ignored for non-Ferry runtime scene: " + m_qaCaptureState);
         return;
     }
 
@@ -504,7 +517,7 @@ void SandboxLayer::onUpdate(double deltaSeconds, const engine::InputState& input
     m_traversalPressedThisFrame = false;
     m_vehicle.beginFrame();
 
-    if (m_vehicle.state().occupied) {
+    if (m_vehicleAvailable && m_vehicle.state().occupied) {
         const engine::Vec3 exitPosition = m_vehicle.exitPosition();
         const bool exitClear = isVehicleExitPositionClear(exitPosition);
         if (m_vehicle.tryExit(input, exitClear)) {
@@ -514,7 +527,7 @@ void SandboxLayer::onUpdate(double deltaSeconds, const engine::InputState& input
         }
     }
 
-    if (m_vehicle.state().occupied) {
+    if (m_vehicleAvailable && m_vehicle.state().occupied) {
         m_scene.traversal().updateFocus({999.0f, 0.0f, 999.0f}, {0.0f, 0.0f, 1.0f});
         m_scene.interactions().updateFocus({999.0f, 0.0f, 999.0f}, {0.0f, 0.0f, 1.0f});
         updateVehicleDriving(dt, input);
@@ -531,9 +544,12 @@ void SandboxLayer::onUpdate(double deltaSeconds, const engine::InputState& input
 
         const engine::Vec3 playerFacing = engine::ForwardFromYaw(m_player.state().facingYawRadians);
         m_scene.interactions().updateFocus(m_player.state().position, playerFacing);
-        m_vehicle.updateFocus(m_player.state().position, playerFacing);
+        if (m_vehicleAvailable) {
+            m_vehicle.updateFocus(m_player.state().position, playerFacing);
+        }
         const InteractionFocus& focus = m_scene.interactions().focus();
-        const bool vehicleEntered = m_player.state().traversalMode == PlayerTraversalMode::Normal
+        const bool vehicleEntered = m_vehicleAvailable
+            && m_player.state().traversalMode == PlayerTraversalMode::Normal
             && !focus.hasFocus
             && m_vehicle.tryEnter(input);
 
@@ -552,15 +568,15 @@ void SandboxLayer::onUpdate(double deltaSeconds, const engine::InputState& input
         }
     }
 
-    if (m_vehicle.state().occupied) {
+    if (m_vehicleAvailable && m_vehicle.state().occupied) {
         recordWorldStateChange(m_scene.updateJobVehicleCheckpoint(m_vehicle.state().position, true));
     }
 
-    if (m_vehiclePhysicsWorld) {
+    if (m_vehicleAvailable && m_vehiclePhysicsWorld) {
         m_vehiclePhysicsWorld->step(dt);
     }
 
-    const bool vehicleMode = m_vehicle.state().occupied;
+    const bool vehicleMode = m_vehicleAvailable && m_vehicle.state().occupied;
     applyCameraSettingsForMode(vehicleMode);
     CameraTarget target;
     if (vehicleMode) {
@@ -603,16 +619,20 @@ void SandboxLayer::onRender(engine::IRenderer& renderer)
             renderer.drawDebugBox(collider.bounds.center, collider.bounds.halfExtents, ColliderWireColor(collider, routeOpened));
         }
     }
-    if (!m_vehicle.state().occupied) {
+    if (!m_vehicleAvailable || !m_vehicle.state().occupied) {
         drawPlayerPresentation(renderer);
     }
     if (fullDebug) {
-        drawWorldStateDebug(renderer);
+        if (isFerryOfficeRuntimeScene()) {
+            drawWorldStateDebug(renderer);
+        }
         drawSliceDebug(renderer);
         drawPlayerDebug(renderer);
         drawTraversalDebug(renderer);
         drawInteractionDebug(renderer);
-        drawVehicleDebug(renderer);
+        if (m_vehicleAvailable) {
+            drawVehicleDebug(renderer);
+        }
         renderer.drawDebugBox(m_camera.state().target, {0.08f, 0.08f, 0.08f}, {1.0f, 0.25f, 0.7f, 1.0f});
     } else {
         drawPlaytestGuidance(renderer);
@@ -649,6 +669,10 @@ void SandboxLayer::updateDebugText()
 
 std::string SandboxLayer::buildPresentationText(bool minimal) const
 {
+    if (isTargetSliceRuntimeScene()) {
+        return buildNeutralScenePresentationText(minimal);
+    }
+
     const PlayerState& player = m_player.state();
     const VehicleState& vehicle = m_vehicle.state();
     const VehicleFocus& vehicleFocus = m_vehicle.focus();
@@ -716,6 +740,43 @@ std::string SandboxLayer::buildPresentationText(bool minimal) const
     return output.str();
 }
 
+std::string SandboxLayer::buildNeutralScenePresentationText(bool minimal) const
+{
+    const InteractionFocus& focus = m_scene.interactions().focus();
+    const TraversalFocus& traversalFocus = m_scene.traversal().focus();
+    const PlayerState& player = m_player.state();
+    const std::string sceneName = m_sceneDefinitionLoaded ? m_sceneDefinition.name : "Built-in fallback";
+    const std::string kind = m_sceneDefinitionLoaded ? m_sceneDefinition.sliceMetadata.kind : "fallback";
+    const std::string vehicleText = m_vehicleAvailable ? "authored" : "none";
+
+    std::ostringstream output;
+    output << "Scene: " << sceneName << " | role=" << kind << "\n"
+           << "Objective: " << m_scene.currentJobObjectiveText() << "\n";
+
+    bool hasPrompt = false;
+    if (focus.hasFocus) {
+        output << "Prompt: Press E: " << focus.prompt << "\n";
+        hasPrompt = true;
+    } else if (traversalFocus.hasFocus && player.traversalMode == PlayerTraversalMode::Normal) {
+        output << "Prompt: Press Space: " << traversalFocus.prompt << "\n";
+        hasPrompt = true;
+    }
+    if (!hasPrompt && !minimal) {
+        output << "Prompt: Inspect authored neutral markers; no regression job chain is active.\n";
+    }
+
+    if (!minimal) {
+        output << "Status: colliders=" << m_scene.world().colliders().size()
+               << " | interactables=" << m_scene.interactions().interactableCount()
+               << " | routes=" << (m_sceneDefinitionLoaded ? m_sceneDefinition.routeMarkers.size() : 0)
+               << " | markers=" << (m_sceneDefinitionLoaded ? m_sceneDefinition.objectiveMarkers.size() : 0)
+               << " | vehicle=" << vehicleText << "\n"
+               << "F1: debug | Esc: quit";
+    }
+
+    return output.str();
+}
+
 std::string SandboxLayer::buildFullDebugText() const
 {
     const PlayerState& player = m_player.state();
@@ -759,6 +820,7 @@ std::string SandboxLayer::buildFullDebugText() const
            << "camera yaw=" << engine::Degrees(camera.yawRadians)
            << " pitch=" << engine::Degrees(camera.pitchRadians)
            << " dist=" << camera.distance << "\n"
+           << "vehicleAvailable=" << (m_vehicleAvailable ? "yes" : "no") << " "
            << "vehicle=(" << vehicle.position.x << "," << vehicle.position.y << "," << vehicle.position.z << ") "
            << (vehicle.occupied ? "occupied" : "empty") << " "
            << "speed=" << vehicle.speed << " "
@@ -766,7 +828,7 @@ std::string SandboxLayer::buildFullDebugText() const
            << "brake=" << vehicle.brake << " "
            << "steer=" << vehicle.steer << " "
            << "focus=" << (vehicleFocus.canEnter ? "yes" : "no") << " "
-           << "exitClear=" << (isVehicleExitPositionClear(m_vehicle.exitPosition()) ? "yes" : "no") << " "
+           << "exitClear=" << (m_vehicleAvailable && isVehicleExitPositionClear(m_vehicle.exitPosition()) ? "yes" : "no") << " "
            << "exitBlocked=" << (vehicle.exitBlockedThisFrame ? "yes" : "no") << " "
            << "boundsHit=" << (vehicle.hitBoundsThisFrame ? "yes" : "no") << " "
            << "scene=" << sceneId << " "
@@ -818,6 +880,9 @@ bool SandboxLayer::shouldDrawRouteMarker(std::string_view routeId) const
     if (shouldDrawFullGuidance()) {
         return true;
     }
+    if (!isFerryOfficeRuntimeScene()) {
+        return true;
+    }
 
     return routeId == FerryOfficeActiveRouteMarkerId(m_scene.worldState(), m_scene.job().phase(m_scene.worldState()));
 }
@@ -825,6 +890,9 @@ bool SandboxLayer::shouldDrawRouteMarker(std::string_view routeId) const
 bool SandboxLayer::shouldDrawObjectiveMarker(std::string_view markerId) const
 {
     if (shouldDrawFullGuidance()) {
+        return true;
+    }
+    if (!isFerryOfficeRuntimeScene()) {
         return true;
     }
 
@@ -854,6 +922,9 @@ bool SandboxLayer::shouldDrawObjectiveMarker(std::string_view markerId) const
 bool SandboxLayer::shouldDrawInteractableMarker(const Interactable& interactable) const
 {
     if (shouldDrawFullGuidance()) {
+        return true;
+    }
+    if (!isFerryOfficeRuntimeScene()) {
         return true;
     }
 
@@ -893,6 +964,9 @@ bool SandboxLayer::shouldDrawTraversalMarker(const TraversalAffordance& affordan
     if (shouldDrawFullGuidance()) {
         return true;
     }
+    if (!isFerryOfficeRuntimeScene()) {
+        return true;
+    }
 
     const TraversalFocus& focus = m_scene.traversal().focus();
     const PlayerState& player = m_player.state();
@@ -905,6 +979,9 @@ bool SandboxLayer::shouldDrawTraversalMarker(const TraversalAffordance& affordan
 
 bool SandboxLayer::shouldDrawVehicleGuidance() const
 {
+    if (!m_vehicleAvailable) {
+        return false;
+    }
     if (shouldDrawFullGuidance() || m_vehicle.state().occupied) {
         return true;
     }
@@ -914,6 +991,16 @@ bool SandboxLayer::shouldDrawVehicleGuidance() const
         || phase == FerryOfficeJobPhase::ReachDockRoad
         || phase == FerryOfficeJobPhase::ConfirmServiceRun
         || phase == FerryOfficeJobPhase::Complete;
+}
+
+bool SandboxLayer::isFerryOfficeRuntimeScene() const
+{
+    return !m_sceneDefinitionLoaded || IsFerryOfficeRegressionScene(m_sceneDefinition);
+}
+
+bool SandboxLayer::isTargetSliceRuntimeScene() const
+{
+    return m_sceneDefinitionLoaded && IsTargetSliceScaffoldScene(m_sceneDefinition);
 }
 
 void SandboxLayer::drawInteractionDebug(engine::IRenderer& renderer)
@@ -1152,6 +1239,9 @@ void SandboxLayer::drawSliceDebug(engine::IRenderer& renderer)
                 renderer.drawDebugLine(marker.points[index - 1], marker.points[index], routeColor);
             }
         }
+        if (!isFerryOfficeRuntimeScene()) {
+            return;
+        }
     } else {
         const engine::Vec3 dockStart {
             FerryOffice::Positions::DockStart.x,
@@ -1386,6 +1476,10 @@ void SandboxLayer::setupVehicleRuntimeAdapter()
 {
     m_vehicleRuntimeText = "deterministic";
     m_vehicleRuntimeAdapter.reset();
+    if (!m_vehicleAvailable) {
+        m_vehicleRuntimeText = "none";
+        return;
+    }
     if (!m_vehicleRuntimeAdapterEnabled) {
         return;
     }
@@ -1460,6 +1554,12 @@ void SandboxLayer::updateVehicleDriving(float deltaSeconds, const engine::InputS
 
 void SandboxLayer::setupVehiclePhysicsWorld()
 {
+    if (!m_vehicleAvailable) {
+        m_vehiclePhysicsBackendText = "none";
+        m_vehiclePhysicsWorld.reset();
+        return;
+    }
+
     m_vehiclePhysicsWorld = engine::physics::CreatePhysicsWorld(engine::physics::PhysicsBackend::Simple);
     if (!m_vehiclePhysicsWorld) {
         m_vehiclePhysicsBackendText = "none";
@@ -1533,6 +1633,10 @@ void SandboxLayer::setupVehiclePhysicsWorld()
 
 bool SandboxLayer::isVehicleExitPositionClear(engine::Vec3 position) const
 {
+    if (!m_vehicleAvailable) {
+        return false;
+    }
+
     const VehicleControllerSettings& vehicleSettings = m_vehicle.settings();
     if (position.x < vehicleSettings.boundsMinX || position.x > vehicleSettings.boundsMaxX
         || position.z < vehicleSettings.boundsMinZ || position.z > vehicleSettings.boundsMaxZ) {

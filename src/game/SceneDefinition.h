@@ -114,12 +114,20 @@ struct SceneObjectiveMarkerDefinition {
     engine::Vec3 position;
 };
 
+struct SceneSliceMetadataDefinition {
+    std::string kind;
+    std::string worldId;
+    std::string sliceId;
+    std::string status;
+};
+
 struct SceneDefinition {
     int schemaVersion = 0;
     std::string id;
     std::string name;
     std::string linearUnits;
     float floorHeight = 0.0f;
+    SceneSliceMetadataDefinition sliceMetadata;
     ScenePlayerStartDefinition playerStart;
     std::vector<SceneMaterialDefinition> sceneMaterials;
     std::vector<SceneColliderDefinition> colliders;
@@ -135,3 +143,5 @@ struct SceneDefinition {
 
 const SceneVehicleDefinition* FindSceneVehicleById(const SceneDefinition& scene, const std::string& id);
 const SceneMeshAssetDefinition* FindSceneMeshAssetById(const SceneDefinition& scene, const std::string& id);
+bool IsFerryOfficeRegressionScene(const SceneDefinition& scene);
+bool IsTargetSliceScaffoldScene(const SceneDefinition& scene);

@@ -18,6 +18,7 @@ PrototypeScene::PrototypeScene(const SceneDefinition& sceneDefinition)
 
 void PrototypeScene::buildFromFerryOfficeData()
 {
+    m_ferryOfficeBehaviorEnabled = true;
     m_world.buildFerryOfficePrototypeLayout();
     m_interactableActionBindings.clear();
     m_traversalActionBindings.clear();
@@ -298,6 +299,7 @@ TraversalType TraversalTypeFromSceneString(const std::string&)
 
 void PrototypeScene::loadFromDefinition(const SceneDefinition& sceneDefinition)
 {
+    m_ferryOfficeBehaviorEnabled = IsFerryOfficeRegressionScene(sceneDefinition);
     m_worldState.clear();
     m_world.buildFromSceneDefinition(sceneDefinition);
     m_interactions.clear();
@@ -394,16 +396,16 @@ bool PrototypeScene::applyInteractionResult(const InteractionResult& result)
     }
 
     bool changed = false;
-    if (result.name == FerryOffice::Names::FerryManifest || result.name == "Test Pickup") {
+    if (m_ferryOfficeBehaviorEnabled && (result.name == FerryOffice::Names::FerryManifest || result.name == "Test Pickup")) {
         changed |= m_job.recordJobStarted(m_worldState, result.name);
         if (result.name == "Test Pickup") {
             changed |= m_worldState.setFlag(WorldFlag::ManifestCollected, true, result.name);
         }
-    } else if (result.name == FerryOffice::Names::FerryOfficeNotice) {
+    } else if (m_ferryOfficeBehaviorEnabled && result.name == FerryOffice::Names::FerryOfficeNotice) {
         changed |= m_job.recordJobStarted(m_worldState, result.name);
-    } else if (result.name == FerryOffice::Names::ExitMarker) {
+    } else if (m_ferryOfficeBehaviorEnabled && result.name == FerryOffice::Names::ExitMarker) {
         changed |= recordExitReached();
-    } else if (result.name == FerryOffice::Names::ServiceRunMarker) {
+    } else if (m_ferryOfficeBehaviorEnabled && result.name == FerryOffice::Names::ServiceRunMarker) {
         changed |= m_job.confirmServiceRun(m_worldState, result.name);
     }
 
@@ -417,6 +419,9 @@ bool PrototypeScene::applyInteractionResult(const InteractionResult& result)
 
 bool PrototypeScene::recordServiceRouteUsed()
 {
+    if (!m_ferryOfficeBehaviorEnabled) {
+        return false;
+    }
     const bool changed =
         m_worldState.setFlag(WorldFlag::ServiceRouteUsed, true, std::string(FerryOffice::Messages::ServiceVault));
     if (changed) {
@@ -444,6 +449,9 @@ bool PrototypeScene::recordTraversalCompleted(int affordanceId)
 
 bool PrototypeScene::recordServiceVehicleUsed()
 {
+    if (!m_ferryOfficeBehaviorEnabled) {
+        return false;
+    }
     const bool changed = m_job.recordServiceVehicleUsed(m_worldState);
     if (changed) {
         syncWorldStateColliders();
@@ -453,6 +461,9 @@ bool PrototypeScene::recordServiceVehicleUsed()
 
 bool PrototypeScene::updateJobVehicleCheckpoint(engine::Vec3 vehiclePosition, bool vehicleOccupied)
 {
+    if (!m_ferryOfficeBehaviorEnabled) {
+        return false;
+    }
     const bool changed = m_job.updateVehicleCheckpoint(m_worldState, vehiclePosition, vehicleOccupied);
     if (changed) {
         syncWorldStateColliders();
@@ -462,6 +473,9 @@ bool PrototypeScene::updateJobVehicleCheckpoint(engine::Vec3 vehiclePosition, bo
 
 bool PrototypeScene::recordExitReached()
 {
+    if (!m_ferryOfficeBehaviorEnabled) {
+        return false;
+    }
     if (!isSliceReadyForExit()) {
         return false;
     }
@@ -475,6 +489,9 @@ bool PrototypeScene::recordExitReached()
 
 bool PrototypeScene::isSliceReadyForExit() const
 {
+    if (!m_ferryOfficeBehaviorEnabled) {
+        return false;
+    }
     return m_worldState.isFlagSet(WorldFlag::ManifestCollected)
         && m_worldState.isFlagSet(WorldFlag::ServiceRouteUsed)
         && m_worldState.isFlagSet(WorldFlag::MaintenanceBoxInspected)
@@ -484,22 +501,34 @@ bool PrototypeScene::isSliceReadyForExit() const
 
 bool PrototypeScene::isSliceComplete() const
 {
+    if (!m_ferryOfficeBehaviorEnabled) {
+        return false;
+    }
     return isSliceReadyForExit() && m_worldState.isFlagSet(WorldFlag::ExitReached);
 }
 
 bool PrototypeScene::isServiceGateBlocking() const
 {
+    if (!m_ferryOfficeBehaviorEnabled) {
+        return false;
+    }
     const StaticCollider* gate = m_world.colliderByName(FerryOffice::Names::ServiceGateCollider);
     return gate != nullptr && gate->blocksPlayer;
 }
 
 bool PrototypeScene::isJobComplete() const
 {
+    if (!m_ferryOfficeBehaviorEnabled) {
+        return false;
+    }
     return m_job.isComplete(m_worldState);
 }
 
 std::string PrototypeScene::currentObjectiveText() const
 {
+    if (!m_ferryOfficeBehaviorEnabled) {
+        return "Neutral target-slice scaffold loaded.";
+    }
     if (!m_worldState.isFlagSet(WorldFlag::ManifestCollected)) {
         return "Collect the Ferry Manifest at the dock-side office approach.";
     }
@@ -521,6 +550,9 @@ std::string PrototypeScene::currentObjectiveText() const
 
 std::string PrototypeScene::currentJobObjectiveText() const
 {
+    if (!m_ferryOfficeBehaviorEnabled) {
+        return "Inspect neutral slice markers; no authored job is active.";
+    }
     if (m_job.isComplete(m_worldState) && !m_worldState.isFlagSet(WorldFlag::DockRoadRelayReset)) {
         return "Reset the Dock Road Relay beside the service-run marker.";
     }
@@ -571,6 +603,9 @@ std::string PrototypeScene::currentJobObjectiveText() const
 
 std::string PrototypeScene::completionSummary() const
 {
+    if (!m_ferryOfficeBehaviorEnabled) {
+        return "complete=false role=neutral-target-slice";
+    }
     std::ostringstream output;
     output << "complete=" << (isSliceComplete() ? "true" : "false")
            << " readyForExit=" << (isSliceReadyForExit() ? "true" : "false")
@@ -585,6 +620,9 @@ std::string PrototypeScene::completionSummary() const
 
 std::string PrototypeScene::jobDebugSummary() const
 {
+    if (!m_ferryOfficeBehaviorEnabled) {
+        return "job=none phase=neutral-target-slice";
+    }
     return m_job.debugSummary(m_worldState);
 }
 
@@ -692,6 +730,11 @@ bool PrototypeScene::hasRequiredWorldFlags(const InteractableActionBinding& bind
 
 void PrototypeScene::configureJobFromDefinition(const SceneDefinition& sceneDefinition)
 {
+    if (!IsFerryOfficeRegressionScene(sceneDefinition)) {
+        m_job.configure(FerryOfficeJobConfig {});
+        return;
+    }
+
     FerryOfficeJobConfig config;
 
     for (const SceneObjectiveMarkerDefinition& marker : sceneDefinition.objectiveMarkers) {

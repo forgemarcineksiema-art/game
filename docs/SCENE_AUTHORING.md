@@ -29,6 +29,7 @@ python tools/validate_assets.py
 python tools/scale_audit.py
 python tools/mesh_report.py
 python tools/world_slice_report.py
+python tools/runtime_scene_smoke.py
 ```
 
 ## Scene Data Contract
@@ -88,6 +89,8 @@ Still scene-owned C++ behavior:
 - traversal completion side effects,
 - objective text and completion summary,
 - dynamic state colors and vehicle camera/update behavior.
+
+Target-slice scaffolds now have a neutral runtime smoke path. When a scene declares `sliceMetadata.kind=target-slice-scaffold`, runtime playtest text must identify the scene role and report neutral counts instead of showing Ferry Office objective/job rows. These scenes also do not inherit the fallback service-yard vehicle unless they author a vehicle entry.
 
 ## Adding Or Moving Objects
 

@@ -70,6 +70,11 @@ try {
         }
 
         $ExePath = Join-Path $Root $Exe
+        python tools\runtime_scene_smoke.py --exe $ExePath --scene data\scenes\veyra_reach_pilot.scene.json --renderer gdi --capture-frame build\captures\veyra-reach-pilot-runtime-smoke.bmp --report-json build\runtime\veyra-reach-pilot-smoke-report.json
+        if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+        }
+
         & $ExePath --smoke-test --frames 3
         if ($LASTEXITCODE -ne 0) {
             exit $LASTEXITCODE

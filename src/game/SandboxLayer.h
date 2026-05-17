@@ -35,6 +35,7 @@ private:
     void updateDebugText();
     std::string buildFullDebugText() const;
     std::string buildPresentationText(bool minimal) const;
+    std::string buildNeutralScenePresentationText(bool minimal) const;
     void toggleDebugUiMode();
     void drawInteractionDebug(engine::IRenderer& renderer);
     void drawTraversalDebug(engine::IRenderer& renderer);
@@ -62,6 +63,8 @@ private:
     bool shouldDrawInteractableMarker(const Interactable& interactable) const;
     bool shouldDrawTraversalMarker(const TraversalAffordance& affordance) const;
     bool shouldDrawVehicleGuidance() const;
+    bool isFerryOfficeRuntimeScene() const;
+    bool isTargetSliceRuntimeScene() const;
 
     PrototypeScene m_scene;
     SceneDefinition m_sceneDefinition;
@@ -87,6 +90,7 @@ private:
     bool m_worldStateChangedThisFrame = false;
     bool m_cameraInVehicleMode = false;
     bool m_sceneDefinitionLoaded = false;
+    bool m_vehicleAvailable = true;
     bool m_vehicleRuntimeAdapterEnabled = false;
     std::string m_qaCaptureState;
     engine::physics::PhysicsBackend m_vehicleRuntimeBackend = engine::physics::PhysicsBackend::Simple;

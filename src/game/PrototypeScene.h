@@ -83,4 +83,5 @@ private:
     FerryOfficeJob m_job;
     std::vector<InteractableActionBinding> m_interactableActionBindings;
     std::vector<TraversalActionBinding> m_traversalActionBindings;
+    bool m_ferryOfficeBehaviorEnabled = true;
 };

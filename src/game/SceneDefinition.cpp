@@ -21,3 +21,13 @@ const SceneMeshAssetDefinition* FindSceneMeshAssetById(const SceneDefinition& sc
 
     return nullptr;
 }
+
+bool IsFerryOfficeRegressionScene(const SceneDefinition& scene)
+{
+    return scene.id == "ferry-office" || scene.sliceMetadata.kind == "regression-testbed";
+}
+
+bool IsTargetSliceScaffoldScene(const SceneDefinition& scene)
+{
+    return scene.sliceMetadata.kind == "target-slice-scaffold";
+}

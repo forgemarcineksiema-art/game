@@ -326,6 +326,30 @@ SceneObjectiveMarkerDefinition ParseObjectiveMarker(const json& value, std::size
     return marker;
 }
 
+SceneSliceMetadataDefinition ParseSliceMetadata(const json& root)
+{
+    SceneSliceMetadataDefinition metadata;
+    const auto found = root.find("sliceMetadata");
+    if (found == root.end() || found->is_null()) {
+        if (root.value("id", "") == "ferry-office") {
+            metadata.kind = "regression-testbed";
+            metadata.worldId = "veyra-reach";
+            metadata.sliceId = "ferry-office";
+            metadata.status = "legacy-regression-scene";
+        }
+        return metadata;
+    }
+    if (!found->is_object()) {
+        throw std::runtime_error("scene.sliceMetadata must be an object.");
+    }
+
+    metadata.kind = ReadOptionalString(*found, "kind", "scene.sliceMetadata");
+    metadata.worldId = ReadOptionalString(*found, "worldId", "scene.sliceMetadata");
+    metadata.sliceId = ReadOptionalString(*found, "sliceId", "scene.sliceMetadata");
+    metadata.status = ReadOptionalString(*found, "status", "scene.sliceMetadata");
+    return metadata;
+}
+
 template <typename Parser, typename Output>
 void ReadArray(const json& scene, std::string_view key, std::vector<Output>& output, Parser parser)
 {
@@ -349,6 +373,7 @@ SceneDefinition ParseScene(const json& root)
     scene.id = ReadString(root, "id", "scene");
     scene.name = ReadString(root, "name", "scene");
     scene.floorHeight = ReadFloat(root, "floorHeight", "scene");
+    scene.sliceMetadata = ParseSliceMetadata(root);
 
     if (const auto units = root.find("units"); units != root.end() && units->is_object()) {
         scene.linearUnits = ReadOptionalString(*units, "linear", "scene.units");

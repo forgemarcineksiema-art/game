@@ -57,6 +57,11 @@ std::filesystem::path DefaultScenePathForTests()
     return std::filesystem::path(ENGINE_SOURCE_ROOT) / "data" / "scenes" / "ferry_office.scene.json";
 }
 
+std::filesystem::path PilotScenePathForTests()
+{
+    return std::filesystem::path(ENGINE_SOURCE_ROOT) / "data" / "scenes" / "veyra_reach_pilot.scene.json";
+}
+
 std::filesystem::path WriteTempSceneWithPlayerStartYaw(float yawDegrees)
 {
     std::ifstream input(DefaultScenePathForTests());
@@ -1209,6 +1214,33 @@ void TestSceneLoaderLoadsDefaultFerryOfficeScene()
     Expect(result.scene.traversalAffordances.size() == 1,
         "TestSceneLoaderLoadsDefaultFerryOfficeScene",
         "Loaded scene should expose authored traversal affordances.");
+    Expect(IsFerryOfficeRegressionScene(result.scene),
+        "TestSceneLoaderLoadsDefaultFerryOfficeScene",
+        "Ferry Office should identify as the regression scene at runtime.");
+}
+
+void TestSceneLoaderLoadsPilotSliceMetadata()
+{
+    const SceneLoadResult result = LoadSceneDefinition(PilotScenePathForTests());
+
+    Expect(result.ok(),
+        "TestSceneLoaderLoadsPilotSliceMetadata",
+        "Pilot target-slice scene JSON should load successfully.");
+    Expect(result.scene.id == "veyra-reach-pilot",
+        "TestSceneLoaderLoadsPilotSliceMetadata",
+        "Pilot scene should expose its authored scene id.");
+    Expect(result.scene.sliceMetadata.kind == "target-slice-scaffold",
+        "TestSceneLoaderLoadsPilotSliceMetadata",
+        "Pilot scene should expose target-slice metadata to runtime code.");
+    Expect(result.scene.sliceMetadata.worldId == "veyra-reach",
+        "TestSceneLoaderLoadsPilotSliceMetadata",
+        "Pilot scene should expose its world id.");
+    Expect(IsTargetSliceScaffoldScene(result.scene),
+        "TestSceneLoaderLoadsPilotSliceMetadata",
+        "Pilot scene should identify as a target-slice scaffold.");
+    Expect(result.scene.vehicles.empty(),
+        "TestSceneLoaderLoadsPilotSliceMetadata",
+        "Pilot scaffold should not silently inherit a Ferry Office service vehicle.");
 }
 
 void TestSceneLoaderLoadsV018VisualIdentityPropKit()
@@ -2610,6 +2642,33 @@ void TestSandboxLayerPlaytestTextPrioritizesObjectiveAndPrompt()
     Expect(text.find("phase=") == std::string::npos,
         "TestSandboxLayerPlaytestTextPrioritizesObjectiveAndPrompt",
         "Playtest UI should describe job progress without raw phase telemetry.");
+}
+
+void TestSandboxLayerPilotSliceUsesNeutralPresentation()
+{
+    SandboxLayer layer(PilotScenePathForTests(), engine::UiMode::Playtest);
+    layer.onAttach();
+
+    engine::InputState input;
+    layer.onUpdate(0.016, input);
+    const std::string text = layer.debugText();
+    layer.onDetach();
+
+    Expect(text.find("Scene: Veyra Reach Pilot Slice | role=target-slice-scaffold") != std::string::npos,
+        "TestSandboxLayerPilotSliceUsesNeutralPresentation",
+        "Pilot runtime smoke text should identify the target slice instead of the Ferry Office job.");
+    Expect(text.find("Status: colliders=1 | interactables=1 | routes=1 | markers=2 | vehicle=none") != std::string::npos,
+        "TestSandboxLayerPilotSliceUsesNeutralPresentation",
+        "Pilot runtime smoke text should report neutral scene counts and no inherited vehicle.");
+    Expect(text.find("Ferry Office") == std::string::npos,
+        "TestSandboxLayerPilotSliceUsesNeutralPresentation",
+        "Pilot target slice must not leak Ferry Office wording into playtest presentation.");
+    Expect(text.find("Job:") == std::string::npos,
+        "TestSandboxLayerPilotSliceUsesNeutralPresentation",
+        "Pilot target slice must not present a Ferry Office job row.");
+    Expect(text.find("service gate=") == std::string::npos,
+        "TestSandboxLayerPilotSliceUsesNeutralPresentation",
+        "Pilot target slice must not expose Ferry Office service-gate state.");
 }
 
 void TestSandboxLayerPlaytestDefersFutureRouteGuidanceAtStart()
@@ -5661,6 +5720,7 @@ int main()
     TestStaticMeshLoaderHonorsInterleavedPositionStride();
     TestStaticMeshBuildsTransformedTriangleList();
     TestSceneLoaderLoadsDefaultFerryOfficeScene();
+    TestSceneLoaderLoadsPilotSliceMetadata();
     TestSceneLoaderLoadsV018VisualIdentityPropKit();
     TestSceneLoaderLoadsFirstJobMarkers();
     TestSceneLoaderLoadsDockRoadRelayBeat();
@@ -5704,6 +5764,7 @@ int main()
     TestSandboxLayerPlaytestRenderSuppressesRawDebugScaffolding();
     TestSandboxLayerDebugRenderKeepsRawDebugScaffolding();
     TestSandboxLayerPlaytestTextPrioritizesObjectiveAndPrompt();
+    TestSandboxLayerPilotSliceUsesNeutralPresentation();
     TestSandboxLayerPlaytestDefersFutureRouteGuidanceAtStart();
     TestSandboxLayerDebugPreservesFullRouteGuidanceAtStart();
     TestSandboxLayerUsesScenePlayerStartYawForInitialComposition();

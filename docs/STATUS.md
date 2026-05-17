@@ -2,6 +2,89 @@
 
 Last updated: 2026-05-17
 
+## Veyra Reach Pilot Runtime Smoke / Neutral Presentation Gate (2026-05-17)
+
+Goal:
+
+- Prove `data\scenes\veyra_reach_pilot.scene.json` is no longer only dead JSON.
+- Load the target-slice scaffold through runtime as a neutral scene without Ferry Office objective/job text.
+- Keep Ferry Office as the default regression scene and avoid adding mission, terrain, vehicle, map, asset, renderer, or Ferry Office content.
+
+Scope:
+
+- Added runtime parsing for `sliceMetadata` in `SceneLoader` / `SceneDefinition`.
+- Added runtime role helpers for `regression-testbed` and `target-slice-scaffold`.
+- Kept Ferry Office behavior enabled only for Ferry Office/regression scenes inside `PrototypeScene`.
+- Added neutral `SandboxLayer` presentation for target-slice scaffolds.
+- Disabled inherited fallback service-yard vehicle behavior for target-slice scaffolds that do not author vehicles.
+- Added `tools\runtime_scene_smoke.py` with forbidden-term validation, optional BMP capture, and optional JSON report output.
+- Added `tests\test_runtime_scene_smoke.py`, C++ runtime metadata/presentation tests, and a CTest entry.
+- Added the pilot runtime smoke gate to `scripts\verify.ps1`, plus doctor/status visibility.
+- Updated scene/world-slice docs and this status entry.
+
+Evidence:
+
+- CONFIRMED: Before the fix, `build\windows-vs2022-debug\Debug\EngineApp.exe --renderer null --smoke-test --frames 3 --scene data\scenes\veyra_reach_pilot.scene.json` loaded `veyra-reach-pilot` but printed `Objective: Check the Ferry Manifest to start the Ferry Office service call`, `Job: Collect manifest`, `service gate=closed`, and `power=offline`.
+- CONFIRMED: RED `python tests\test_runtime_scene_smoke.py` failed with `ModuleNotFoundError: No module named 'runtime_scene_smoke'`.
+- CONFIRMED: RED `python tools\runtime_scene_smoke.py --exe build\windows-vs2022-debug\Debug\EngineApp.exe --scene data\scenes\veyra_reach_pilot.scene.json` failed because `target-slice-scaffold` was not observed and Ferry Office/job/status terms leaked.
+- CONFIRMED: GREEN `python tests\test_runtime_scene_smoke.py` passed, 3 tests.
+- CONFIRMED: GREEN `cmake --build --preset windows-vs2022-debug --target EngineCoreTests EngineApp` passed.
+- CONFIRMED: GREEN `build\windows-vs2022-debug\Debug\EngineCoreTests.exe` passed.
+- CONFIRMED: GREEN `python tools\runtime_scene_smoke.py --exe build\windows-vs2022-debug\Debug\EngineApp.exe --scene data\scenes\veyra_reach_pilot.scene.json` passed.
+- CONFIRMED: GREEN `python tools\runtime_scene_smoke.py --exe build\windows-vs2022-debug\Debug\EngineApp.exe --scene data\scenes\veyra_reach_pilot.scene.json --renderer gdi --capture-frame build\captures\veyra-reach-pilot-runtime-smoke.bmp --report-json build\runtime\veyra-reach-pilot-smoke-report.json` passed after the tool stopped combining `--smoke-test` with GDI capture.
+- CONFIRMED: Capture artifact exists at `build\captures\veyra-reach-pilot-runtime-smoke.bmp`.
+- INTERPRETATION: this proves the pilot scaffold reaches runtime as a neutral, bounded target-slice presentation. It does not prove gameplay, terrain, art direction, world reactivity, mission structure, or player-facing fun.
+
+Remaining limits:
+
+- `veyra-reach-pilot` is still a tiny scaffold: one collider, three placeholders, one debug interaction marker, one route, and two objective markers.
+- No runtime scene selection UX was added beyond existing `--scene`.
+- No second real location, road system, terrain system, world-response logic, mission, vehicle, NPC, or production art was added.
+- The capture proves neutral load and visual nonblankness, not that the space is good.
+
+Validation commands:
+
+- GREEN: `git status --short --branch`: clean before work on `main...origin/main`.
+- GREEN: `git branch --show-current`: `main`.
+- GREEN: `python tools\status_report.py`: passed before work.
+- GREEN: `scripts\doctor.ps1`: passed with expected PATH warnings for optional compiler/tool binaries.
+- GREEN: `scripts\configure.ps1`: passed.
+- GREEN: `scripts\build.ps1`: passed.
+- GREEN: `scripts\verify.ps1`: passed before changes.
+- GREEN: `python tests\test_runtime_scene_smoke.py`: passed after implementation.
+- GREEN: `cmake --build --preset windows-vs2022-debug --target EngineCoreTests EngineApp`: passed.
+- GREEN: `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- GREEN: `python tools\runtime_scene_smoke.py --exe build\windows-vs2022-debug\Debug\EngineApp.exe --scene data\scenes\veyra_reach_pilot.scene.json`: passed.
+- GREEN: `python tools\runtime_scene_smoke.py --exe build\windows-vs2022-debug\Debug\EngineApp.exe --scene data\scenes\veyra_reach_pilot.scene.json --renderer gdi --capture-frame build\captures\veyra-reach-pilot-runtime-smoke.bmp --report-json build\runtime\veyra-reach-pilot-smoke-report.json`: passed.
+- GREEN: `scripts\verify.ps1`: passed after code, tests, docs, runtime smoke, GDI capture/report, and standard Ferry Office smoke were updated; CTest passed 12/12.
+
+Next recommended goal:
+
+```text
+/goal Veyra Reach pilot runtime-to-authoring split hardening dla Tidebreak w C:\Users\Marcin\Documents\New project.
+
+Cel:
+Zamknac kolejna architektoniczna luke po neutralnym runtime smoke: rozdzielic target-slice rendering/presentation od Ferry Office special cases na tyle, zeby pilot slice nie musial polegac na ukrytych `SandboxLayer` fallbackach ani stalej Ferry Office nomenklaturze w debug/render guidance. To nadal nie jest content, terrain, mission ani polish pass.
+
+Zakres:
+- Zidentyfikuj pozostale Ferry Office hardcoded assumptions w `SandboxLayer` uzywane podczas render/guidance/debug dla zaladowanych scen.
+- Wyciagnij najmniejszy scene-role aware helper/policy dla neutralnego slice'u, tylko tam gdzie pilot smoke/capture tego wymaga.
+- Dodaj testy, ktore failuja jesli target-slice scaffold rysuje Ferry Office-only markers, fallback vehicle, service gate state albo job wording.
+- Zachowaj Ferry Office regression behavior i jego playthrough QA bez zmian.
+- Zaktualizuj docs/STATUS.md.
+
+Non-goals:
+- Nie dodawaj mapy, misji, terrainu, nowych assetow, NPC, ruchu ulicznego, edytora ani renderer rewrite.
+- Nie rob visual polish passu.
+- Nie przenos calego `SandboxLayer` naraz.
+
+Walidacja:
+- `python tests\test_runtime_scene_smoke.py`
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`
+- `python tools\runtime_scene_smoke.py --exe build\windows-vs2022-debug\Debug\EngineApp.exe --scene data\scenes\veyra_reach_pilot.scene.json --renderer gdi --capture-frame build\captures\veyra-reach-pilot-runtime-smoke.bmp --report-json build\runtime\veyra-reach-pilot-smoke-report.json`
+- `scripts\verify.ps1`
+```
+
 ## Veyra Reach Pilot Slice Architecture Scaffold (2026-05-17)
 
 Goal:
