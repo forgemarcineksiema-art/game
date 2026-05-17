@@ -75,6 +75,30 @@ DRIVING_FEEL_CHECKS = [
     )
 ]
 
+INPUT_SEMANTICS_CHECKS = [
+    {
+        "backend": backend,
+        "inputName": input_name,
+        "throttle": throttle,
+        "brake": 0.0,
+        "steer": steer,
+        "initialYawDegrees": 88.0,
+        "finalYawDegrees": 88.0 + yaw_delta,
+        "yawDeltaDegrees": yaw_delta,
+        "expectedSign": expected_sign,
+        "actualSign": expected_sign,
+        "passed": True,
+        "failureReason": "",
+    }
+    for backend in ("deterministic", "jolt")
+    for input_name, throttle, steer, expected_sign, yaw_delta in (
+        ("forward-left", 0.75, -0.6, -1, -12.0),
+        ("forward-right", 0.75, 0.6, 1, 12.0),
+        ("reverse-left", -0.75, -0.6, 1, 10.0),
+        ("reverse-right", -0.75, 0.6, -1, -10.0),
+    )
+]
+
 ROUTE_PACE_PROBES = [
     {
         "backend": "jolt",
@@ -324,6 +348,7 @@ class VehicleRuntimeQaTests(unittest.TestCase):
                             },
                         ],
                         "drivingFeelChecks": DRIVING_FEEL_CHECKS,
+                        "inputSemanticsChecks": INPUT_SEMANTICS_CHECKS,
                         "routePaceProbes": ROUTE_PACE_PROBES,
                         "roadEdgeChecks": ROAD_EDGE_CHECKS,
                         "broadRouteChecks": BROAD_ROUTE_CHECKS,
@@ -345,6 +370,7 @@ class VehicleRuntimeQaTests(unittest.TestCase):
         self.assertEqual(report["adapter"]["backend"], "jolt")
         self.assertEqual(report["comparison"]["recommendation"], "promote")
         self.assertEqual(len(report["drivingFeelChecks"]), 12)
+        self.assertEqual(len(report["inputSemanticsChecks"]), 8)
         self.assertEqual(len(report["routePaceProbes"]), 3)
         self.assertEqual(len(report["roadEdgeChecks"]), 2)
         self.assertEqual(len(report["broadRouteChecks"]), 2)
@@ -664,6 +690,68 @@ class VehicleRuntimeQaTests(unittest.TestCase):
             )
 
             with self.assertRaisesRegex(ValueError, "driving-feel"):
+                vehicle_runtime_qa.load_and_validate_report(report_path)
+
+    def test_report_validation_rejects_missing_input_semantics_checks(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            report_path = pathlib.Path(temp) / "vehicle-runtime-comparison.json"
+            samples = [{"name": "accelerate", "passed": True, "wheelContactCount": 4, "outOfBounds": False}]
+            report_path.write_text(
+                json.dumps(
+                    {
+                        "schema": vehicle_runtime_qa.SCHEMA,
+                        "scenario": vehicle_runtime_qa.SCENARIO,
+                        "passed": True,
+                        "vehicle": {"id": "service-yard-vehicle"},
+                        "deterministic": {"backend": "deterministic", "samples": samples},
+                        "adapter": {"backend": "jolt", "samples": samples},
+                        "routeChecks": [
+                            {
+                                "backend": "deterministic",
+                                "passed": True,
+                                "checkpointReached": True,
+                                "framesToCheckpoint": 139,
+                                "minDistanceToCheckpoint": 1.7,
+                                "finalPosition": [17.6, 0.0, -1.8],
+                                "finalYawDegrees": 88.0,
+                                "hitBounds": False,
+                            },
+                            {
+                                "backend": "jolt",
+                                "passed": True,
+                                "checkpointReached": True,
+                                "framesToCheckpoint": 169,
+                                "minDistanceToCheckpoint": 1.8,
+                                "finalPosition": [17.6, 1.1, -1.8],
+                                "finalYawDegrees": 88.0,
+                                "hitBounds": False,
+                            },
+                        ],
+                        "obstacleChecks": OBSTACLE_CHECKS,
+                        "controlChecks": [
+                            {"name": "tapThrottleCoast", "passed": True, "frameIndex": 91, "speed": 0.08, "distance": 0.4},
+                            {"name": "brakeStopsForwardMotion", "passed": True, "frameIndex": 75, "speed": 0.02, "distance": 0.0},
+                            {"name": "reverseMovesBackward", "passed": True, "frameIndex": 135, "speed": -0.45, "distance": 0.6},
+                            {"name": "reverseCoastSettles", "passed": True, "frameIndex": 225, "speed": -0.05, "distance": 0.4},
+                        ],
+                        "drivingFeelChecks": DRIVING_FEEL_CHECKS,
+                        "routePaceProbes": ROUTE_PACE_PROBES,
+                        "roadEdgeChecks": ROAD_EDGE_CHECKS,
+                        "broadRouteChecks": BROAD_ROUTE_CHECKS,
+                        "extendedRouteChecks": EXTENDED_ROUTE_CHECKS,
+                        "comparison": {
+                            "maxPositionDelta": 2.95,
+                            "maxYawDeltaDegrees": 25.0,
+                            "maxSpeedDelta": 2.8,
+                            "recommendation": "promote",
+                        },
+                        "error": "",
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(ValueError, "input semantics"):
                 vehicle_runtime_qa.load_and_validate_report(report_path)
 
     def test_report_validation_rejects_missing_route_pace_probes(self) -> None:

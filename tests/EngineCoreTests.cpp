@@ -1855,6 +1855,45 @@ void TestVehicleControllerSteeringChangesYawWhileMoving()
         "Vehicle velocity should reflect the driven movement.");
 }
 
+float RunDeterministicVehicleYawDelta(float throttle, float steer)
+{
+    VehicleController vehicle;
+    vehicle.setPosition({0.0f, 0.0f, 0.0f});
+    vehicle.setOccupiedForTesting(true);
+
+    const float initialYaw = vehicle.state().yawRadians;
+    engine::InputState input;
+    input.moveForward = throttle;
+    input.moveRight = steer;
+    for (int i = 0; i < 90; ++i) {
+        vehicle.beginFrame();
+        vehicle.updateDriving(1.0f / 60.0f, input);
+    }
+
+    return engine::Degrees(vehicle.state().yawRadians - initialYaw);
+}
+
+void TestVehicleControllerSteeringSignSemantics()
+{
+    const float forwardLeft = RunDeterministicVehicleYawDelta(0.75f, -0.6f);
+    const float forwardRight = RunDeterministicVehicleYawDelta(0.75f, 0.6f);
+    const float reverseLeft = RunDeterministicVehicleYawDelta(-0.75f, -0.6f);
+    const float reverseRight = RunDeterministicVehicleYawDelta(-0.75f, 0.6f);
+
+    Expect(forwardLeft < -1.0f,
+        "TestVehicleControllerSteeringSignSemantics",
+        "Forward + left steering should decrease deterministic vehicle yaw.");
+    Expect(forwardRight > 1.0f,
+        "TestVehicleControllerSteeringSignSemantics",
+        "Forward + right steering should increase deterministic vehicle yaw.");
+    Expect(reverseLeft > 1.0f,
+        "TestVehicleControllerSteeringSignSemantics",
+        "Reverse + left steering should increase deterministic vehicle yaw because reversing flips steering direction.");
+    Expect(reverseRight < -1.0f,
+        "TestVehicleControllerSteeringSignSemantics",
+        "Reverse + right steering should decrease deterministic vehicle yaw because reversing flips steering direction.");
+}
+
 void TestVehicleLowSpeedSteeringAssistKeepsTurnaroundReadable()
 {
     VehicleController vehicle;
@@ -4764,6 +4803,119 @@ void TestSimpleVehicleRuntimeAdapterRespondsToStaticRoadEdgeCollision()
         "Collision response should damp vehicle speed after contacting an authored road edge.");
 }
 
+engine::physics::VehicleRuntimeConfig OpenVehicleRuntimeConfigForTests()
+{
+    engine::physics::VehicleRuntimeConfig config;
+    config.vehicleId = "service-yard-vehicle";
+    config.spawnPosition = {0.0f, 0.0f, 0.0f};
+    config.spawnYawRadians = engine::Radians(88.0f);
+    config.halfExtents = {0.58f, 0.53f, 0.92f};
+    config.boundsMin = {-25.0f, -25.0f};
+    config.boundsMax = {25.0f, 25.0f};
+    return config;
+}
+
+float RunVehicleRuntimeYawDelta(
+    engine::physics::PhysicsBackend backend,
+    const engine::physics::VehicleRuntimeConfig& config,
+    engine::physics::VehicleRuntimeInput input)
+{
+    std::unique_ptr<engine::physics::IVehicleRuntimeAdapter> adapter =
+        engine::physics::CreateVehicleRuntimeAdapter(backend);
+    Expect(adapter != nullptr,
+        "RunVehicleRuntimeYawDelta",
+        "Requested vehicle runtime adapter should be available for steering sign testing.");
+    if (!adapter) {
+        return 0.0f;
+    }
+
+    Expect(adapter->initialize(config),
+        "RunVehicleRuntimeYawDelta",
+        "Vehicle runtime adapter should initialize for steering sign testing.");
+    for (int frame = 0; frame < 90; ++frame) {
+        adapter->step({0.0f, 0.0f, 0.0f}, config.fixedStepSeconds);
+    }
+    const float initialYaw = adapter->state().yawRadians;
+    const int inputFrameCount = input.throttle < 0.0f ? 150 : 90;
+    for (int frame = 0; frame < inputFrameCount; ++frame) {
+        adapter->step(input, config.fixedStepSeconds);
+    }
+    float yawDelta = std::fmod(engine::Degrees(adapter->state().yawRadians - initialYaw), 360.0f);
+    if (yawDelta > 180.0f) {
+        yawDelta -= 360.0f;
+    } else if (yawDelta < -180.0f) {
+        yawDelta += 360.0f;
+    }
+    adapter->shutdown();
+    return yawDelta;
+}
+
+std::string VehicleRuntimeSteeringSignDetails(
+    float forwardLeft,
+    float forwardRight,
+    float reverseLeft,
+    float reverseRight)
+{
+    return "Yaw deltas: forwardLeft=" + std::to_string(forwardLeft)
+        + ", forwardRight=" + std::to_string(forwardRight)
+        + ", reverseLeft=" + std::to_string(reverseLeft)
+        + ", reverseRight=" + std::to_string(reverseRight) + ".";
+}
+
+void TestVehicleRuntimeAdapterSteeringSignSemantics()
+{
+    const engine::physics::VehicleRuntimeConfig config = OpenVehicleRuntimeConfigForTests();
+
+    const float simpleForwardLeft =
+        RunVehicleRuntimeYawDelta(engine::physics::PhysicsBackend::Simple, config, {0.75f, -0.6f, 0.0f});
+    const float simpleForwardRight =
+        RunVehicleRuntimeYawDelta(engine::physics::PhysicsBackend::Simple, config, {0.75f, 0.6f, 0.0f});
+    const float simpleReverseLeft =
+        RunVehicleRuntimeYawDelta(engine::physics::PhysicsBackend::Simple, config, {-0.75f, -0.6f, 0.0f});
+    const float simpleReverseRight =
+        RunVehicleRuntimeYawDelta(engine::physics::PhysicsBackend::Simple, config, {-0.75f, 0.6f, 0.0f});
+
+    Expect(simpleForwardLeft < -1.0f && simpleForwardRight > 1.0f
+            && simpleReverseLeft > 1.0f && simpleReverseRight < -1.0f,
+        "TestVehicleRuntimeAdapterSteeringSignSemantics",
+        "Simple runtime adapter should match deterministic forward/reverse steering sign semantics. "
+            + VehicleRuntimeSteeringSignDetails(
+                simpleForwardLeft,
+                simpleForwardRight,
+                simpleReverseLeft,
+                simpleReverseRight));
+
+    if (!engine::physics::IsJoltPhysicsAvailable()) {
+        return;
+    }
+
+    const float joltForwardLeft =
+        RunVehicleRuntimeYawDelta(engine::physics::PhysicsBackend::Jolt, config, {0.75f, -0.6f, 0.0f});
+    const float joltForwardRight =
+        RunVehicleRuntimeYawDelta(engine::physics::PhysicsBackend::Jolt, config, {0.75f, 0.6f, 0.0f});
+    const float joltReverseLeft =
+        RunVehicleRuntimeYawDelta(engine::physics::PhysicsBackend::Jolt, config, {-0.75f, -0.6f, 0.0f});
+    const float joltReverseRight =
+        RunVehicleRuntimeYawDelta(engine::physics::PhysicsBackend::Jolt, config, {-0.75f, 0.6f, 0.0f});
+
+    Expect(joltForwardLeft < -1.0f,
+        "TestVehicleRuntimeAdapterSteeringSignSemantics",
+        "Jolt runtime should turn left, not right, for forward + left input. "
+            + VehicleRuntimeSteeringSignDetails(joltForwardLeft, joltForwardRight, joltReverseLeft, joltReverseRight));
+    Expect(joltForwardRight > 1.0f,
+        "TestVehicleRuntimeAdapterSteeringSignSemantics",
+        "Jolt runtime should turn right, not left, for forward + right input. "
+            + VehicleRuntimeSteeringSignDetails(joltForwardLeft, joltForwardRight, joltReverseLeft, joltReverseRight));
+    Expect(joltReverseLeft > 1.0f,
+        "TestVehicleRuntimeAdapterSteeringSignSemantics",
+        "Jolt runtime should match deterministic reverse + left steering semantics. "
+            + VehicleRuntimeSteeringSignDetails(joltForwardLeft, joltForwardRight, joltReverseLeft, joltReverseRight));
+    Expect(joltReverseRight < -1.0f,
+        "TestVehicleRuntimeAdapterSteeringSignSemantics",
+        "Jolt runtime should match deterministic reverse + right steering semantics. "
+            + VehicleRuntimeSteeringSignDetails(joltForwardLeft, joltForwardRight, joltReverseLeft, joltReverseRight));
+}
+
 void TestJoltVehicleRuntimeTapThrottleDoesNotCoastForever()
 {
     if (!engine::physics::IsJoltPhysicsAvailable()) {
@@ -4954,6 +5106,21 @@ void TestFerryOfficeVehicleRuntimeComparisonQaWritesReport()
     Expect(foundDeterministicFeel && foundAdapterFeel,
         "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
         "Driving-feel checks should cover the deterministic baseline and selected runtime adapter.");
+    Expect(result.inputSemanticsChecks.size() == 8,
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Runtime comparison QA should include sign-sensitive deterministic and adapter input semantics checks.");
+    bool foundDeterministicInputSemantics = false;
+    bool foundAdapterInputSemantics = false;
+    for (const auto& check : result.inputSemanticsChecks) {
+        foundDeterministicInputSemantics = foundDeterministicInputSemantics || check.backendName == "deterministic";
+        foundAdapterInputSemantics = foundAdapterInputSemantics || check.backendName == "simple";
+        Expect(check.passed && check.actualSign == check.expectedSign,
+            "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+            check.failureReason.empty() ? "Input semantics check should pass." : check.failureReason);
+    }
+    Expect(foundDeterministicInputSemantics && foundAdapterInputSemantics,
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Input semantics checks should cover the deterministic baseline and selected runtime adapter.");
     Expect(result.routePaceProbes.size() >= 3,
         "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
         "Runtime comparison QA should include route-pace sensitivity probes for the selected adapter.");
@@ -5062,6 +5229,18 @@ void TestFerryOfficeVehicleRuntimeComparisonQaWritesReport()
             && report["drivingFeelChecks"][0].contains("maxValue"),
         "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
         "Runtime comparison driving-feel checks should include backend and threshold telemetry.");
+    Expect(report["inputSemanticsChecks"].size() == 8,
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Runtime comparison report should expose sign-sensitive input semantics checks.");
+    Expect(report["inputSemanticsChecks"][0].contains("inputName")
+            && report["inputSemanticsChecks"][0].contains("throttle")
+            && report["inputSemanticsChecks"][0].contains("steer")
+            && report["inputSemanticsChecks"][0].contains("yawDeltaDegrees")
+            && report["inputSemanticsChecks"][0].contains("expectedSign")
+            && report["inputSemanticsChecks"][0].contains("actualSign")
+            && report["inputSemanticsChecks"][0].contains("failureReason"),
+        "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
+        "Input semantics checks should include input, yaw sign, and failure telemetry.");
     Expect(report["routePaceProbes"].size() >= 3,
         "TestFerryOfficeVehicleRuntimeComparisonQaWritesReport",
         "Runtime comparison report should expose route-pace sensitivity telemetry.");
@@ -5500,6 +5679,7 @@ int main()
     TestJoltBackendAvailabilityIsExplicit();
     TestVehicleControllerAcceleratesBrakesAndReversesDeterministically();
     TestVehicleControllerSteeringChangesYawWhileMoving();
+    TestVehicleControllerSteeringSignSemantics();
     TestVehicleLowSpeedSteeringAssistKeepsTurnaroundReadable();
     TestVehicleEnterExitUsesPressedEdgeAndSafeExit();
     TestVehicleCameraTargetFollowsVehicle();
@@ -5589,6 +5769,7 @@ int main()
     TestFerryOfficeVehiclePhysicsQaHandlesUnavailableBackendExplicitly();
     TestVehicleRuntimeAdapterSimpleStepsFrameByFrame();
     TestSimpleVehicleRuntimeAdapterRespondsToStaticRoadEdgeCollision();
+    TestVehicleRuntimeAdapterSteeringSignSemantics();
     TestJoltVehicleRuntimeTapThrottleDoesNotCoastForever();
     TestJoltVehicleRuntimeReportsReverseAsNegativeSpeed();
     TestJoltVehicleRuntimeReachesServiceCheckpointWithinRouteBudget();

@@ -133,6 +133,24 @@ nlohmann::json DrivingFeelCheckJson(const FerryOfficeVehicleRuntimeComparisonRes
     };
 }
 
+nlohmann::json InputSemanticsCheckJson(const FerryOfficeVehicleRuntimeComparisonResult::InputSemanticsCheck& check)
+{
+    return {
+        {"backend", check.backendName},
+        {"inputName", check.inputName},
+        {"throttle", check.throttle},
+        {"brake", check.brake},
+        {"steer", check.steer},
+        {"initialYawDegrees", engine::Degrees(check.initialYawRadians)},
+        {"finalYawDegrees", engine::Degrees(check.finalYawRadians)},
+        {"yawDeltaDegrees", check.yawDeltaDegrees},
+        {"expectedSign", check.expectedSign},
+        {"actualSign", check.actualSign},
+        {"passed", check.passed},
+        {"failureReason", check.failureReason},
+    };
+}
+
 nlohmann::json RoutePaceProbeJson(const FerryOfficeVehicleRuntimeComparisonResult::RoutePaceProbe& probe)
 {
     return {
@@ -245,6 +263,38 @@ float AbsYawDeltaDegrees(float lhsRadians, float rhsRadians)
         delta = 360.0f - delta;
     }
     return delta;
+}
+
+float SignedYawDeltaDegrees(float lhsRadians, float rhsRadians)
+{
+    float delta = std::fmod(engine::Degrees(rhsRadians - lhsRadians), 360.0f);
+    if (delta > 180.0f) {
+        delta -= 360.0f;
+    } else if (delta < -180.0f) {
+        delta += 360.0f;
+    }
+    return delta;
+}
+
+int SignForYawDelta(float yawDeltaDegrees)
+{
+    if (yawDeltaDegrees > 1.0f) {
+        return 1;
+    }
+    if (yawDeltaDegrees < -1.0f) {
+        return -1;
+    }
+    return 0;
+}
+
+int ExpectedYawSignForInput(float throttle, float steer)
+{
+    if (std::abs(throttle) <= 0.05f || std::abs(steer) <= 0.05f) {
+        return 0;
+    }
+
+    const float expected = throttle >= 0.0f ? steer : -steer;
+    return expected > 0.0f ? 1 : -1;
 }
 
 engine::physics::VehicleProbeSample SampleFromRuntimeState(
@@ -1211,16 +1261,16 @@ engine::physics::VehicleRuntimeInput ExtendedRouteInputForFrame(int frame)
         return {-0.35f, 0.0f, 0.0f};
     }
     if (frame < 250) {
-        return {0.20f, 0.25f, 0.0f};
+        return {0.20f, 0.16f, 0.0f};
     }
     if (frame < 350) {
-        return {0.20f, -0.25f, 0.0f};
+        return {0.20f, -0.16f, 0.0f};
     }
     if (frame < 450) {
-        return {0.18f, 0.25f, 0.0f};
+        return {0.18f, 0.16f, 0.0f};
     }
     if (frame < 560) {
-        return {0.18f, -0.25f, 0.0f};
+        return {0.18f, -0.16f, 0.0f};
     }
     return {0.14f, 0.0f, 0.0f};
 }
@@ -1460,6 +1510,120 @@ FerryOfficeVehicleRuntimeComparisonResult::DrivingFeelCheck MakeDrivingFeelCheck
     check.units = std::move(units);
     check.message = std::move(message);
     return check;
+}
+
+struct InputSemanticsProbe {
+    std::string_view name;
+    float throttle = 0.0f;
+    float steer = 0.0f;
+};
+
+constexpr std::array<InputSemanticsProbe, 4> InputSemanticsProbes {{
+    {"forward-left", 0.75f, -0.6f},
+    {"forward-right", 0.75f, 0.6f},
+    {"reverse-left", -0.75f, -0.6f},
+    {"reverse-right", -0.75f, 0.6f},
+}};
+
+FerryOfficeVehicleRuntimeComparisonResult::InputSemanticsCheck MakeInputSemanticsCheck(
+    std::string backendName,
+    const InputSemanticsProbe& probe,
+    float initialYawRadians,
+    float finalYawRadians,
+    bool stable)
+{
+    FerryOfficeVehicleRuntimeComparisonResult::InputSemanticsCheck check;
+    check.backendName = std::move(backendName);
+    check.inputName = std::string(probe.name);
+    check.throttle = probe.throttle;
+    check.steer = probe.steer;
+    check.initialYawRadians = initialYawRadians;
+    check.finalYawRadians = finalYawRadians;
+    check.yawDeltaDegrees = SignedYawDeltaDegrees(initialYawRadians, finalYawRadians);
+    check.expectedSign = ExpectedYawSignForInput(probe.throttle, probe.steer);
+    check.actualSign = SignForYawDelta(check.yawDeltaDegrees);
+    check.passed = stable && check.actualSign == check.expectedSign;
+    if (!stable) {
+        check.failureReason = "Runtime became unstable before input semantics could be trusted.";
+    } else if (check.actualSign != check.expectedSign) {
+        check.failureReason = "Yaw sign did not match player input semantics for " + check.inputName + ".";
+    }
+    return check;
+}
+
+std::vector<FerryOfficeVehicleRuntimeComparisonResult::InputSemanticsCheck> RunDeterministicInputSemanticsChecks(
+    const SceneVehicleDefinition& vehicle)
+{
+    std::vector<FerryOfficeVehicleRuntimeComparisonResult::InputSemanticsCheck> checks;
+    for (const InputSemanticsProbe& probe : InputSemanticsProbes) {
+        VehicleController controller = BuildDeterministicVehicle(vehicle);
+        const float initialYaw = controller.state().yawRadians;
+        engine::InputState input;
+        input.moveForward = probe.throttle;
+        input.moveRight = probe.steer;
+        bool stable = true;
+        for (int frame = 0; frame < 90; ++frame) {
+            controller.beginFrame();
+            controller.updateDriving(1.0f / 60.0f, input);
+            stable = stable && !controller.state().hitBoundsThisFrame;
+        }
+        checks.push_back(MakeInputSemanticsCheck(
+            "deterministic",
+            probe,
+            initialYaw,
+            controller.state().yawRadians,
+            stable));
+    }
+    return checks;
+}
+
+std::vector<FerryOfficeVehicleRuntimeComparisonResult::InputSemanticsCheck> RunAdapterInputSemanticsChecks(
+    const engine::physics::VehicleRuntimeConfig& config,
+    engine::physics::PhysicsBackend backend)
+{
+    std::vector<FerryOfficeVehicleRuntimeComparisonResult::InputSemanticsCheck> checks;
+    engine::physics::VehicleRuntimeConfig semanticsConfig = config;
+    semanticsConfig.boundsMin = {config.boundsMin.x - 25.0f, config.boundsMin.y - 25.0f};
+    semanticsConfig.boundsMax = {config.boundsMax.x + 25.0f, config.boundsMax.y + 25.0f};
+    semanticsConfig.staticObstacles.clear();
+    for (const InputSemanticsProbe& probe : InputSemanticsProbes) {
+        std::unique_ptr<engine::physics::IVehicleRuntimeAdapter> adapter =
+            engine::physics::CreateVehicleRuntimeAdapter(backend);
+        if (!adapter || !adapter->initialize(semanticsConfig)) {
+            FerryOfficeVehicleRuntimeComparisonResult::InputSemanticsCheck check;
+            check.backendName = "unavailable";
+            check.inputName = std::string(probe.name);
+            check.throttle = probe.throttle;
+            check.steer = probe.steer;
+            check.expectedSign = ExpectedYawSignForInput(probe.throttle, probe.steer);
+            check.failureReason = "Runtime adapter was unavailable for input semantics QA.";
+            checks.push_back(std::move(check));
+            continue;
+        }
+
+        const std::string backendName(adapter->backendName());
+        for (int frame = 0; frame < 90; ++frame) {
+            adapter->step({0.0f, 0.0f, 0.0f}, semanticsConfig.fixedStepSeconds);
+        }
+        const float initialYaw = adapter->state().yawRadians;
+        bool stable = adapter->state().wheelContactCount >= 2 && !adapter->state().outOfBounds;
+        const int inputFrameCount = probe.throttle < 0.0f ? 150 : 90;
+        for (int frame = 0; frame < inputFrameCount; ++frame) {
+            stable = stable && adapter->step({probe.throttle, probe.steer, 0.0f}, semanticsConfig.fixedStepSeconds);
+            const engine::physics::VehicleRuntimeState state = adapter->state();
+            stable = stable && !state.outOfBounds;
+        }
+        const engine::physics::VehicleRuntimeState finalState = adapter->state();
+        const float finalYaw = finalState.yawRadians;
+        adapter->shutdown();
+        checks.push_back(MakeInputSemanticsCheck(
+            backendName,
+            probe,
+            initialYaw,
+            finalYaw,
+            stable));
+    }
+    return checks;
 }
 
 std::vector<FerryOfficeVehicleRuntimeComparisonResult::DrivingFeelCheck> RunDeterministicDrivingFeelChecks(
@@ -1993,6 +2157,11 @@ bool WriteReport(const FerryOfficeVehicleRuntimeComparisonResult& result)
         drivingFeelChecks.push_back(DrivingFeelCheckJson(check));
     }
 
+    nlohmann::json inputSemanticsChecks = nlohmann::json::array();
+    for (const FerryOfficeVehicleRuntimeComparisonResult::InputSemanticsCheck& check : result.inputSemanticsChecks) {
+        inputSemanticsChecks.push_back(InputSemanticsCheckJson(check));
+    }
+
     nlohmann::json routePaceProbes = nlohmann::json::array();
     for (const FerryOfficeVehicleRuntimeComparisonResult::RoutePaceProbe& probe : result.routePaceProbes) {
         routePaceProbes.push_back(RoutePaceProbeJson(probe));
@@ -2030,6 +2199,7 @@ bool WriteReport(const FerryOfficeVehicleRuntimeComparisonResult& result)
         {"obstacleChecks", obstacleChecks},
         {"controlChecks", controlChecks},
         {"drivingFeelChecks", drivingFeelChecks},
+        {"inputSemanticsChecks", inputSemanticsChecks},
         {"routePaceProbes", routePaceProbes},
         {"roadEdgeChecks", roadEdgeChecks},
         {"broadRouteChecks", broadRouteChecks},
@@ -2219,6 +2389,13 @@ FerryOfficeVehicleRuntimeComparisonResult RunFerryOfficeVehicleRuntimeComparison
         result.drivingFeelChecks.end(),
         adapterDrivingFeelChecks.begin(),
         adapterDrivingFeelChecks.end());
+    result.inputSemanticsChecks = RunDeterministicInputSemanticsChecks(*vehicle);
+    std::vector<FerryOfficeVehicleRuntimeComparisonResult::InputSemanticsCheck> adapterInputSemanticsChecks =
+        RunAdapterInputSemanticsChecks(config, backend);
+    result.inputSemanticsChecks.insert(
+        result.inputSemanticsChecks.end(),
+        adapterInputSemanticsChecks.begin(),
+        adapterInputSemanticsChecks.end());
     result.routePaceProbes = RunAdapterRoutePaceProbes(config, backend, checkpointPosition, checkpointRadius);
     result.roadEdgeChecks.push_back(RunDeterministicRoadEdgeCheck(loadedScene.scene, *vehicle, checkpointPosition, checkpointRadius));
     result.roadEdgeChecks.push_back(RunAdapterRoadEdgeCheck(loadedScene.scene, config, backend, checkpointPosition, checkpointRadius));
@@ -2244,6 +2421,10 @@ FerryOfficeVehicleRuntimeComparisonResult RunFerryOfficeVehicleRuntimeComparison
            });
     const bool drivingFeelStable = !result.drivingFeelChecks.empty()
         && std::all_of(result.drivingFeelChecks.begin(), result.drivingFeelChecks.end(), [](const auto& check) {
+               return check.passed;
+           });
+    const bool inputSemanticsStable = result.inputSemanticsChecks.size() == 8
+        && std::all_of(result.inputSemanticsChecks.begin(), result.inputSemanticsChecks.end(), [](const auto& check) {
                return check.passed;
            });
     const bool routePaceStable = !result.routePaceProbes.empty()
@@ -2274,6 +2455,7 @@ FerryOfficeVehicleRuntimeComparisonResult RunFerryOfficeVehicleRuntimeComparison
         && routeStable
         && obstacleStable
         && drivingFeelStable
+        && inputSemanticsStable
         && routePaceStable
         && roadEdgeStable
         && broadRouteStable
@@ -2283,7 +2465,7 @@ FerryOfficeVehicleRuntimeComparisonResult RunFerryOfficeVehicleRuntimeComparison
     result.recommendation = result.passed && obstacleProgressAligned ? "promote" : "defer";
     if (result.passed && obstacleProgressAligned) {
         result.recommendationReason =
-            "The selected vehicle runtime adapter stayed stable, close enough to compare, passed compact control checks, reached the authored service-run checkpoint, cleared the overlap-backed obstacle replay with aligned progress, stayed clear of authored dock-road edge probes, completed a broader turn/reverse route blocked by authored road-edge collision, and passed the longer recorded-input camera-reset route.";
+            "The selected vehicle runtime adapter stayed stable, close enough to compare, passed compact control and input-semantics checks, reached the authored service-run checkpoint, cleared the overlap-backed obstacle replay with aligned progress, stayed clear of authored dock-road edge probes, completed a broader turn/reverse route blocked by authored road-edge collision, and passed the longer recorded-input camera-reset route.";
     } else if (result.passed) {
         result.recommendationReason =
             "The selected vehicle runtime adapter stayed stable and camera-readable, but obstacle-proxy progress still diverges enough to keep it opt-in.";

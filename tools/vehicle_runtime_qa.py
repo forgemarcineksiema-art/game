@@ -33,6 +33,12 @@ REQUIRED_DRIVING_FEEL_CHECKS = {
     "steeringYawResponse",
     "cameraYawLag",
 }
+REQUIRED_INPUT_SEMANTICS = {
+    "forward-left": -1,
+    "forward-right": 1,
+    "reverse-left": 1,
+    "reverse-right": -1,
+}
 
 
 def default_exe_path() -> pathlib.Path:
@@ -178,6 +184,46 @@ def _require_driving_feel_checks(report: dict[str, Any]) -> list[dict[str, Any]]
         missing = REQUIRED_DRIVING_FEEL_CHECKS - by_backend.get(backend, set())
         if missing:
             raise ValueError(f"Vehicle runtime report is missing {backend} driving-feel checks: {sorted(missing)}")
+    return checks
+
+
+def _require_input_semantics_checks(report: dict[str, Any]) -> list[dict[str, Any]]:
+    checks = report.get("inputSemanticsChecks")
+    if not isinstance(checks, list) or not checks:
+        raise ValueError("Vehicle runtime report is missing input semantics checks.")
+
+    by_backend: dict[str, set[str]] = {}
+    for check in checks:
+        if not isinstance(check, dict):
+            raise ValueError(f"Vehicle runtime input semantics check is invalid: {check}")
+        backend = str(check.get("backend", ""))
+        input_name = str(check.get("inputName", ""))
+        by_backend.setdefault(backend, set()).add(input_name)
+        if check.get("passed") is not True:
+            raise ValueError(f"Vehicle runtime input semantics check failed: {check}")
+        for key in (
+            "throttle",
+            "brake",
+            "steer",
+            "initialYawDegrees",
+            "finalYawDegrees",
+            "yawDeltaDegrees",
+            "expectedSign",
+            "actualSign",
+            "failureReason",
+        ):
+            if key not in check:
+                raise ValueError(f"Vehicle runtime input semantics check is missing telemetry: {check}")
+        expected = REQUIRED_INPUT_SEMANTICS.get(input_name)
+        if expected is None:
+            raise ValueError(f"Vehicle runtime input semantics check has unknown input name: {check}")
+        if int(check.get("expectedSign", 0)) != expected or int(check.get("actualSign", 0)) != expected:
+            raise ValueError(f"Vehicle runtime input semantics check has wrong yaw sign: {check}")
+
+    for backend in ("deterministic", "jolt"):
+        missing = set(REQUIRED_INPUT_SEMANTICS) - by_backend.get(backend, set())
+        if missing:
+            raise ValueError(f"Vehicle runtime report is missing {backend} input semantics checks: {sorted(missing)}")
     return checks
 
 
@@ -430,6 +476,7 @@ def load_and_validate_report(report_path: pathlib.Path) -> dict[str, Any]:
     _require_road_edge_checks(report)
     _require_broad_route_checks(report)
     _require_extended_route_checks(report)
+    _require_input_semantics_checks(report)
     return report
 
 
@@ -472,6 +519,7 @@ def run_vehicle_runtime(exe: pathlib.Path, scene: pathlib.Path, report_path: pat
         f"routeChecks={len(report['routeChecks'])}, "
         f"obstacleChecks={len(report['obstacleChecks'])}, "
         f"drivingFeelChecks={len(report['drivingFeelChecks'])}, "
+        f"inputSemanticsChecks={len(report['inputSemanticsChecks'])}, "
         f"routePaceProbes={len(report['routePaceProbes'])}, "
         f"roadEdgeChecks={len(report['roadEdgeChecks'])}, "
         f"broadRouteChecks={len(report['broadRouteChecks'])}, "

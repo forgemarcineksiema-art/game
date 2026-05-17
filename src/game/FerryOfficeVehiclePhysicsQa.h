@@ -85,6 +85,20 @@ struct FerryOfficeVehicleRuntimeComparisonResult {
         std::string units;
         std::string message;
     };
+    struct InputSemanticsCheck {
+        std::string backendName;
+        std::string inputName;
+        float throttle = 0.0f;
+        float brake = 0.0f;
+        float steer = 0.0f;
+        float initialYawRadians = 0.0f;
+        float finalYawRadians = 0.0f;
+        float yawDeltaDegrees = 0.0f;
+        int expectedSign = 0;
+        int actualSign = 0;
+        bool passed = false;
+        std::string failureReason;
+    };
     struct RoutePaceProbe {
         std::string backendName;
         std::string name;
@@ -173,6 +187,7 @@ struct FerryOfficeVehicleRuntimeComparisonResult {
     std::vector<RouteCheck> routeChecks;
     std::vector<ObstacleCheck> obstacleChecks;
     std::vector<DrivingFeelCheck> drivingFeelChecks;
+    std::vector<InputSemanticsCheck> inputSemanticsChecks;
     std::vector<RoutePaceProbe> routePaceProbes;
     std::vector<RoadEdgeCheck> roadEdgeChecks;
     std::vector<BroadRouteCheck> broadRouteChecks;

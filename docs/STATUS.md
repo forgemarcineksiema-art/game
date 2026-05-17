@@ -2,6 +2,71 @@
 
 Last updated: 2026-05-17
 
+## Jolt Vehicle Input Semantics Truth/Fix + Post-v0.99 Re-baseline (2026-05-17)
+
+Goal:
+
+- Fix and prove player-facing Jolt vehicle input semantics for `W+A`, `W+D`, reverse+left, and reverse+right against the deterministic baseline.
+- Re-baseline the post-v0.99 direction from evidence, not from a reactive content/terrain/polish choice.
+
+Scope:
+
+- Added sign-sensitive C++ regression coverage for deterministic `VehicleController` and `IVehicleRuntimeAdapter` steering semantics.
+- Added `inputSemanticsChecks` to Ferry Office vehicle runtime QA reports and Python validation.
+- Fixed Jolt runtime input mapping so Tidebreak positive steer remains player-right even though Jolt wheel steer angle convention treats positive steer as left.
+- Added a small Jolt reverse steering semantics correction in the runtime adapter so reverse+steer matches the deterministic player-facing baseline.
+- Kept Jolt/vendor types out of `src/game`; `rg -n "Jolt|JPH::|<Jolt/|JPH/" src/game` remains the boundary check.
+- Added `docs/reviews/post-v099-autonomy-rebaseline.md`.
+
+Confirmed bug and QA gap:
+
+- CONFIRMED: the pre-change Jolt vehicle QA report could pass with `recommendation=promote` while carrying no sign-sensitive `inputSemanticsChecks`.
+- CONFIRMED: the first sign-sensitive Jolt C++ regression failed on the old adapter because forward-left/forward-right produced the opposite yaw sign.
+- CONFIRMED: after adding the sign checks, `tools\vehicle_runtime_qa.py` rejects reports missing `inputSemanticsChecks`.
+- CONFIRMED: the green Jolt report now contains deterministic and Jolt coverage for `forward-left`, `forward-right`, `reverse-left`, and `reverse-right`.
+
+Fresh evidence:
+
+- CONFIRMED: `build\physics\jolt-input-semantics-report.json` passed with `inputSemanticsChecks=8`, `recommendation=promote`, `maxPositionDelta=0.745`, and `maxYawDeltaDegrees=9.871`.
+- CONFIRMED: Jolt input semantics yaw deltas in the green report were `forward-left=-164.946`, `forward-right=164.959`, `reverse-left=16.519`, `reverse-right=-10.051`; all expected/actual signs matched.
+- INTERPRETATION: this makes Jolt more trustworthy than after v0.99 for input semantics, but it is not proof of final manual feel, full world driving, or universal default readiness.
+
+Validation commands run:
+
+- Pre-change `git status --short --branch`: clean on `main...origin/main`.
+- Pre-change `git branch --show-current`: `main`.
+- Pre-change `python tools\status_report.py`: passed.
+- Pre-change `scripts\doctor.ps1`: passed with expected PATH warnings for optional compiler/tool binaries.
+- Pre-change `scripts\configure.ps1`: passed.
+- Pre-change `scripts\build.ps1`: passed.
+- Pre-change `scripts\verify.ps1`: passed; 11/11 default CTest plus scene/assets/mesh/null smoke validation.
+- Pre-change `cmake --preset windows-vs2022-debug-jolt`: passed.
+- Pre-change `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- Pre-change `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed; 16/16.
+- Pre-change `python tools\vehicle_runtime_qa.py --exe build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --report-json build\physics\pre-jolt-input-semantics-report.json`: passed but lacked sign-sensitive input semantics checks.
+- RED: `python tests\test_vehicle_runtime_qa.py` failed before validator support because a report without input semantics checks was accepted.
+- RED: Jolt `EngineCoreTests.exe` failed after adding sign-sensitive adapter checks against the old runtime mapping.
+- GREEN: `python tests\test_vehicle_runtime_qa.py`: passed, 15 tests.
+- GREEN: `cmake --build --preset windows-vs2022-debug --target EngineCoreTests EngineApp`: passed.
+- GREEN: `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`: passed.
+- GREEN: `scripts\build.ps1`: passed.
+- GREEN: `scripts\verify.ps1`: passed after code, tests, and docs were updated; 11/11 default CTest plus scene/assets/mesh/null smoke validation.
+- GREEN: `cmake --build --preset windows-vs2022-debug-jolt --target EngineApp EngineCoreTests`: passed.
+- GREEN: `build\windows-vs2022-debug-jolt\Debug\EngineCoreTests.exe`: passed.
+- GREEN: `cmake --preset windows-vs2022-debug-jolt`: passed.
+- GREEN: `cmake --build --preset windows-vs2022-debug-jolt`: passed.
+- GREEN: `ctest --preset windows-vs2022-debug-jolt --output-on-failure`: passed; 16/16.
+- GREEN: `python tools\vehicle_runtime_qa.py --exe build\windows-vs2022-debug-jolt\Debug\EngineApp.exe --report-json build\physics\jolt-input-semantics-report.json`: passed.
+- GREEN: `scripts\verify_jolt.ps1`: passed; configured/built Jolt, ran 16/16 Jolt CTest, explicit Jolt playthrough QA, and vehicle runtime QA with `inputSemanticsChecks=8`.
+- GREEN: `rg -n "Jolt|JPH::|<Jolt/|JPH/" src\game`: no matches; vendor boundary remained intact.
+
+Remaining limits:
+
+- This closes the sign-semantics hole, not the broader manual-feel problem.
+- The reverse steering correction is an adapter-level semantics decision for the current Jolt vehicle model; it should be revisited if the vehicle model/wheel setup is replaced.
+- Do not promote Jolt as a universal default from this alone.
+- Do not start a terrain/content/world polish pass as the next automatic step. The recommended next goal is a manual/live input capture-replay evidence harness for player verbs and camera/world interaction, with Ferry Office kept as a regression testbed rather than treated as the game.
+
 ## Multi-Perspective Visual Capture Pass (2026-05-17)
 
 Goal:

@@ -29,6 +29,7 @@ struct VehicleRuntimeConfig {
 
 struct VehicleRuntimeInput {
     float throttle = 0.0f;
+    // Tidebreak input semantics: positive steer is player-right, negative steer is player-left.
     float steer = 0.0f;
     float brake = 0.0f;
 };

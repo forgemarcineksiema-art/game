@@ -156,6 +156,15 @@ Vec3 FromJoltRVec3(JPH::RVec3 value)
     };
 }
 
+Vec3 FromJoltVec3(JPH::Vec3 value)
+{
+    return {
+        value.GetX(),
+        value.GetY(),
+        value.GetZ(),
+    };
+}
+
 bool OutOfBounds(Vec3 position, const VehicleRuntimeConfig& config)
 {
     return position.x < config.boundsMin.x || position.x > config.boundsMax.x
@@ -396,13 +405,15 @@ public:
             : Clamp(forward * steerThrottleAssist, 0.0f, 1.0f);
         const float brake = Clamp(input.brake, 0.0f, 1.0f);
         const float effectiveBrake = std::max(brake, std::abs(forward) <= 0.001f ? 0.28f : 0.0f);
-        m_controller->SetDriverInput(driveForward, right, effectiveBrake, 0.0f);
+        const float joltRight = -right;
+        m_controller->SetDriverInput(driveForward, joltRight, effectiveBrake, 0.0f);
         if (std::abs(forward) > 0.001f || std::abs(right) > 0.001f || brake > 0.001f) {
             m_physicsSystem->GetBodyInterface().ActivateBody(m_bodyId);
         }
         m_physicsSystem->Update(Clamp(deltaSeconds, 0.0f, 0.1f), 1, m_tempAllocator.get(), m_jobSystem.get());
         applyStraightDriveAssist(forward, right, Clamp(deltaSeconds, 0.0f, 0.1f));
         applySteeringDriveAssist(forward, right, Clamp(deltaSeconds, 0.0f, 0.1f));
+        applyReverseSteeringSemanticsAssist(forward, right, Clamp(deltaSeconds, 0.0f, 0.1f));
         applyManualDamping(forward, brake, Clamp(deltaSeconds, 0.0f, 0.1f));
         readState();
         m_state.frameIndex += 1;
@@ -452,6 +463,20 @@ private:
         bodyInterface.SetLinearVelocity(m_bodyId, velocity + forward * assist);
     }
 
+    void applyReverseSteeringSemanticsAssist(float throttle, float steer, float deltaSeconds)
+    {
+        if (throttle >= -0.001f || std::abs(steer) <= 0.001f) {
+            return;
+        }
+
+        JPH::BodyInterface& bodyInterface = m_physicsSystem->GetBodyInterface();
+        const float yawSign = steer < 0.0f ? 1.0f : -1.0f;
+        const float yawDelta = yawSign * std::abs(throttle) * std::abs(steer) * 1.5f * deltaSeconds;
+        const JPH::Quat currentRotation = bodyInterface.GetRotation(m_bodyId);
+        const JPH::Quat correctedRotation = JPH::Quat::sRotation(JPH::Vec3::sAxisY(), yawDelta) * currentRotation;
+        bodyInterface.SetRotation(m_bodyId, correctedRotation, JPH::EActivation::Activate);
+    }
+
     void applyStraightDriveAssist(float throttle, float steer, float deltaSeconds)
     {
         if (throttle <= 0.001f) {
@@ -479,7 +504,7 @@ private:
         const JPH::Vec3 euler = rotation.GetEulerAngles();
         const JPH::Vec3 forward = rotation * m_constraint->GetLocalForward();
         m_state.position = FromJoltRVec3(bodyInterface.GetPosition(m_bodyId));
-        m_state.yawRadians = euler.GetY();
+        m_state.yawRadians = YawFromDirection(FromJoltVec3(forward));
         m_state.speed = velocity.Dot(forward);
         m_state.wheelContactCount = CountWheelContacts(*m_constraint);
         m_state.maxPitchDegrees = std::abs(Degrees(euler.GetX()));
