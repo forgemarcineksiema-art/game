@@ -7,7 +7,8 @@ Date: 2026-05-17
 - CONFIRMED: The immediate player-facing bug was real: the old Jolt adapter could pass route/checkpoint QA without proving `W+A`, `W+D`, reverse+left, and reverse+right steering signs.
 - CONFIRMED: Jolt vehicle QA now emits and validates `inputSemanticsChecks` for deterministic and Jolt backends.
 - CONFIRMED: The green report is `build/physics/jolt-input-semantics-report.json`.
-- INTERPRETATION: Jolt is more credible after this goal, but still not proven as final manual feel or a universal default runtime.
+- CONFIRMED: manual play on 2026-05-17 reported current Jolt vehicle input/controls, physics, and camera as good in the Ferry Office playtest path.
+- INTERPRETATION: Jolt is more credible after this goal for the current player-facing vehicle verb, but still not proven as full-world driving or a universal default runtime.
 
 ## What Was Fixed
 
@@ -41,28 +42,30 @@ Date: 2026-05-17
 
 Recommended next goal:
 
-- BET: Build a manual/live input capture-replay evidence harness for player verbs and camera/world interaction. It should record or replay real control sequences across on-foot, enter vehicle, forward/reverse steering, camera reset/readability, and authored collision contact, then emit evidence that is not just another checkpoint route.
+- BET: Run a first-real-slice direction gate that separates `Ferry Office as regression testbed` from `the actual game target`. The gate should evaluate target gameplay loop, world structure, terrain/road needs, scene architecture, asset/render pipeline, character/player presence, and authoring boundaries together, then choose the smallest implementation slice that proves what Tidebreak is becoming. It must not extend the current flat debug map with more content, props, terrain labels, or local interaction reactions.
 
-Why this, not terrain:
+Why this, not "world response":
 
-- CONFIRMED: The failure came from QA blindness around input semantics, not from missing terrain variety.
-- INFERRED: Terrain/world substrate may become important later, but adding it before a trustworthy manual/live evidence harness would create a larger surface area for the same class of false confidence.
+- CONFIRMED: the immediate vehicle input/physics/camera blocker is now green in tests and accepted manually in the current playtest path.
+- INTERPRETATION: the project discussion moved past "make Ferry Office react more" and toward "stop pretending Ferry Office can become the game by incremental cleanup".
+- WARNING: a "world responds to player presence" pass on the current map would likely become another debug-playground improvement, not a real answer to what the game is.
 
 Rejected direction 1:
 
-- WARNING: Do not start a terrain/road/world-substrate implementation just because "zroznicowane tereny" was mentioned. The current evidence says the project first needs better proof around player verbs and runtime truth.
+- WARNING: Do not start a terrain/road/world-substrate implementation just because "zroznicowane tereny" was mentioned. Terrain might be part of the eventual answer, but choosing it reactively would repeat the same mistake as choosing polish/content reactively.
 
 Rejected direction 2:
 
-- WARNING: Do not promote Jolt as universal default from this fix alone. This goal proves sign semantics and the current recorded routes; it does not prove full manual play, all-world collision, slopes, dynamic obstacles, traffic, damage, or camera collision.
+- WARNING: Do not run another Ferry Office content/polish/readability/world-reaction pass as the next strategic milestone. Ferry Office should keep catching regressions; it should not be mistaken for the target playable world.
 
 ## Open Limits
 
-- UNVERIFIED: Human/manual feel after the reverse semantics correction.
+- CONFIRMED: current manual vehicle input/physics/camera feel is good enough to stop treating the vehicle verb as the active blocker.
 - UNVERIFIED: Jolt behavior on non-flat roads, slopes, dense dynamic obstacles, or real traffic-like blockers.
 - UNVERIFIED: Whether the current reverse correction remains appropriate after replacing the current vehicle model/wheel setup.
 - INFERRED: `SandboxLayer` and Ferry Office glue remain a pressure point; more gameplay logic there will make the next playable slice harder to reason about.
+- UNVERIFIED: what the first real target slice/system should be after deliberately leaving Ferry Office as a testbed.
 
 ## One-Line Truth
 
-INTERPRETATION: After v0.99, the project is strongest as an engine/QA testbed with increasingly useful gameplay evidence, but it still needs a truthful manual/live player-verb harness before bigger world, content, or default-runtime decisions are credible.
+INTERPRETATION: After v0.99, the project is strongest as an engine/QA testbed with a now-credible current vehicle verb, but the next hard decision is not "improve Ferry Office"; it is choosing the first real target slice/world-system that proves what the game is outside the debug playground.

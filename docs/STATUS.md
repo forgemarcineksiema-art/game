@@ -29,7 +29,8 @@ Fresh evidence:
 
 - CONFIRMED: `build\physics\jolt-input-semantics-report.json` passed with `inputSemanticsChecks=8`, `recommendation=promote`, `maxPositionDelta=0.745`, and `maxYawDeltaDegrees=9.871`.
 - CONFIRMED: Jolt input semantics yaw deltas in the green report were `forward-left=-164.946`, `forward-right=164.959`, `reverse-left=16.519`, `reverse-right=-10.051`; all expected/actual signs matched.
-- INTERPRETATION: this makes Jolt more trustworthy than after v0.99 for input semantics, but it is not proof of final manual feel, full world driving, or universal default readiness.
+- CONFIRMED: manual play on 2026-05-17 reported vehicle input/controls, physics, and camera as good in the current Ferry Office/Jolt playtest path.
+- INTERPRETATION: this makes Jolt more trustworthy than after v0.99 for the current player-facing vehicle verb, but it is not proof of all-world driving, non-flat terrain, traffic-like blockers, or universal default readiness.
 
 Validation commands run:
 
@@ -62,10 +63,11 @@ Validation commands run:
 
 Remaining limits:
 
-- This closes the sign-semantics hole, not the broader manual-feel problem.
+- This closes the sign-semantics hole and the immediate manual vehicle-feel blocker for the current testbed.
 - The reverse steering correction is an adapter-level semantics decision for the current Jolt vehicle model; it should be revisited if the vehicle model/wheel setup is replaced.
 - Do not promote Jolt as a universal default from this alone.
-- Do not start a terrain/content/world polish pass as the next automatic step. The recommended next goal is a manual/live input capture-replay evidence harness for player verbs and camera/world interaction, with Ferry Office kept as a regression testbed rather than treated as the game.
+- Do not treat Ferry Office as the first real game location. It remains a regression/debug playground.
+- Do not answer the next step with another Ferry Office content, polish, terrain, or "world reacts to the player" pass. The next strategic problem is to define and prove the first real target slice/world-system direction without pretending the current flat debug map can become the game through incremental cleanup.
 
 ## Multi-Perspective Visual Capture Pass (2026-05-17)
 
