@@ -29,7 +29,8 @@ Required role values:
 - Purpose: prove a second slice can exist outside Ferry Office with its own surface, road, collision, route, and marker intent.
 - It is not a mission, map expansion, terrain implementation, art pass, or new runtime gameplay chain.
 - It now carries one `targetObjective` gate bound to the existing Pilot Service Marker. This proves authored objective/consequence runtime for a target slice; it is still not a mission system.
-- Its next useful evolution should be a tiny action/response contract, not a prettier scaffold or another neutral `E` prompt. The target action can be provisional and abstract, but it must prove that a risky player action causes a visible/testable world response and an exit/recovery requirement.
+- It now carries one `targetActionResponse` contract: `Suspicious Cargo Cache` triggers `pilot-local-alerted`, then `Pilot Escape Marker` proves exit/recovery. This is a testable runtime response contract, not a police/AI/mission framework.
+- Its next useful evolution should make that response visible and spatially meaningful, not add a prettier scaffold or another neutral `E` prompt.
 
 ## Metadata Contract
 
@@ -71,6 +72,8 @@ python tools/runtime_scene_smoke.py --exe build/windows-vs2022-debug/Debug/Engin
 
 For `target-slice-scaffold`, runtime smoke must also expose `targetObjective=` evidence. A smoke output that only says "neutral slice markers" is no longer enough.
 
+`tools/mesh_report.py` can be run on meshless target slices. It should print that project model files are not referenced by that specific scene, but zero Veyra meshes are valid until a goal explicitly adds authored mesh assets.
+
 Use the target-slice objective QA gate to prove the Veyra marker can be reached and completed through recorded live-like player input:
 
 ```powershell
@@ -78,6 +81,16 @@ python tools/target_slice_objective_qa.py --exe build/windows-vs2022-debug/Debug
 ```
 
 This gate must report recorded input script name, authored `pilot-road-edge-collider` contact, contact push/normal, recovery timing, frames to focus, frames to interact, focus name/prompt, interaction result, and `targetObjective=inspect-pilot-service-marker` completion evidence. It is not proof that Veyra is playable as a world.
+
+For Veyra, the same gate must also report:
+
+- `riskyAction.id=pilot-cache-risk-response`,
+- `riskyAction.interactableName=Suspicious Cargo Cache`,
+- `localResponse.stateId=pilot-local-alerted`,
+- `exitRecovery.stateId=pilot-escape-confirmed`,
+- final summary evidence for `riskyAction=`, `responseState=`, and `exitRecovery=`.
+
+Objective completion alone is stale evidence for the target slice. A report that reaches only `Pilot Service Marker` without risky-action/local-response/exit-recovery proof should fail.
 
 Expected current roles:
 
@@ -97,6 +110,7 @@ Allowed in a target-slice scaffold:
 - objective markers,
 - one debug interaction marker,
 - one authored `targetObjective` gate bound to an existing interactable marker,
+- one authored `targetActionResponse` gate bound to a risky interactable and an exit/recovery interactable,
 - validation and reporting tests.
 - neutral runtime smoke/capture evidence.
 - one tiny action/response proof if it is explicitly scoped as target-slice gameplay contract evidence.

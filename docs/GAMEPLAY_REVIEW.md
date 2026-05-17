@@ -28,7 +28,7 @@ The game does not need to be urban or gangster by default. Tidebreak can move be
 - Active playtest route guidance makes the long chain less dependent on F1/debug mode.
 - Visual smoke and playthrough QA give enough automated evidence to make provisional game decisions without waiting for manual review.
 - Jolt vehicle evidence is strong enough to treat Jolt as the preferred production vehicle-runtime candidate, while deterministic remains the safe direct-app and QA baseline/fallback.
-- Veyra now has a small target-slice runtime/objective/contact QA surface that is separate from Ferry Office assumptions.
+- Veyra now has a small target-slice runtime/objective/contact/action-response QA surface that is separate from Ferry Office assumptions.
 
 ## Main Gameplay Problems
 
@@ -38,7 +38,7 @@ The game does not need to be urban or gangster by default. Tidebreak can move be
 
 2. The current world responds like a prototype, not like a crime/action sandbox.
 
-   v0.95 proves the right shape by opening Low Dock Drain access after the Storm Pump Ticket, and the Veyra contact gate proves authored player-world contact. The next step is not another neutral repair consequence. It should prove that a risky player action creates attention, pressure, access denial, pursuit-like behavior, or another readable reaction.
+   v0.95 proves the right shape by opening Low Dock Drain access after the Storm Pump Ticket, and Veyra now proves authored contact plus a risky-action/local-response/exit-recovery state contract. The next step is not another neutral repair consequence. It should make the response visible, spatial, or pressure-bearing instead of leaving it as report/state text.
 
 3. The UI still carries too much design weight.
 

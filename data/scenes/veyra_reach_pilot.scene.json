@@ -50,6 +50,17 @@
     "completionSummary": "consequence=pilot-marker-confirmed",
     "completionEventText": "Target-slice objective confirmed: pilot-service-marker"
   },
+  "targetActionResponse": {
+    "id": "pilot-cache-risk-response",
+    "riskyInteractableName": "Suspicious Cargo Cache",
+    "responseStateId": "pilot-local-alerted",
+    "responseSummary": "response=pilot-local-alerted",
+    "responseEventText": "Suspicious cargo cache disturbed; local response triggered.",
+    "exitInteractableName": "Pilot Escape Marker",
+    "exitRecoveryStateId": "pilot-escape-confirmed",
+    "exitSummary": "exit=pilot-escape-confirmed",
+    "exitEventText": "Pilot escape route confirmed."
+  },
   "sceneMaterials": [
     {
       "key": "misty-island-ground",
@@ -115,6 +126,24 @@
       "position": [1.0, 0.5, 2.4],
       "radius": 1.2,
       "message": "Pilot slice marker inspected; target-slice objective gate confirmed."
+    },
+    {
+      "id": "pilot-suspicious-cargo-cache",
+      "name": "Suspicious Cargo Cache",
+      "prompt": "Disturb Suspicious Cargo Cache",
+      "type": "info",
+      "position": [0.4, 0.5, 1.05],
+      "radius": 1.1,
+      "message": "Suspicious cargo cache disturbed; local response triggered."
+    },
+    {
+      "id": "pilot-escape-marker",
+      "name": "Pilot Escape Marker",
+      "prompt": "Confirm Pilot Escape Route",
+      "type": "info",
+      "position": [-1.2, 0.5, 1.9],
+      "radius": 1.2,
+      "message": "Pilot escape route confirmed."
     }
   ],
   "traversalAffordances": [],
@@ -127,6 +156,8 @@
       "points": [
         [-2.0, 0.05, -1.5],
         [-0.5, 0.05, 0.0],
+        [0.4, 0.05, 1.05],
+        [-1.2, 0.05, 1.9],
         [1.0, 0.05, 2.4]
       ]
     }
@@ -141,6 +172,16 @@
       "id": "pilot-service-objective-marker",
       "label": "Pilot Service Marker",
       "position": [1.0, 0.2, 2.4]
+    },
+    {
+      "id": "pilot-risky-action-marker",
+      "label": "Suspicious Cargo Cache",
+      "position": [0.4, 0.2, 1.05]
+    },
+    {
+      "id": "pilot-exit-recovery-marker",
+      "label": "Pilot Escape Marker",
+      "position": [-1.2, 0.2, 1.9]
     }
   ]
 }

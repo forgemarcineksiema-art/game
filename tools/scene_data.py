@@ -151,6 +151,7 @@ def collect_ids(scene: dict[str, Any]) -> set[str]:
     _add_id(ids, scene.get("id"))
     _add_id(ids, _as_dict(scene.get("playerStart")).get("id"))
     _add_id(ids, _as_dict(scene.get("targetObjective")).get("id"))
+    _add_id(ids, _as_dict(scene.get("targetActionResponse")).get("id"))
     for section in [
         "colliders",
         "visualPlaceholders",
@@ -260,6 +261,7 @@ def validate_scene(scene: dict[str, Any]) -> ValidationResult:
             _validate_world_flag_list(item.get(key), f"{label}.{key}", result)
 
     _validate_target_objective(scene, result)
+    _validate_target_action_response(scene, result)
 
     for affordance in _as_list(scene.get("traversalAffordances")):
         item = _as_dict(affordance)
@@ -461,6 +463,37 @@ def _validate_target_objective(scene: dict[str, Any], result: ValidationResult) 
         result.errors.append(
             f"{label}.completionInteractableName references unknown interactable name '{completion_name}'."
         )
+
+
+def _validate_target_action_response(scene: dict[str, Any], result: ValidationResult) -> None:
+    response = _as_dict(scene.get("targetActionResponse"))
+    if not response:
+        return
+
+    label = "scene.targetActionResponse"
+    for key in [
+        "id",
+        "riskyInteractableName",
+        "responseStateId",
+        "responseEventText",
+        "exitInteractableName",
+        "exitRecoveryStateId",
+        "exitEventText",
+    ]:
+        _require_string(response, key, label, result)
+    for key in ["responseSummary", "exitSummary"]:
+        if key in response:
+            _require_string(response, key, label, result)
+
+    interactable_names = {
+        item.get("name")
+        for item in (_as_dict(interactable) for interactable in _as_list(scene.get("interactables")))
+        if isinstance(item.get("name"), str)
+    }
+    for key in ["riskyInteractableName", "exitInteractableName"]:
+        name = response.get(key)
+        if isinstance(name, str) and name and name not in interactable_names:
+            result.errors.append(f"{label}.{key} references unknown interactable name '{name}'.")
 
 
 def validate_asset_workflow(

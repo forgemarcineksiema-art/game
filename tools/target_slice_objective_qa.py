@@ -22,6 +22,11 @@ OBJECTIVE_ID = "inspect-pilot-service-marker"
 FOCUS_NAME = "Pilot Service Marker"
 FOCUS_PROMPT = "Inspect Pilot Slice Marker"
 CONTACT_COLLIDER_NAME = "pilot-road-edge-collider"
+RISKY_ACTION_ID = "pilot-cache-risk-response"
+RISKY_ACTION_NAME = "Suspicious Cargo Cache"
+LOCAL_RESPONSE_STATE_ID = "pilot-local-alerted"
+EXIT_RECOVERY_STATE_ID = "pilot-escape-confirmed"
+EXIT_RECOVERY_NAME = "Pilot Escape Marker"
 FORBIDDEN_TERMS = runtime_scene_smoke.DEFAULT_FORBIDDEN_TARGET_SLICE_TERMS + ["Ferry Office"]
 
 
@@ -108,6 +113,46 @@ def load_and_validate_report(report_path: pathlib.Path) -> dict[str, Any]:
     interaction = report.get("interaction", {})
     _require(interaction.get("triggered") is True, "Target-slice QA report did not trigger interaction input.")
 
+    risky_action = report.get("riskyAction")
+    _require(isinstance(risky_action, dict), "Target-slice QA report is missing riskyAction evidence.")
+    _require(risky_action.get("id") == RISKY_ACTION_ID, f"Unexpected riskyAction id: {risky_action.get('id')}")
+    _require(risky_action.get("attempted") is True, "Target-slice QA did not attempt risky action.")
+    _require(risky_action.get("triggered") is True, "Target-slice QA did not trigger risky action.")
+    _require(
+        risky_action.get("interactableName") == RISKY_ACTION_NAME,
+        f"Unexpected riskyAction interactable: {risky_action.get('interactableName')}",
+    )
+    frames_to_action = int(risky_action.get("framesToAction", -1))
+    _require(frames_to_action > frames_to_recovery, "Risky action did not happen after contact recovery.")
+    _require(
+        "local response" in str(risky_action.get("message", "")).lower(),
+        "Risky action message does not describe a local response.",
+    )
+
+    local_response = report.get("localResponse")
+    _require(isinstance(local_response, dict), "Target-slice QA report is missing localResponse evidence.")
+    _require(
+        local_response.get("stateId") == LOCAL_RESPONSE_STATE_ID,
+        f"Unexpected localResponse state: {local_response.get('stateId')}",
+    )
+    _require(local_response.get("active") is True, "Target-slice local response was not active.")
+    frames_to_response = int(local_response.get("framesToResponse", -1))
+    _require(frames_to_response >= frames_to_action, "Local response timing did not follow risky action.")
+
+    exit_recovery = report.get("exitRecovery")
+    _require(isinstance(exit_recovery, dict), "Target-slice QA report is missing exitRecovery evidence.")
+    _require(
+        exit_recovery.get("stateId") == EXIT_RECOVERY_STATE_ID,
+        f"Unexpected exitRecovery state: {exit_recovery.get('stateId')}",
+    )
+    _require(exit_recovery.get("complete") is True, "Target-slice exit recovery did not complete.")
+    _require(
+        exit_recovery.get("interactableName") == EXIT_RECOVERY_NAME,
+        f"Unexpected exitRecovery interactable: {exit_recovery.get('interactableName')}",
+    )
+    frames_to_exit = int(exit_recovery.get("framesToExit", -1))
+    _require(frames_to_exit > frames_to_response, "Exit recovery timing did not follow local response.")
+
     final = report.get("final", {})
     _require(final.get("objectiveId") == OBJECTIVE_ID, f"Unexpected target-slice objective id: {final.get('objectiveId')}")
     _require(final.get("objectiveComplete") is True, "Target-slice objective did not complete.")
@@ -117,6 +162,12 @@ def load_and_validate_report(report_path: pathlib.Path) -> dict[str, Any]:
         f"targetObjective={OBJECTIVE_ID}" in completion_summary,
         f"Target-slice completion summary does not name the objective: {completion_summary}",
     )
+    for expected in [
+        f"riskyAction={RISKY_ACTION_ID}",
+        f"responseState={LOCAL_RESPONSE_STATE_ID}",
+        f"exitRecovery={EXIT_RECOVERY_STATE_ID}",
+    ]:
+        _require(expected in completion_summary, f"Target-slice completion summary is missing {expected}.")
     _require(
         "pilot-service-marker" in completion_event_text,
         f"Target-slice completion event does not name the authored marker: {completion_event_text}",
@@ -164,6 +215,8 @@ def run_qa(exe: pathlib.Path, scene: pathlib.Path, report_path: pathlib.Path) ->
         f"scene={report['scene']['id']}, "
         f"contact={contact['colliderName']}@{contact['framesToContact']}, "
         f"recovery={contact['framesToRecovery']}, "
+        f"riskyAction={report['riskyAction']['framesToAction']}, "
+        f"exit={report['exitRecovery']['framesToExit']}, "
         f"framesToFocus={report['input']['framesToFocus']}, "
         f"framesToInteract={report['input']['framesToInteract']}, "
         f"report={report_path}"

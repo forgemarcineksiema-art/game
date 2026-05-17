@@ -347,6 +347,32 @@ SceneTargetObjectiveDefinition ParseTargetObjective(const json& root)
     return objective;
 }
 
+SceneTargetActionResponseDefinition ParseTargetActionResponse(const json& root)
+{
+    SceneTargetActionResponseDefinition response;
+    const auto found = root.find("targetActionResponse");
+    if (found == root.end() || found->is_null()) {
+        return response;
+    }
+    if (!found->is_object()) {
+        throw std::runtime_error("scene.targetActionResponse must be an object.");
+    }
+
+    response.id = ReadString(*found, "id", "scene.targetActionResponse");
+    response.riskyInteractableName =
+        ReadString(*found, "riskyInteractableName", "scene.targetActionResponse");
+    response.responseStateId = ReadString(*found, "responseStateId", "scene.targetActionResponse");
+    response.responseSummary = ReadOptionalString(*found, "responseSummary", "scene.targetActionResponse");
+    response.responseEventText = ReadString(*found, "responseEventText", "scene.targetActionResponse");
+    response.exitInteractableName =
+        ReadString(*found, "exitInteractableName", "scene.targetActionResponse");
+    response.exitRecoveryStateId =
+        ReadString(*found, "exitRecoveryStateId", "scene.targetActionResponse");
+    response.exitSummary = ReadOptionalString(*found, "exitSummary", "scene.targetActionResponse");
+    response.exitEventText = ReadString(*found, "exitEventText", "scene.targetActionResponse");
+    return response;
+}
+
 SceneSliceMetadataDefinition ParseSliceMetadata(const json& root)
 {
     SceneSliceMetadataDefinition metadata;
@@ -396,6 +422,7 @@ SceneDefinition ParseScene(const json& root)
     scene.floorHeight = ReadFloat(root, "floorHeight", "scene");
     scene.sliceMetadata = ParseSliceMetadata(root);
     scene.targetObjective = ParseTargetObjective(root);
+    scene.targetActionResponse = ParseTargetActionResponse(root);
 
     if (const auto units = root.find("units"); units != root.end() && units->is_object()) {
         scene.linearUnits = ReadOptionalString(*units, "linear", "scene.units");

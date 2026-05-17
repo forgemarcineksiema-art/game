@@ -22,6 +22,8 @@ void PrototypeScene::buildFromFerryOfficeData()
     m_sceneDefinition = {};
     m_targetSliceObjective = {};
     m_completedTargetSliceInteractableName.clear();
+    m_completedTargetSliceRiskyInteractableName.clear();
+    m_completedTargetSliceExitInteractableName.clear();
     m_lastTargetSliceEventText = "none";
     m_world.buildFerryOfficePrototypeLayout();
     m_interactableActionBindings.clear();
@@ -306,6 +308,8 @@ void PrototypeScene::loadFromDefinition(const SceneDefinition& sceneDefinition)
     m_sceneDefinition = sceneDefinition;
     m_ferryOfficeBehaviorEnabled = IsFerryOfficeRegressionScene(sceneDefinition);
     m_completedTargetSliceInteractableName.clear();
+    m_completedTargetSliceRiskyInteractableName.clear();
+    m_completedTargetSliceExitInteractableName.clear();
     m_targetSliceObjective = BuildTargetSliceObjectiveState(sceneDefinition);
     m_lastTargetSliceEventText = "none";
     m_worldState.clear();
@@ -764,17 +768,47 @@ bool PrototypeScene::hasRequiredWorldFlags(const InteractableActionBinding& bind
 
 bool PrototypeScene::recordTargetSliceInteraction(std::string_view interactableName)
 {
-    if (m_ferryOfficeBehaviorEnabled || !m_targetSliceObjective.active || m_targetSliceObjective.complete) {
-        return false;
-    }
-    if (interactableName != m_targetSliceObjective.completionInteractableName) {
+    if (m_ferryOfficeBehaviorEnabled || !m_targetSliceObjective.active) {
         return false;
     }
 
-    m_completedTargetSliceInteractableName = std::string(interactableName);
-    m_targetSliceObjective = BuildTargetSliceObjectiveState(m_sceneDefinition, m_completedTargetSliceInteractableName);
-    m_lastTargetSliceEventText = m_targetSliceObjective.completionEventText;
-    return m_targetSliceObjective.complete;
+    bool changed = false;
+    std::string eventText = "none";
+    if (!m_targetSliceObjective.complete && interactableName == m_targetSliceObjective.completionInteractableName) {
+        m_completedTargetSliceInteractableName = std::string(interactableName);
+        eventText = m_targetSliceObjective.completionEventText;
+        changed = true;
+    }
+    if (m_targetSliceObjective.actionResponseActive
+        && !m_targetSliceObjective.riskyActionComplete
+        && interactableName == m_targetSliceObjective.riskyInteractableName) {
+        m_completedTargetSliceRiskyInteractableName = std::string(interactableName);
+        eventText = m_targetSliceObjective.responseEventText;
+        changed = true;
+    }
+    if (m_targetSliceObjective.actionResponseActive
+        && !m_targetSliceObjective.exitRecovered
+        && !m_completedTargetSliceRiskyInteractableName.empty()
+        && interactableName == m_targetSliceObjective.exitInteractableName) {
+        m_completedTargetSliceExitInteractableName = std::string(interactableName);
+        eventText = m_targetSliceObjective.exitEventText;
+        changed = true;
+    }
+
+    if (!changed) {
+        return false;
+    }
+
+    m_targetSliceObjective = BuildTargetSliceObjectiveState(
+        m_sceneDefinition,
+        m_completedTargetSliceInteractableName,
+        m_completedTargetSliceRiskyInteractableName,
+        m_completedTargetSliceExitInteractableName);
+    if (eventText.empty() || eventText == "none") {
+        eventText = m_targetSliceObjective.completionEventText;
+    }
+    m_lastTargetSliceEventText = eventText;
+    return true;
 }
 
 void PrototypeScene::configureJobFromDefinition(const SceneDefinition& sceneDefinition)

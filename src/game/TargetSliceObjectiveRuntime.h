@@ -14,8 +14,23 @@ struct TargetSliceObjectiveState {
     std::string completionInteractableName;
     std::string completionSummary;
     std::string completionEventText;
+    bool actionResponseActive = false;
+    bool riskyActionComplete = false;
+    bool localResponseActive = false;
+    bool exitRecovered = false;
+    std::string actionResponseId;
+    std::string riskyInteractableName;
+    std::string responseStateId;
+    std::string responseSummary;
+    std::string responseEventText;
+    std::string exitInteractableName;
+    std::string exitRecoveryStateId;
+    std::string exitSummary;
+    std::string exitEventText;
 };
 
 TargetSliceObjectiveState BuildTargetSliceObjectiveState(
     const SceneDefinition& scene,
-    std::string_view completedInteractableName = {});
+    std::string_view completedInteractableName = {},
+    std::string_view completedRiskyInteractableName = {},
+    std::string_view completedExitInteractableName = {});

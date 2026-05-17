@@ -38,6 +38,27 @@ class TargetSliceObjectiveQaTests(unittest.TestCase):
                 "triggered": True,
                 "message": "Pilot slice marker inspected; target-slice objective gate confirmed.",
             },
+            "riskyAction": {
+                "id": "pilot-cache-risk-response",
+                "attempted": True,
+                "triggered": True,
+                "interactableName": "Suspicious Cargo Cache",
+                "framesToAction": 82,
+                "message": "Suspicious cargo cache disturbed; local response triggered.",
+            },
+            "localResponse": {
+                "stateId": "pilot-local-alerted",
+                "active": True,
+                "framesToResponse": 82,
+                "summary": "response=pilot-local-alerted",
+            },
+            "exitRecovery": {
+                "stateId": "pilot-escape-confirmed",
+                "complete": True,
+                "interactableName": "Pilot Escape Marker",
+                "framesToExit": 111,
+                "message": "Pilot escape route confirmed.",
+            },
             "contact": {
                 "attempted": True,
                 "hit": True,
@@ -53,7 +74,7 @@ class TargetSliceObjectiveQaTests(unittest.TestCase):
             "final": {
                 "objectiveId": "inspect-pilot-service-marker",
                 "objectiveComplete": True,
-                "completionSummary": "complete=true role=target-slice-authored-objective targetObjective=inspect-pilot-service-marker consequence=pilot-marker-confirmed",
+                "completionSummary": "complete=true role=target-slice-authored-objective targetObjective=inspect-pilot-service-marker consequence=pilot-marker-confirmed riskyAction=pilot-cache-risk-response complete=true responseState=pilot-local-alerted active=true exitRecovery=pilot-escape-confirmed complete=true",
                 "completionEventText": "Target-slice objective confirmed: pilot-service-marker",
                 "playerPosition": {"x": 0.4, "y": 0.0, "z": 1.55},
             },
@@ -89,10 +110,31 @@ class TargetSliceObjectiveQaTests(unittest.TestCase):
                 "triggered": True,
                 "message": "Pilot slice marker inspected; target-slice objective gate confirmed.",
             },
+            "riskyAction": {
+                "id": "pilot-cache-risk-response",
+                "attempted": True,
+                "triggered": True,
+                "interactableName": "Suspicious Cargo Cache",
+                "framesToAction": 82,
+                "message": "Suspicious cargo cache disturbed; local response triggered.",
+            },
+            "localResponse": {
+                "stateId": "pilot-local-alerted",
+                "active": True,
+                "framesToResponse": 82,
+                "summary": "response=pilot-local-alerted",
+            },
+            "exitRecovery": {
+                "stateId": "pilot-escape-confirmed",
+                "complete": True,
+                "interactableName": "Pilot Escape Marker",
+                "framesToExit": 111,
+                "message": "Pilot escape route confirmed.",
+            },
             "final": {
                 "objectiveId": "inspect-pilot-service-marker",
                 "objectiveComplete": True,
-                "completionSummary": "complete=true role=target-slice-authored-objective targetObjective=inspect-pilot-service-marker consequence=pilot-marker-confirmed",
+                "completionSummary": "complete=true role=target-slice-authored-objective targetObjective=inspect-pilot-service-marker consequence=pilot-marker-confirmed riskyAction=pilot-cache-risk-response complete=true responseState=pilot-local-alerted active=true exitRecovery=pilot-escape-confirmed complete=true",
                 "completionEventText": "Target-slice objective confirmed: pilot-service-marker",
                 "playerPosition": {"x": 0.4, "y": 0.0, "z": 1.55},
             },
@@ -127,6 +169,27 @@ class TargetSliceObjectiveQaTests(unittest.TestCase):
                 "triggered": True,
                 "message": "Pilot slice marker inspected; target-slice objective gate confirmed.",
             },
+            "riskyAction": {
+                "id": "pilot-cache-risk-response",
+                "attempted": True,
+                "triggered": True,
+                "interactableName": "Suspicious Cargo Cache",
+                "framesToAction": 82,
+                "message": "Suspicious cargo cache disturbed; local response triggered.",
+            },
+            "localResponse": {
+                "stateId": "pilot-local-alerted",
+                "active": True,
+                "framesToResponse": 82,
+                "summary": "response=pilot-local-alerted",
+            },
+            "exitRecovery": {
+                "stateId": "pilot-escape-confirmed",
+                "complete": True,
+                "interactableName": "Pilot Escape Marker",
+                "framesToExit": 111,
+                "message": "Pilot escape route confirmed.",
+            },
             "contact": {
                 "attempted": True,
                 "hit": True,
@@ -142,7 +205,7 @@ class TargetSliceObjectiveQaTests(unittest.TestCase):
             "final": {
                 "objectiveId": "inspect-pilot-service-marker",
                 "objectiveComplete": True,
-                "completionSummary": "complete=true role=target-slice-authored-objective targetObjective=inspect-pilot-service-marker consequence=pilot-marker-confirmed",
+                "completionSummary": "complete=true role=target-slice-authored-objective targetObjective=inspect-pilot-service-marker consequence=pilot-marker-confirmed riskyAction=pilot-cache-risk-response complete=true responseState=pilot-local-alerted active=true exitRecovery=pilot-escape-confirmed complete=true",
                 "completionEventText": "Target-slice objective confirmed: pilot-service-marker",
                 "playerPosition": {"x": 0.4, "y": 0.0, "z": 1.55},
             },
@@ -169,10 +232,31 @@ class TargetSliceObjectiveQaTests(unittest.TestCase):
             },
             "focus": {"acquired": False, "name": "", "prompt": "", "distance": 0.0},
             "interaction": {"triggered": True, "message": "shortcut"},
+            "riskyAction": {
+                "id": "pilot-cache-risk-response",
+                "attempted": True,
+                "triggered": True,
+                "interactableName": "Suspicious Cargo Cache",
+                "framesToAction": 2,
+                "message": "Suspicious cargo cache disturbed; local response triggered.",
+            },
+            "localResponse": {
+                "stateId": "pilot-local-alerted",
+                "active": True,
+                "framesToResponse": 2,
+                "summary": "response=pilot-local-alerted",
+            },
+            "exitRecovery": {
+                "stateId": "pilot-escape-confirmed",
+                "complete": True,
+                "interactableName": "Pilot Escape Marker",
+                "framesToExit": 3,
+                "message": "Pilot escape route confirmed.",
+            },
             "final": {
                 "objectiveId": "inspect-pilot-service-marker",
                 "objectiveComplete": True,
-                "completionSummary": "complete=true targetObjective=inspect-pilot-service-marker",
+                "completionSummary": "complete=true targetObjective=inspect-pilot-service-marker riskyAction=pilot-cache-risk-response responseState=pilot-local-alerted exitRecovery=pilot-escape-confirmed",
                 "completionEventText": "Target-slice objective confirmed: pilot-service-marker",
                 "playerPosition": {"x": 1.0, "y": 0.0, "z": 2.0},
             },
@@ -204,6 +288,27 @@ class TargetSliceObjectiveQaTests(unittest.TestCase):
                 "distance": 1.0,
             },
             "interaction": {"triggered": True, "message": "Ferry Office leaked"},
+            "riskyAction": {
+                "id": "pilot-cache-risk-response",
+                "attempted": True,
+                "triggered": True,
+                "interactableName": "Suspicious Cargo Cache",
+                "framesToAction": 21,
+                "message": "Suspicious cargo cache disturbed; local response triggered.",
+            },
+            "localResponse": {
+                "stateId": "pilot-local-alerted",
+                "active": True,
+                "framesToResponse": 21,
+                "summary": "response=pilot-local-alerted",
+            },
+            "exitRecovery": {
+                "stateId": "pilot-escape-confirmed",
+                "complete": True,
+                "interactableName": "Pilot Escape Marker",
+                "framesToExit": 22,
+                "message": "Pilot escape route confirmed.",
+            },
             "contact": {
                 "attempted": True,
                 "hit": True,
@@ -219,7 +324,7 @@ class TargetSliceObjectiveQaTests(unittest.TestCase):
             "final": {
                 "objectiveId": "inspect-pilot-service-marker",
                 "objectiveComplete": True,
-                "completionSummary": "complete=true targetObjective=inspect-pilot-service-marker",
+                "completionSummary": "complete=true targetObjective=inspect-pilot-service-marker riskyAction=pilot-cache-risk-response responseState=pilot-local-alerted exitRecovery=pilot-escape-confirmed",
                 "completionEventText": "Target-slice objective confirmed: pilot-service-marker",
                 "playerPosition": {"x": 1.0, "y": 0.0, "z": 2.0},
             },
@@ -231,6 +336,56 @@ class TargetSliceObjectiveQaTests(unittest.TestCase):
             report_path.write_text(json.dumps(report), encoding="utf-8")
 
             with self.assertRaisesRegex(ValueError, "Ferry Office"):
+                target_slice_objective_qa.load_and_validate_report(report_path)
+
+    def test_report_rejects_old_objective_only_evidence_without_risky_action(self) -> None:
+        report = {
+            "schema": "v0.99-target-slice-objective-acquisition-qa",
+            "scenario": "veyra-target-objective-acquisition",
+            "passed": True,
+            "scene": {"id": "veyra-reach-pilot", "path": "data/scenes/veyra_reach_pilot.scene.json"},
+            "input": {
+                "scriptName": "recorded-veyra-target-objective-v1",
+                "framesToFocus": 58,
+                "framesToInteract": 59,
+            },
+            "focus": {
+                "acquired": True,
+                "name": "Pilot Service Marker",
+                "prompt": "Inspect Pilot Slice Marker",
+                "distance": 1.1,
+            },
+            "interaction": {
+                "triggered": True,
+                "message": "Pilot slice marker inspected; target-slice objective gate confirmed.",
+            },
+            "contact": {
+                "attempted": True,
+                "hit": True,
+                "recoveredControl": True,
+                "colliderName": "pilot-road-edge-collider",
+                "framesToContact": 31,
+                "framesToRecovery": 44,
+                "hitCount": 1,
+                "position": {"x": 1.4, "y": 0.0, "z": -0.25},
+                "push": {"x": -0.08, "y": 0.0, "z": 0.0},
+                "normal": {"x": -1.0, "y": 0.0, "z": 0.0},
+            },
+            "final": {
+                "objectiveId": "inspect-pilot-service-marker",
+                "objectiveComplete": True,
+                "completionSummary": "complete=true role=target-slice-authored-objective targetObjective=inspect-pilot-service-marker consequence=pilot-marker-confirmed",
+                "completionEventText": "Target-slice objective confirmed: pilot-service-marker",
+                "playerPosition": {"x": 0.4, "y": 0.0, "z": 1.55},
+            },
+            "error": "",
+        }
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            report_path = pathlib.Path(temp_dir) / "report.json"
+            report_path.write_text(json.dumps(report), encoding="utf-8")
+
+            with self.assertRaisesRegex(ValueError, "riskyAction"):
                 target_slice_objective_qa.load_and_validate_report(report_path)
 
 

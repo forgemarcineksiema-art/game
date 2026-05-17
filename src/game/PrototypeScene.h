@@ -89,6 +89,8 @@ private:
     SceneDefinition m_sceneDefinition;
     TargetSliceObjectiveState m_targetSliceObjective;
     std::string m_completedTargetSliceInteractableName;
+    std::string m_completedTargetSliceRiskyInteractableName;
+    std::string m_completedTargetSliceExitInteractableName;
     std::string m_lastTargetSliceEventText = "none";
     bool m_ferryOfficeBehaviorEnabled = true;
 };

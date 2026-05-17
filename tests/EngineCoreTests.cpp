@@ -1290,6 +1290,27 @@ void TestSceneLoaderLoadsPilotTargetObjectiveDefinition()
         "Pilot target-slice objective should be authored text, not a hardcoded neutral placeholder.");
 }
 
+void TestSceneLoaderLoadsPilotTargetActionResponseDefinition()
+{
+    const SceneLoadResult result = LoadSceneDefinition(PilotScenePathForTests());
+
+    Expect(result.ok(),
+        "TestSceneLoaderLoadsPilotTargetActionResponseDefinition",
+        "Pilot target-slice scene JSON should load successfully.");
+    Expect(result.scene.targetActionResponse.id == "pilot-cache-risk-response",
+        "TestSceneLoaderLoadsPilotTargetActionResponseDefinition",
+        "Pilot target-slice should expose an authored risky action response id.");
+    Expect(result.scene.targetActionResponse.riskyInteractableName == "Suspicious Cargo Cache",
+        "TestSceneLoaderLoadsPilotTargetActionResponseDefinition",
+        "Pilot action response should bind the risky action to an authored interactable.");
+    Expect(result.scene.targetActionResponse.exitInteractableName == "Pilot Escape Marker",
+        "TestSceneLoaderLoadsPilotTargetActionResponseDefinition",
+        "Pilot action response should bind recovery/exit to an authored interactable.");
+    Expect(result.scene.targetActionResponse.responseStateId == "pilot-local-alerted",
+        "TestSceneLoaderLoadsPilotTargetActionResponseDefinition",
+        "Pilot action response should expose a local response state id.");
+}
+
 void TestTargetSliceObjectiveRuntimeCompletesFromAuthoredInteractable()
 {
     const SceneLoadResult result = LoadSceneDefinition(PilotScenePathForTests());
@@ -1322,6 +1343,54 @@ void TestTargetSliceObjectiveRuntimeCompletesFromAuthoredInteractable()
     Expect(complete.completionEventText.find("pilot-service-marker") != std::string::npos,
         "TestTargetSliceObjectiveRuntimeCompletesFromAuthoredInteractable",
         "Target-slice objective completion should expose authored consequence evidence.");
+}
+
+void TestTargetSliceRuntimeTracksRiskyActionAndExitRecoverySeparately()
+{
+    const SceneLoadResult result = LoadSceneDefinition(PilotScenePathForTests());
+    Expect(result.ok(),
+        "TestTargetSliceRuntimeTracksRiskyActionAndExitRecoverySeparately",
+        "Pilot target-slice scene JSON should load successfully.");
+    if (!result.ok()) {
+        return;
+    }
+
+    TargetSliceObjectiveState state = BuildTargetSliceObjectiveState(result.scene);
+    Expect(state.actionResponseActive,
+        "TestTargetSliceRuntimeTracksRiskyActionAndExitRecoverySeparately",
+        "Target-slice runtime should activate the authored risky action response contract.");
+    Expect(!state.riskyActionComplete && !state.localResponseActive && !state.exitRecovered,
+        "TestTargetSliceRuntimeTracksRiskyActionAndExitRecoverySeparately",
+        "Risky action response should start incomplete.");
+
+    state = BuildTargetSliceObjectiveState(result.scene, {}, "Suspicious Cargo Cache");
+    Expect(state.riskyActionComplete,
+        "TestTargetSliceRuntimeTracksRiskyActionAndExitRecoverySeparately",
+        "Risky action should complete from the authored risky interactable.");
+    Expect(state.localResponseActive,
+        "TestTargetSliceRuntimeTracksRiskyActionAndExitRecoverySeparately",
+        "Risky action should activate the local response state.");
+    Expect(!state.complete && !state.exitRecovered,
+        "TestTargetSliceRuntimeTracksRiskyActionAndExitRecoverySeparately",
+        "Risky action should not complete the target objective or exit recovery by itself.");
+    Expect(state.completionSummary.find("riskyAction=pilot-cache-risk-response") != std::string::npos,
+        "TestTargetSliceRuntimeTracksRiskyActionAndExitRecoverySeparately",
+        "Target-slice summary should report the risky action id separately.");
+    Expect(state.completionSummary.find("responseState=pilot-local-alerted") != std::string::npos,
+        "TestTargetSliceRuntimeTracksRiskyActionAndExitRecoverySeparately",
+        "Target-slice summary should report the local response state.");
+
+    state = BuildTargetSliceObjectiveState(
+        result.scene,
+        "Pilot Service Marker",
+        "Suspicious Cargo Cache",
+        "Pilot Escape Marker");
+    Expect(state.complete && state.riskyActionComplete && state.localResponseActive && state.exitRecovered,
+        "TestTargetSliceRuntimeTracksRiskyActionAndExitRecoverySeparately",
+        "Target-slice runtime should track objective completion, risky action, response, and exit recovery.");
+    Expect(state.completionSummary.find("exitRecovery=pilot-escape-confirmed") != std::string::npos,
+        "TestTargetSliceRuntimeTracksRiskyActionAndExitRecoverySeparately",
+        "Target-slice summary should report exit/recovery evidence.");
 }
 
 void TestPrototypeScenePilotSliceCompletesAuthoredObjectiveWithoutFerryOfficeJob()
@@ -1360,6 +1429,55 @@ void TestPrototypeScenePilotSliceCompletesAuthoredObjectiveWithoutFerryOfficeJob
     Expect(!scene.isJobComplete(),
         "TestPrototypeScenePilotSliceCompletesAuthoredObjectiveWithoutFerryOfficeJob",
         "Pilot target-slice completion must not claim Ferry Office job completion.");
+}
+
+void TestPrototypeScenePilotSliceRequiresRiskyActionBeforeActionResponseComplete()
+{
+    const SceneLoadResult result = LoadSceneDefinition(PilotScenePathForTests());
+    Expect(result.ok(),
+        "TestPrototypeScenePilotSliceRequiresRiskyActionBeforeActionResponseComplete",
+        "Pilot target-slice scene JSON should load successfully.");
+    if (!result.ok()) {
+        return;
+    }
+
+    PrototypeScene scene(result.scene);
+
+    InteractionResult objectiveInteraction;
+    objectiveInteraction.triggered = true;
+    objectiveInteraction.name = "Pilot Service Marker";
+    objectiveInteraction.message = "Pilot marker inspected.";
+    scene.applyInteractionResult(objectiveInteraction);
+
+    Expect(scene.isSliceComplete(),
+        "TestPrototypeScenePilotSliceRequiresRiskyActionBeforeActionResponseComplete",
+        "The target objective can still complete through its authored marker.");
+    Expect(scene.completionSummary().find("riskyAction=pilot-cache-risk-response complete=false") != std::string::npos,
+        "TestPrototypeScenePilotSliceRequiresRiskyActionBeforeActionResponseComplete",
+        "Objective completion alone must not claim risky action response completion.");
+
+    InteractionResult riskyInteraction;
+    riskyInteraction.triggered = true;
+    riskyInteraction.name = "Suspicious Cargo Cache";
+    riskyInteraction.message = "Cargo cache disturbed.";
+    scene.applyInteractionResult(riskyInteraction);
+
+    Expect(scene.completionSummary().find("responseState=pilot-local-alerted active=true") != std::string::npos,
+        "TestPrototypeScenePilotSliceRequiresRiskyActionBeforeActionResponseComplete",
+        "Risky action should activate local response state separately from objective completion.");
+
+    InteractionResult exitInteraction;
+    exitInteraction.triggered = true;
+    exitInteraction.name = "Pilot Escape Marker";
+    exitInteraction.message = "Escape route confirmed.";
+    scene.applyInteractionResult(exitInteraction);
+
+    Expect(scene.completionSummary().find("exitRecovery=pilot-escape-confirmed complete=true") != std::string::npos,
+        "TestPrototypeScenePilotSliceRequiresRiskyActionBeforeActionResponseComplete",
+        "Exit/recovery should be reported after the authored escape marker.");
+    Expect(!scene.isJobComplete(),
+        "TestPrototypeScenePilotSliceRequiresRiskyActionBeforeActionResponseComplete",
+        "Veyra action response must not claim Ferry Office job completion.");
 }
 
 void TestSceneRuntimePolicyKeepsFallbackAsFerryOfficeRegression()
@@ -3236,7 +3354,7 @@ void TestSandboxLayerPilotSliceUsesNeutralPresentation()
     Expect(text.find("Scene: Veyra Reach Pilot Slice | role=target-slice-scaffold") != std::string::npos,
         "TestSandboxLayerPilotSliceUsesNeutralPresentation",
         "Pilot runtime smoke text should identify the target slice instead of the Ferry Office job.");
-    Expect(text.find("Status: complete=false role=target-slice-authored-objective targetObjective=inspect-pilot-service-marker consequence=pilot-marker-confirmed | colliders=1 | interactables=1 | routes=1 | markers=2 | vehicle=none") != std::string::npos,
+    Expect(text.find("Status: complete=false role=target-slice-authored-objective targetObjective=inspect-pilot-service-marker consequence=pilot-marker-confirmed riskyAction=pilot-cache-risk-response complete=false responseState=pilot-local-alerted active=false exitRecovery=pilot-escape-confirmed complete=false response=pilot-local-alerted exit=pilot-escape-confirmed | colliders=1 | interactables=3 | routes=1 | markers=4 | vehicle=none") != std::string::npos,
         "TestSandboxLayerPilotSliceUsesNeutralPresentation",
         "Pilot runtime smoke text should report neutral scene counts and no inherited vehicle.");
     Expect(text.find("Ferry Office") == std::string::npos,
@@ -3263,7 +3381,7 @@ void TestSandboxLayerPilotSliceDebugTextAvoidsFerryOfficeTelemetry()
     Expect(text.find("scene=veyra-reach-pilot loaded=yes role=target-slice-scaffold") != std::string::npos,
         "TestSandboxLayerPilotSliceDebugTextAvoidsFerryOfficeTelemetry",
         "Pilot debug text should identify the target-slice role.");
-    Expect(text.find("sceneCounts=colliders:1 interactables:1 routes:1 markers:2 vehicle:none") != std::string::npos,
+    Expect(text.find("sceneCounts=colliders:1 interactables:3 routes:1 markers:4 vehicle:none") != std::string::npos,
         "TestSandboxLayerPilotSliceDebugTextAvoidsFerryOfficeTelemetry",
         "Pilot debug text should expose neutral scene counts instead of Ferry Office job telemetry.");
     Expect(text.find("roadSegment=dock-road") == std::string::npos,
@@ -6434,8 +6552,11 @@ int main()
     TestSceneLoaderLoadsDefaultFerryOfficeScene();
     TestSceneLoaderLoadsPilotSliceMetadata();
     TestSceneLoaderLoadsPilotTargetObjectiveDefinition();
+    TestSceneLoaderLoadsPilotTargetActionResponseDefinition();
     TestTargetSliceObjectiveRuntimeCompletesFromAuthoredInteractable();
+    TestTargetSliceRuntimeTracksRiskyActionAndExitRecoverySeparately();
     TestPrototypeScenePilotSliceCompletesAuthoredObjectiveWithoutFerryOfficeJob();
+    TestPrototypeScenePilotSliceRequiresRiskyActionBeforeActionResponseComplete();
     TestSceneRuntimePolicyKeepsFallbackAsFerryOfficeRegression();
     TestSceneRuntimePolicyClassifiesRegressionAndTargetSliceRoles();
     TestSceneRuntimePolicyTreatsUnknownLoadedSceneAsNeutral();

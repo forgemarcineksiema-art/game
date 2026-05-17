@@ -767,6 +767,17 @@ class SceneToolTests(unittest.TestCase):
         self.assertIsNotNone(files_by_path["assets/models/blender_ferry_notice_board.gltf"].bounds_max)
         self.assertEqual([], [file.relative_path for file in report.files if file.suffix == ".gltf" and not file.referenced])
 
+    def test_mesh_report_allows_meshless_target_slice_scene(self) -> None:
+        scene = copy.deepcopy(self.scene)
+        scene["id"] = "meshless-target-slice"
+        scene["meshAssets"] = []
+        scene["meshInstances"] = []
+
+        report = mesh_report.build_mesh_report(scene)
+
+        self.assertEqual([], report.validation_errors)
+        self.assertTrue(any(file.suffix == ".gltf" and not file.referenced for file in report.files))
+
     def test_blender_check_reports_missing_command_without_throwing(self) -> None:
         result = check_blender.check_blender("__definitely_missing_blender_for_tidebreak_tests__")
 

@@ -2,6 +2,64 @@
 
 Last updated: 2026-05-17
 
+## Veyra Risky Action Response Contract (2026-05-17)
+
+Goal:
+
+- Prove the first tiny Tidebreak crime/action-facing runtime contract outside Ferry Office: a risky authored player action triggers a local response, then an exit/recovery interaction, before the neutral target objective completes.
+- Keep Veyra as a target-slice evidence surface, not a new mission/map/content pass.
+
+Scope:
+
+- Added `targetActionResponse` scene data for `veyra-reach-pilot`: `Suspicious Cargo Cache` -> `pilot-local-alerted` -> `Pilot Escape Marker` / `pilot-escape-confirmed`.
+- Extended target-slice runtime state so objective completion, risky action, local response, and exit recovery are tracked separately.
+- Extended `TargetSliceObjectiveQa` and `tools\target_slice_objective_qa.py` so stale objective-only reports are rejected.
+- Updated Veyra runtime/presentation expectations from one neutral interactable to three authored target-slice interactables.
+- Fixed `tools\mesh_report.py` so a meshless target-slice scene does not falsely fail because unrelated project model files are unreferenced by that specific scene.
+- Added the implementation plan at `docs\superpowers\plans\2026-05-17-veyra-risky-action-response-contract.md`.
+
+Evidence:
+
+- CONFIRMED: Baseline `git status --short --branch` showed `main...origin/main` with no listed changes.
+- CONFIRMED: Baseline `git branch --show-current` returned `main`.
+- CONFIRMED: Baseline `python tools\status_report.py`, `scripts\doctor.ps1`, `scripts\configure.ps1`, `scripts\build.ps1`, and `scripts\verify.ps1` passed before changes.
+- CONFIRMED: RED `cmake --build --preset windows-vs2022-debug --target EngineCoreTests` failed because `SceneDefinition` and `TargetSliceObjectiveState` did not expose `targetActionResponse` / action-response fields.
+- CONFIRMED: RED `python tests\test_target_slice_objective_qa.py` failed because the wrapper still accepted an old objective-only report without `riskyAction`.
+- CONFIRMED: GREEN `cmake --build --preset windows-vs2022-debug --target EngineCoreTests` passed.
+- CONFIRMED: GREEN `python tests\test_target_slice_objective_qa.py` passed 6 tests.
+- CONFIRMED: GREEN `build\windows-vs2022-debug\Debug\EngineCoreTests.exe` passed after updating Veyra scene-count expectations.
+- CONFIRMED: GREEN `cmake --build --preset windows-vs2022-debug --target EngineApp` passed.
+- CONFIRMED: GREEN `python tools\target_slice_objective_qa.py --exe build\windows-vs2022-debug\Debug\EngineApp.exe --report-json build\playthroughs\veyra-risky-action-response-report.json` passed.
+- CONFIRMED: Fresh risky-action report: contact `pilot-road-edge-collider` at frame 52, recovery at 58, risky action at 71, local response `pilot-local-alerted`, exit recovery `pilot-escape-confirmed` at 97, objective interaction at 113, final summary includes `targetObjective=inspect-pilot-service-marker`, `riskyAction=pilot-cache-risk-response`, `responseState=pilot-local-alerted`, and `exitRecovery=pilot-escape-confirmed`.
+- CONFIRMED: GREEN `python tools\validate_scene.py data\scenes\veyra_reach_pilot.scene.json`.
+- CONFIRMED: GREEN `python tools\scale_audit.py data\scenes\veyra_reach_pilot.scene.json`.
+- CONFIRMED: Initial `python tools\mesh_report.py data\scenes\veyra_reach_pilot.scene.json` failed because the per-scene report treated every project model as an error when the Veyra scene intentionally had zero meshes. After the tool fix, the same command passed.
+- CONFIRMED: GREEN `python tests\test_scene_tools.py` passed 58 tests after the meshless-target-slice regression.
+
+Remaining limits:
+
+- This is not a mission framework, police/wanted system, NPC response, combat, traffic, terrain, vehicle use, or production art pass.
+- The "local response" is a runtime/QA state contract and text evidence, not yet a visible prop animation, AI reaction, pursuit, or systemic escalation.
+- Veyra remains a scaffold with placeholders; the value here is that it no longer proves only a neutral marker/checkpoint.
+
+Validation commands:
+
+- GREEN: `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`.
+- GREEN: `python tests\test_target_slice_objective_qa.py`.
+- GREEN: `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`.
+- GREEN: `cmake --build --preset windows-vs2022-debug --target EngineApp`.
+- GREEN: `python tools\target_slice_objective_qa.py --exe build\windows-vs2022-debug\Debug\EngineApp.exe --report-json build\playthroughs\veyra-risky-action-response-report.json`.
+- GREEN: `python tools\validate_scene.py data\scenes\veyra_reach_pilot.scene.json`.
+- GREEN: `python tools\scale_audit.py data\scenes\veyra_reach_pilot.scene.json`.
+- GREEN after tool fix: `python tools\mesh_report.py data\scenes\veyra_reach_pilot.scene.json`.
+- GREEN: `python tests\test_scene_tools.py`.
+- GREEN: `scripts\build.ps1`.
+- GREEN: `scripts\verify.ps1`; CTest 14/14 passed, both scenes validated, default asset validation passed, default mesh report passed, Veyra runtime scene smoke passed, and runtime smoke completed.
+
+Next recommended goal:
+
+Do not expand this into content polish yet. The next useful target should make the local response player-visible and spatially meaningful, preferably by changing access/escape pressure or scene state from the response contract, while keeping it data-authored and still outside Ferry Office.
+
 ## Tidebreak Game Direction Rebaseline (2026-05-17)
 
 Goal:

@@ -123,6 +123,18 @@ struct SceneTargetObjectiveDefinition {
     std::string completionEventText;
 };
 
+struct SceneTargetActionResponseDefinition {
+    std::string id;
+    std::string riskyInteractableName;
+    std::string responseStateId;
+    std::string responseSummary;
+    std::string responseEventText;
+    std::string exitInteractableName;
+    std::string exitRecoveryStateId;
+    std::string exitSummary;
+    std::string exitEventText;
+};
+
 struct SceneSliceMetadataDefinition {
     std::string kind;
     std::string worldId;
@@ -138,6 +150,7 @@ struct SceneDefinition {
     float floorHeight = 0.0f;
     SceneSliceMetadataDefinition sliceMetadata;
     SceneTargetObjectiveDefinition targetObjective;
+    SceneTargetActionResponseDefinition targetActionResponse;
     ScenePlayerStartDefinition playerStart;
     std::vector<SceneMaterialDefinition> sceneMaterials;
     std::vector<SceneColliderDefinition> colliders;

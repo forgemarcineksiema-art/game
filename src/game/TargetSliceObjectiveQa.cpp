@@ -36,15 +36,6 @@ const Interactable* FindInteractableByName(const PrototypeScene& scene, std::str
     return nullptr;
 }
 
-std::vector<engine::Vec3> BuildRecordedRoute(const SceneDefinition& scene, const Interactable& target)
-{
-    if (!scene.routeMarkers.empty() && !scene.routeMarkers.front().points.empty()) {
-        return scene.routeMarkers.front().points;
-    }
-
-    return {scene.playerStart.position, target.position};
-}
-
 nlohmann::json Vec3Json(engine::Vec3 value)
 {
     return {
@@ -114,6 +105,30 @@ bool WriteReport(const TargetSliceObjectiveQaResult& result)
                 {"triggered", result.interactionTriggered},
                 {"message", result.interactionMessage},
             }},
+        {"riskyAction",
+            {
+                {"id", result.riskyActionId},
+                {"attempted", result.riskyActionAttempted},
+                {"triggered", result.riskyActionTriggered},
+                {"interactableName", result.riskyActionInteractableName},
+                {"framesToAction", result.framesToAction},
+                {"message", result.riskyActionMessage},
+            }},
+        {"localResponse",
+            {
+                {"stateId", result.responseStateId},
+                {"active", result.localResponseActive},
+                {"framesToResponse", result.framesToResponse},
+                {"summary", result.responseSummary},
+            }},
+        {"exitRecovery",
+            {
+                {"stateId", result.exitRecoveryStateId},
+                {"complete", result.exitRecoveryComplete},
+                {"interactableName", result.exitInteractableName},
+                {"framesToExit", result.framesToExit},
+                {"message", result.exitRecoveryMessage},
+            }},
         {"final",
             {
                 {"objectiveId", result.objectiveId},
@@ -176,11 +191,37 @@ TargetSliceObjectiveQaResult RunTargetSliceObjectiveAcquisitionQa(
         WriteReport(result);
         return result;
     }
+    if (loadedScene.scene.targetActionResponse.id.empty()
+        || loadedScene.scene.targetActionResponse.riskyInteractableName.empty()
+        || loadedScene.scene.targetActionResponse.exitInteractableName.empty()) {
+        Fail(result, "Target-slice objective scene is missing targetActionResponse risky/exit interactables.");
+        WriteReport(result);
+        return result;
+    }
+    result.riskyActionId = loadedScene.scene.targetActionResponse.id;
+    result.riskyActionInteractableName = loadedScene.scene.targetActionResponse.riskyInteractableName;
+    result.responseStateId = loadedScene.scene.targetActionResponse.responseStateId;
+    result.exitRecoveryStateId = loadedScene.scene.targetActionResponse.exitRecoveryStateId;
+    result.exitInteractableName = loadedScene.scene.targetActionResponse.exitInteractableName;
 
     PrototypeScene scene(loadedScene.scene);
     const Interactable* target = FindInteractableByName(scene, loadedScene.scene.targetObjective.completionInteractableName);
     if (!target) {
         Fail(result, "Target-slice objective completion interactable was not found.");
+        WriteReport(result);
+        return result;
+    }
+    const Interactable* riskyAction =
+        FindInteractableByName(scene, loadedScene.scene.targetActionResponse.riskyInteractableName);
+    if (!riskyAction) {
+        Fail(result, "Target-slice risky action interactable was not found.");
+        WriteReport(result);
+        return result;
+    }
+    const Interactable* exitRecovery =
+        FindInteractableByName(scene, loadedScene.scene.targetActionResponse.exitInteractableName);
+    if (!exitRecovery) {
+        Fail(result, "Target-slice exit recovery interactable was not found.");
         WriteReport(result);
         return result;
     }
@@ -224,41 +265,60 @@ TargetSliceObjectiveQaResult RunTargetSliceObjectiveAcquisitionQa(
         return result;
     }
 
-    std::vector<engine::Vec3> waypoints = BuildRecordedRoute(loadedScene.scene, *target);
-    std::size_t waypointIndex = waypoints.size() > 1 ? 1 : 0;
-    const int framesBeforeObjectiveRoute = result.framesToContact;
+    int frameCursor = result.framesToContact;
+    const auto moveToInteractable = [&](const Interactable& interactable, int budgetFrames, std::string& message) {
+        for (int frame = 0; frame < budgetFrames; ++frame) {
+            const engine::Vec3 playerPosition = player.state().position;
+            const InteractionFocus focus =
+                scene.interactions().updateFocus(playerPosition, engine::ForwardFromYaw(player.state().facingYawRadians));
+            if (focus.hasFocus && focus.name == interactable.name) {
+                engine::InputState interactInput;
+                interactInput.interactPressed = true;
+                const InteractionResult interaction = scene.interactions().interact(interactInput);
+                message = interaction.message;
+                if (interaction.triggered && interaction.name == interactable.name) {
+                    scene.applyInteractionResult(interaction);
+                    ++frameCursor;
+                    return true;
+                }
+            }
 
-    for (int frame = 0; frame < FocusBudgetFrames; ++frame) {
-        const engine::Vec3 playerPosition = player.state().position;
-        const InteractionFocus focus =
-            scene.interactions().updateFocus(playerPosition, engine::ForwardFromYaw(player.state().facingYawRadians));
-        if (focus.hasFocus && focus.name == target->name) {
-            result.focusAcquired = true;
-            result.framesToFocus = framesBeforeObjectiveRoute + frame;
-            result.focusName = focus.name;
-            result.focusPrompt = focus.prompt;
-            result.focusDistance = focus.distance;
-            break;
+            MovePlayerToward(player, interactable.position);
+            ++frameCursor;
+            if (!result.contactRecoveredControl
+                && engine::Length(player.state().position - result.contactPosition) > RecoveryDistance
+                && player.state().lastCollisionHitCount == 0) {
+                result.contactRecoveredControl = true;
+                result.framesToRecovery = frameCursor;
+            }
         }
+        return false;
+    };
 
-        const engine::Vec3 destination =
-            waypointIndex < waypoints.size() ? waypoints[waypointIndex] : target->position;
-        const engine::Vec3 delta = {destination.x - playerPosition.x, 0.0f, destination.z - playerPosition.z};
-        if (engine::Length(delta) <= WaypointArrivalDistance && waypointIndex + 1 < waypoints.size()) {
-            ++waypointIndex;
-        }
-
-        MovePlayerToward(player, destination);
-        if (!result.contactRecoveredControl
-            && engine::Length(player.state().position - result.contactPosition) > RecoveryDistance
-            && player.state().lastCollisionHitCount == 0) {
-            result.contactRecoveredControl = true;
-            result.framesToRecovery = framesBeforeObjectiveRoute + frame + 1;
-        }
+    result.riskyActionAttempted = true;
+    result.riskyActionTriggered = moveToInteractable(*riskyAction, FocusBudgetFrames, result.riskyActionMessage);
+    if (!result.riskyActionTriggered) {
+        Fail(result, "Recorded live input did not trigger the risky target-slice action.");
+        result.completionSummary = scene.completionSummary();
+        result.completionEventText = scene.lastRuntimeEventText();
+        result.finalPlayerPosition = player.state().position;
+        result.finalPlayerYawRadians = player.state().facingYawRadians;
+        WriteReport(result);
+        return result;
     }
+    result.framesToAction = frameCursor;
+    result.localResponseActive = scene.completionSummary().find("responseState=" + result.responseStateId + " active=true")
+        != std::string::npos;
+    result.framesToResponse = result.localResponseActive ? result.framesToAction : -1;
+    result.responseSummary = "response=" + result.responseStateId;
 
-    if (!result.focusAcquired) {
-        Fail(result, "Recorded live input did not acquire focus on the target objective interactable.");
+    const bool exitTriggered = moveToInteractable(*exitRecovery, FocusBudgetFrames, result.exitRecoveryMessage);
+    result.exitRecoveryComplete = exitTriggered
+        && scene.completionSummary().find("exitRecovery=" + result.exitRecoveryStateId + " complete=true")
+            != std::string::npos;
+    result.framesToExit = exitTriggered ? frameCursor : -1;
+    if (!result.exitRecoveryComplete) {
+        Fail(result, "Recorded live input did not trigger target-slice exit recovery after risky action.");
         result.completionSummary = scene.completionSummary();
         result.completionEventText = scene.lastRuntimeEventText();
         result.finalPlayerPosition = player.state().position;
@@ -267,16 +327,17 @@ TargetSliceObjectiveQaResult RunTargetSliceObjectiveAcquisitionQa(
         return result;
     }
 
-    scene.interactions().updateFocus(player.state().position, engine::ForwardFromYaw(player.state().facingYawRadians));
-    engine::InputState interactInput;
-    interactInput.interactPressed = true;
-    const InteractionResult interaction = scene.interactions().interact(interactInput);
-    result.interactionTriggered = interaction.triggered && interaction.name == target->name;
-    result.framesToInteract = result.framesToFocus + 1;
-    result.interactionMessage = interaction.message;
-    if (result.interactionTriggered) {
-        scene.applyInteractionResult(interaction);
-    }
+    std::string targetInteractionMessage;
+    result.interactionTriggered = moveToInteractable(*target, FocusBudgetFrames, targetInteractionMessage);
+    result.interactionMessage = targetInteractionMessage;
+    result.framesToInteract = result.interactionTriggered ? frameCursor : -1;
+    result.framesToFocus = result.interactionTriggered ? result.framesToInteract - 1 : -1;
+    result.focusAcquired = result.interactionTriggered;
+    result.focusName = result.interactionTriggered ? target->name : "";
+    result.focusPrompt = result.interactionTriggered ? target->prompt : "";
+    result.focusDistance = result.interactionTriggered
+        ? engine::Length(player.state().position - target->position)
+        : 0.0f;
 
     result.objectiveComplete = scene.isSliceComplete();
     result.completionSummary = scene.completionSummary();
@@ -286,6 +347,9 @@ TargetSliceObjectiveQaResult RunTargetSliceObjectiveAcquisitionQa(
     result.passed = result.focusAcquired
         && result.contactHit
         && result.contactRecoveredControl
+        && result.riskyActionTriggered
+        && result.localResponseActive
+        && result.exitRecoveryComplete
         && result.interactionTriggered
         && result.objectiveComplete
         && result.completionSummary.find("targetObjective=" + result.objectiveId) != std::string::npos;

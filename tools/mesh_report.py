@@ -97,7 +97,8 @@ def build_mesh_report(
             )
         )
 
-    validation = scene_data.validate_asset_workflow(scene, models_dir=models_dir)
+    has_scene_meshes = bool(_as_list(scene.get("meshAssets")) or _as_list(scene.get("meshInstances")))
+    validation = scene_data.validate_asset_workflow(scene, models_dir=models_dir) if has_scene_meshes else scene_data.ValidationResult()
     return MeshReport(files=reports, validation_errors=validation.errors, validation_warnings=validation.warnings)
 
 
