@@ -8,6 +8,7 @@
 #include "game/PrototypeScene.h"
 #include "game/SceneDefinition.h"
 #include "game/SceneRuntimePolicy.h"
+#include "game/SceneRuntimeSurface.h"
 #include "game/ThirdPersonCamera.h"
 #include "game/VehicleController.h"
 
@@ -35,9 +36,8 @@ public:
 private:
     void updateDebugText();
     std::string buildFullDebugText() const;
-    std::string buildNeutralSceneDebugText() const;
     std::string buildPresentationText(bool minimal) const;
-    std::string buildNeutralScenePresentationText(bool minimal) const;
+    NeutralSceneRuntimeView buildNeutralSceneRuntimeView() const;
     void toggleDebugUiMode();
     void drawInteractionDebug(engine::IRenderer& renderer);
     void drawTraversalDebug(engine::IRenderer& renderer);

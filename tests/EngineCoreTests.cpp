@@ -27,6 +27,7 @@
 #include "game/SceneLoader.h"
 #include "game/ScenePresentation.h"
 #include "game/SceneRuntimePolicy.h"
+#include "game/SceneRuntimeSurface.h"
 #include "game/ThirdPersonCamera.h"
 #include "game/TraversalSystem.h"
 #include "game/VehicleController.h"
@@ -1335,6 +1336,91 @@ void TestSceneRuntimePolicyTreatsUnknownLoadedSceneAsNeutral()
     Expect(policy.guidancePolicy == SceneGuidancePolicy::AllAuthored,
         "TestSceneRuntimePolicyTreatsUnknownLoadedSceneAsNeutral",
         "A loaded non-regression scene should use neutral authored guidance.");
+}
+
+void TestNeutralSceneRuntimeSurfaceBuildsPresentationWithoutFerryOfficeTerms()
+{
+    NeutralSceneRuntimeView view;
+    view.sceneDefinitionLoaded = true;
+    view.sceneName = "Veyra Reach Pilot Slice";
+    view.sceneRole = "target-slice-scaffold";
+    view.objectiveText = "Inspect neutral slice markers; no authored job is active.";
+    view.colliderCount = 1;
+    view.interactableCount = 1;
+    view.routeCount = 1;
+    view.markerCount = 2;
+    view.vehicleAvailable = false;
+
+    const std::string text = BuildNeutralScenePresentationText(view, false);
+
+    Expect(text.find("Scene: Veyra Reach Pilot Slice | role=target-slice-scaffold") != std::string::npos,
+        "TestNeutralSceneRuntimeSurfaceBuildsPresentationWithoutFerryOfficeTerms",
+        "Neutral presentation should identify the loaded target slice.");
+    Expect(text.find("Objective: Inspect neutral slice markers; no authored job is active.") != std::string::npos,
+        "TestNeutralSceneRuntimeSurfaceBuildsPresentationWithoutFerryOfficeTerms",
+        "Neutral presentation should use the authored neutral objective text.");
+    Expect(text.find("Status: colliders=1 | interactables=1 | routes=1 | markers=2 | vehicle=none") != std::string::npos,
+        "TestNeutralSceneRuntimeSurfaceBuildsPresentationWithoutFerryOfficeTerms",
+        "Neutral presentation should expose authored-scene counts without Ferry Office job state.");
+    Expect(text.find("Ferry Office") == std::string::npos,
+        "TestNeutralSceneRuntimeSurfaceBuildsPresentationWithoutFerryOfficeTerms",
+        "Neutral presentation should not mention Ferry Office.");
+    Expect(text.find("Job:") == std::string::npos,
+        "TestNeutralSceneRuntimeSurfaceBuildsPresentationWithoutFerryOfficeTerms",
+        "Neutral presentation should not show a Ferry Office job row.");
+    Expect(text.find("service gate=") == std::string::npos,
+        "TestNeutralSceneRuntimeSurfaceBuildsPresentationWithoutFerryOfficeTerms",
+        "Neutral presentation should not show Ferry Office gate state.");
+}
+
+void TestNeutralSceneRuntimeSurfaceBuildsDebugWithoutFerryOfficeTelemetry()
+{
+    NeutralSceneRuntimeView view;
+    view.sceneDefinitionLoaded = true;
+    view.sceneId = "veyra-reach-pilot";
+    view.sceneRole = "target-slice-scaffold";
+    view.worldId = "veyra-reach";
+    view.sliceId = "pilot-hillside-service-road";
+    view.objectiveText = "Neutral target-slice scaffold loaded.";
+    view.completionSummary = "complete=false role=neutral-target-slice";
+    view.playerPosition = {-2.0f, 0.0f, -1.5f};
+    view.playerYawRadians = engine::Radians(35.0f);
+    view.playerHorizontalSpeed = 0.0f;
+    view.playerGrounded = true;
+    view.cameraYawRadians = engine::Radians(35.0f);
+    view.cameraPitchRadians = engine::Radians(22.0f);
+    view.cameraDistance = 6.0f;
+    view.colliderCount = 1;
+    view.interactableCount = 1;
+    view.routeCount = 1;
+    view.markerCount = 2;
+    view.vehicleAvailable = false;
+    view.physicsText = "none";
+    view.vehicleRuntimeText = "none";
+
+    const std::string text = BuildNeutralSceneDebugText(view);
+
+    Expect(text.find("scene=veyra-reach-pilot loaded=yes role=target-slice-scaffold") != std::string::npos,
+        "TestNeutralSceneRuntimeSurfaceBuildsDebugWithoutFerryOfficeTelemetry",
+        "Neutral debug text should identify the target-slice runtime role.");
+    Expect(text.find("sceneCounts=colliders:1 interactables:1 routes:1 markers:2 vehicle:none") != std::string::npos,
+        "TestNeutralSceneRuntimeSurfaceBuildsDebugWithoutFerryOfficeTelemetry",
+        "Neutral debug text should report authored-scene counts.");
+    Expect(text.find("player=(-2.00,0.00,-1.50)") != std::string::npos,
+        "TestNeutralSceneRuntimeSurfaceBuildsDebugWithoutFerryOfficeTelemetry",
+        "Neutral debug text should preserve player telemetry.");
+    Expect(text.find("roadSegment=dock-road") == std::string::npos,
+        "TestNeutralSceneRuntimeSurfaceBuildsDebugWithoutFerryOfficeTelemetry",
+        "Neutral debug text should not leak Ferry Office road telemetry.");
+    Expect(text.find("roadBounds=") == std::string::npos,
+        "TestNeutralSceneRuntimeSurfaceBuildsDebugWithoutFerryOfficeTelemetry",
+        "Neutral debug text should not leak Ferry Office vehicle bounds.");
+    Expect(text.find("jobObjective=") == std::string::npos,
+        "TestNeutralSceneRuntimeSurfaceBuildsDebugWithoutFerryOfficeTelemetry",
+        "Neutral debug text should not show Ferry Office job telemetry.");
+    Expect(text.find("worldState={") == std::string::npos,
+        "TestNeutralSceneRuntimeSurfaceBuildsDebugWithoutFerryOfficeTelemetry",
+        "Neutral debug text should not expose Ferry Office world-state telemetry.");
 }
 
 void TestSceneLoaderLoadsV018VisualIdentityPropKit()
@@ -5848,6 +5934,8 @@ int main()
     TestSceneRuntimePolicyKeepsFallbackAsFerryOfficeRegression();
     TestSceneRuntimePolicyClassifiesRegressionAndTargetSliceRoles();
     TestSceneRuntimePolicyTreatsUnknownLoadedSceneAsNeutral();
+    TestNeutralSceneRuntimeSurfaceBuildsPresentationWithoutFerryOfficeTerms();
+    TestNeutralSceneRuntimeSurfaceBuildsDebugWithoutFerryOfficeTelemetry();
     TestSceneLoaderLoadsV018VisualIdentityPropKit();
     TestSceneLoaderLoadsFirstJobMarkers();
     TestSceneLoaderLoadsDockRoadRelayBeat();

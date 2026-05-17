@@ -672,7 +672,7 @@ void SandboxLayer::updateDebugText()
 std::string SandboxLayer::buildPresentationText(bool minimal) const
 {
     if (m_runtimePolicy.usesNeutralPresentation) {
-        return buildNeutralScenePresentationText(minimal);
+        return BuildNeutralScenePresentationText(buildNeutralSceneRuntimeView(), minimal);
     }
 
     const PlayerState& player = m_player.state();
@@ -742,47 +742,54 @@ std::string SandboxLayer::buildPresentationText(bool minimal) const
     return output.str();
 }
 
-std::string SandboxLayer::buildNeutralScenePresentationText(bool minimal) const
+NeutralSceneRuntimeView SandboxLayer::buildNeutralSceneRuntimeView() const
 {
     const InteractionFocus& focus = m_scene.interactions().focus();
     const TraversalFocus& traversalFocus = m_scene.traversal().focus();
     const PlayerState& player = m_player.state();
-    const std::string sceneName = m_sceneDefinitionLoaded ? m_sceneDefinition.name : "Built-in fallback";
-    const std::string kind = m_sceneDefinitionLoaded ? m_sceneDefinition.sliceMetadata.kind : "fallback";
-    const std::string vehicleText = m_vehicleAvailable ? "authored" : "none";
+    const ThirdPersonCameraState& camera = m_camera.state();
 
-    std::ostringstream output;
-    output << "Scene: " << sceneName << " | role=" << kind << "\n"
-           << "Objective: " << m_scene.currentJobObjectiveText() << "\n";
-
-    bool hasPrompt = false;
-    if (focus.hasFocus) {
-        output << "Prompt: Press E: " << focus.prompt << "\n";
-        hasPrompt = true;
-    } else if (traversalFocus.hasFocus && player.traversalMode == PlayerTraversalMode::Normal) {
-        output << "Prompt: Press Space: " << traversalFocus.prompt << "\n";
-        hasPrompt = true;
-    }
-    if (!hasPrompt && !minimal) {
-        output << "Prompt: Inspect authored neutral markers; no regression job chain is active.\n";
-    }
-
-    if (!minimal) {
-        output << "Status: colliders=" << m_scene.world().colliders().size()
-               << " | interactables=" << m_scene.interactions().interactableCount()
-               << " | routes=" << (m_sceneDefinitionLoaded ? m_sceneDefinition.routeMarkers.size() : 0)
-               << " | markers=" << (m_sceneDefinitionLoaded ? m_sceneDefinition.objectiveMarkers.size() : 0)
-               << " | vehicle=" << vehicleText << "\n"
-               << "F1: debug | Esc: quit";
-    }
-
-    return output.str();
+    NeutralSceneRuntimeView view;
+    view.sceneDefinitionLoaded = m_sceneDefinitionLoaded;
+    view.sceneId = m_sceneDefinitionLoaded ? m_sceneDefinition.id : "built-in-fallback";
+    view.sceneName = m_sceneDefinitionLoaded ? m_sceneDefinition.name : "Built-in fallback";
+    view.sceneRole = m_sceneDefinitionLoaded ? m_sceneDefinition.sliceMetadata.kind : "fallback";
+    view.worldId = m_sceneDefinitionLoaded ? m_sceneDefinition.sliceMetadata.worldId : "fallback";
+    view.sliceId = m_sceneDefinitionLoaded ? m_sceneDefinition.sliceMetadata.sliceId : "fallback";
+    view.objectiveText = m_scene.currentJobObjectiveText();
+    view.debugObjectiveText = m_scene.currentObjectiveText();
+    view.completionSummary = m_scene.completionSummary();
+    view.sliceComplete = m_scene.isSliceComplete();
+    view.interactionFocus = {focus.hasFocus, focus.name, focus.prompt};
+    view.traversalFocus = {traversalFocus.hasFocus, traversalFocus.name, traversalFocus.prompt};
+    view.traversalPromptActive = traversalFocus.hasFocus && player.traversalMode == PlayerTraversalMode::Normal;
+    view.playerPosition = player.position;
+    view.playerYawRadians = player.facingYawRadians;
+    view.playerHorizontalSpeed = player.horizontalSpeed;
+    view.playerSprinting = player.sprinting;
+    view.playerGrounded = player.grounded;
+    view.playerCollisionHits = player.lastCollisionHitCount;
+    view.cameraYawRadians = camera.yawRadians;
+    view.cameraPitchRadians = camera.pitchRadians;
+    view.cameraDistance = camera.distance;
+    view.colliderCount = m_scene.world().colliders().size();
+    view.interactableCount = m_scene.interactions().interactableCount();
+    view.routeCount = m_sceneDefinitionLoaded ? m_sceneDefinition.routeMarkers.size() : 0;
+    view.markerCount = m_sceneDefinitionLoaded ? m_sceneDefinition.objectiveMarkers.size() : 0;
+    view.vehicleAvailable = m_vehicleAvailable;
+    view.physicsText = m_vehiclePhysicsBackendText;
+    view.vehicleRuntimeText = m_vehicleRuntimeText;
+    view.interactPressed = m_interactPressedThisFrame;
+    view.traversalPressed = m_traversalPressedThisFrame;
+    view.lastInteractionText = m_lastInteractionText;
+    view.lastWorldEventText = m_lastWorldEventText;
+    return view;
 }
 
 std::string SandboxLayer::buildFullDebugText() const
 {
     if (m_runtimePolicy.usesNeutralPresentation) {
-        return buildNeutralSceneDebugText();
+        return BuildNeutralSceneDebugText(buildNeutralSceneRuntimeView());
     }
 
     const PlayerState& player = m_player.state();
@@ -859,57 +866,6 @@ std::string SandboxLayer::buildFullDebugText() const
            << "lastVehicle=\"" << m_lastVehicleText << "\" "
            << "lastWorldEvent=\"" << m_lastWorldEventText << "\"\n"
            << "worldState={" << m_scene.worldState().debugSummary() << "}\n"
-           << "slice={" << m_scene.completionSummary() << "}";
-    return output.str();
-}
-
-std::string SandboxLayer::buildNeutralSceneDebugText() const
-{
-    const PlayerState& player = m_player.state();
-    const ThirdPersonCameraState& camera = m_camera.state();
-    const InteractionFocus& focus = m_scene.interactions().focus();
-    const TraversalFocus& traversalFocus = m_scene.traversal().focus();
-    const std::string sceneId = m_sceneDefinitionLoaded ? m_sceneDefinition.id : "built-in-fallback";
-    const std::string kind = m_sceneDefinitionLoaded ? m_sceneDefinition.sliceMetadata.kind : "fallback";
-    const std::string worldId = m_sceneDefinitionLoaded ? m_sceneDefinition.sliceMetadata.worldId : "fallback";
-    const std::string sliceId = m_sceneDefinitionLoaded ? m_sceneDefinition.sliceMetadata.sliceId : "fallback";
-    const std::string vehicleText = m_vehicleAvailable ? "authored" : "none";
-
-    std::ostringstream output;
-    output << std::fixed << std::setprecision(2)
-           << "scene=" << sceneId << " loaded=" << (m_sceneDefinitionLoaded ? "yes" : "no")
-           << " role=" << kind << " world=" << worldId << " sliceId=" << sliceId << "\n"
-           << "objective=\"" << m_scene.currentObjectiveText() << "\" "
-           << "sliceComplete=" << (m_scene.isSliceComplete() ? "yes" : "no") << "\n"
-           << "focus=" << (focus.hasFocus ? focus.name : "none") << " ";
-    if (focus.hasFocus) {
-        output << "prompt=\"Press E: " << focus.prompt << "\" ";
-    }
-    if (traversalFocus.hasFocus && player.traversalMode == PlayerTraversalMode::Normal) {
-        output << "travPrompt=\"" << traversalFocus.prompt << "\" ";
-    }
-    output << "travFocus=" << (traversalFocus.hasFocus ? traversalFocus.name : "none") << "\n"
-           << "player=(" << player.position.x << "," << player.position.y << "," << player.position.z << ") "
-           << "playerYaw=" << engine::Degrees(player.facingYawRadians) << " "
-           << "speed=" << player.horizontalSpeed << " "
-           << (player.sprinting ? "sprint" : "walk") << " "
-           << (player.grounded ? "grounded" : "air") << " "
-           << "hits=" << player.lastCollisionHitCount << " "
-           << "cameraMode=on-foot "
-           << "camera yaw=" << engine::Degrees(camera.yawRadians)
-           << " pitch=" << engine::Degrees(camera.pitchRadians)
-           << " dist=" << camera.distance << "\n"
-           << "sceneCounts=colliders:" << m_scene.world().colliders().size()
-           << " interactables:" << m_scene.interactions().interactableCount()
-           << " routes:" << (m_sceneDefinitionLoaded ? m_sceneDefinition.routeMarkers.size() : 0)
-           << " markers:" << (m_sceneDefinitionLoaded ? m_sceneDefinition.objectiveMarkers.size() : 0)
-           << " vehicle:" << vehicleText << " "
-           << "physics=" << m_vehiclePhysicsBackendText << " "
-           << "vehicleRuntime=" << m_vehicleRuntimeText << "\n"
-           << "input=interact:" << (m_interactPressedThisFrame ? "yes" : "no")
-           << " traversal:" << (m_traversalPressedThisFrame ? "yes" : "no") << " "
-           << "lastInteraction=\"" << m_lastInteractionText << "\" "
-           << "lastWorldEvent=\"" << m_lastWorldEventText << "\"\n"
            << "slice={" << m_scene.completionSummary() << "}";
     return output.str();
 }
