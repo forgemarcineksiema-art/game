@@ -139,6 +139,7 @@ add_library(GamePrototype STATIC
     src/game/SceneRuntimePackage.cpp
     src/game/SceneRuntimePolicy.cpp
     src/game/SceneRuntimeSurface.cpp
+    src/game/TargetSliceObjectiveRuntime.cpp
     src/game/PrototypeScene.cpp
     src/game/PrototypeWorld.cpp
     src/game/ThirdPersonCamera.cpp

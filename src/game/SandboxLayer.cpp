@@ -788,7 +788,7 @@ NeutralSceneRuntimeView SandboxLayer::buildNeutralSceneRuntimeView() const
     view.interactPressed = m_interactPressedThisFrame;
     view.traversalPressed = m_traversalPressedThisFrame;
     view.lastInteractionText = m_lastInteractionText;
-    view.lastWorldEventText = m_lastWorldEventText;
+    view.lastWorldEventText = m_scene.lastRuntimeEventText();
     return view;
 }
 
@@ -1389,7 +1389,7 @@ void SandboxLayer::recordWorldStateChange(bool changed)
     }
 
     m_worldStateChangedThisFrame = true;
-    m_lastWorldEventText = m_scene.worldState().lastEventText();
+    m_lastWorldEventText = m_scene.lastRuntimeEventText();
     engine::Logger::info("World event: " + m_lastWorldEventText);
 }
 

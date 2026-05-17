@@ -49,6 +49,8 @@ def validate_runtime_output(
         failures.append(f"expected scene id '{expected_scene_id}' was not observed")
     if expected_kind and not _contains(output, expected_kind):
         failures.append(f"expected scene kind '{expected_kind}' was not observed")
+    if expected_kind == "target-slice-scaffold" and not _contains(output, "targetObjective="):
+        failures.append("target-slice output did not expose targetObjective= evidence")
 
     for term in forbidden_terms:
         if term and _contains(output, term):

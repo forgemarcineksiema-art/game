@@ -46,6 +46,24 @@ class SceneToolTests(unittest.TestCase):
         self.assertEqual([], result.errors)
         self.assertNotIn("ferry-manifest", scene_data.collect_ids(scene))
 
+    def test_veyra_reach_pilot_target_objective_references_authored_interactable(self) -> None:
+        scene = scene_data.load_scene(self.pilot_scene_path)
+        target_objective = scene["targetObjective"]
+
+        result = scene_data.validate_scene(scene)
+
+        self.assertEqual([], result.errors)
+        self.assertEqual("inspect-pilot-service-marker", target_objective["id"])
+        self.assertEqual("Pilot Service Marker", target_objective["completionInteractableName"])
+
+    def test_target_slice_objective_rejects_unknown_interactable_name(self) -> None:
+        scene = scene_data.load_scene(self.pilot_scene_path)
+        scene["targetObjective"]["completionInteractableName"] = "Missing Marker"
+
+        result = scene_data.validate_scene(scene)
+
+        self.assertTrue(any("completionInteractableName" in error for error in result.errors))
+
     def test_target_slice_scaffold_requires_metadata(self) -> None:
         scene = scene_data.load_scene(self.pilot_scene_path)
         del scene["sliceMetadata"]

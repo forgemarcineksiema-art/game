@@ -6,6 +6,9 @@
 std::string BuildNeutralScenePresentationText(const NeutralSceneRuntimeView& view, bool minimal)
 {
     const std::string vehicleText = view.vehicleAvailable ? "authored" : "none";
+    const std::string completionSummary = view.completionSummary.empty()
+        ? "complete=false role=neutral-target-slice targetObjective=none"
+        : view.completionSummary;
 
     std::ostringstream output;
     output << "Scene: " << view.sceneName << " | role=" << view.sceneRole << "\n"
@@ -24,7 +27,8 @@ std::string BuildNeutralScenePresentationText(const NeutralSceneRuntimeView& vie
     }
 
     if (!minimal) {
-        output << "Status: colliders=" << view.colliderCount
+        output << "Status: " << completionSummary
+               << " | colliders=" << view.colliderCount
                << " | interactables=" << view.interactableCount
                << " | routes=" << view.routeCount
                << " | markers=" << view.markerCount

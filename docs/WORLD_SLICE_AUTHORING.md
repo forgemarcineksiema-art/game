@@ -26,6 +26,7 @@ Required role values:
 - Role: `target-slice-scaffold`.
 - Purpose: prove a second slice can exist outside Ferry Office with its own surface, road, collision, route, and marker intent.
 - It is not a mission, map expansion, terrain implementation, art pass, or new runtime gameplay chain.
+- It now carries one `targetObjective` gate bound to the existing Pilot Service Marker. This proves authored objective/consequence runtime for a target slice; it is still not a mission system.
 
 ## Metadata Contract
 
@@ -65,6 +66,8 @@ Use the runtime smoke gate to prove the pilot slice is not dead JSON and does no
 python tools/runtime_scene_smoke.py --exe build/windows-vs2022-debug/Debug/EngineApp.exe --scene data/scenes/veyra_reach_pilot.scene.json
 ```
 
+For `target-slice-scaffold`, runtime smoke must also expose `targetObjective=` evidence. A smoke output that only says "neutral slice markers" is no longer enough.
+
 Expected current roles:
 
 - `ferry-office`: `regression-testbed`
@@ -82,6 +85,7 @@ Allowed in a target-slice scaffold:
 - route markers,
 - objective markers,
 - one debug interaction marker,
+- one authored `targetObjective` gate bound to an existing interactable marker,
 - validation and reporting tests.
 - neutral runtime smoke/capture evidence.
 
@@ -110,4 +114,5 @@ A new target slice is acceptable only when:
 - it does not add new Ferry Office content,
 - it does not require new `SandboxLayer` gameplay logic,
 - it loads through `tools/runtime_scene_smoke.py` without Ferry Office job text,
+- it exposes `targetObjective=` runtime evidence for any authored target objective,
 - `scripts/verify.ps1` passes.

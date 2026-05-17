@@ -42,6 +42,14 @@
     "playerRadius": 0.35,
     "vehicleLaneWidthMin": 3.0
   },
+  "targetObjective": {
+    "id": "inspect-pilot-service-marker",
+    "objectiveText": "Inspect the Pilot Service Marker to confirm the target-slice objective gate.",
+    "debugObjectiveText": "Inspect pilot-service-marker to complete the authored target-slice objective.",
+    "completionInteractableName": "Pilot Service Marker",
+    "completionSummary": "consequence=pilot-marker-confirmed",
+    "completionEventText": "Target-slice objective confirmed: pilot-service-marker"
+  },
   "sceneMaterials": [
     {
       "key": "misty-island-ground",
@@ -106,7 +114,7 @@
       "type": "info",
       "position": [1.0, 0.5, 2.4],
       "radius": 1.2,
-      "message": "Target slice scaffold marker. No mission behavior yet."
+      "message": "Pilot slice marker inspected; target-slice objective gate confirmed."
     }
   ],
   "traversalAffordances": [],

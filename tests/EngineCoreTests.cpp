@@ -31,6 +31,7 @@
 #include "game/SceneRuntimePackage.h"
 #include "game/SceneRuntimePolicy.h"
 #include "game/SceneRuntimeSurface.h"
+#include "game/TargetSliceObjectiveRuntime.h"
 #include "game/ThirdPersonCamera.h"
 #include "game/TraversalSystem.h"
 #include "game/VehicleController.h"
@@ -1248,6 +1249,96 @@ void TestSceneLoaderLoadsPilotSliceMetadata()
         "Pilot scaffold should not silently inherit a Ferry Office service vehicle.");
 }
 
+void TestSceneLoaderLoadsPilotTargetObjectiveDefinition()
+{
+    const SceneLoadResult result = LoadSceneDefinition(PilotScenePathForTests());
+
+    Expect(result.ok(),
+        "TestSceneLoaderLoadsPilotTargetObjectiveDefinition",
+        "Pilot target-slice scene JSON should load successfully.");
+    Expect(result.scene.targetObjective.id == "inspect-pilot-service-marker",
+        "TestSceneLoaderLoadsPilotTargetObjectiveDefinition",
+        "Pilot target-slice should expose an authored objective id.");
+    Expect(result.scene.targetObjective.completionInteractableName == "Pilot Service Marker",
+        "TestSceneLoaderLoadsPilotTargetObjectiveDefinition",
+        "Pilot target-slice objective should bind completion to an authored interactable name.");
+    Expect(result.scene.targetObjective.objectiveText.find("Pilot Service Marker") != std::string::npos,
+        "TestSceneLoaderLoadsPilotTargetObjectiveDefinition",
+        "Pilot target-slice objective should be authored text, not a hardcoded neutral placeholder.");
+}
+
+void TestTargetSliceObjectiveRuntimeCompletesFromAuthoredInteractable()
+{
+    const SceneLoadResult result = LoadSceneDefinition(PilotScenePathForTests());
+    Expect(result.ok(),
+        "TestTargetSliceObjectiveRuntimeCompletesFromAuthoredInteractable",
+        "Pilot target-slice scene JSON should load successfully.");
+    if (!result.ok()) {
+        return;
+    }
+
+    const TargetSliceObjectiveState incomplete = BuildTargetSliceObjectiveState(result.scene);
+    Expect(incomplete.active,
+        "TestTargetSliceObjectiveRuntimeCompletesFromAuthoredInteractable",
+        "Target-slice objective runtime should activate for authored target-slice objectives.");
+    Expect(!incomplete.complete,
+        "TestTargetSliceObjectiveRuntimeCompletesFromAuthoredInteractable",
+        "Target-slice objective should start incomplete.");
+    Expect(incomplete.completionSummary.find("complete=false") != std::string::npos,
+        "TestTargetSliceObjectiveRuntimeCompletesFromAuthoredInteractable",
+        "Target-slice objective summary should report the incomplete state.");
+
+    const TargetSliceObjectiveState complete =
+        BuildTargetSliceObjectiveState(result.scene, "Pilot Service Marker");
+    Expect(complete.complete,
+        "TestTargetSliceObjectiveRuntimeCompletesFromAuthoredInteractable",
+        "Target-slice objective should complete from the authored interactable name.");
+    Expect(complete.completionSummary.find("complete=true") != std::string::npos,
+        "TestTargetSliceObjectiveRuntimeCompletesFromAuthoredInteractable",
+        "Target-slice objective summary should report the complete state.");
+    Expect(complete.completionEventText.find("pilot-service-marker") != std::string::npos,
+        "TestTargetSliceObjectiveRuntimeCompletesFromAuthoredInteractable",
+        "Target-slice objective completion should expose authored consequence evidence.");
+}
+
+void TestPrototypeScenePilotSliceCompletesAuthoredObjectiveWithoutFerryOfficeJob()
+{
+    const SceneLoadResult result = LoadSceneDefinition(PilotScenePathForTests());
+    Expect(result.ok(),
+        "TestPrototypeScenePilotSliceCompletesAuthoredObjectiveWithoutFerryOfficeJob",
+        "Pilot target-slice scene JSON should load successfully.");
+    if (!result.ok()) {
+        return;
+    }
+
+    PrototypeScene scene(result.scene);
+    Expect(!scene.isSliceComplete(),
+        "TestPrototypeScenePilotSliceCompletesAuthoredObjectiveWithoutFerryOfficeJob",
+        "Pilot target-slice should start incomplete.");
+    Expect(scene.currentJobObjectiveText().find("Pilot Service Marker") != std::string::npos,
+        "TestPrototypeScenePilotSliceCompletesAuthoredObjectiveWithoutFerryOfficeJob",
+        "Pilot target-slice should present authored objective text.");
+
+    InteractionResult interaction;
+    interaction.triggered = true;
+    interaction.name = "Pilot Service Marker";
+    interaction.message = "Pilot marker inspected.";
+    const bool changed = scene.applyInteractionResult(interaction);
+
+    Expect(changed,
+        "TestPrototypeScenePilotSliceCompletesAuthoredObjectiveWithoutFerryOfficeJob",
+        "Interacting with the authored marker should change target-slice runtime state.");
+    Expect(scene.isSliceComplete(),
+        "TestPrototypeScenePilotSliceCompletesAuthoredObjectiveWithoutFerryOfficeJob",
+        "Pilot target-slice should complete after the authored marker interaction.");
+    Expect(scene.completionSummary().find("targetObjective=inspect-pilot-service-marker") != std::string::npos,
+        "TestPrototypeScenePilotSliceCompletesAuthoredObjectiveWithoutFerryOfficeJob",
+        "Pilot target-slice completion summary should identify the authored target objective.");
+    Expect(!scene.isJobComplete(),
+        "TestPrototypeScenePilotSliceCompletesAuthoredObjectiveWithoutFerryOfficeJob",
+        "Pilot target-slice completion must not claim Ferry Office job completion.");
+}
+
 void TestSceneRuntimePolicyKeepsFallbackAsFerryOfficeRegression()
 {
     SceneDefinition unloadedScene;
@@ -1644,7 +1735,7 @@ void TestNeutralSceneRuntimeSurfaceBuildsPresentationWithoutFerryOfficeTerms()
     Expect(text.find("Objective: Inspect neutral slice markers; no authored job is active.") != std::string::npos,
         "TestNeutralSceneRuntimeSurfaceBuildsPresentationWithoutFerryOfficeTerms",
         "Neutral presentation should use the authored neutral objective text.");
-    Expect(text.find("Status: colliders=1 | interactables=1 | routes=1 | markers=2 | vehicle=none") != std::string::npos,
+    Expect(text.find("Status: complete=false role=neutral-target-slice targetObjective=none | colliders=1 | interactables=1 | routes=1 | markers=2 | vehicle=none") != std::string::npos,
         "TestNeutralSceneRuntimeSurfaceBuildsPresentationWithoutFerryOfficeTerms",
         "Neutral presentation should expose authored-scene counts without Ferry Office job state.");
     Expect(text.find("Ferry Office") == std::string::npos,
@@ -3122,7 +3213,7 @@ void TestSandboxLayerPilotSliceUsesNeutralPresentation()
     Expect(text.find("Scene: Veyra Reach Pilot Slice | role=target-slice-scaffold") != std::string::npos,
         "TestSandboxLayerPilotSliceUsesNeutralPresentation",
         "Pilot runtime smoke text should identify the target slice instead of the Ferry Office job.");
-    Expect(text.find("Status: colliders=1 | interactables=1 | routes=1 | markers=2 | vehicle=none") != std::string::npos,
+    Expect(text.find("Status: complete=false role=target-slice-authored-objective targetObjective=inspect-pilot-service-marker consequence=pilot-marker-confirmed | colliders=1 | interactables=1 | routes=1 | markers=2 | vehicle=none") != std::string::npos,
         "TestSandboxLayerPilotSliceUsesNeutralPresentation",
         "Pilot runtime smoke text should report neutral scene counts and no inherited vehicle.");
     Expect(text.find("Ferry Office") == std::string::npos,
@@ -6216,6 +6307,9 @@ int main()
     TestStaticMeshBuildsTransformedTriangleList();
     TestSceneLoaderLoadsDefaultFerryOfficeScene();
     TestSceneLoaderLoadsPilotSliceMetadata();
+    TestSceneLoaderLoadsPilotTargetObjectiveDefinition();
+    TestTargetSliceObjectiveRuntimeCompletesFromAuthoredInteractable();
+    TestPrototypeScenePilotSliceCompletesAuthoredObjectiveWithoutFerryOfficeJob();
     TestSceneRuntimePolicyKeepsFallbackAsFerryOfficeRegression();
     TestSceneRuntimePolicyClassifiesRegressionAndTargetSliceRoles();
     TestSceneRuntimePolicyTreatsUnknownLoadedSceneAsNeutral();

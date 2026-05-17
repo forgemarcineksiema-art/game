@@ -114,6 +114,15 @@ struct SceneObjectiveMarkerDefinition {
     engine::Vec3 position;
 };
 
+struct SceneTargetObjectiveDefinition {
+    std::string id;
+    std::string objectiveText;
+    std::string debugObjectiveText;
+    std::string completionInteractableName;
+    std::string completionSummary;
+    std::string completionEventText;
+};
+
 struct SceneSliceMetadataDefinition {
     std::string kind;
     std::string worldId;
@@ -128,6 +137,7 @@ struct SceneDefinition {
     std::string linearUnits;
     float floorHeight = 0.0f;
     SceneSliceMetadataDefinition sliceMetadata;
+    SceneTargetObjectiveDefinition targetObjective;
     ScenePlayerStartDefinition playerStart;
     std::vector<SceneMaterialDefinition> sceneMaterials;
     std::vector<SceneColliderDefinition> colliders;

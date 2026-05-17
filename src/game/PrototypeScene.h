@@ -4,6 +4,7 @@
 #include "game/FerryOfficeJob.h"
 #include "game/InteractionSystem.h"
 #include "game/PrototypeWorld.h"
+#include "game/TargetSliceObjectiveRuntime.h"
 #include "game/TraversalSystem.h"
 #include "game/WorldState.h"
 
@@ -61,6 +62,7 @@ public:
     std::string currentJobObjectiveText() const;
     std::string completionSummary() const;
     std::string jobDebugSummary() const;
+    std::string lastRuntimeEventText() const;
 
 private:
     void buildFromFerryOfficeData();
@@ -75,6 +77,7 @@ private:
     bool applyAuthoredInteractionBinding(std::string_view name, const std::string& source);
     bool hasRequiredWorldFlags(const InteractableActionBinding& binding) const;
     void configureJobFromDefinition(const SceneDefinition& sceneDefinition);
+    bool recordTargetSliceInteraction(std::string_view interactableName);
 
     PrototypeWorld m_world;
     InteractionSystem m_interactions;
@@ -83,5 +86,9 @@ private:
     FerryOfficeJob m_job;
     std::vector<InteractableActionBinding> m_interactableActionBindings;
     std::vector<TraversalActionBinding> m_traversalActionBindings;
+    SceneDefinition m_sceneDefinition;
+    TargetSliceObjectiveState m_targetSliceObjective;
+    std::string m_completedTargetSliceInteractableName;
+    std::string m_lastTargetSliceEventText = "none";
     bool m_ferryOfficeBehaviorEnabled = true;
 };

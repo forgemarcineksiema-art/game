@@ -326,6 +326,27 @@ SceneObjectiveMarkerDefinition ParseObjectiveMarker(const json& value, std::size
     return marker;
 }
 
+SceneTargetObjectiveDefinition ParseTargetObjective(const json& root)
+{
+    SceneTargetObjectiveDefinition objective;
+    const auto found = root.find("targetObjective");
+    if (found == root.end() || found->is_null()) {
+        return objective;
+    }
+    if (!found->is_object()) {
+        throw std::runtime_error("scene.targetObjective must be an object.");
+    }
+
+    objective.id = ReadString(*found, "id", "scene.targetObjective");
+    objective.objectiveText = ReadString(*found, "objectiveText", "scene.targetObjective");
+    objective.debugObjectiveText = ReadOptionalString(*found, "debugObjectiveText", "scene.targetObjective");
+    objective.completionInteractableName =
+        ReadString(*found, "completionInteractableName", "scene.targetObjective");
+    objective.completionSummary = ReadOptionalString(*found, "completionSummary", "scene.targetObjective");
+    objective.completionEventText = ReadOptionalString(*found, "completionEventText", "scene.targetObjective");
+    return objective;
+}
+
 SceneSliceMetadataDefinition ParseSliceMetadata(const json& root)
 {
     SceneSliceMetadataDefinition metadata;
@@ -374,6 +395,7 @@ SceneDefinition ParseScene(const json& root)
     scene.name = ReadString(root, "name", "scene");
     scene.floorHeight = ReadFloat(root, "floorHeight", "scene");
     scene.sliceMetadata = ParseSliceMetadata(root);
+    scene.targetObjective = ParseTargetObjective(root);
 
     if (const auto units = root.find("units"); units != root.end() && units->is_object()) {
         scene.linearUnits = ReadOptionalString(*units, "linear", "scene.units");

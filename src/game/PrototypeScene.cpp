@@ -19,6 +19,10 @@ PrototypeScene::PrototypeScene(const SceneDefinition& sceneDefinition)
 void PrototypeScene::buildFromFerryOfficeData()
 {
     m_ferryOfficeBehaviorEnabled = true;
+    m_sceneDefinition = {};
+    m_targetSliceObjective = {};
+    m_completedTargetSliceInteractableName.clear();
+    m_lastTargetSliceEventText = "none";
     m_world.buildFerryOfficePrototypeLayout();
     m_interactableActionBindings.clear();
     m_traversalActionBindings.clear();
@@ -299,7 +303,11 @@ TraversalType TraversalTypeFromSceneString(const std::string&)
 
 void PrototypeScene::loadFromDefinition(const SceneDefinition& sceneDefinition)
 {
+    m_sceneDefinition = sceneDefinition;
     m_ferryOfficeBehaviorEnabled = IsFerryOfficeRegressionScene(sceneDefinition);
+    m_completedTargetSliceInteractableName.clear();
+    m_targetSliceObjective = BuildTargetSliceObjectiveState(sceneDefinition);
+    m_lastTargetSliceEventText = "none";
     m_worldState.clear();
     m_world.buildFromSceneDefinition(sceneDefinition);
     m_interactions.clear();
@@ -410,6 +418,7 @@ bool PrototypeScene::applyInteractionResult(const InteractionResult& result)
     }
 
     changed |= applyAuthoredInteractionBinding(result.name, result.name);
+    changed |= recordTargetSliceInteraction(result.name);
     if (changed) {
         syncWorldStateColliders();
     }
@@ -490,7 +499,7 @@ bool PrototypeScene::recordExitReached()
 bool PrototypeScene::isSliceReadyForExit() const
 {
     if (!m_ferryOfficeBehaviorEnabled) {
-        return false;
+        return m_targetSliceObjective.active && m_targetSliceObjective.complete;
     }
     return m_worldState.isFlagSet(WorldFlag::ManifestCollected)
         && m_worldState.isFlagSet(WorldFlag::ServiceRouteUsed)
@@ -502,7 +511,7 @@ bool PrototypeScene::isSliceReadyForExit() const
 bool PrototypeScene::isSliceComplete() const
 {
     if (!m_ferryOfficeBehaviorEnabled) {
-        return false;
+        return m_targetSliceObjective.active && m_targetSliceObjective.complete;
     }
     return isSliceReadyForExit() && m_worldState.isFlagSet(WorldFlag::ExitReached);
 }
@@ -527,6 +536,11 @@ bool PrototypeScene::isJobComplete() const
 std::string PrototypeScene::currentObjectiveText() const
 {
     if (!m_ferryOfficeBehaviorEnabled) {
+        if (m_targetSliceObjective.active) {
+            return m_targetSliceObjective.complete
+                ? m_targetSliceObjective.completionEventText
+                : m_targetSliceObjective.debugObjectiveText;
+        }
         return "Neutral target-slice scaffold loaded.";
     }
     if (!m_worldState.isFlagSet(WorldFlag::ManifestCollected)) {
@@ -551,6 +565,11 @@ std::string PrototypeScene::currentObjectiveText() const
 std::string PrototypeScene::currentJobObjectiveText() const
 {
     if (!m_ferryOfficeBehaviorEnabled) {
+        if (m_targetSliceObjective.active) {
+            return m_targetSliceObjective.complete
+                ? m_targetSliceObjective.completionEventText
+                : m_targetSliceObjective.objectiveText;
+        }
         return "Inspect neutral slice markers; no authored job is active.";
     }
     if (m_job.isComplete(m_worldState) && !m_worldState.isFlagSet(WorldFlag::DockRoadRelayReset)) {
@@ -604,7 +623,10 @@ std::string PrototypeScene::currentJobObjectiveText() const
 std::string PrototypeScene::completionSummary() const
 {
     if (!m_ferryOfficeBehaviorEnabled) {
-        return "complete=false role=neutral-target-slice";
+        if (m_targetSliceObjective.active) {
+            return m_targetSliceObjective.completionSummary;
+        }
+        return "complete=false role=neutral-target-slice targetObjective=none";
     }
     std::ostringstream output;
     output << "complete=" << (isSliceComplete() ? "true" : "false")
@@ -621,9 +643,21 @@ std::string PrototypeScene::completionSummary() const
 std::string PrototypeScene::jobDebugSummary() const
 {
     if (!m_ferryOfficeBehaviorEnabled) {
-        return "job=none phase=neutral-target-slice";
+        if (m_targetSliceObjective.active) {
+            return "job=none phase=target-slice-authored-objective targetObjective=" + m_targetSliceObjective.id;
+        }
+        return "job=none phase=neutral-target-slice targetObjective=none";
     }
     return m_job.debugSummary(m_worldState);
+}
+
+std::string PrototypeScene::lastRuntimeEventText() const
+{
+    const std::string worldEvent = m_worldState.lastEventText();
+    if (worldEvent != "none") {
+        return worldEvent;
+    }
+    return m_lastTargetSliceEventText;
 }
 
 void PrototypeScene::addInteractableActionBinding(
@@ -726,6 +760,21 @@ bool PrototypeScene::hasRequiredWorldFlags(const InteractableActionBinding& bind
         }
     }
     return true;
+}
+
+bool PrototypeScene::recordTargetSliceInteraction(std::string_view interactableName)
+{
+    if (m_ferryOfficeBehaviorEnabled || !m_targetSliceObjective.active || m_targetSliceObjective.complete) {
+        return false;
+    }
+    if (interactableName != m_targetSliceObjective.completionInteractableName) {
+        return false;
+    }
+
+    m_completedTargetSliceInteractableName = std::string(interactableName);
+    m_targetSliceObjective = BuildTargetSliceObjectiveState(m_sceneDefinition, m_completedTargetSliceInteractableName);
+    m_lastTargetSliceEventText = m_targetSliceObjective.completionEventText;
+    return m_targetSliceObjective.complete;
 }
 
 void PrototypeScene::configureJobFromDefinition(const SceneDefinition& sceneDefinition)

@@ -2,6 +2,91 @@
 
 Last updated: 2026-05-17
 
+## Target-Slice Authored Objective Runtime Gate (2026-05-17)
+
+Goal:
+
+- Build the first small target-system runtime outside Ferry Office: an authored objective/consequence gate for `target-slice-scaffold` scenes.
+- Keep Ferry Office as regression/debug testbed.
+- Do not add terrain, content pass, vehicles, missions, NPCs, renderer work, or another `SandboxLayer` cleanup milestone.
+
+Scope:
+
+- Added `TargetSliceObjectiveRuntime` in `src\game\TargetSliceObjectiveRuntime.h/.cpp`.
+- Added `targetObjective` scene data parsing in `SceneDefinition` and `SceneLoader`.
+- Added one authored Veyra objective in `data\scenes\veyra_reach_pilot.scene.json`, bound to the existing `Pilot Service Marker`.
+- `PrototypeScene` now tracks target-slice objective completion independently from `FerryOfficeJob`.
+- Neutral playtest/debug text now exposes `targetObjective=...` evidence instead of only generic scaffold wording.
+- `tools\runtime_scene_smoke.py` now rejects target-slice smoke output that does not expose `targetObjective=` evidence.
+- `tools\scene_data.py` now validates that `targetObjective.completionInteractableName` points to an existing authored interactable name.
+- Updated `docs\SCENE_AUTHORING.md`, `docs\WORLD_SLICE_AUTHORING.md`, and the goal plan in `docs\superpowers\plans\2026-05-17-target-slice-authored-objective-runtime-gate.md`.
+
+Evidence:
+
+- CONFIRMED: Baseline `git status --short --branch` was clean on `main...origin/main`.
+- CONFIRMED: Baseline `git branch --show-current` returned `main`.
+- CONFIRMED: Baseline `python tools\status_report.py` passed.
+- CONFIRMED: Baseline `scripts\doctor.ps1`, `scripts\configure.ps1`, `scripts\build.ps1`, and `scripts\verify.ps1` passed before changes.
+- CONFIRMED: RED `cmake --build --preset windows-vs2022-debug --target EngineCoreTests` failed before implementation with `fatal error C1083: Cannot open include file: 'game/TargetSliceObjectiveRuntime.h': No such file or directory`.
+- CONFIRMED: RED `python tests\test_runtime_scene_smoke.py` failed before implementation because old target-slice smoke output without `targetObjective=` still passed.
+- CONFIRMED: GREEN `cmake --build --preset windows-vs2022-debug --target EngineCoreTests EngineApp` passed after implementation.
+- CONFIRMED: GREEN `build\windows-vs2022-debug\Debug\EngineCoreTests.exe` passed.
+- CONFIRMED: GREEN `python tests\test_runtime_scene_smoke.py` passed, 5 tests.
+- CONFIRMED: GREEN `python tests\test_scene_tools.py` passed, 57 tests.
+- CONFIRMED: GREEN `python tools\validate_scene.py data\scenes\veyra_reach_pilot.scene.json` passed.
+- CONFIRMED: GREEN `python tools\scene_report.py data\scenes\veyra_reach_pilot.scene.json` reported 1 collider, 1 interactable, 1 route, 2 objective markers, 0 validation errors.
+- CONFIRMED: GREEN `python tools\scale_audit.py data\scenes\veyra_reach_pilot.scene.json` reported no suspicious scale issues.
+- CONFIRMED: GREEN `python tools\runtime_scene_smoke.py --exe build\windows-vs2022-debug\Debug\EngineApp.exe --scene data\scenes\veyra_reach_pilot.scene.json --ui-mode debug --report-json build\runtime\veyra-reach-pilot-target-objective-debug-smoke-report.json` passed.
+- CONFIRMED: GREEN standard `python tools\mesh_report.py` passed for Ferry Office scene asset coverage.
+- CONFIRMED: GREEN `scripts\verify.ps1` passed after code and documentation changes; CTest 12/12 and standard scene/tool/runtime validation passed.
+- CONFIRMED: `python tools\mesh_report.py data\scenes\veyra_reach_pilot.scene.json` currently fails because the tool scans every committed model under `assets\models` against a scene with zero mesh assets and reports all models as unreferenced. This is a tooling limitation for scene-specific mesh reports, not a runtime/scene regression from this goal.
+
+Remaining limits:
+
+- This does not make Veyra playable.
+- The objective is completed by the runtime interaction result; there is no recorded-input proof yet that the player can walk from spawn, acquire focus, press interact, and complete it in the live target slice.
+- There is still only one target objective, one marker, one collider, and placeholder geometry.
+- `FerryOfficeJob` remains the only rich gameplay chain.
+
+Validation commands:
+
+- GREEN: `git status --short --branch`: clean before work on `main...origin/main`.
+- GREEN: `git branch --show-current`: `main`.
+- GREEN: `python tools\status_report.py`: passed.
+- GREEN: `scripts\doctor.ps1`: passed with expected optional PATH warnings.
+- GREEN: `scripts\configure.ps1`: passed.
+- GREEN: `scripts\build.ps1`: passed.
+- GREEN: `scripts\verify.ps1`: passed before changes.
+- RED: `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: missing `game/TargetSliceObjectiveRuntime.h` before implementation.
+- RED: `python tests\test_runtime_scene_smoke.py`: old target-slice smoke accepted output without `targetObjective=` evidence.
+- GREEN: `cmake --build --preset windows-vs2022-debug --target EngineCoreTests EngineApp`.
+- GREEN: `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`.
+- GREEN: `python tests\test_runtime_scene_smoke.py`.
+- GREEN: `python tests\test_scene_tools.py`.
+- GREEN: `python tools\validate_scene.py data\scenes\veyra_reach_pilot.scene.json`.
+- GREEN: `python tools\scene_report.py data\scenes\veyra_reach_pilot.scene.json`.
+- GREEN: `python tools\scale_audit.py data\scenes\veyra_reach_pilot.scene.json`.
+- GREEN: standard `python tools\mesh_report.py`.
+- GREEN: `python tools\world_slice_report.py`.
+- GREEN: `python tools\runtime_scene_smoke.py --exe build\windows-vs2022-debug\Debug\EngineApp.exe --scene data\scenes\veyra_reach_pilot.scene.json --ui-mode debug --report-json build\runtime\veyra-reach-pilot-target-objective-debug-smoke-report.json`.
+- GREEN: final `scripts\verify.ps1` after code and documentation changes.
+- BLOCKED/KNOWN TOOLING LIMIT: `python tools\mesh_report.py data\scenes\veyra_reach_pilot.scene.json` fails because the scene has no mesh assets while the tool treats every repo model not referenced by that specific scene as an error.
+
+Next recommended goal:
+
+```text
+/goal Target-slice live objective acquisition gate dla Tidebreak w C:\Users\Marcin\Documents\New project.
+
+Cel:
+Udowodnic, ze Veyra target-slice objective nie jest tylko parserem i bezposrednim `InteractionResult`: dodac krotki recorded-input/live-smoke gate, w ktorym gracz startuje w Veyra, idzie do Pilot Service Marker, focus/prompt pojawia sie z authored interactable, input interact konczy `targetObjective=inspect-pilot-service-marker`, a debug/playtest output pokazuje completion event bez Ferry Office job/world-state leakage.
+
+Non-goals:
+Nie dodawac mapy, terrainu, asset passu, misji, NPC, pojazdu, Jolt work, renderer rewrite ani drugiego objective chainu. To ma byc evidence gate dla obecnego authored objective runtime, nie content milestone.
+
+Walidacja:
+RED/GREEN `EngineCoreTests`, nowy Python smoke/QA command z raportem JSON, `python tools\validate_scene.py data\scenes\veyra_reach_pilot.scene.json`, `python tools\runtime_scene_smoke.py`, `scripts\verify.ps1`.
+```
+
 ## Scene Runtime Package Facade Stop Gate (2026-05-17)
 
 Goal:

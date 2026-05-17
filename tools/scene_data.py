@@ -150,6 +150,7 @@ def collect_ids(scene: dict[str, Any]) -> set[str]:
     ids: set[str] = set()
     _add_id(ids, scene.get("id"))
     _add_id(ids, _as_dict(scene.get("playerStart")).get("id"))
+    _add_id(ids, _as_dict(scene.get("targetObjective")).get("id"))
     for section in [
         "colliders",
         "visualPlaceholders",
@@ -257,6 +258,8 @@ def validate_scene(scene: dict[str, Any]) -> ValidationResult:
         _require_positive_number(item, "radius", label, result)
         for key in ["worldFlagsSet", "requiredWorldFlags", "worldFlagsSetWhenReady"]:
             _validate_world_flag_list(item.get(key), f"{label}.{key}", result)
+
+    _validate_target_objective(scene, result)
 
     for affordance in _as_list(scene.get("traversalAffordances")):
         item = _as_dict(affordance)
@@ -426,6 +429,38 @@ def _validate_target_slice_counts(scene: dict[str, Any], result: ValidationResul
     for section, message in required_sections.items():
         if not _as_list(scene.get(section)):
             result.errors.append(message)
+
+    if not _as_dict(scene.get("targetObjective")):
+        result.errors.append("target slice scaffold must author a targetObjective gate.")
+
+
+def _validate_target_objective(scene: dict[str, Any], result: ValidationResult) -> None:
+    objective = _as_dict(scene.get("targetObjective"))
+    if not objective:
+        return
+
+    label = "scene.targetObjective"
+    for key in [
+        "id",
+        "objectiveText",
+        "debugObjectiveText",
+        "completionInteractableName",
+        "completionEventText",
+    ]:
+        _require_string(objective, key, label, result)
+    if "completionSummary" in objective:
+        _require_string(objective, "completionSummary", label, result)
+
+    completion_name = objective.get("completionInteractableName")
+    interactable_names = {
+        item.get("name")
+        for item in (_as_dict(interactable) for interactable in _as_list(scene.get("interactables")))
+        if isinstance(item.get("name"), str)
+    }
+    if isinstance(completion_name, str) and completion_name and completion_name not in interactable_names:
+        result.errors.append(
+            f"{label}.completionInteractableName references unknown interactable name '{completion_name}'."
+        )
 
 
 def validate_asset_workflow(

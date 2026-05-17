@@ -1,8 +1,8 @@
 # Scene Authoring
 
-Last updated: 2026-05-16
+Last updated: 2026-05-17
 
-v0.11 introduced scene data for Codex-friendly inspection and validation. v0.12 added mesh asset and mesh instance references. v0.12.1 expanded the Ferry Office mesh set for a focused prop/scale pass. v0.14 added the first dock road segment as authored placeholders and route markers. v0.15 makes `data/scenes/ferry_office.scene.json` the runtime source of truth for current layout data while keeping Tidebreak-specific behavior in C++. v0.18 adds the first original service-road prop-kit meshes and keeps them scene-authored. v0.20 adds one fallback-generated ferry notice board because Blender was unavailable; its provenance must stay explicit. v0.20.1 adds one real Blender-exported notice-board prop and keeps it scene-authored too. v0.42 adds a Blender-authored wet-road surface mesh for the service-yard, dock-road, and turn-around presentation slabs. v0.43 adds a Blender-authored harbor backdrop mesh around existing water-edge bands. v0.44 adds a Blender-authored harbor water surface mesh over those water-edge bands. v0.84 adds fallback-generated service-yard cart body/cab/wheel meshes to reduce the visible unit-box vehicle cluster while preserving the authored vehicle collider. v0.85 adds a fallback-generated service-gate mesh to replace the visible gate slab/slat cluster while preserving the authored route collider. v0.87 adds a fallback-generated facade-frame mesh to replace the broad Ferry Office wall and entry-post blockout while preserving authored collision and route space. v0.88 adds a fallback-generated non-text sign-panel mesh for the front facade sign cue. v0.90 adds a tiny visual placeholder state cue beside the Ferry Office Drain Log. v0.93 adds a fallback-generated non-text service-panel mesh for the office-side service/control cue.
+v0.11 introduced scene data for Codex-friendly inspection and validation. v0.12 added mesh asset and mesh instance references. v0.12.1 expanded the Ferry Office mesh set for a focused prop/scale pass. v0.14 added the first dock road segment as authored placeholders and route markers. v0.15 makes `data/scenes/ferry_office.scene.json` the runtime source of truth for current layout data while keeping Tidebreak-specific behavior in C++. v0.18 adds the first original service-road prop-kit meshes and keeps them scene-authored. v0.20 adds one fallback-generated ferry notice board because Blender was unavailable; its provenance must stay explicit. v0.20.1 adds one real Blender-exported notice-board prop and keeps it scene-authored too. v0.42 adds a Blender-authored wet-road surface mesh for the service-yard, dock-road, and turn-around presentation slabs. v0.43 adds a Blender-authored harbor backdrop mesh around existing water-edge bands. v0.44 adds a Blender-authored harbor water surface mesh over those water-edge bands. v0.84 adds fallback-generated service-yard cart body/cab/wheel meshes to reduce the visible unit-box vehicle cluster while preserving the authored vehicle collider. v0.85 adds a fallback-generated service-gate mesh to replace the visible gate slab/slat cluster while preserving the authored route collider. v0.87 adds a fallback-generated facade-frame mesh to replace the broad Ferry Office wall and entry-post blockout while preserving authored collision and route space. v0.88 adds a fallback-generated non-text sign-panel mesh for the front facade sign cue. v0.90 adds a tiny visual placeholder state cue beside the Ferry Office Drain Log. v0.93 adds a fallback-generated non-text service-panel mesh for the office-side service/control cue. v0.99+ adds a minimal `targetObjective` gate for target-slice scaffolds so Veyra can prove authored objective/consequence runtime without using `FerryOfficeJob`.
 
 ## Scene Data Location
 
@@ -52,7 +52,7 @@ The Ferry Office scene file describes:
 - route markers,
 - objective markers.
 
-New target-slice scaffolds should start smaller. They must define `sliceMetadata`, player start, surface/road intent, at least one collider, one visual placeholder, one route marker, one objective marker, and one debug interaction marker. They should not copy the Ferry Office job chain or add new `SandboxLayer` behavior.
+New target-slice scaffolds should start smaller. They must define `sliceMetadata`, player start, surface/road intent, at least one collider, one visual placeholder, one route marker, one objective marker, one debug interaction marker, and one `targetObjective` gate bound to an existing interactable. They should not copy the Ferry Office job chain or add new `SandboxLayer` behavior.
 
 Use stable lowercase kebab-case ids. Do not rely on runtime add-order numeric ids.
 
@@ -91,6 +91,16 @@ Still scene-owned C++ behavior:
 - dynamic state colors and vehicle camera/update behavior.
 
 Target-slice scaffolds now have a neutral runtime smoke path. When a scene declares `sliceMetadata.kind=target-slice-scaffold`, runtime playtest text must identify the scene role and report neutral counts instead of showing Ferry Office objective/job rows. These scenes also do not inherit the fallback service-yard vehicle unless they author a vehicle entry.
+
+Target-slice scaffolds can declare a single `targetObjective` object for the current runtime gate. Required fields:
+
+- `id`,
+- `objectiveText`,
+- `debugObjectiveText`,
+- `completionInteractableName`,
+- `completionEventText`.
+
+Optional `completionSummary` can add a short consequence tag. `completionInteractableName` must match an authored interactable `name`; `tools/validate_scene.py` rejects missing links. This is not a mission framework, branching quest system, or world-flag scripting model.
 
 ## Adding Or Moving Objects
 
