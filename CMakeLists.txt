@@ -135,6 +135,7 @@ add_library(GamePrototype STATIC
     src/game/SceneGuidanceSurface.cpp
     src/game/SceneLoader.cpp
     src/game/ScenePresentation.cpp
+    src/game/SceneRenderSurface.cpp
     src/game/SceneRuntimePolicy.cpp
     src/game/SceneRuntimeSurface.cpp
     src/game/PrototypeScene.cpp

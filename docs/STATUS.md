@@ -2,6 +2,93 @@
 
 Last updated: 2026-05-17
 
+## Scene Render Submission Role Split (2026-05-17)
+
+Goal:
+
+- Execute the next small scene execution split after `SceneGuidanceSurface`.
+- Do not add content, terrain, road systems, assets, missions, NPCs, vehicle work, renderer rewrites, or visual polish.
+- Move render-submission role decisions out of raw `SandboxLayer` branches so neutral target-slice scenes do not implicitly inherit Ferry Office fallback/debug mood geometry.
+
+Scope:
+
+- Added `SceneRenderSurface` in `src\game\SceneRenderSurface.h/.cpp`.
+- Added `SceneRenderSubmissionPlan` as the explicit decision output for fallback Ferry Office mood base, authored scene placeholders, authored meshes, debug colliders, and Ferry Office world-state cues.
+- `SandboxLayer` now builds a render submission plan from `m_sceneDefinitionLoaded` and `SceneRuntimePolicy`, then keeps the actual draw calls in place.
+- Preserved existing renderer APIs and draw functions; this is a role-decision seam, not an `IRenderer` rewrite.
+- Added direct `EngineCoreTests` coverage for fallback/no-loaded-scene, loaded Ferry Office regression scene, and Veyra target-slice scaffold render-submission behavior.
+- Saved the goal prompt and implementation plan in `docs\superpowers\plans\2026-05-17-scene-render-submission-role-split.md`.
+
+Evidence:
+
+- CONFIRMED: Baseline `git status --short --branch` was clean on `main...origin/main`.
+- CONFIRMED: Baseline `git branch --show-current` returned `main`.
+- CONFIRMED: Baseline `python tools\status_report.py` passed.
+- CONFIRMED: Baseline `scripts\doctor.ps1`, `scripts\configure.ps1`, `scripts\build.ps1`, and `scripts\verify.ps1` passed before changes.
+- CONFIRMED: RED `cmake --build --preset windows-vs2022-debug --target EngineCoreTests` failed before implementation with `fatal error C1083: Cannot open include file: 'game/SceneRenderSurface.h': No such file or directory`.
+- CONFIRMED: GREEN `cmake --build --preset windows-vs2022-debug --target EngineCoreTests` passed after adding `SceneRenderSurface`.
+- CONFIRMED: GREEN `build\windows-vs2022-debug\Debug\EngineCoreTests.exe` passed after wiring `SandboxLayer`.
+- CONFIRMED: GREEN `python tests\test_runtime_scene_smoke.py` passed, 4 tests.
+- CONFIRMED: GREEN `cmake --build --preset windows-vs2022-debug --target EngineCoreTests EngineApp` passed.
+- CONFIRMED: GREEN `python tools\runtime_scene_smoke.py --exe build\windows-vs2022-debug\Debug\EngineApp.exe --scene data\scenes\veyra_reach_pilot.scene.json --renderer gdi --ui-mode playtest --capture-frame build\captures\veyra-reach-pilot-runtime-smoke.bmp --report-json build\runtime\veyra-reach-pilot-smoke-report.json` passed.
+- CONFIRMED: GREEN `python tools\runtime_scene_smoke.py --exe build\windows-vs2022-debug\Debug\EngineApp.exe --scene data\scenes\veyra_reach_pilot.scene.json --ui-mode debug --report-json build\runtime\veyra-reach-pilot-debug-smoke-report.json` passed.
+
+Remaining limits:
+
+- This does not make Veyra a playable world, terrain pass, road system, art target, or scene architecture rewrite.
+- `SandboxLayer` still owns render orchestration, player/camera/vehicle draw, debug overlays, scene loading, and Ferry Office regression behavior.
+- The split only answers what role-based scene geometry/cues may be submitted; it intentionally leaves actual drawing code in the existing functions.
+- The next goal should be the last small architecture extraction before a stop/continue decision on whether more `SandboxLayer` splitting is still paying for itself.
+
+Validation commands:
+
+- GREEN: `git status --short --branch`: clean before work on `main...origin/main`.
+- GREEN: `git branch --show-current`: `main`.
+- GREEN: `python tools\status_report.py`: passed.
+- GREEN: `scripts\doctor.ps1`: passed with expected optional PATH warnings.
+- GREEN: `scripts\configure.ps1`: passed.
+- GREEN: `scripts\build.ps1`: passed.
+- GREEN: `scripts\verify.ps1`: passed before changes.
+- RED: `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: missing `game/SceneRenderSurface.h` before implementation.
+- GREEN: `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`.
+- GREEN: `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`.
+- GREEN: `python tests\test_runtime_scene_smoke.py`.
+- GREEN: `cmake --build --preset windows-vs2022-debug --target EngineCoreTests EngineApp`.
+- GREEN: `python tools\runtime_scene_smoke.py --exe build\windows-vs2022-debug\Debug\EngineApp.exe --scene data\scenes\veyra_reach_pilot.scene.json --renderer gdi --ui-mode playtest --capture-frame build\captures\veyra-reach-pilot-runtime-smoke.bmp --report-json build\runtime\veyra-reach-pilot-smoke-report.json`.
+- GREEN: `python tools\runtime_scene_smoke.py --exe build\windows-vs2022-debug\Debug\EngineApp.exe --scene data\scenes\veyra_reach_pilot.scene.json --ui-mode debug --report-json build\runtime\veyra-reach-pilot-debug-smoke-report.json`.
+- GREEN: final `scripts\verify.ps1` after this status update: passed; CTest 12/12 and standard scene/tool/runtime validation passed.
+
+Next recommended goal:
+
+```text
+/goal Scene runtime package facade + stop/continue gate dla Tidebreak w C:\Users\Marcin\Documents\New project.
+
+Cel:
+Po policy/text/guidance/render-submission splitach nie isc automatycznie w kolejny mikrosplit. Zrobic jeden porzadkujacy facade/contract dla scene runtime decisions, ktory zbiera `SceneRuntimePolicy`, `SceneRuntimeSurface`, `SceneGuidanceSurface` i `SceneRenderSurface` za mala powierzchnia uzywana przez `SandboxLayer`, a potem zapisac decyzje stop/continue: czy dalsze wydzielanie z `SandboxLayer` ma jeszcze sens przed pierwszym prawdziwym target-slice/world substrate goalem.
+
+Dlaczego:
+Ostatnie goal'e rozdzielily kilka konkretnych decyzji, ale `SandboxLayer` nadal buduje kazdy seam osobno. To grozi nowa warstwa rozproszonych helperow zamiast realnej powierzchni runtime dla Veyra/przyszlych slice'ow. Nastepny krok powinien sprawdzic, czy te seamy skladaja sie w jeden maly kontrakt, i zatrzymac architektoniczne dlubanie, jesli nie ma kolejnego dowodu.
+
+Zakres:
+- Dodaj maly facade/context, np. `SceneRuntimePackage` albo rownowazny modul w `src/game`.
+- Nie przenos samego rysowania, assetow, inputu, kamery, pojazdow ani misji.
+- `SandboxLayer` ma wolac jedna powierzchnie decyzji tam, gdzie dzis osobno buduje policy/text/guidance/render plan.
+- Dodaj testy dla Ferry Office regression-testbed, Veyra target-slice scaffold i fallback/no-loaded-scene.
+- Zapisz w `docs/STATUS.md` decyzje: kontynuowac extraction czy przejsc do nastepnego realnego target-system goalu.
+
+Non-goals:
+- Nie dodawaj contentu, terenu, road systemu, asset passu, misji, NPC, edytora, HUD polishu, vehicle/Jolt work ani renderer rewrite.
+- Nie przepisuj calego `SandboxLayer`.
+- Nie rob kolejnego splitu bez jawnej decyzji stop/continue.
+
+Walidacja:
+- RED/GREEN `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`
+- `python tests\test_runtime_scene_smoke.py`
+- Veyra playtest/debug runtime smoke
+- `scripts\verify.ps1`
+```
+
 ## Scene Guidance Render-Role Split (2026-05-17)
 
 Goal:

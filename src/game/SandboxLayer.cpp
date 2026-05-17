@@ -598,34 +598,40 @@ void SandboxLayer::onUpdate(double deltaSeconds, const engine::InputState& input
 void SandboxLayer::onRender(engine::IRenderer& renderer)
 {
     const bool fullDebug = m_uiMode == engine::UiMode::Debug;
+    const SceneRenderSubmissionPlan renderPlan = buildSceneRenderSubmissionPlan();
     renderer.setDebugCamera(m_camera.debugCamera());
     if (fullDebug) {
         renderer.drawDebugGridAndAxes();
     }
-    if (m_sceneDefinitionLoaded) {
+    if (renderPlan.drawsSceneAuthoredVisualPlaceholders) {
         drawSceneVisualPlaceholders(renderer);
-    } else {
+    }
+    if (renderPlan.drawsFallbackFerryOfficeMoodBase) {
         DrawFerryOfficeMoodBase(renderer, m_scene.world().floorHeight());
         DrawVehicleServiceYardBase(renderer, m_scene.world().floorHeight());
         DrawDockRoadBase(renderer, m_scene.world().floorHeight());
     }
-    drawStaticMeshDebug(renderer);
+    if (renderPlan.drawsSceneAuthoredMeshes) {
+        drawStaticMeshDebug(renderer);
+    }
     if (fullDebug) {
         renderer.drawDebugLine({-12.0f, m_scene.world().floorHeight(), -12.0f}, {12.0f, m_scene.world().floorHeight(), -12.0f}, {0.35f, 0.9f, 0.55f, 1.0f});
         renderer.drawDebugLine({12.0f, m_scene.world().floorHeight(), -12.0f}, {12.0f, m_scene.world().floorHeight(), 12.0f}, {0.35f, 0.9f, 0.55f, 1.0f});
         renderer.drawDebugLine({12.0f, m_scene.world().floorHeight(), 12.0f}, {-12.0f, m_scene.world().floorHeight(), 12.0f}, {0.35f, 0.9f, 0.55f, 1.0f});
         renderer.drawDebugLine({-12.0f, m_scene.world().floorHeight(), 12.0f}, {-12.0f, m_scene.world().floorHeight(), -12.0f}, {0.35f, 0.9f, 0.55f, 1.0f});
-        const bool routeOpened = m_scene.worldState().isFlagSet(WorldFlag::RouteOpened);
-        for (const StaticCollider& collider : m_scene.world().colliders()) {
-            renderer.drawDebugSolidBox(collider.bounds.center, collider.bounds.halfExtents, ColliderSolidColor(collider, routeOpened));
-            renderer.drawDebugBox(collider.bounds.center, collider.bounds.halfExtents, ColliderWireColor(collider, routeOpened));
+        if (renderPlan.drawsDebugColliders) {
+            const bool routeOpened = m_scene.worldState().isFlagSet(WorldFlag::RouteOpened);
+            for (const StaticCollider& collider : m_scene.world().colliders()) {
+                renderer.drawDebugSolidBox(collider.bounds.center, collider.bounds.halfExtents, ColliderSolidColor(collider, routeOpened));
+                renderer.drawDebugBox(collider.bounds.center, collider.bounds.halfExtents, ColliderWireColor(collider, routeOpened));
+            }
         }
     }
     if (!m_vehicleAvailable || !m_vehicle.state().occupied) {
         drawPlayerPresentation(renderer);
     }
     if (fullDebug) {
-        if (m_runtimePolicy.drawsWorldStateDebug) {
+        if (renderPlan.drawsFerryOfficeWorldStateCues) {
             drawWorldStateDebug(renderer);
         }
         drawSliceDebug(renderer);
@@ -881,6 +887,11 @@ void SandboxLayer::toggleDebugUiMode()
     m_nonDebugUiMode = m_uiMode;
     m_uiMode = engine::UiMode::Debug;
     engine::Logger::info("UI mode: debug");
+}
+
+SceneRenderSubmissionPlan SandboxLayer::buildSceneRenderSubmissionPlan() const
+{
+    return BuildSceneRenderSubmissionPlan(m_sceneDefinitionLoaded, m_runtimePolicy);
 }
 
 SceneGuidanceContext SandboxLayer::buildSceneGuidanceContext() const

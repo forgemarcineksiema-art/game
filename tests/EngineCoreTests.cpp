@@ -27,6 +27,7 @@
 #include "game/SceneGuidanceSurface.h"
 #include "game/SceneLoader.h"
 #include "game/ScenePresentation.h"
+#include "game/SceneRenderSurface.h"
 #include "game/SceneRuntimePolicy.h"
 #include "game/SceneRuntimeSurface.h"
 #include "game/ThirdPersonCamera.h"
@@ -1412,6 +1413,88 @@ void TestSceneGuidanceSurfaceKeepsFerryOfficeActiveGuidanceScoped()
     Expect(!ShouldDrawVehicleGuidance(context),
         "TestSceneGuidanceSurfaceKeepsFerryOfficeActiveGuidanceScoped",
         "Vehicle guidance should be hidden when no vehicle is available.");
+}
+
+void TestSceneRenderSurfacePlansFallbackFerryOfficeSubmission()
+{
+    const SceneRuntimePolicy policy = BuildSceneRuntimePolicy(false, SceneDefinition {});
+    const SceneRenderSubmissionPlan plan = BuildSceneRenderSubmissionPlan(false, policy);
+
+    Expect(plan.drawsFallbackFerryOfficeMoodBase,
+        "TestSceneRenderSurfacePlansFallbackFerryOfficeSubmission",
+        "Fallback runtime should draw the built-in Ferry Office mood base.");
+    Expect(!plan.drawsSceneAuthoredVisualPlaceholders,
+        "TestSceneRenderSurfacePlansFallbackFerryOfficeSubmission",
+        "Fallback runtime should not claim scene-authored visual placeholder submission.");
+    Expect(!plan.drawsSceneAuthoredMeshes,
+        "TestSceneRenderSurfacePlansFallbackFerryOfficeSubmission",
+        "Fallback runtime should not claim scene-authored mesh submission.");
+    Expect(plan.drawsDebugColliders,
+        "TestSceneRenderSurfacePlansFallbackFerryOfficeSubmission",
+        "Fallback debug rendering should preserve collider visualization.");
+    Expect(plan.drawsFerryOfficeWorldStateCues,
+        "TestSceneRenderSurfacePlansFallbackFerryOfficeSubmission",
+        "Fallback Ferry Office behavior should preserve world-state visual cues.");
+}
+
+void TestSceneRenderSurfacePlansLoadedFerryOfficeRegressionSubmission()
+{
+    const SceneLoadResult ferry = LoadSceneDefinition(DefaultScenePathForTests());
+    Expect(ferry.ok(),
+        "TestSceneRenderSurfacePlansLoadedFerryOfficeRegressionSubmission",
+        "Default Ferry Office scene should load before render-surface planning.");
+    if (!ferry.ok()) {
+        return;
+    }
+
+    const SceneRuntimePolicy policy = BuildSceneRuntimePolicy(true, ferry.scene);
+    const SceneRenderSubmissionPlan plan = BuildSceneRenderSubmissionPlan(true, policy);
+
+    Expect(!plan.drawsFallbackFerryOfficeMoodBase,
+        "TestSceneRenderSurfacePlansLoadedFerryOfficeRegressionSubmission",
+        "Loaded Ferry Office regression scene should use authored scene geometry instead of fallback mood base.");
+    Expect(plan.drawsSceneAuthoredVisualPlaceholders,
+        "TestSceneRenderSurfacePlansLoadedFerryOfficeRegressionSubmission",
+        "Loaded Ferry Office regression scene should submit authored visual placeholders.");
+    Expect(plan.drawsSceneAuthoredMeshes,
+        "TestSceneRenderSurfacePlansLoadedFerryOfficeRegressionSubmission",
+        "Loaded Ferry Office regression scene should submit authored mesh instances.");
+    Expect(plan.drawsDebugColliders,
+        "TestSceneRenderSurfacePlansLoadedFerryOfficeRegressionSubmission",
+        "Loaded Ferry Office debug rendering should keep collider visualization.");
+    Expect(plan.drawsFerryOfficeWorldStateCues,
+        "TestSceneRenderSurfacePlansLoadedFerryOfficeRegressionSubmission",
+        "Loaded Ferry Office regression scene should keep Ferry Office world-state cues.");
+}
+
+void TestSceneRenderSurfacePlansTargetSliceNeutralSubmission()
+{
+    const SceneLoadResult pilot = LoadSceneDefinition("data/scenes/veyra_reach_pilot.scene.json");
+    Expect(pilot.ok(),
+        "TestSceneRenderSurfacePlansTargetSliceNeutralSubmission",
+        "Veyra pilot scene should load before render-surface planning.");
+    if (!pilot.ok()) {
+        return;
+    }
+
+    const SceneRuntimePolicy policy = BuildSceneRuntimePolicy(true, pilot.scene);
+    const SceneRenderSubmissionPlan plan = BuildSceneRenderSubmissionPlan(true, policy);
+
+    Expect(!plan.drawsFallbackFerryOfficeMoodBase,
+        "TestSceneRenderSurfacePlansTargetSliceNeutralSubmission",
+        "Target-slice scaffold should not inherit Ferry Office fallback mood base.");
+    Expect(plan.drawsSceneAuthoredVisualPlaceholders,
+        "TestSceneRenderSurfacePlansTargetSliceNeutralSubmission",
+        "Target-slice scaffold should submit its authored visual placeholders.");
+    Expect(plan.drawsSceneAuthoredMeshes,
+        "TestSceneRenderSurfacePlansTargetSliceNeutralSubmission",
+        "Target-slice scaffold should use the normal authored mesh submission path when mesh data exists.");
+    Expect(plan.drawsDebugColliders,
+        "TestSceneRenderSurfacePlansTargetSliceNeutralSubmission",
+        "Target-slice debug rendering should still allow authored collider visualization.");
+    Expect(!plan.drawsFerryOfficeWorldStateCues,
+        "TestSceneRenderSurfacePlansTargetSliceNeutralSubmission",
+        "Target-slice scaffold should not draw Ferry Office world-state cues.");
 }
 
 void TestNeutralSceneRuntimeSurfaceBuildsPresentationWithoutFerryOfficeTerms()
@@ -6012,6 +6095,9 @@ int main()
     TestSceneRuntimePolicyTreatsUnknownLoadedSceneAsNeutral();
     TestSceneGuidanceSurfaceShowsAllAuthoredNeutralMarkers();
     TestSceneGuidanceSurfaceKeepsFerryOfficeActiveGuidanceScoped();
+    TestSceneRenderSurfacePlansFallbackFerryOfficeSubmission();
+    TestSceneRenderSurfacePlansLoadedFerryOfficeRegressionSubmission();
+    TestSceneRenderSurfacePlansTargetSliceNeutralSubmission();
     TestNeutralSceneRuntimeSurfaceBuildsPresentationWithoutFerryOfficeTerms();
     TestNeutralSceneRuntimeSurfaceBuildsDebugWithoutFerryOfficeTelemetry();
     TestSceneLoaderLoadsV018VisualIdentityPropKit();

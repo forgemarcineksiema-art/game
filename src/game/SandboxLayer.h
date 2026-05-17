@@ -8,6 +8,7 @@
 #include "game/PrototypeScene.h"
 #include "game/SceneDefinition.h"
 #include "game/SceneGuidanceSurface.h"
+#include "game/SceneRenderSurface.h"
 #include "game/SceneRuntimePolicy.h"
 #include "game/SceneRuntimeSurface.h"
 #include "game/ThirdPersonCamera.h"
@@ -40,6 +41,7 @@ private:
     std::string buildPresentationText(bool minimal) const;
     NeutralSceneRuntimeView buildNeutralSceneRuntimeView() const;
     SceneGuidanceContext buildSceneGuidanceContext() const;
+    SceneRenderSubmissionPlan buildSceneRenderSubmissionPlan() const;
     void toggleDebugUiMode();
     void drawInteractionDebug(engine::IRenderer& renderer);
     void drawTraversalDebug(engine::IRenderer& renderer);
