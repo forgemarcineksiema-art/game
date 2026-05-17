@@ -40,6 +40,7 @@ struct CollisionResult {
     engine::Vec3 velocity;
     engine::Vec3 lastPush;
     engine::Vec3 lastNormal;
+    std::string lastColliderName;
     bool grounded = false;
     int hitCount = 0;
 };

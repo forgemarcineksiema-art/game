@@ -21,6 +21,7 @@ SCENE_ID = "veyra-reach-pilot"
 OBJECTIVE_ID = "inspect-pilot-service-marker"
 FOCUS_NAME = "Pilot Service Marker"
 FOCUS_PROMPT = "Inspect Pilot Slice Marker"
+CONTACT_COLLIDER_NAME = "pilot-road-edge-collider"
 FORBIDDEN_TERMS = runtime_scene_smoke.DEFAULT_FORBIDDEN_TARGET_SLICE_TERMS + ["Ferry Office"]
 
 
@@ -43,6 +44,13 @@ def _require(condition: bool, message: str) -> None:
 
 def _json_text(report: dict[str, Any]) -> str:
     return json.dumps(report, sort_keys=True)
+
+
+def _vector_length(vector: dict[str, Any]) -> float:
+    x = float(vector.get("x", 0.0))
+    y = float(vector.get("y", 0.0))
+    z = float(vector.get("z", 0.0))
+    return (x * x + y * y + z * z) ** 0.5
 
 
 def load_and_validate_report(report_path: pathlib.Path) -> dict[str, Any]:
@@ -72,6 +80,30 @@ def load_and_validate_report(report_path: pathlib.Path) -> dict[str, Any]:
     _require(focus.get("name") == FOCUS_NAME, f"Unexpected target-slice focus name: {focus.get('name')}")
     _require(focus.get("prompt") == FOCUS_PROMPT, f"Unexpected target-slice focus prompt: {focus.get('prompt')}")
     _require(float(focus.get("distance", 99.0)) > 0.0, "Target-slice focus distance was not recorded.")
+
+    contact = report.get("contact")
+    _require(isinstance(contact, dict), "Target-slice QA report is missing contact evidence.")
+    _require(contact.get("attempted") is True, "Target-slice QA report did not attempt authored contact.")
+    _require(contact.get("hit") is True, "Target-slice QA report did not hit the authored contact collider.")
+    _require(
+        contact.get("colliderName") == CONTACT_COLLIDER_NAME,
+        f"Unexpected target-slice contact collider: {contact.get('colliderName')}",
+    )
+    frames_to_contact = int(contact.get("framesToContact", -1))
+    frames_to_recovery = int(contact.get("framesToRecovery", -1))
+    _require(frames_to_contact > 0, "Target-slice QA report did not record frames to contact.")
+    _require(contact.get("recoveredControl") is True, "Target-slice QA report did not prove recovery after contact.")
+    _require(
+        frames_to_recovery > frames_to_contact,
+        "Target-slice QA report recovery timing did not follow contact.",
+    )
+    _require(int(contact.get("hitCount", 0)) > 0, "Target-slice QA report did not record a contact hit count.")
+    _require(_vector_length(contact.get("push", {})) > 0.0, "Target-slice contact push vector was not recorded.")
+    _require(_vector_length(contact.get("normal", {})) > 0.0, "Target-slice contact normal vector was not recorded.")
+    _require(
+        frames_to_focus >= frames_to_recovery,
+        "Target-slice focus was acquired before contact recovery was proven.",
+    )
 
     interaction = report.get("interaction", {})
     _require(interaction.get("triggered") is True, "Target-slice QA report did not trigger interaction input.")
@@ -126,9 +158,12 @@ def run_qa(exe: pathlib.Path, scene: pathlib.Path, report_path: pathlib.Path) ->
         raise RuntimeError(f"Target-slice objective QA command failed with exit code {result.returncode}.")
 
     report = load_and_validate_report(report_path)
+    contact = report["contact"]
     print(
         "Target-slice objective QA passed: "
         f"scene={report['scene']['id']}, "
+        f"contact={contact['colliderName']}@{contact['framesToContact']}, "
+        f"recovery={contact['framesToRecovery']}, "
         f"framesToFocus={report['input']['framesToFocus']}, "
         f"framesToInteract={report['input']['framesToInteract']}, "
         f"report={report_path}"

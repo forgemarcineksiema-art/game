@@ -74,7 +74,7 @@ Use the target-slice objective QA gate to prove the Veyra marker can be reached 
 python tools/target_slice_objective_qa.py --exe build/windows-vs2022-debug/Debug/EngineApp.exe --scene data/scenes/veyra_reach_pilot.scene.json
 ```
 
-This gate must report recorded input script name, frames to focus, frames to interact, focus name/prompt, interaction result, and `targetObjective=inspect-pilot-service-marker` completion evidence. It is not proof that Veyra is playable as a world.
+This gate must report recorded input script name, authored `pilot-road-edge-collider` contact, contact push/normal, recovery timing, frames to focus, frames to interact, focus name/prompt, interaction result, and `targetObjective=inspect-pilot-service-marker` completion evidence. It is not proof that Veyra is playable as a world.
 
 Expected current roles:
 

@@ -4,6 +4,8 @@
 #include "engine/math/Math.h"
 #include "game/TraversalSystem.h"
 
+#include <string>
+
 class PrototypeWorld;
 
 struct PlayerControllerSettings {
@@ -25,6 +27,7 @@ struct PlayerState {
     engine::Vec3 velocity;
     engine::Vec3 lastCollisionPush;
     engine::Vec3 lastCollisionNormal;
+    std::string lastCollisionColliderName;
     float facingYawRadians = 0.0f;
     bool grounded = true;
     bool sprinting = false;

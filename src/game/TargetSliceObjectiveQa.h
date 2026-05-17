@@ -12,6 +12,16 @@ struct TargetSliceObjectiveQaResult {
     std::filesystem::path scenePath;
     std::filesystem::path reportPath;
     std::string inputScriptName = "recorded-veyra-target-objective-v1";
+    bool contactAttempted = false;
+    bool contactHit = false;
+    bool contactRecoveredControl = false;
+    int framesToContact = -1;
+    int framesToRecovery = -1;
+    int contactHitCount = 0;
+    std::string contactColliderName;
+    engine::Vec3 contactPosition;
+    engine::Vec3 contactPush;
+    engine::Vec3 contactNormal;
     bool focusAcquired = false;
     bool interactionTriggered = false;
     bool objectiveComplete = false;

@@ -19,9 +19,12 @@ constexpr std::string_view ScenarioName = "veyra-target-objective-acquisition";
 constexpr std::string_view InputScriptName = "recorded-veyra-target-objective-v1";
 constexpr std::string_view SchemaName = "v0.99-target-slice-objective-acquisition-qa";
 constexpr float FixedStepSeconds = 1.0f / 60.0f;
+constexpr int ContactBudgetFrames = 140;
 constexpr int FocusBudgetFrames = 240;
 constexpr float WaypointArrivalDistance = 0.22f;
+constexpr float RecoveryDistance = 0.35f;
 constexpr std::string_view ExpectedSceneId = "veyra-reach-pilot";
+constexpr std::string_view ContactColliderName = "pilot-road-edge-collider";
 
 const Interactable* FindInteractableByName(const PrototypeScene& scene, std::string_view name)
 {
@@ -40,6 +43,28 @@ std::vector<engine::Vec3> BuildRecordedRoute(const SceneDefinition& scene, const
     }
 
     return {scene.playerStart.position, target.position};
+}
+
+nlohmann::json Vec3Json(engine::Vec3 value)
+{
+    return {
+        {"x", value.x},
+        {"y", value.y},
+        {"z", value.z},
+    };
+}
+
+void MovePlayerToward(PlayerController& player, engine::Vec3 destination)
+{
+    const engine::Vec3 playerPosition = player.state().position;
+    const engine::Vec3 delta = {destination.x - playerPosition.x, 0.0f, destination.z - playerPosition.z};
+    const engine::Vec3 direction = engine::Normalize(delta);
+    engine::InputState input;
+    input.moveForward = engine::Length(direction) > 0.0f ? 1.0f : 0.0f;
+    const float cameraYawRadians = input.moveForward > 0.0f
+        ? engine::YawFromDirection(direction)
+        : player.state().facingYawRadians;
+    player.update(FixedStepSeconds, input, cameraYawRadians, nullptr);
 }
 
 bool WriteReport(const TargetSliceObjectiveQaResult& result)
@@ -64,6 +89,19 @@ bool WriteReport(const TargetSliceObjectiveQaResult& result)
                 {"framesToFocus", result.framesToFocus},
                 {"framesToInteract", result.framesToInteract},
             }},
+        {"contact",
+            {
+                {"attempted", result.contactAttempted},
+                {"hit", result.contactHit},
+                {"recoveredControl", result.contactRecoveredControl},
+                {"colliderName", result.contactColliderName},
+                {"framesToContact", result.framesToContact},
+                {"framesToRecovery", result.framesToRecovery},
+                {"hitCount", result.contactHitCount},
+                {"position", Vec3Json(result.contactPosition)},
+                {"push", Vec3Json(result.contactPush)},
+                {"normal", Vec3Json(result.contactNormal)},
+            }},
         {"focus",
             {
                 {"acquired", result.focusAcquired},
@@ -82,12 +120,7 @@ bool WriteReport(const TargetSliceObjectiveQaResult& result)
                 {"objectiveComplete", result.objectiveComplete},
                 {"completionSummary", result.completionSummary},
                 {"completionEventText", result.completionEventText},
-                {"playerPosition",
-                    {
-                        {"x", result.finalPlayerPosition.x},
-                        {"y", result.finalPlayerPosition.y},
-                        {"z", result.finalPlayerPosition.z},
-                    }},
+                {"playerPosition", Vec3Json(result.finalPlayerPosition)},
                 {"playerYawDegrees", engine::Degrees(result.finalPlayerYawRadians)},
             }},
         {"error", result.error},
@@ -151,14 +184,49 @@ TargetSliceObjectiveQaResult RunTargetSliceObjectiveAcquisitionQa(
         WriteReport(result);
         return result;
     }
+    const StaticCollider* contactCollider = scene.world().colliderByName(ContactColliderName);
+    if (!contactCollider) {
+        Fail(result, "Target-slice objective contact collider was not found.");
+        WriteReport(result);
+        return result;
+    }
 
     PlayerController player;
     player.setWorld(&scene.world());
     player.setPosition(loadedScene.scene.playerStart.position);
     player.setFacingYawRadians(loadedScene.scene.playerStart.yawRadians);
 
+    result.contactAttempted = true;
+    const engine::Vec3 contactProbeDestination = {
+        contactCollider->bounds.center.x + contactCollider->bounds.halfExtents.x + player.settings().radius + 0.25f,
+        0.0f,
+        -0.80f,
+    };
+    for (int frame = 0; frame < ContactBudgetFrames; ++frame) {
+        MovePlayerToward(player, contactProbeDestination);
+        const PlayerState& state = player.state();
+        if (state.lastCollisionHitCount > 0 && state.lastCollisionColliderName == ContactColliderName) {
+            result.contactHit = true;
+            result.framesToContact = frame + 1;
+            result.contactHitCount = state.lastCollisionHitCount;
+            result.contactColliderName = state.lastCollisionColliderName;
+            result.contactPosition = state.position;
+            result.contactPush = state.lastCollisionPush;
+            result.contactNormal = state.lastCollisionNormal;
+            break;
+        }
+    }
+    if (!result.contactHit) {
+        Fail(result, "Recorded live input did not hit the authored target-slice road-edge collider.");
+        result.finalPlayerPosition = player.state().position;
+        result.finalPlayerYawRadians = player.state().facingYawRadians;
+        WriteReport(result);
+        return result;
+    }
+
     std::vector<engine::Vec3> waypoints = BuildRecordedRoute(loadedScene.scene, *target);
     std::size_t waypointIndex = waypoints.size() > 1 ? 1 : 0;
+    const int framesBeforeObjectiveRoute = result.framesToContact;
 
     for (int frame = 0; frame < FocusBudgetFrames; ++frame) {
         const engine::Vec3 playerPosition = player.state().position;
@@ -166,7 +234,7 @@ TargetSliceObjectiveQaResult RunTargetSliceObjectiveAcquisitionQa(
             scene.interactions().updateFocus(playerPosition, engine::ForwardFromYaw(player.state().facingYawRadians));
         if (focus.hasFocus && focus.name == target->name) {
             result.focusAcquired = true;
-            result.framesToFocus = frame;
+            result.framesToFocus = framesBeforeObjectiveRoute + frame;
             result.focusName = focus.name;
             result.focusPrompt = focus.prompt;
             result.focusDistance = focus.distance;
@@ -180,13 +248,13 @@ TargetSliceObjectiveQaResult RunTargetSliceObjectiveAcquisitionQa(
             ++waypointIndex;
         }
 
-        const engine::Vec3 direction = engine::Normalize(delta);
-        engine::InputState input;
-        input.moveForward = engine::Length(direction) > 0.0f ? 1.0f : 0.0f;
-        const float cameraYawRadians = input.moveForward > 0.0f
-            ? engine::YawFromDirection(direction)
-            : player.state().facingYawRadians;
-        player.update(FixedStepSeconds, input, cameraYawRadians, nullptr);
+        MovePlayerToward(player, destination);
+        if (!result.contactRecoveredControl
+            && engine::Length(player.state().position - result.contactPosition) > RecoveryDistance
+            && player.state().lastCollisionHitCount == 0) {
+            result.contactRecoveredControl = true;
+            result.framesToRecovery = framesBeforeObjectiveRoute + frame + 1;
+        }
     }
 
     if (!result.focusAcquired) {
@@ -216,6 +284,8 @@ TargetSliceObjectiveQaResult RunTargetSliceObjectiveAcquisitionQa(
     result.finalPlayerPosition = player.state().position;
     result.finalPlayerYawRadians = player.state().facingYawRadians;
     result.passed = result.focusAcquired
+        && result.contactHit
+        && result.contactRecoveredControl
         && result.interactionTriggered
         && result.objectiveComplete
         && result.completionSummary.find("targetObjective=" + result.objectiveId) != std::string::npos;

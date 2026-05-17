@@ -318,6 +318,7 @@ engine::Vec3 PrototypeWorld::resolveCollider(const PlayerCollisionProxy& proxy, 
 
             result.lastPush = position - proxy.position;
             result.lastNormal = normal;
+            result.lastColliderName = collider.name;
             result.hitCount += 1;
         } else {
             const float minPush = std::min({pushLeft, pushRight, pushBack, pushForward});

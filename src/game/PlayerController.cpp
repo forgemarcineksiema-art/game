@@ -66,6 +66,7 @@ void PlayerController::update(float deltaSeconds, const engine::InputState& inpu
         m_state.grounded = false;
         m_state.lastCollisionPush = {};
         m_state.lastCollisionNormal = {};
+        m_state.lastCollisionColliderName.clear();
         m_state.lastCollisionHitCount = 0;
     }
 
@@ -100,6 +101,7 @@ void PlayerController::update(float deltaSeconds, const engine::InputState& inpu
                 m_state.grounded = collision.grounded;
                 m_state.lastCollisionPush = collision.lastPush;
                 m_state.lastCollisionNormal = collision.lastNormal;
+                m_state.lastCollisionColliderName = collision.lastColliderName;
                 m_state.lastCollisionHitCount = collision.hitCount;
             } else {
                 if (m_state.position.y <= 0.0f) {
@@ -108,6 +110,7 @@ void PlayerController::update(float deltaSeconds, const engine::InputState& inpu
                 m_state.grounded = true;
                 m_state.lastCollisionPush = {};
                 m_state.lastCollisionNormal = {};
+                m_state.lastCollisionColliderName.clear();
                 m_state.lastCollisionHitCount = 0;
             }
             m_state.traversalMode = PlayerTraversalMode::Normal;
@@ -167,6 +170,7 @@ void PlayerController::update(float deltaSeconds, const engine::InputState& inpu
         m_state.grounded = collision.grounded;
         m_state.lastCollisionPush = collision.lastPush;
         m_state.lastCollisionNormal = collision.lastNormal;
+        m_state.lastCollisionColliderName = collision.lastColliderName;
         m_state.lastCollisionHitCount = collision.hitCount;
     } else if (m_state.position.y <= 0.0f) {
         m_state.position.y = 0.0f;
@@ -174,6 +178,7 @@ void PlayerController::update(float deltaSeconds, const engine::InputState& inpu
         m_state.grounded = true;
         m_state.lastCollisionPush = {};
         m_state.lastCollisionNormal = {};
+        m_state.lastCollisionColliderName.clear();
         m_state.lastCollisionHitCount = 0;
     }
 }

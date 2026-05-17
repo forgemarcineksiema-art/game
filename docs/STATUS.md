@@ -2,6 +2,64 @@
 
 Last updated: 2026-05-17
 
+## Target-Slice Player-World Contact Gate (2026-05-17)
+
+Goal:
+
+- Strengthen the Veyra target-slice QA so it proves authored player-world contact before objective completion.
+- Keep the work inside the existing Veyra QA surface; do not add terrain, assets, missions, NPCs, vehicles, Jolt work, renderer work, or a broad `SandboxLayer` pass.
+
+Scope:
+
+- Added minimal collision telemetry: `CollisionResult::lastColliderName` and `PlayerState::lastCollisionColliderName`.
+- Extended `TargetSliceObjectiveQa` so the recorded route first drives into `pilot-road-edge-collider`, records hit/push/normal/timing, recovers control, then reaches `Pilot Service Marker`.
+- Extended `tools\target_slice_objective_qa.py` and `tests\test_target_slice_objective_qa.py` so stale reports without contact/recovery evidence are rejected.
+- Updated the target-slice plan and `docs\WORLD_SLICE_AUTHORING.md`.
+
+Evidence:
+
+- CONFIRMED: Baseline `git status --short --branch` was clean on `main...origin/main`.
+- CONFIRMED: Baseline `git branch --show-current` returned `main`.
+- CONFIRMED: Baseline `python tools\status_report.py`, `scripts\doctor.ps1`, `scripts\configure.ps1`, and `scripts\build.ps1` passed.
+- CONFIRMED: RED `python tests\test_target_slice_objective_qa.py` failed because stale reports missing `contact` and reports without recovery were still accepted.
+- CONFIRMED: RED `cmake --build --preset windows-vs2022-debug --target EngineCoreTests` failed because `TargetSliceObjectiveQaResult` did not expose contact fields.
+- CONFIRMED: GREEN `python tests\test_target_slice_objective_qa.py` passed 5 tests after implementation.
+- CONFIRMED: GREEN `cmake --build --preset windows-vs2022-debug --target EngineCoreTests EngineApp` passed.
+- CONFIRMED: GREEN `build\windows-vs2022-debug\Debug\EngineCoreTests.exe` passed.
+- CONFIRMED: GREEN `python tools\target_slice_objective_qa.py --exe build\windows-vs2022-debug\Debug\EngineApp.exe --scene data\scenes\veyra_reach_pilot.scene.json --report-json build\playthroughs\veyra-contact-objective-report.json` passed.
+- CONFIRMED: Fresh report evidence: contact `pilot-road-edge-collider`, `framesToContact=52`, `framesToRecovery=58`, `hitCount=1`, push `(-0.031, 0.000, 0.000)`, normal `(-1.000, 0.000, 0.000)`, focus `Pilot Service Marker`, `framesToFocus=107`, `framesToInteract=108`, completion `targetObjective=inspect-pilot-service-marker`.
+- CONFIRMED: `Select-String` leakage check against the fresh report found no `Ferry Office`, `worldState`, `jobObjective`, `Job:`, `service gate`, or `Ferry Manifest` terms.
+- CONFIRMED: GREEN focused `ctest --preset windows-vs2022-debug --output-on-failure -R "TargetSliceObjectiveQa|EngineCoreTests"` passed, 3/3 tests.
+- CONFIRMED: GREEN final `scripts\verify.ps1` passed after implementation; CTest 14/14 passed including `TargetSliceObjectiveQaTests` and `TargetSliceObjectiveQaSmoke`.
+
+Remaining limits:
+
+- This still does not make Veyra a playable world.
+- It proves one authored collider response and one recovery path only.
+- It does not prove terrain variety, meaningful world consequence, character presence, broad navigation, production art, mission structure, or manual feel.
+- Collision telemetry now exposes the last resolved collider name for QA/debug evidence; it is not a generalized gameplay event system.
+
+Validation commands:
+
+- GREEN: `git status --short --branch`.
+- GREEN: `git branch --show-current`.
+- GREEN: `python tools\status_report.py`.
+- GREEN: `scripts\doctor.ps1`.
+- GREEN: `scripts\configure.ps1`.
+- GREEN: `scripts\build.ps1`.
+- RED: `python tests\test_target_slice_objective_qa.py`: missing contact/recovery validation before implementation.
+- RED: `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: missing contact fields before implementation.
+- GREEN: `cmake --build --preset windows-vs2022-debug --target EngineCoreTests EngineApp`.
+- GREEN: `python tests\test_target_slice_objective_qa.py`.
+- GREEN: `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`.
+- GREEN: `python tools\target_slice_objective_qa.py --exe build\windows-vs2022-debug\Debug\EngineApp.exe --scene data\scenes\veyra_reach_pilot.scene.json --report-json build\playthroughs\veyra-contact-objective-report.json`.
+- GREEN: `ctest --preset windows-vs2022-debug --output-on-failure -R "TargetSliceObjectiveQa|EngineCoreTests"`.
+- GREEN: `scripts\verify.ps1`.
+
+Next recommended goal:
+
+Do not expand content yet. The next useful step is a tiny target-slice local feedback/readability gate: make the same Veyra runtime surface communicate contact/objective state to a player-facing debug/playtest surface without inheriting Ferry Office job language.
+
 ## Target-Slice Live Objective Acquisition Gate (2026-05-17)
 
 Goal:

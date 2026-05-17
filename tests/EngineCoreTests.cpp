@@ -5197,6 +5197,27 @@ void TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesRepo
     Expect(result.focusAcquired,
         "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
         "The recorded input path should acquire focus through InteractionSystem.");
+    Expect(result.contactAttempted,
+        "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
+        "The recorded input path should intentionally test authored player-world contact.");
+    Expect(result.contactHit,
+        "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
+        "The recorded input path should hit the authored road-edge collider.");
+    Expect(result.contactRecoveredControl,
+        "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
+        "The recorded input path should recover control after road-edge contact.");
+    Expect(result.contactColliderName == "pilot-road-edge-collider",
+        "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
+        "The contact evidence should name the authored Veyra road-edge collider.");
+    Expect(result.framesToContact > 0 && result.framesToRecovery > result.framesToContact,
+        "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
+        "The report should show contact timing followed by recovery timing.");
+    Expect(result.contactHitCount > 0,
+        "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
+        "The contact evidence should expose a collision hit count.");
+    Expect(engine::Length(result.contactPush) > 0.0f && engine::Length(result.contactNormal) > 0.0f,
+        "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
+        "The contact evidence should expose non-zero push and normal vectors.");
     Expect(result.interactionTriggered,
         "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
         "The recorded input path should trigger interactPressed through InteractionSystem.");
@@ -5237,6 +5258,15 @@ void TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesRepo
         Expect(report["focus"]["name"] == "Pilot Service Marker",
             "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
             "The report should expose the focused authored marker.");
+        Expect(report["contact"]["hit"] == true,
+            "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
+            "The report should expose authored collider contact.");
+        Expect(report["contact"]["recoveredControl"] == true,
+            "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
+            "The report should expose recovery after authored collider contact.");
+        Expect(report["contact"]["colliderName"] == "pilot-road-edge-collider",
+            "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
+            "The report should name the authored Veyra road-edge collider.");
         Expect(report["final"]["objectiveComplete"] == true,
             "TestTargetSliceObjectiveAcquisitionQaCompletesThroughLiveInputAndWritesReport",
             "The report should expose final target objective completion.");
