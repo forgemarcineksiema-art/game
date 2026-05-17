@@ -28,6 +28,7 @@
 #include "game/SceneLoader.h"
 #include "game/ScenePresentation.h"
 #include "game/SceneRenderSurface.h"
+#include "game/SceneRuntimePackage.h"
 #include "game/SceneRuntimePolicy.h"
 #include "game/SceneRuntimeSurface.h"
 #include "game/ThirdPersonCamera.h"
@@ -1338,6 +1339,131 @@ void TestSceneRuntimePolicyTreatsUnknownLoadedSceneAsNeutral()
     Expect(policy.guidancePolicy == SceneGuidancePolicy::AllAuthored,
         "TestSceneRuntimePolicyTreatsUnknownLoadedSceneAsNeutral",
         "A loaded non-regression scene should use neutral authored guidance.");
+}
+
+void TestSceneRuntimePackageKeepsFallbackAsFerryOfficeSubmission()
+{
+    const SceneRuntimePackage package = BuildSceneRuntimePackage(false, SceneDefinition {});
+
+    Expect(package.policy.usesFerryOfficeBehavior,
+        "TestSceneRuntimePackageKeepsFallbackAsFerryOfficeSubmission",
+        "Fallback package should preserve Ferry Office behavior.");
+    Expect(!package.policy.usesNeutralPresentation,
+        "TestSceneRuntimePackageKeepsFallbackAsFerryOfficeSubmission",
+        "Fallback package should preserve Ferry Office presentation.");
+    Expect(package.policy.allowsFallbackVehicle,
+        "TestSceneRuntimePackageKeepsFallbackAsFerryOfficeSubmission",
+        "Fallback package should keep the fallback service-yard vehicle.");
+    Expect(package.renderSubmission.drawsFallbackFerryOfficeMoodBase,
+        "TestSceneRuntimePackageKeepsFallbackAsFerryOfficeSubmission",
+        "Fallback package should draw the built-in Ferry Office mood base.");
+    Expect(!package.renderSubmission.drawsSceneAuthoredVisualPlaceholders,
+        "TestSceneRuntimePackageKeepsFallbackAsFerryOfficeSubmission",
+        "Fallback package should not claim authored placeholder submission.");
+    Expect(package.renderSubmission.drawsFerryOfficeWorldStateCues,
+        "TestSceneRuntimePackageKeepsFallbackAsFerryOfficeSubmission",
+        "Fallback package should keep Ferry Office world-state cues.");
+}
+
+void TestSceneRuntimePackageCombinesFerryOfficePolicyAndAuthoredSubmission()
+{
+    const SceneLoadResult ferry = LoadSceneDefinition(DefaultScenePathForTests());
+    Expect(ferry.ok(),
+        "TestSceneRuntimePackageCombinesFerryOfficePolicyAndAuthoredSubmission",
+        "Ferry Office fixture should load before package checks.");
+    if (!ferry.ok()) {
+        return;
+    }
+
+    const SceneRuntimePackage package = BuildSceneRuntimePackage(true, ferry.scene);
+
+    Expect(package.policy.usesFerryOfficeBehavior,
+        "TestSceneRuntimePackageCombinesFerryOfficePolicyAndAuthoredSubmission",
+        "Ferry Office package should preserve regression-testbed behavior.");
+    Expect(!package.policy.usesNeutralPresentation,
+        "TestSceneRuntimePackageCombinesFerryOfficePolicyAndAuthoredSubmission",
+        "Ferry Office package should not use neutral target-slice presentation.");
+    Expect(!package.renderSubmission.drawsFallbackFerryOfficeMoodBase,
+        "TestSceneRuntimePackageCombinesFerryOfficePolicyAndAuthoredSubmission",
+        "Loaded Ferry Office package should use authored scene geometry instead of fallback mood base.");
+    Expect(package.renderSubmission.drawsSceneAuthoredVisualPlaceholders,
+        "TestSceneRuntimePackageCombinesFerryOfficePolicyAndAuthoredSubmission",
+        "Loaded Ferry Office package should submit authored placeholders.");
+    Expect(package.renderSubmission.drawsSceneAuthoredMeshes,
+        "TestSceneRuntimePackageCombinesFerryOfficePolicyAndAuthoredSubmission",
+        "Loaded Ferry Office package should submit authored mesh instances.");
+    Expect(package.renderSubmission.drawsFerryOfficeWorldStateCues,
+        "TestSceneRuntimePackageCombinesFerryOfficePolicyAndAuthoredSubmission",
+        "Loaded Ferry Office package should keep Ferry Office world-state cues.");
+}
+
+void TestSceneRuntimePackageCombinesTargetSliceNeutralPolicyAndSubmission()
+{
+    const SceneLoadResult pilot = LoadSceneDefinition(PilotScenePathForTests());
+    Expect(pilot.ok(),
+        "TestSceneRuntimePackageCombinesTargetSliceNeutralPolicyAndSubmission",
+        "Veyra pilot fixture should load before package checks.");
+    if (!pilot.ok()) {
+        return;
+    }
+
+    const SceneRuntimePackage package = BuildSceneRuntimePackage(true, pilot.scene);
+
+    Expect(!package.policy.usesFerryOfficeBehavior,
+        "TestSceneRuntimePackageCombinesTargetSliceNeutralPolicyAndSubmission",
+        "Target-slice package should not borrow Ferry Office behavior.");
+    Expect(package.policy.usesNeutralPresentation,
+        "TestSceneRuntimePackageCombinesTargetSliceNeutralPolicyAndSubmission",
+        "Target-slice package should use neutral presentation.");
+    Expect(!package.policy.allowsFallbackVehicle,
+        "TestSceneRuntimePackageCombinesTargetSliceNeutralPolicyAndSubmission",
+        "Target-slice package should not inherit the fallback vehicle.");
+    Expect(package.policy.guidancePolicy == SceneGuidancePolicy::AllAuthored,
+        "TestSceneRuntimePackageCombinesTargetSliceNeutralPolicyAndSubmission",
+        "Target-slice package should use all-authored guidance.");
+    Expect(!package.renderSubmission.drawsFallbackFerryOfficeMoodBase,
+        "TestSceneRuntimePackageCombinesTargetSliceNeutralPolicyAndSubmission",
+        "Target-slice package should not draw Ferry Office fallback mood base.");
+    Expect(package.renderSubmission.drawsSceneAuthoredVisualPlaceholders,
+        "TestSceneRuntimePackageCombinesTargetSliceNeutralPolicyAndSubmission",
+        "Target-slice package should submit authored visual placeholders.");
+    Expect(package.renderSubmission.drawsSceneAuthoredMeshes,
+        "TestSceneRuntimePackageCombinesTargetSliceNeutralPolicyAndSubmission",
+        "Target-slice package should use the authored mesh submission path.");
+    Expect(!package.renderSubmission.drawsFerryOfficeWorldStateCues,
+        "TestSceneRuntimePackageCombinesTargetSliceNeutralPolicyAndSubmission",
+        "Target-slice package should not draw Ferry Office world-state cues.");
+}
+
+void TestSceneRuntimePackageTreatsGenericLoadedSceneAsNeutralAuthored()
+{
+    SceneDefinition genericScene;
+    genericScene.id = "generic-authored-scene";
+    genericScene.sliceMetadata.kind = "experimental-sandbox";
+
+    const SceneRuntimePackage package = BuildSceneRuntimePackage(true, genericScene);
+
+    Expect(!package.policy.usesFerryOfficeBehavior,
+        "TestSceneRuntimePackageTreatsGenericLoadedSceneAsNeutralAuthored",
+        "Generic loaded package should not inherit Ferry Office behavior.");
+    Expect(package.policy.usesNeutralPresentation,
+        "TestSceneRuntimePackageTreatsGenericLoadedSceneAsNeutralAuthored",
+        "Generic loaded package should use neutral presentation.");
+    Expect(package.policy.guidancePolicy == SceneGuidancePolicy::AllAuthored,
+        "TestSceneRuntimePackageTreatsGenericLoadedSceneAsNeutralAuthored",
+        "Generic loaded package should use all-authored guidance.");
+    Expect(!package.renderSubmission.drawsFallbackFerryOfficeMoodBase,
+        "TestSceneRuntimePackageTreatsGenericLoadedSceneAsNeutralAuthored",
+        "Generic loaded package should not draw fallback Ferry Office mood base.");
+    Expect(package.renderSubmission.drawsSceneAuthoredVisualPlaceholders,
+        "TestSceneRuntimePackageTreatsGenericLoadedSceneAsNeutralAuthored",
+        "Generic loaded package should submit authored placeholders.");
+    Expect(package.renderSubmission.drawsSceneAuthoredMeshes,
+        "TestSceneRuntimePackageTreatsGenericLoadedSceneAsNeutralAuthored",
+        "Generic loaded package should use authored mesh submission.");
+    Expect(!package.renderSubmission.drawsFerryOfficeWorldStateCues,
+        "TestSceneRuntimePackageTreatsGenericLoadedSceneAsNeutralAuthored",
+        "Generic loaded package should not draw Ferry Office world-state cues.");
 }
 
 void TestSceneGuidanceSurfaceShowsAllAuthoredNeutralMarkers()
@@ -6093,6 +6219,10 @@ int main()
     TestSceneRuntimePolicyKeepsFallbackAsFerryOfficeRegression();
     TestSceneRuntimePolicyClassifiesRegressionAndTargetSliceRoles();
     TestSceneRuntimePolicyTreatsUnknownLoadedSceneAsNeutral();
+    TestSceneRuntimePackageKeepsFallbackAsFerryOfficeSubmission();
+    TestSceneRuntimePackageCombinesFerryOfficePolicyAndAuthoredSubmission();
+    TestSceneRuntimePackageCombinesTargetSliceNeutralPolicyAndSubmission();
+    TestSceneRuntimePackageTreatsGenericLoadedSceneAsNeutralAuthored();
     TestSceneGuidanceSurfaceShowsAllAuthoredNeutralMarkers();
     TestSceneGuidanceSurfaceKeepsFerryOfficeActiveGuidanceScoped();
     TestSceneRenderSurfacePlansFallbackFerryOfficeSubmission();

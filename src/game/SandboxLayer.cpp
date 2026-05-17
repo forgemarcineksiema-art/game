@@ -354,14 +354,14 @@ void SandboxLayer::loadSceneDefinition()
     const SceneLoadResult loadedScene = LoadSceneDefinition(resolvedScenePath);
     if (!loadedScene.ok()) {
         m_sceneDefinitionLoaded = false;
-        m_runtimePolicy = BuildSceneRuntimePolicy(false, m_sceneDefinition);
+        m_sceneRuntime = BuildSceneRuntimePackage(false, m_sceneDefinition);
         engine::Logger::warning("Runtime scene load failed; using built-in Ferry Office fallback. " + loadedScene.error);
         return;
     }
 
     m_sceneDefinition = loadedScene.scene;
     m_sceneDefinitionLoaded = true;
-    m_runtimePolicy = BuildSceneRuntimePolicy(true, m_sceneDefinition);
+    m_sceneRuntime = BuildSceneRuntimePackage(true, m_sceneDefinition);
     m_scene.loadFromDefinition(m_sceneDefinition);
     engine::Logger::info("Loaded runtime scene data: " + m_sceneDefinition.id + " from " + resolvedScenePath.string());
 }
@@ -393,7 +393,7 @@ void SandboxLayer::configureRuntimeFromScene()
         return;
     }
 
-    if (!m_runtimePolicy.allowsFallbackVehicle) {
+    if (!m_sceneRuntime.policy.allowsFallbackVehicle) {
         m_vehicleAvailable = false;
         m_vehicleRuntimeText = "none";
         m_vehiclePhysicsBackendText = "none";
@@ -416,7 +416,7 @@ void SandboxLayer::applyQaCaptureState()
     if (m_qaCaptureState.empty()) {
         return;
     }
-    if (!m_runtimePolicy.usesFerryOfficeBehavior) {
+    if (!m_sceneRuntime.policy.usesFerryOfficeBehavior) {
         engine::Logger::warning("QA capture state ignored for non-Ferry runtime scene: " + m_qaCaptureState);
         return;
     }
@@ -598,7 +598,7 @@ void SandboxLayer::onUpdate(double deltaSeconds, const engine::InputState& input
 void SandboxLayer::onRender(engine::IRenderer& renderer)
 {
     const bool fullDebug = m_uiMode == engine::UiMode::Debug;
-    const SceneRenderSubmissionPlan renderPlan = buildSceneRenderSubmissionPlan();
+    const SceneRenderSubmissionPlan& renderPlan = m_sceneRuntime.renderSubmission;
     renderer.setDebugCamera(m_camera.debugCamera());
     if (fullDebug) {
         renderer.drawDebugGridAndAxes();
@@ -677,7 +677,7 @@ void SandboxLayer::updateDebugText()
 
 std::string SandboxLayer::buildPresentationText(bool minimal) const
 {
-    if (m_runtimePolicy.usesNeutralPresentation) {
+    if (m_sceneRuntime.policy.usesNeutralPresentation) {
         return BuildNeutralScenePresentationText(buildNeutralSceneRuntimeView(), minimal);
     }
 
@@ -794,7 +794,7 @@ NeutralSceneRuntimeView SandboxLayer::buildNeutralSceneRuntimeView() const
 
 std::string SandboxLayer::buildFullDebugText() const
 {
-    if (m_runtimePolicy.usesNeutralPresentation) {
+    if (m_sceneRuntime.policy.usesNeutralPresentation) {
         return BuildNeutralSceneDebugText(buildNeutralSceneRuntimeView());
     }
 
@@ -889,11 +889,6 @@ void SandboxLayer::toggleDebugUiMode()
     engine::Logger::info("UI mode: debug");
 }
 
-SceneRenderSubmissionPlan SandboxLayer::buildSceneRenderSubmissionPlan() const
-{
-    return BuildSceneRenderSubmissionPlan(m_sceneDefinitionLoaded, m_runtimePolicy);
-}
-
 SceneGuidanceContext SandboxLayer::buildSceneGuidanceContext() const
 {
     const FerryOfficeJobPhase phase = m_scene.job().phase(m_scene.worldState());
@@ -903,7 +898,7 @@ SceneGuidanceContext SandboxLayer::buildSceneGuidanceContext() const
 
     SceneGuidanceContext context;
     context.fullDebug = m_uiMode == engine::UiMode::Debug;
-    context.guidancePolicy = m_runtimePolicy.guidancePolicy;
+    context.guidancePolicy = m_sceneRuntime.policy.guidancePolicy;
     context.ferryOfficePhase = phase;
     context.activeRouteMarkerId = std::string(FerryOfficeActiveRouteMarkerId(m_scene.worldState(), phase));
     context.activeObjectiveMarkerId = std::string(FerryOfficeActiveObjectiveMarkerId(m_scene.worldState(), phase));
@@ -1162,7 +1157,7 @@ void SandboxLayer::drawSliceDebug(engine::IRenderer& renderer)
                 renderer.drawDebugLine(marker.points[index - 1], marker.points[index], routeColor);
             }
         }
-        if (!m_runtimePolicy.usesFerryOfficeBehavior) {
+        if (!m_sceneRuntime.policy.usesFerryOfficeBehavior) {
             return;
         }
     } else {

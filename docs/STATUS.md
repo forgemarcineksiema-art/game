@@ -2,6 +2,104 @@
 
 Last updated: 2026-05-17
 
+## Scene Runtime Package Facade Stop Gate (2026-05-17)
+
+Goal:
+
+- Add the smallest facade/contract after the policy/text/guidance/render-submission splits.
+- Use one runtime package in `SandboxLayer` for scene role policy and derived render-submission decisions.
+- Record the stop/continue decision for further `SandboxLayer` extraction before target-system work.
+
+Scope:
+
+- Added `SceneRuntimePackage` in `src\game\SceneRuntimePackage.h/.cpp`.
+- `SceneRuntimePackage` contains `SceneRuntimePolicy` plus `SceneRenderSubmissionPlan`.
+- `BuildSceneRuntimePackage(...)` now composes `BuildSceneRuntimePolicy(...)` and `BuildSceneRenderSubmissionPlan(...)` once from the same scene-load decision.
+- `SandboxLayer` now stores `m_sceneRuntime` instead of a separate `m_runtimePolicy` plus local `buildSceneRenderSubmissionPlan()` helper.
+- Kept `SceneRuntimeSurface`, `SceneGuidanceSurface`, and `SceneRenderSurface` as small tested modules. The facade composes them instead of swallowing them.
+- Added direct `EngineCoreTests` coverage for fallback/no-loaded-scene, Ferry Office regression-testbed, Veyra target-slice scaffold, and generic loaded neutral scenes.
+- Saved the goal prompt and implementation plan in `docs\superpowers\plans\2026-05-17-scene-runtime-package-facade-stop-gate.md`.
+
+Evidence:
+
+- CONFIRMED: Baseline `git status --short --branch` was clean on `main...origin/main`.
+- CONFIRMED: Baseline `git branch --show-current` returned `main`.
+- CONFIRMED: Baseline `python tools\status_report.py` passed.
+- CONFIRMED: Baseline `scripts\doctor.ps1`, `scripts\configure.ps1`, `scripts\build.ps1`, and `scripts\verify.ps1` passed before changes.
+- CONFIRMED: RED `cmake --build --preset windows-vs2022-debug --target EngineCoreTests` failed before implementation with `fatal error C1083: Cannot open include file: 'game/SceneRuntimePackage.h': No such file or directory`.
+- CONFIRMED: GREEN `cmake --build --preset windows-vs2022-debug --target EngineCoreTests` passed after adding `SceneRuntimePackage`.
+- CONFIRMED: GREEN `cmake --build --preset windows-vs2022-debug --target EngineCoreTests EngineApp` passed after wiring `SandboxLayer`.
+- CONFIRMED: GREEN `build\windows-vs2022-debug\Debug\EngineCoreTests.exe` passed after wiring `SandboxLayer`.
+- CONFIRMED: GREEN `python tests\test_runtime_scene_smoke.py` passed, 4 tests.
+- CONFIRMED: GREEN `python tools\runtime_scene_smoke.py --exe build\windows-vs2022-debug\Debug\EngineApp.exe --scene data\scenes\veyra_reach_pilot.scene.json --renderer gdi --ui-mode playtest --capture-frame build\captures\veyra-reach-pilot-runtime-smoke.bmp --report-json build\runtime\veyra-reach-pilot-smoke-report.json` passed.
+- CONFIRMED: GREEN `python tools\runtime_scene_smoke.py --exe build\windows-vs2022-debug\Debug\EngineApp.exe --scene data\scenes\veyra_reach_pilot.scene.json --ui-mode debug --report-json build\runtime\veyra-reach-pilot-debug-smoke-report.json` passed.
+- CONFIRMED: GREEN `scripts\verify.ps1` passed after code changes; CTest 12/12 and standard scene/tool/runtime validation passed.
+
+Stop/continue decision:
+
+- STOP further `SandboxLayer` micro-extraction by default. The current chain now has explicit policy, neutral text, guidance, render-submission, and package seams.
+- CONTINUE extraction only when a concrete player-facing or target-system goal is blocked by `SandboxLayer`, and the extraction is part of that goal's acceptance criteria.
+- Next work should move to a real target-system capability outside Ferry Office regression behavior, not another helper around existing debug/playtest presentation.
+
+Remaining limits:
+
+- This is not a playable Veyra slice, terrain system, road system, mission system, renderer improvement, asset pipeline, or visual pass.
+- `SandboxLayer` is still the live integration owner for scene loading, player/camera/vehicle wiring, rendering orchestration, draw methods, and Ferry Office regression behavior.
+- The value of this goal is stopping further unbounded architecture tidying by giving future goals a small scene-runtime decision package.
+
+Validation commands:
+
+- GREEN: `git status --short --branch`: clean before work on `main...origin/main`.
+- GREEN: `git branch --show-current`: `main`.
+- GREEN: `python tools\status_report.py`: passed.
+- GREEN: `scripts\doctor.ps1`: passed with expected optional PATH warnings.
+- GREEN: `scripts\configure.ps1`: passed.
+- GREEN: `scripts\build.ps1`: passed.
+- GREEN: `scripts\verify.ps1`: passed before changes.
+- RED: `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`: missing `game/SceneRuntimePackage.h` before implementation.
+- GREEN: `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`.
+- GREEN: `cmake --build --preset windows-vs2022-debug --target EngineCoreTests EngineApp`.
+- GREEN: `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`.
+- GREEN: `python tests\test_runtime_scene_smoke.py`.
+- GREEN: `python tools\runtime_scene_smoke.py --exe build\windows-vs2022-debug\Debug\EngineApp.exe --scene data\scenes\veyra_reach_pilot.scene.json --renderer gdi --ui-mode playtest --capture-frame build\captures\veyra-reach-pilot-runtime-smoke.bmp --report-json build\runtime\veyra-reach-pilot-smoke-report.json`.
+- GREEN: `python tools\runtime_scene_smoke.py --exe build\windows-vs2022-debug\Debug\EngineApp.exe --scene data\scenes\veyra_reach_pilot.scene.json --ui-mode debug --report-json build\runtime\veyra-reach-pilot-debug-smoke-report.json`.
+- GREEN: `scripts\verify.ps1` after code changes: passed; CTest 12/12 and standard scene/tool/runtime validation passed.
+- GREEN: final `scripts\verify.ps1` after this status update: passed; CTest 12/12 and standard scene/tool/runtime validation passed.
+
+Next recommended goal:
+
+```text
+/goal Target-slice authored objective runtime gate dla Tidebreak w C:\Users\Marcin\Documents\New project.
+
+Cel:
+Przestac inwestowac w same `SandboxLayer` extraction i zbudowac pierwszy maly target-system runtime poza Ferry Office: authored neutral objective/consequence loop dla scen typu `target-slice-scaffold`, bez `FerryOfficeJob`, bez kolejnego E-prompt checklistu udajacego gre i bez rozbudowy mapy.
+
+Dlaczego:
+Mamy juz policy/text/guidance/render/package seams, wiec Veyra nie musi byc juz "nie-Ferry Office wyjatkiem" na poziomie prezentacji. Brakuje jednak pierwszego realnego runtime contractu dla target slice: skad bierze sie cel, co oznacza wykonanie celu i jaki authored skutek w scenie potwierdza, ze gracz zrobil cos poza debug playgroundem. To jest wazniejsze niz kolejny terrain/visual/content pass, bo bez takiego kontraktu kazdy nowy kawalek swiata bedzie tylko ladniejszym statycznym placeholderem.
+
+Zakres:
+- Dodaj maly target-slice objective runtime/helper w `src/game`, odseparowany od `FerryOfficeJob`.
+- Uzyj istniejacego `veyra_reach_pilot.scene.json` jako minimalnego scaffold evidence, ale nie rozbudowuj mapy.
+- Runtime ma rozroznic: neutral target-slice objective text, completion condition/consequence evidence, i brak Ferry Office job/world-state leakage.
+- Dodaj testy dla Veyra target-slice i Ferry Office regression-testbed, zeby target helper nie przejal Ferry Office.
+- Zaktualizuj smoke/report/docs tak, zeby bylo jasne co zostalo udowodnione, a co nadal nie jest gra.
+
+Non-goals:
+- Nie rob terrainu, road systemu, asset passu, misji, NPC, edytora, renderer rewrite, Jolt/vehicle work ani wielkiego objective frameworka.
+- Nie dodawaj nowego content chainu ani kolejnej administracyjnej sign-off listy.
+- Nie rozbudowuj Ferry Office jako gry.
+- Nie rob dalszego `SandboxLayer` splitu, chyba ze bezposrednio blokuje ten target-slice objective runtime.
+
+Walidacja:
+- RED/GREEN `cmake --build --preset windows-vs2022-debug --target EngineCoreTests`
+- `build\windows-vs2022-debug\Debug\EngineCoreTests.exe`
+- `python tests\test_runtime_scene_smoke.py`
+- Veyra playtest/debug runtime smoke
+- `python tools\validate_scene.py`
+- `python tools\world_slice_report.py`
+- `scripts\verify.ps1`
+```
+
 ## Scene Render Submission Role Split (2026-05-17)
 
 Goal:

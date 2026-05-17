@@ -8,8 +8,7 @@
 #include "game/PrototypeScene.h"
 #include "game/SceneDefinition.h"
 #include "game/SceneGuidanceSurface.h"
-#include "game/SceneRenderSurface.h"
-#include "game/SceneRuntimePolicy.h"
+#include "game/SceneRuntimePackage.h"
 #include "game/SceneRuntimeSurface.h"
 #include "game/ThirdPersonCamera.h"
 #include "game/VehicleController.h"
@@ -41,7 +40,6 @@ private:
     std::string buildPresentationText(bool minimal) const;
     NeutralSceneRuntimeView buildNeutralSceneRuntimeView() const;
     SceneGuidanceContext buildSceneGuidanceContext() const;
-    SceneRenderSubmissionPlan buildSceneRenderSubmissionPlan() const;
     void toggleDebugUiMode();
     void drawInteractionDebug(engine::IRenderer& renderer);
     void drawTraversalDebug(engine::IRenderer& renderer);
@@ -65,7 +63,7 @@ private:
     void loadStaticMeshAssets();
     PrototypeScene m_scene;
     SceneDefinition m_sceneDefinition;
-    SceneRuntimePolicy m_runtimePolicy;
+    SceneRuntimePackage m_sceneRuntime;
     std::filesystem::path m_scenePath;
     PlayerController m_player;
     ThirdPersonCamera m_camera;
