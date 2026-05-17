@@ -483,7 +483,35 @@ Important limit:
 
 Revisit when:
 
-- A real manual playtest capture, dynamic blocker route, broader world-collision sweep, or deliberate default-runtime promotion goal exists.
+- A real manual playtest capture, dynamic blocker route, broader world-collision sweep, or a later default-runtime promotion goal exists.
+
+## Default Runtime Promotion Decision
+
+Decision:
+
+- Do not promote Jolt to the universal no-flag `EngineApp` or QA default yet.
+- Keep Jolt as the preferred production vehicle-runtime candidate.
+- Keep `--vehicle-runtime preferred` and `scripts\play.ps1` as the promoted playtest-facing path: Jolt is used when the executable has the backend, and deterministic fallback remains explicit when Jolt is unavailable.
+- Keep normal dependency-free app and QA defaults deterministic until the next promotion gate proves Jolt with less scripted/manual evidence and broader world-collision coverage.
+
+Evidence:
+
+- Default validation still passes without requiring Jolt in the standard preset.
+- Jolt validation passes through `scripts\verify_jolt.ps1`, including the explicit Jolt playthrough and vehicle runtime QA.
+- The extended route report proves Jolt on `recorded-ferry-office-long-route-v1`: `frameCount=360`, `routeProgressMeters=16.634`, `turnCount=3`, `reverseDistance=1.000m`, `maxCameraYawDeltaAfterResetDegrees=8.309`, `blockedEdgeId=dock-road-south-rail`, and `hitBounds=false`.
+- Parser-level tests still document that no-argument `EngineApp` defaults to deterministic, while `preferred` selects Jolt only when `ENGINE_ENABLE_JOLT_PHYSICS` is available.
+
+Why this is the right boundary:
+
+- The current Jolt evidence is enough to keep building Jolt-first and enough for the play wrapper to prefer Jolt in Jolt-enabled builds.
+- It is not enough to make no-flag runtime claims depend on an opt-in dependency path or a silent fallback.
+- Universal default promotion should mean "the default runtime is Jolt and QA knows that without reading build configuration." Tidebreak is not there until Jolt is either part of the normal dependency path or the default command path explicitly reports and validates that runtime without ambiguity.
+
+Next promotion gate:
+
+- Capture a real manual-play or input-recorded-from-manual session with Jolt on a broader route, including at least one dynamic blocker or broader authored world-collision case.
+- Decide dependency strategy for Jolt before making it a no-flag default: keep opt-in preset, move Jolt into normal configure, or keep `preferred` as the official playtest default.
+- Only then consider changing `AppConfig` no-arg defaults, `tools\playthrough_qa.py` defaults, and default CTest/runtime expectations.
 
 Important implementation choices:
 

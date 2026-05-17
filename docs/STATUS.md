@@ -2,6 +2,31 @@
 
 Last updated: 2026-05-17
 
+## Default Runtime Promotion Decision (2026-05-17)
+
+Decision:
+
+- Do not promote Jolt to the universal direct-app or QA default runtime yet.
+- Keep the default dependency-free `EngineApp`/QA path deterministic unless `--vehicle-runtime preferred` or `--vehicle-runtime jolt` is explicitly requested.
+- Keep `scripts\play.ps1` on its current `-VehicleRuntime preferred` default, which uses Jolt only when the selected executable was built with Jolt support and otherwise falls back deterministically.
+
+Evidence:
+
+- CONFIRMED: `scripts\verify.ps1` passes on the default dependency-free preset with deterministic vehicle runtime.
+- CONFIRMED: `scripts\verify_jolt.ps1` passes on the opt-in Jolt preset, including Jolt CTest, explicit Jolt playthrough QA, and `vehicle_runtime_qa.py` with `extendedRouteChecks=2`.
+- CONFIRMED: the current parser/tests still define no-arg `EngineApp` as deterministic, while `--vehicle-runtime preferred` selects Jolt only when the backend is available.
+- CONFIRMED: the latest extended route gate proves Jolt across a longer recorded-input authored route with three steering changes, reverse, camera reset/readability telemetry, and authored road-edge response.
+
+Rationale:
+
+- The promotion bar for a universal default is higher than the current evidence. The current Jolt proof is strong recorded-input/manual-feel evidence, but not a real human manual capture.
+- The current road-edge vehicle collision still uses conservative runtime proxies derived from authored Ferry Office edge IDs, not full mesh collision, all-scene collider coverage, dynamic blockers, traffic, damage, slopes, or camera collision.
+- Making no-arg `EngineApp` default to Jolt would either make the normal dependency-free build no longer representative or would create a silent fallback default, which would make future QA claims less precise.
+
+Next trigger:
+
+- Reopen default-runtime promotion only after a human/manual capture pass or broader dynamic/world-collision route proves Jolt in a less scripted driving case.
+
 ## Extended Authored Driving Route Evidence Gate (2026-05-17)
 
 Goal:
